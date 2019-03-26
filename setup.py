@@ -30,7 +30,6 @@ setup(name = 'metrolopy',
       zip_safe = True,
       classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Development Status :: 4 - Beta",
         "Framework :: Jupyter",
