@@ -1,0 +1,2146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>MetroloPy &#8212; metrolopy 0.5 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="metrolopy">
+<span id="hand-made-doc"></span><h1>MetroloPy<a class="headerlink" href="#metrolopy" title="Permalink to this headline">¶</a></h1>
+<p>Most of the functionality in the MetroloPy package lies in the
+<a class="reference internal" href="#gummy">gummy</a> object.</p>
+</div>
+<div class="section" id="class-gummy">
+<span id="gummy"></span><h1>class gummy<a class="headerlink" href="#class-gummy" title="Permalink to this headline">¶</a></h1>
+<p>class metrolopy.<strong>gummy(x, u=0, unit=one, dof=float(&#8216;inf&#8217;), k=1, p=None,
+p_method=None, uunit=None, utype=None, name=None)</strong></p>
+<p>A gummy object represents a numerical value with an uncertainty and (or)
+a unit. They can be used in place of float values in Python expressions
+and the uncertainty can be propagated with with both first-order and
+Monte-Carlo methods. Correlations between gummys are tracked. gummys
+must be real valued; the <a class="reference internal" href="#jummy">jummy</a> class is an extension of the
+gummy class to complex numbers.</p>
+<div class="section" id="gummy-parameters">
+<h2>gummy parameters<a class="headerlink" href="#gummy-parameters" title="Permalink to this headline">¶</a></h2>
+<p>(all parameters except <em>x</em> are optional)</p>
+<ul>
+<li><p class="first"><strong>x</strong>: (float or <a class="reference internal" href="#distribution">Distribution</a> ) Either a
+number representing the value of the gummy or a
+<a class="reference internal" href="#distribution">Distribution</a> instance that represents the
+probability distribution of the gummy. If <em>x</em> is a
+<a class="reference internal" href="#distribution">Distribution</a> any value given for <em>u</em> or <em>dof</em>
+will be ignored. The same <a class="reference internal" href="#distribution">Distribution</a> instance
+should never be used as the <em>x</em> parameter for two different gummys,
+e.g. to define a gummy with a <a class="reference internal" href="#uniformdist"><span class="std std-ref">uniform distribution</span></a>,
+use:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="n">UniformDist</span><span class="p">(</span><span class="n">center</span> <span class="o">=</span> <span class="mf">2.25</span><span class="p">,</span> <span class="n">half_width</span> <span class="o">=</span> <span class="mf">0.12</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Note that if <em>x</em> is a float value, the uncertainty distribution is
+assumed to be either a <a class="reference internal" href="#normaldist"><span class="std std-ref">Normal distribution</span></a> or a
+<a class="reference internal" href="#tdist"><span class="std std-ref">shifted and scaled Students&#8217;s t distribution</span></a> depending on
+the value of the <em>dof</em> parameter.</p>
+</li>
+<li><p class="first"><strong>u</strong>: (float &gt;= 0) A number representing the uncertainty in <em>x</em>.
+By default <em>u</em> is taken to be the standard (&#8220;1-sigma&#8221;) uncertainty,
+however if <em>k</em> or <em>p</em> are specified then <em>u</em> is taken to be the
+corresponding expanded uncertainty. Also by default, when the <em>uunit</em>
+parameter is ommitted, <em>u</em> is assumed to have the same
+units as <em>x</em>. Note that the <a class="reference internal" href="#upper-u"><span class="std std-ref">U</span></a> property of the newly
+created gummy will be equal to the value of the <em>u</em> parameter. The
+<a class="reference internal" href="#lower-u"><span class="std std-ref">u</span></a> property of the newly created gummy will only be equal to
+the <em>u</em> parameter if the <em>k</em>, <em>p</em> and <em>uunit</em> parameters are omitted.</p>
+</li>
+<li><p class="first"><strong>unit</strong>: (str or <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> ) The units of the gummy. This
+may be a <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> object or, more commonly, a string that
+references a Unit object, e.g. <code class="docutils literal"><span class="pre">gummy(1,unit='kg')</span></code> or
+<code class="docutils literal"><span class="pre">gummy(3.67,u=0.22,unit='m/s')</span></code>. The default is the Unit instance
+<em>one</em>. Spaces or asterisks (&#8216;*&#8217;) may be used to represent unit
+multiplication, a forward slash (&#8216;/&#8217;) division and double asterisks
+(&#8216;**&#8217;) powers, e.g <code class="docutils literal"><span class="pre">gummy(3.67,u=0.22,unit='m</span> <span class="pre">s**-1')</span></code>.  If a unit
+name contains a space, &#8216;*&#8217; or &#8216;/&#8217; character then the name must be
+enclosed in square brackets, e.g: <code class="docutils literal"><span class="pre">'[light</span> <span class="pre">year]'</span></code>.</p>
+</li>
+<li><p class="first"><strong>dof</strong>: (float or int &gt; 0) The number of degrees of freedom upon
+which the uncertainty is based. The default is <code class="docutils literal"><span class="pre">float('inf')</span></code>.</p>
+</li>
+<li><p class="first"><strong>k</strong>: (float &gt; 0) The coverage factor for <em>u</em>. The value of the
+<em>u</em> parameter is divided by the coverage factor to get the standard
+uncertainty for the new gummy. If the paramter <em>p</em> is specified then
+the coverage factor is calculated using <em>p</em> and the value of the <em>k</em>
+parameter is ignored. The default for <em>k</em> is 1. For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.24</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.22</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
+<span class="go">3.24(22) with k = 2.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">U</span>
+<span class="go">0.22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">u</span>
+<span class="go">0.11</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first"><strong>p</strong>: (float between 0 and 1 or None) The level of
+confidence or probability level for <em>u</em>. If this parameter is
+specified, then the coverage factor <em>k</em> is calculated using <em>dof</em> and
+the method specified by the <em>p_method</em> parameter. The standard
+uncertainty for the gummy is then set to <em>u</em> divided by the coverage
+factor <em>k</em>. For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.24</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.22</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
+<span class="go">3.24(22) with a 95% level of confidence</span>
+<span class="go">&gt;&gt;&gt;g.k</span>
+<span class="go">1.959963984540054</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">U</span>
+<span class="go">0.22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">u</span>
+<span class="go">0.11224696052342387</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<ul class="simple" id="p-method">
+<li><strong>p_method</strong>: ({&#8216;loc&#8217;, &#8216;cp&#8217;, &#8216;gauss&#8217;,
+&#8216;ccp&#8217;, &#8216;chebyshev&#8217;, None}) If the <em>p</em> parameter is
+specified, <em>p_method</em> sets the method that is used to calculate the
+coverage factor. If p_method is omitted or set to &#8216;loc&#8217;, then the
+uncertainty is assumed to be represented by a normal probability
+distribution if <em>dof</em> = float(&#8216;inf&#8217;) and shifted and scaled Student&#8217;s
+t distribution otherwise. If <em>p_method</em> = &#8216;gauss&#8217; or &#8216;cp&#8217; then the
+Guass inequality is used, and if <em>p_method</em> = &#8216;chebyshev&#8217; or &#8216;ccp&#8217;
+then the Chebyshev inequality is used. For <em>p</em> = 0.95 and <em>dof</em> =
+float(&#8216;inf&#8217;), <em>p_method</em> = &#8216;loc&#8217; gives <em>k</em> = 2.0, while <em>p_method</em>
+= &#8216;gauss&#8217; gives <em>k</em> = 3.0 and <em>p_method</em> = &#8216;chebyshev&#8217; gives <em>k</em> =
+4.5.</li>
+</ul>
+<ul class="simple" id="parameter-uunit">
+<li><strong>uunit</strong>: (str or <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> ) This represents the units of
+<em>u</em>. It may be a unit with the same dimension as the <em>unit</em>
+parameter, e.g. a measurement result of 3 m with an uncertainty of 1
+mm can be represented by <code class="docutils literal"><span class="pre">gummy(3,0.001,unit='m')</span></code> or equivalently
+<code class="docutils literal"><span class="pre">gummy(3,1,unit='m',uunit='mm')</span></code> The <em>uunit</em> parameter can also be
+a dimensionless unit if <em>u</em> represents a relative uncertainty, e.g.
+the gummy above can be also represented by
+<code class="docutils literal"><span class="pre">gummy(3,0.1,unit='m',uunit='%')</span></code>. If <em>uunit</em> is set to None, then
+the units of <em>u</em> are taken to be the same as those of x (as given by
+the <em>unit</em> parameter). The default is None. A
+<code class="docutils literal"><span class="pre">NoUnitConversionFoundError</span></code> exception will be generated if <em>uunit</em>
+is not dimensionless and no conversion exists between <em>uunit</em> and
+<em>unit</em>.</li>
+</ul>
+<ul class="simple" id="utype">
+<li><strong>utype</strong>: (str) An arbitrary string value labeling the
+uncertainty type. When a calculation is performed with gummys, the
+combined uncertainty of effective degrees of freedom from one
+particular uncertainty type can be found in the calculation result
+with the ufrom and doffrom methods. E.g. you can create a set of
+gummys with uncertainties assigned either utype &#8220;A&#8221; or utype &#8220;B&#8221;,
+insert them into a measurement equation and find the combined utype
+&#8220;A&#8221; uncertainty.</li>
+</ul>
+<ul class="simple" id="parameter-name">
+<li><strong>name</strong>: (str) An arbitrary string naming the gummy. The name is
+used when displaying the gummy value or labeling plot axes and serves
+no other function.</li>
+</ul>
+</div>
+<div class="section" id="basic-gummy-properties">
+<h2>basic gummy properties<a class="headerlink" href="#basic-gummy-properties" title="Permalink to this headline">¶</a></h2>
+<ul class="simple" id="x">
+<li><strong>x</strong>: (read-only) Gets the value of the gummy. This property is
+read-only, but changing the <a class="reference internal" href="#property-unit"><span class="std std-ref">unit</span></a> property will
+change <em>x</em>.</li>
+</ul>
+<ul class="simple" id="lower-u">
+<li><strong>u</strong>: (read-only) Gets the standard uncertainty of the gummy in
+the units set by the <a class="reference internal" href="#property-unit"><span class="std std-ref">unit</span></a> property. Note that
+setting the <a class="reference internal" href="#uunit">uunit</a> property only affects the value
+of the <em>U</em> property and not the <em>u</em> property.</li>
+</ul>
+<ul class="simple" id="const">
+<li><strong>const</strong>: (read-only) Return True if <em>u</em> == 0 and False otherwise.</li>
+</ul>
+<ul class="simple" id="dof">
+<li><strong>dof</strong>: (read-only) Gets the degrees of freedom associated with <em>u</em>.</li>
+</ul>
+<ul class="simple" id="property-utype">
+<li><strong>utype</strong>: (read-only) Gets the the uncertainty type. See the
+<a class="reference internal" href="#utype">utype</a> parameter.</li>
+</ul>
+<ul class="simple" id="upper-u">
+<li><strong>U</strong>: (read-only) gets the &#8220;expanded&#8221; uncertainty, this will
+depend of the values of the <a class="reference internal" href="#property-unit"><span class="std std-ref">unit</span></a>, <em>k</em>, <em>p</em>, and
+<em>p_method</em> properties, also <em>U</em> may be expressed in different units
+from <em>x</em> and <em>u</em> and may be a relative uncertainty, see the
+<a class="reference internal" href="#uunit">uunit</a> property.</li>
+</ul>
+<ul class="simple" id="k">
+<li><strong>k</strong>: gets or sets the coverage factor for the expanded
+uncertainty <em>U</em>, <em>U</em> = <em>k</em>*<em>u</em>, setting the <em>p</em> property will
+change the value of this parameter</li>
+</ul>
+<ul class="simple" id="p">
+<li><strong>p</strong>: gets or sets the level of confidence for the expanded
+uncertainty, changing this property will change the <em>k</em> property,
+the relation between the value of this property and the property <em>k</em>
+is defined by the <em>p_method</em> property</li>
+</ul>
+<ul class="simple" id="property-p-method">
+<li><strong>p_method</strong>: see the <a class="reference internal" href="#p-method">p_method</a> parameter</li>
+</ul>
+<ul id="name">
+<li><p class="first"><strong>name</strong>: An arbitrary string naming the gummy. The name is used when
+displaying the gummy value or labeling plot axes and serves no other
+function.</p>
+</li>
+<li><p class="first"><strong>ubreakdown</strong>: (list of str or None, default is
+None) If this is set to a list containing strings referencing
+<a class="reference internal" href="#utype"><span class="std std-ref">utypes</span></a> then when the gummy is printed, the
+uncertainty from each utype will be displayed separately.
+Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">a</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">b</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.2</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">c</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span>
+<span class="go">5.30(57)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span><span class="o">.</span><span class="n">ubreakdown</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span><span class="s1">&#39;B&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span>
+<span class="go">5.30(54)(20)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="s1">&#39;ueq&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span>
+<span class="go">5.30 with u(A) = 0.54 and u(B) = 0.20</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first"><strong>independent</strong>: (read-only) Returns <code class="docutils literal"><span class="pre">False</span></code> if the gummy was
+created from a mathematical operation involving other gummys and
+<code class="docutils literal"><span class="pre">True</span></code> otherwise.</p>
+</li>
+<li><p class="first"><strong>real</strong>: returns a <code class="docutils literal"><span class="pre">self</span></code></p>
+</li>
+<li><p class="first"><strong>imag</strong>: returns a zero value gummy</p>
+</li>
+<li><p class="first"><strong>bayesian</strong>: (bool) Read/write at the class level, but read-only
+at the instance level. The default value is <code class="docutils literal"><span class="pre">False</span></code>; this property
+should only be changed once at the beginning of the session. This
+property affects how a standard uncertainty based on data with finite
+degrees of freedom is defined and thus how the level of confidence
+<a class="reference internal" href="#p">p</a> (sometimes called coverage probability) of an
+expanded uncertainty is related to the coverage factor
+<a class="reference internal" href="#k">k</a>. Standard uncertainties are often based on the
+standard deviation of a set of measurements (and the assumption that
+these measurements are drawn from a normally distributed population).
+Traditionally (e.g. the GUM 2008 edition) the standard uncertainty is
+taken to be the standard deviation of the mean (<em>s</em>/sqrt(<em>n</em>), where <em>s</em> is
+the sample standard deviation and <em>n</em> is the number of measurements).
+However there is some &#8220;extra uncertainty&#8221; because the sample standard
+deviation does not exactly equal to the population standard deviation.
+This is taken into account by using a Student&#8217;s <em>t</em> distribution to
+calculate the expanded uncertainty. However it has been pointed out,
+by those who advocate a Bayesian point of view, that the probability
+distribution for the measurand here is best described by a shifted
+and scaled Student&#8217;s <em>t</em> distribution. So the standard uncertainty
+should be the standard deviation of the Student&#8217;s <em>t</em> distribution which is
+<em>s</em>*sqrt{(<em>n</em>-1)/[<em>n</em>*(<em>n</em>-3)]}. Thus the relationship between the Bayesian
+and traditional standard uncertainty definitions is:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">u</span><span class="p">(</span><span class="n">bayesian</span><span class="p">)</span> <span class="o">=</span> <span class="p">[</span><span class="n">dof</span><span class="o">/</span><span class="p">(</span><span class="n">dof</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)]</span><span class="o">*</span><span class="n">u</span><span class="p">(</span><span class="n">traditional</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <em>dof</em> = <em>n</em> - 1 and the &#8220;extra uncertainty&#8221; of the traditional method
+is incorporated directly into the standard uncertainty.</p>
+</li>
+<li><p class="first"><strong>rounding_u</strong>: (bool)  Set at the class level.  If this is set to
+<code class="docutils literal"><span class="pre">True</span></code> then uncertainty is added to account for floating point rounding
+errors.   An uncertainty proportional to the machine epsilon is added to
+the uncertainty whenever a gummy is created with a floating point data type.
+Then this uncertainty is propagated like any other uncertainty. This
+can give some idea of the magnitude of the floating point errors, but is
+not a substitute for a full numerical error analysis.  The default value
+is <code class="docutils literal"><span class="pre">False</span></code>.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="basic-gummy-methods">
+<h2>basic gummy methods<a class="headerlink" href="#basic-gummy-methods" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first"><strong>correlation(g)</strong>: Returns the correlation coefficient between
+<code class="docutils literal"><span class="pre">self</span></code> and <em>g</em>.</p>
+</li>
+<li><p class="first"><strong>covariance(g)</strong>: Returns the covariance between
+<code class="docutils literal"><span class="pre">self</span></code> and <em>g</em>.</p>
+</li>
+<li><p class="first">static <strong>correlation_matrix(gummys)</strong>: Returns the correlation matrix of a
+list or array of gummys. The return value is a numpy.ndarray.</p>
+</li>
+<li><p class="first">static <strong>covariance_matrix(gummys)</strong>: Returns the variance-covariance
+matrix of a list or array of gummys. The return value is a
+numpy.ndarray.</p>
+</li>
+<li><p class="first"><strong>copy(formatting=True)</strong>: Returns a copy of the gummy. The copy will
+be have a correlation coefficient of 1 with the original gummy. If
+the <em>formatting</em> parameter is <code class="docutils literal"><span class="pre">True</span></code> the display formatting
+information will be copied and if <code class="docutils literal"><span class="pre">False</span></code> the display formatting
+will be set to the default for a new gummy.</p>
+</li>
+<li><p class="first"><strong>ufrom(x)</strong>: Gets the standard uncertainty contributed from
+particular gummys or <a class="reference internal" href="#utype">utype</a> if all other
+free variables are held fixed. The parameter <em>x</em> may be a string
+referencing a utype or a list containing gummys and (or) strings.
+This method returns a float. Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">a</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">b</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.2</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">c</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span><span class="o">.</span><span class="n">ufrom</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="go">0.53851648071345048</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first"><strong>doffrom(x)</strong>: Gets the effective degrees of freedom contributed
+from particular gummys or <a class="reference internal" href="#utype">utype</a> if all
+other free variables are held fixed. The parameter <em>x</em> may be a
+string referencing a utype or a list containing gummys and (or)
+strings. This method returns a float. Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">a</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">dof</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">b</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.2</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="n">dof</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">c</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span><span class="o">.</span><span class="n">doffrom</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="go">9.0932962619709627</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<ul id="create">
+<li><p class="first">classmethod <strong>create(x, u=None, unit=None, dof=None, k=None, p=None, uunit=None,
+utype=None, name=None,correlation_matrix=None,
+covariance_matrix=None)</strong>: Creates a list of
+correlated gummys.</p>
+<p><strong>create parameters</strong> (only <em>x</em> is required, all others are optional):</p>
+<ul class="simple">
+<li><strong>x</strong>: Either a list of floats corresponding to the x-value of
+each gummy or an instance of a MultivariateDistribution sub-class.</li>
+<li><strong>u</strong>, <strong>unit</strong>, <strong>dof</strong>, <strong>k</strong>, <strong>p</strong>, <strong>uunit</strong>, <strong>utype</strong>, and
+<strong>name</strong>: Lists that correspond to the parameters in the gummy
+initializer (with the i-th value in each list passed to the
+initializer for the i-th gummy). With the exception of the &#8220;name&#8221;
+parameter, these may also be a single value with this same value
+is to passed to each initializer.</li>
+<li><strong>correlation_matrix</strong>: An list or array to be used as the
+correlation matrix of the gummys. This is optional and must be set
+to the default value of None if the covariance_matrix is
+specified.</li>
+<li><strong>covariance_matrix</strong>: An list or array to be used as the
+variance-covariance matrix of the ummys. If the covariance matrix
+is specified the u parameter will be ignored This parameter is
+optional and must be set to the default value of None if the
+correlation_matrix is specified. If both the correlation_matrix
+and the covariance_matrix are None (or omitted) then the gummys
+will be uncorrelated.</li>
+</ul>
+<p><strong>create returns</strong>: a list of gummys</p>
+<p>Note: This package does not implement a multivariate Students&#8217;s <em>t</em>
+distribution that has differing degrees of freedom for each
+component. So if if the elements of dof are finite and not all the
+same and either a correlation_matrix or a covariance_matrix is
+defined, the joint distribution for Monte-Carlo calculations (but not
+first-order calculations) will default to a multivariate normal
+distribution.</p>
+</li>
+</ul>
+<ul id="budget">
+<li><p class="first"><strong>gummy.budget(xlist, uunit=None, k=None, p=None, sort=True,
+columns=None, column_names=None, xnames=None, yname=None,
+show_subtotals=True, show_expanded_u=None, description=None,
+description_math_mode=False, custom=None, custom_heading=None,
+custom_math_mode=False, css=None, solidus=None, mulsep=None,
+show_s=True, show_d=False, show_c=False, units_on_values=None,
+sim=False)</strong>: Returns a Budget object that can be used to display an
+uncertainty budget table listing the the contributions of the gummys
+in <em>xlist</em> to the total uncertainty in the calling gummy <code class="docutils literal"><span class="pre">self</span></code>.</p>
+<p>To display the table use the Budget.html() or Budget.latex() methods
+in a console or notebook that supports this type of output or the
+python <code class="docutils literal"><span class="pre">print</span></code> function to get a unicode table.</p>
+<p>The Budget.tohtml() and Budget.tolatex() methods can be used to get
+strings with the html or latex code.</p>
+<p>The Budget.df property can be used to retrieve a pandas DataFrame
+with the table. Also Budget.df_str, Budget.df_html and
+Budget.df_latex return DataFrames with formatted strings as entries
+rather than numerical values.</p>
+<p><strong>metrolopy.gummy.budget parameters</strong> (<em>xlist</em> is required, all others are
+optional):</p>
+<ul class="simple">
+<li><strong>xlist</strong>: (list of gummy) The independent variables.
+Warnings will be generated if the gummys in this list over
+determine <code class="docutils literal"><span class="pre">self</span></code> (that is if not all variables in this list can
+be treated as independent variables) or under determine <code class="docutils literal"><span class="pre">self</span></code>
+(that is if some variables contributing to the uncertainty in
+<code class="docutils literal"><span class="pre">self</span></code> are missing).</li>
+<li><strong>uunit</strong>: (str or <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a>, default is None) Unit to use
+to express the uncertainties. This useful if you wish to express
+all uncertainties as relative uncertainty unit (e.g. %).</li>
+<li><strong>k</strong> and <strong>p</strong>: (float or None, default is None) <em>k</em>
+or <em>p</em> values for the expanded uncertainty of the total combined
+uncertainty; specify either <em>k</em> or <em>p</em> and not both; if neither
+are specified the the <em>k</em> and <em>p</em> values of <code class="docutils literal"><span class="pre">self</span></code> are used.</li>
+<li><strong>sort</strong>: (bool, default is <code class="docutils literal"><span class="pre">True</span></code>) Whether or not to sort
+the gummys in <em>xlist</em> by significance.</li>
+<li><strong>columns</strong>: (list of str or None) Allows the user to select the
+columns (and ordering of the columns) for display. The available
+columns are:<ul>
+<li>&#8220;component&#8221; or &#8220;name&#8221;: the names of the gummy, displayed by
+default</li>
+<li>&#8220;description&#8221;: description given in the description parameter
+list, displayed by default if the description parameter is not
+None</li>
+<li>&#8220;unit&#8221;: the unit of the gummy, displayed by default</li>
+<li>&#8220;value&#8221;: the x value of the gummy, displayed by default</li>
+<li>&#8220;u&#8221; or &#8220;uncertainty&#8221;: The uncertainty of the gummy. This is the
+standard uncertainty except possible in the last row where an
+expanded uncertainty is displayed. This column is displayed by
+default.</li>
+<li>&#8220;dof&#8221;: the degrees of freedom for the uncertainty, displayed by
+default if any uncertainty has finite degrees of freedom</li>
+<li>&#8220;type&#8221;: the uncertainty type, displayed by default if any gummy
+has a <a class="reference internal" href="#utype">utype</a> defined</li>
+<li>&#8220;s&#8221; or &#8220;significance&#8221;: the sensitivity coefficient (below)
+multiplied by the standard uncertainty, displayed by default</li>
+<li>&#8220;d&#8221;, &#8220;derivative&#8221; or &#8220;partial&#8221;: the partial derivative of
+<code class="docutils literal"><span class="pre">self</span></code> with respect to the gummy in that row</li>
+<li>&#8220;c&#8221; or &#8220;sensitivity coefficient&#8221;: the absolute value of &#8220;d&#8221;</li>
+<li>&#8220;custom&#8221;: value given in the custom parameter list, displayed
+by default if the custom parameter is not None</li>
+</ul>
+</li>
+</ul>
+<p>The columns displayed can also be set with the Budget.columns
+property.</p>
+<ul class="simple">
+<li><strong>column_names</strong>: (dict or None) Names to display as
+column headers, if this is None then the default names are used.
+The dictionary should use as keys any of the column names listed
+above in the columns parameter description and as values the
+desired heading for this column. The column names can also be set
+with the Budget.column_names property.</li>
+<li><strong>show_subtotals</strong>: (bool, default is <code class="docutils literal"><span class="pre">False</span></code>) If any
+uncertainty types are defined, the combined standard uncertainty
+for each type is displayed in the table. This can also be changed
+by setting the Budget.show_subtotals attribute.</li>
+<li><strong>show_expanded_u</strong>: (bool or None, default is None)
+Whether or not to display the expanded uncertainty in the last
+row. If this is None, then the expaned uncertianty is displayed if
+<code class="docutils literal"><span class="pre">self.k</span> <span class="pre">!=</span> <span class="pre">1</span></code>. This can also be changed by setting the
+Budget.show_expanded_u attribute.</li>
+<li><strong>show_s</strong>: (bool, default is <code class="docutils literal"><span class="pre">True</span></code>) Whether or not to
+show the significance column. This is ignored if columns is not
+None. The default can be changed by setting the attribute class
+attribute Budget.show_s.</li>
+<li><strong>show_d</strong>: (bool, default is <code class="docutils literal"><span class="pre">True</span></code>) Whether or not to
+show the partial derivatives column. This is ignored if columns is
+not None. The default can be changed by setting the attribute
+class attribute Budget.show_d.</li>
+<li><strong>show_c</strong>: (bool, default is <code class="docutils literal"><span class="pre">False</span></code>) Whether or not to
+show the sensitivity coefficient column. This is ignored if
+columns is not None. The default can be changed by setting the
+attribute class attribute Budget.show_c.</li>
+<li><strong>units_on_values</strong>: (bool or None, default is
+None): If this is <code class="docutils literal"><span class="pre">True</span></code>, units are shown in the value and u
+columns and if <code class="docutils literal"><span class="pre">False</span></code> the units are in a separate column. If
+None then the units are in a separate column unless <code class="docutils literal"><span class="pre">self</span></code> or
+any gummy in <em>xlist</em> has a uunit defined.</li>
+<li><strong>sim</strong>: (bool, default is <code class="docutils literal"><span class="pre">False</span></code>): If <code class="docutils literal"><span class="pre">True</span></code>, the
+combined uncertainty and partial derivatives will be calculated
+using Monte-Carlo data.</li>
+<li><strong>css</strong>: (str or None, defualt is None) css header to
+be used when displaying the table in HTML format. If this is None
+then Budget.default_css will be used.</li>
+<li><strong>description</strong>: (list of str or None, default is
+None) An optional column of descriptions to be printed in the
+table. This should be a description for <code class="docutils literal"><span class="pre">self</span></code> then for each
+<em>x</em>, and followed, optionally, by subtotal and expanded
+uncertainty descriptions.</li>
+<li><strong>description_math_mode</strong>: (bool, default is <code class="docutils literal"><span class="pre">False</span></code>) If
+this is <code class="docutils literal"><span class="pre">False</span></code>, then when using a LaTeX format, the description
+is put in normal text mode rather than math mode.</li>
+<li><strong>custom</strong>: (list of str or None, default is None)
+An optional column of additional information to be printed in the
+table. This should be a value for <code class="docutils literal"><span class="pre">self</span></code> then for each <em>x</em>, and
+followed, optionally, by subtotal and expanded uncertainty values.</li>
+<li><strong>custom_heading</strong>: (str or None, default is None) A
+heading for the custom column.</li>
+<li><strong>custom_math_mode</strong>: (bool, default is <code class="docutils literal"><span class="pre">False</span></code>) If this
+is <code class="docutils literal"><span class="pre">False</span></code>, then when using a LaTeX format, the custom value is
+put in normal text mode rather than math mode.</li>
+<li><strong>solidus</strong> and <strong>mulsep</strong>: Affects unit formatting, see the gummy
+attributes <a class="reference internal" href="#solidus">solidus</a> and <a class="reference internal" href="#mulsep">mulsep</a></li>
+</ul>
+</li>
+</ul>
+<ul class="simple" id="conjugate">
+<li><strong>conjugate()</strong>: returns a copy of <code class="docutils literal"><span class="pre">self</span></code></li>
+</ul>
+<ul class="simple" id="angle">
+<li><strong>angle()</strong>: returns <code class="docutils literal"><span class="pre">gummy(numpy.pi)</span></code> if <code class="docutils literal"><span class="pre">self.x</span></code> &lt; 0 and
+<code class="docutils literal"><span class="pre">gummy(0)</span></code> otherwise</li>
+</ul>
+</div>
+<div class="section" id="arithmetic-operations-and-functions-involving-gummys">
+<h2>arithmetic operations and functions involving gummys<a class="headerlink" href="#arithmetic-operations-and-functions-involving-gummys" title="Permalink to this headline">¶</a></h2>
+<p>The standard Python arithmetic operations are allowed between gummys and
+between gummys and floats or integers: addition, subtraction,
+multiplication, division, floor division, exponentiation, modulus,
+absolute value, and negation. These operations are allowed with
+complex types, with the result a <a class="reference internal" href="#jummy">jummy</a> rather than a
+gummy instance. For addition and subtraction, the units must be
+compatible (the of units of the two operands do not need to be the same,
+but a conversion must exist between the units, see also the
+<a class="reference internal" href="#c">c</a> property). Exponents must be dimensionless (that is a
+conversion from the exponent unit to the unit <em>one</em> must exist) and if
+the exponent has an uncertainty, the base must be dimensionless.
+Nonlinear units such as the decibel and the degree Celsius affect the
+behavior of gummys under certain operations.</p>
+<p>The gummy module installs a number of common mathematical
+<a class="reference internal" href="#functions">functions</a> that can be applied directly to dimensionless
+gummys, e.g:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">gummy</span> <span class="k">as</span> <span class="nn">uc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">gummy</span><span class="p">(</span><span class="mf">0.123</span><span class="p">,</span><span class="mf">0.022</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">uc</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">0.851(12)</span>
+</pre></div>
+</div>
+<p>For numpy version 1.13 or later, many numpy functions can be applied
+directly to dimensionless gummys, e.g:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">gummy</span> <span class="k">as</span> <span class="nn">uc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">gummy</span><span class="p">(</span><span class="mf">0.123</span><span class="p">,</span><span class="mf">0.022</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">-0.525(19)</span>
+</pre></div>
+</div>
+<p>The two class methods immediately below may also be used to apply an
+arbitrary numerical function to one or more gummys.</p>
+<div class="section" id="gummy-methods-for-applying-numerical-functions">
+<h3>gummy methods for applying numerical functions<a class="headerlink" href="#gummy-methods-for-applying-numerical-functions" title="Permalink to this headline">¶</a></h3>
+<ul id="apply">
+<li><p class="first">classmethod <strong>apply(function, derivative, arg1, arg2, ...)</strong>:
+Applies a function to one or more dimensionless gummy objects
+propagating the uncertainty.</p>
+<p><strong>apply Parameters</strong>:</p>
+<ul class="simple">
+<li><strong>function</strong>: The the function to be applied. This must be a
+Python function that takes one more float arguments and return a
+float value or float array.</li>
+<li><strong>derivative</strong>: The name of a second function that gives the
+derivatives with respect to the arguments of <em>function</em>.
+<em>derivative</em> should take an equal number of arguments as
+<em>function</em>. If <em>function</em> takes one argument <em>derivative</em> should
+return a float and if <em>function</em> takes more than one argument then
+derivative should return a tuple, list or array of floats that
+contains the derivatives with respect to each argument.</li>
+<li><strong>arg1, arg2, ...</strong>: One or more arguments to which <em>function</em>
+will be applied. These arguments need not all be gummys objects;
+arguments such as floats will be taken to be constants with no
+uncertainty. They may also be numpy ndarrays in which case the
+usual numpy broadcasting rules apply. All gummy arguments must be
+dimensionless, that there must exist a conversion to the unit
+<em>one</em>.</li>
+<li><strong>return value</strong>: If none of the arguments arg1, arg2, ... are
+gummy then the return value is <em>function</em> directly applied to the
+arguments. Otherwise the return value is a gummy.</li>
+</ul>
+<p>Examples:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.678</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.077</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+<span class="go">0.627(60)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.22</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.44</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.44</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.67</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">dhypot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="p">(</span><span class="n">x1</span><span class="o">/</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span><span class="n">x2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">,</span><span class="n">dhypot</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+<span class="go">3.65(65)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<ul class="simple" id="napply">
+<li>classmethod <strong>napply(function, derivative, arg1, arg2, ...)</strong>:
+Applies a function to one or more dimensionless gummy objects
+propagating the uncertainty. This method is similar to apply except
+that the derivatives are computed numerically so a derivative
+function does not need to be supplied.</li>
+</ul>
+<blockquote>
+<div><p><strong>napply parameters</strong>:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>function</strong>: The the function to be applied. This must be a
+Python function that takes one more float arguments and return a
+float value or float array.</li>
+<li><strong>derivative</strong>: The name of a second function that gives the
+derivatives with respect to the arguments of <em>function</em>.
+<em>derivative</em> should take an equal number of arguments as
+<em>function</em>. If <em>function</em> takes one argument <em>derivative</em> should
+return a float and if <em>function</em> takes more than one argument then
+derivative should return a tuple, list or array of floats that
+contains the derivatives with respect to each argument.</li>
+<li><strong>arg1, arg2, ...</strong>: One or more arguments to which <em>function</em>
+will be applied. These arguments need not all be gummys objects;
+arguments such as floats will be taken to be constants with no
+uncertainty. They may also be numpy ndarrays in which case the
+usual numpy broadcasting rules apply. All gummy arguments must be
+dimensionless, that there must exist a conversion to the unit
+<em>one</em>.</li>
+<li><strong>return value</strong>: If none of the arguments arg1, arg2, ... are
+gummy then the return value is <em>function</em> directly applied to the
+arguments. Otherwise the return value is a gummy.</li>
+</ul>
+<p>Examples:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.678</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.077</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">napply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+<span class="go">0.627(60)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.22</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.44</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.44</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.67</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">napply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+<span class="go">3.65(65)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="gummy-properties-and-methods-related-to-units-and-unit-conversion">
+<h2>gummy properties and methods related to units and unit conversion<a class="headerlink" href="#gummy-properties-and-methods-related-to-units-and-unit-conversion" title="Permalink to this headline">¶</a></h2>
+<p>Units are represented by instances of the <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> class or
+sub-classes, however the user rarely needs to interact directly with
+these objects as strings can be used in place of <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a>
+objects in all properties and methods dealing with units. It is,
+however, straight forward for to create custom units.</p>
+<div class="section" id="gummy-properties-related-to-units">
+<h3>gummy properties related to units<a class="headerlink" href="#gummy-properties-related-to-units" title="Permalink to this headline">¶</a></h3>
+<ul id="property-unit">
+<li><p class="first"><strong>unit</strong>: Gets or sets the units for the values of the
+<a class="reference internal" href="#x">x</a> and <a class="reference internal" href="#lower-u"><span class="std std-ref">u</span></a> properties, also sets the
+units for <a class="reference internal" href="#upper-u"><span class="std std-ref">U</span></a> if <em>uunit</em> is None. When setting this
+property either a <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> object or a string referencing a
+<a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> object may be used. A <code class="docutils literal"><span class="pre">NoUnitConversionFoundError</span></code>
+exception will be generated if no conversion exists between the
+original unit and the new unit. Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;J&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;erg&#39;</span>
+</pre></div>
+</div>
+<p>Spaces or asterisks (&#8216;*&#8217;) may be used to represent unit
+multiplication, a forward slash (&#8216;/&#8217;) division and double asterisks
+(&#8216;**&#8217;) powers, e.g &#8216;m/s&#8217; or &#8216;m s**-1&#8217;.  If a unit
+name contains a space, &#8216;*&#8217; or &#8216;/&#8217; character then the name must be
+enclosed in square brackets, e.g: &#8216;[light year]&#8217;.</p>
+</li>
+</ul>
+<ul class="simple" id="uunit">
+<li><strong>uunit</strong>: gets or sets the units for <a class="reference internal" href="#upper-u"><span class="std std-ref">U</span></a>. Setting
+<em>uunit</em> to None puts <a class="reference internal" href="#upper-u"><span class="std std-ref">U</span></a> in the same units as
+<a class="reference internal" href="#x">x</a>. If <em>uunit</em> is a dimensionless unit (e.g. <em>one</em>,
+&#8216;%&#8217;, &#8216;ppm&#8217; or &#8216;um/m&#8217;) then <a class="reference internal" href="#upper-u"><span class="std std-ref">U</span></a> is a
+relative uncertainty. When setting this property either a
+<a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> object or a string referencing a Unit object may be
+used.</li>
+</ul>
+<ul class="simple" id="unit-is-rel">
+<li><strong>uunit_is_rel</strong>: Returns <code class="docutils literal"><span class="pre">True</span></code> if the <a class="reference internal" href="#upper-u"><span class="std std-ref">U</span></a>
+property will return a relative uncertainty and <code class="docutils literal"><span class="pre">False</span></code> otherwise.</li>
+</ul>
+<ul id="c">
+<li><p class="first"><strong>c</strong>: This read-only property is used as a conversion flag during
+calculations. When an arithmetic operation is carried out between two
+gummys with different units, a unit conversion on one of the input
+quantities may be required to complete the calculation. Attach this
+flag to the unit that you prefer be converted if you do not which
+gummy to make the choice. For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;cm&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;mm&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+<span class="go">1.200(22) cm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">c</span> <span class="o">+</span> <span class="n">b</span>
+<span class="go">12.00(22) mm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="o">.</span><span class="n">c</span>
+<span class="go">1.200(22) cm</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="gummy-methods-related-to-units">
+<h3>gummy methods related to units<a class="headerlink" href="#gummy-methods-related-to-units" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>convert(unit,uunit=None)</strong>: Returns a copy of the original gummy
+with converted units. <em>unit</em> and <em>uunit</em> are either a strings or Unit
+instances for the new units for the <em>x</em> and <em>U</em> properties of the new
+gummy respectively.</p>
+</li>
+<li><p class="first"><strong>graft(unit,uunit=None)</strong>: Returns a copy of the original gummy,
+keeping the same numerical value of the <em>x</em> and <em>U</em> properties of the
+original gummy, but with new units <em>unit</em> and <em>uunit</em> respectively.</p>
+</li>
+<li><p class="first"><strong>reduce_unit()</strong>: Cancels factors in a gummy&#8217;s unit when possible.
+This modifies the calling gummy and returns None. For example
+example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;mm/m&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
+<span class="go">5 mm/m</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">reduce_unit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
+<span class="go">0.005</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="unit-search-function">
+<span id="search-units"></span><h3>unit search function<a class="headerlink" href="#unit-search-function" title="Permalink to this headline">¶</a></h3>
+<p>The following function is not part of the gummy class but is useful when
+dealing with units.</p>
+<ul>
+<li><p class="first">metrolopy.<strong>search_units(search=None, fmt=None, show_all=False, units=
+None, prnt=True)</strong>: Prints a list of all units that match the search
+terms. If this function is called with no arguments, then a list of
+all loaded units is printed.</p>
+<p><strong>search_units parameters</strong>:</p>
+<ul class="simple">
+<li><strong>search</strong>: (str) A space separated list of search terms to case
+insensitively match. If this is omitted or set equal to None a
+list of all loaded units will be printed. The default is None.</li>
+<li><strong>fmt</strong>:
+({&#8216;html&#8217;, &#8216;latex&#8217;, &#8216;unicode&#8217;, &#8216;ascii&#8217;, None}, optional)
+The output format. If None, then the gummy.printer value is used.
+If latex output is selected, Markdown is actually used with the
+unit symbols and conversion displayed using inline LaTeX.</li>
+<li><strong>show_all</strong>: (bool,optional) If <code class="docutils literal"><span class="pre">True</span></code> units are shown
+with each prefix listed on a separate line (e.g. the millisecond
+and the microsecond are listed in addition to the second) and
+interval units are shown. If <code class="docutils literal"><span class="pre">False</span></code> only the base unit is
+shown. The default is <code class="docutils literal"><span class="pre">False</span></code>.</li>
+<li><strong>units</strong>: (list of str or <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a>,optional) A list of
+units to print. If this parameter is specified the values of the
+search and show_all parameters are ignored.</li>
+<li><strong>prnt</strong>: (bool,optional) If this is <code class="docutils literal"><span class="pre">True</span></code>, the results are
+printed. If it is <code class="docutils literal"><span class="pre">False</span></code> the results are returned as a string.
+The default is True.</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="gummy-properties-and-methods-related-to-monte-carlo-simulation">
+<h2>gummy properties and methods related to Monte-Carlo simulation<a class="headerlink" href="#gummy-properties-and-methods-related-to-monte-carlo-simulation" title="Permalink to this headline">¶</a></h2>
+<p>Gummy allows uncertainty propagation using Monte-Carlo simulation in
+addition to first order error propagation. Before using many of the
+properties and methods in this section, Monte-Carlo data must be
+generated by calling the <a class="reference internal" href="#sim">sim</a> method (to generate
+Monte-Carlo data for one gummy) or the <a class="reference internal" href="#simulate">simulate</a>
+static method (to generate Monte-Carlo data for one or more gummys).
+Note that these methods will erase all previous Monte-Carlo data from
+all gummys before generating new data. So if you want data available for
+multiple gummys use the <a class="reference internal" href="#simulate">simulate</a> static method
+rather than the <a class="reference internal" href="#sim">sim</a> method. A <code class="docutils literal"><span class="pre">NoSimulatedDataError</span></code>
+exception will be raised if no simulated data is available when a
+property is accessed or a method called that needs Monte-Carlo data.</p>
+<div class="section" id="gummy-properties-related-to-monte-carlo-simulation">
+<h3>gummy properties related to Monte-Carlo simulation<a class="headerlink" href="#gummy-properties-related-to-monte-carlo-simulation" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>xsim</strong>: (read-only) Gets the mean of the simulated data.</li>
+<li><strong>usim</strong>: (read-only) Gets the standard deviation of the simulated
+data.</li>
+<li><strong>cisim</strong>: (read-only) Gets a tuple giving the lower followed by the
+upper bound of the confidence interval calculated from the simulated
+data. The confidence level for the interval is equal to the
+<a class="reference internal" href="#p">p</a> property of the gummy. See the <em>cimethod</em> property
+for details on how the interval is calculated.</li>
+<li><strong>cimethod</strong>: ({&#8216;shortest&#8217;, &#8216;symmetric&#8217;})
+Gets or sets the method for calculating the confidence
+interval from the Monte-Carlo data. It can be set either to the
+string &#8216;shortest&#8217; or the string &#8216;symmetric&#8217; (the default is
+&#8216;shortest&#8217;). The &#8216;shortest&#8217; confidence interval will be taken
+to be the shortest interval that includes the desired fraction of the
+probability distribution. If the confidence interval is
+&#8216;symmetric&#8217;, then it will be set so that, for <em>n</em> Monte-Carlo
+samples and a coverage probability of <em>p</em>, <em>n</em>*(1-<em>p</em>)/2 samples
+lie below the lower limit of the confidence interval and the same
+number of samples lie above the upper limit of the confidence
+interval. This property can be set at the class or instance level.</li>
+<li><strong>Usim</strong>: (read-only) Gets the tuple: (<em>xsim</em> - <em>cisim</em>[0], <em>xsim</em>
++ <em>cisim</em>[1])</li>
+<li><strong>ksim</strong>: (read-only) Gets 0.5*(<em>Usim</em>[0] + <em>Usim</em>[1])/<em>usim</em>.</li>
+<li><strong>simdata</strong>: (read-only) Gets a <code class="docutils literal"><span class="pre">numpy.ndarray</span></code> containing the
+simulated data.</li>
+<li><strong>simsorted</strong>: (read-only) Gets a <code class="docutils literal"><span class="pre">numpy.ndarray</span></code> containing the
+simulated data sorted from smallest to largest.</li>
+<li><strong>distribution</strong>: (read-only) Gets the
+<a class="reference internal" href="#distribution">Distribution</a> sub-class instance representing the
+gummy. If the gummy was created as a result of mathematical
+operations involving other gummys, then the distribution will be an
+instance of the <code class="docutils literal"><span class="pre">Convolution</span></code> sub-class of
+<a class="reference internal" href="#distribution">Distribution</a>. For other gummys the distribution
+can be specified using the <em>x</em> parameter in the
+initializer. If <em>x</em> is not specified as a
+<a class="reference internal" href="#distribution">Distribution</a>, the distribution will be taken as
+either the <a class="reference internal" href="#normaldist">NormalDist</a> or <a class="reference internal" href="#tdist">TDist</a>
+sub-classes of <a class="reference internal" href="#distribution">Distribution</a>.</li>
+</ul>
+</div>
+<div class="section" id="gummy-methods-related-to-monte-carlo-simulation">
+<h3>gummy methods related to Monte-Carlo simulation<a class="headerlink" href="#gummy-methods-related-to-monte-carlo-simulation" title="Permalink to this headline">¶</a></h3>
+<ul class="simple" id="sim">
+<li><strong>sim(n=100000,ufrom=None)</strong>: Generates Monte-Carlo data for the
+calling gummy. Calling this method erases previously generated
+Monte-Carlo data for all gummys, so use the gummy.simulate
+staticmethod if you need Monte-Carlo data for several gummys
+simultaneously. <em>n</em> is the number of samples to generate. The default
+value for <em>n</em> is 100000. The <em>ufrom</em> keyword can be used to
+separately analyze various contributions to the uncertainty. If
+<em>ufrom</em> is specified, only the gummys referenced by <em>ufrom</em> will be
+allowed to vary and all other gummys will be held fixed. <em>ufrom</em> can
+be a gummy, a string referencing a <em>utype</em>, or a list containing
+gummys and (or) string references to utypes.</li>
+</ul>
+<ul id="simulate">
+<li><p class="first">static <strong>simulate(gummys,n=100000,ufrom=None)</strong>: Generates
+Monte-Carlo data for one or more gummys references by the parameter
+<em>gummys</em>. <em>gummys</em> can be can be a gummy, a string referencing a
+<em>utype</em>, or a list containing gummys and (or) string references to
+utypes. Calling this method erases previously generated Monte-Carlo
+data for all gummys. The <em>n</em> and <em>ufrom</em> parameters are the same as
+for the .sim method.</p>
+</li>
+<li><p class="first">static <strong>set_seed(seed)</strong>: Sets the seed for the
+<code class="docutils literal"><span class="pre">numpy.random.RandomState</span></code> object shared by all <code class="docutils literal"><span class="pre">Distribution</span></code>
+instances.</p>
+</li>
+<li><p class="first"><strong>hist(title=None, xlabel=None, p=None, show_p=True, title_style=None,
+mean_marker=True, mean_marker_options={}, ci_marker=True,
+ci_marker_options={}, hold=False, **plot_options)</strong>:
+Plots a histogram of the Monte-Carlo data for the gummy. Before
+calling this method either the .sim or .simulate method must be
+called to generate theMonte-Carlo data.</p>
+<p><strong>hist parameters</strong> (all are optional):</p>
+<ul class="simple">
+<li><strong>title</strong>: (str or None) A title for the plot. If this is omitted or
+set to None then a title will be generated using the gummy name
+(if it has one) and the mean value and confidence interval. The
+title will also give the standard deviation of the date. The
+formatting of the auto-generated title depends on the value of the
+title_style parameter.</li>
+<li><strong>xlabel</strong>: (str or None) A label for the horizontal axis of the plot.
+If this is omitted or set to None then a label will be generated
+using the name and unit of the gummy. If xlabel is None and the
+gummy has no name and a unit of one, then the horizontal axis will
+not be labeled.</li>
+<li><strong>p</strong>: (float between 0 and 1 or None) The probability for the
+confidence interval (as printed in the title and indicated by the
+ci_markers). If this is none then the value of the gummy.p
+property is used. The default is None.</li>
+<li><strong>show_p</strong>: (bool) Whether or not to show the level of confidence in
+the title if the title is auto-generated.</li>
+<li><strong>title_style</strong>: (str in
+{&#8216;pmsim&#8217;,&#8217;pmsimi&#8217;,&#8217;cisim&#8217;,&#8217;mcisym&#8217;,&#8217;xsim&#8217;,&#8217;xfsim&#8217;,
+&#8216;usim&#8217;,&#8217;ufsim&#8217;}) The style for displaying the value in the title.
+See the gummy.style property for details. It this is None or
+omitted then the value of the gummy.style property is used.</li>
+<li><strong>mean_marker</strong>: (bool) Whether or not to display a vertical line at
+the mean value (as given by gummy.xsim). The default is True.</li>
+<li><strong>mean_marker_options</strong>: (dict) A dictionary containing keywords to
+be passed to the pylab.axvline method which draws the mean marker.
+For example setting this to {&#8216;color&#8217;=&#8217;r&#8217;,&#8217;linewidth&#8217;=4} makes the
+mean marker red and with thickness of four points.</li>
+<li><strong>ci_marker</strong>: (bool) Whether or not to display vertical lines at the
+upper and lower limits of the confidence interval. The default is
+True.</li>
+<li><strong>ci_marker_options</strong>: (dict) A dictionary containing keywords to be
+passed to the pylab.axvline method which draws the confidence
+interval markers.</li>
+<li><strong>hold</strong>: (bool) If this is False pylab.show() is called before this
+method exits. If it is True pylab.show() is not called. The
+default is False.</li>
+<li><strong>plot_options</strong>: These are optional keyword arguments that are
+passed to the pylab.hist method. For example bins=50 overrides the
+default number of bins (100). For other options see the pylab.hist
+documentation.</li>
+</ul>
+</li>
+</ul>
+<ul id="covplot">
+<li><p class="first">static <strong>covplot(x, y, title=None, xlabel=None, ylabel=None, mean_marker=False,
+mean_marker_options={}, hold=False, **plot_options)</strong>:
+Creates scatter plot showing the covariance between
+two gummys.</p>
+<p><strong>covplot paramters</strong> (all but <em>x</em> and <em>y</em> are optional):</p>
+<ul class="simple">
+<li><strong>x</strong>: (gummy) The gummy to plot on the horizontal axis.</li>
+<li><strong>y</strong>: (gummy) The gummy to plot on the vertical axis.</li>
+<li><strong>title</strong>: (str or None) A title for the plot. If this is
+omitted or set to None then the correlation will be displayed as
+the title.</li>
+<li><strong>xlabel</strong>: (str or None) A label for the horizontal axis.
+If this is omitted or None then that axis will be labeled either
+&#8220;x&#8221; or with the <em>x</em> gummy&#8217;s unit.</li>
+<li><strong>ylabel</strong>: (str or None) A label for the vertical axis. If
+this is omitted or None then that axis will be labeled either &#8220;y&#8221;
+or with the <em>y</em> gummy&#8217;s unit.</li>
+<li><strong>mean_marker</strong>: (bool) Whether or not to display line markers at
+the mean values of <em>x</em> and <em>y</em>. The default is False.</li>
+<li><strong>mean_marker_options</strong>: (dict) A dictionary of options to be
+passed to the pylab.axvline and pylab.axhline methods that draw
+the mean_marker.</li>
+<li><strong>hold</strong>: (bool) If this is False pylab.show() is called before
+this method exits. If it is True pylab.show() is not called. The
+default is False.</li>
+<li><strong>plot_options</strong>: These are optional keyword arguments that are
+passed to the pylab.plot method. For example ms=0.1 decreases the
+size of the dots in the plot.</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="gummy-properties-and-methods-related-to-display-and-formatting">
+<h2>gummy properties and methods related to display and formatting<a class="headerlink" href="#gummy-properties-and-methods-related-to-display-and-formatting" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="gummy-formatting-properties-and-attributes">
+<h3>gummy formatting properties and attributes<a class="headerlink" href="#gummy-formatting-properties-and-attributes" title="Permalink to this headline">¶</a></h3>
+<p>All of these properties and attributes can be set at either the class or
+instance level.</p>
+<ul>
+<li><p class="first"><strong>style</strong>: Get or set the default display style for new gummys. This
+is a string with one of the following values:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">'pm'</span></code> or <code class="docutils literal"><span class="pre">'+-'</span></code> may give, e.g. in ascii format
+<code class="docutils literal"><span class="pre">(1.00</span> <span class="pre">+/-</span> <span class="pre">0.12)e-12</span> <span class="pre">cm</span></code></li>
+<li><code class="docutils literal"><span class="pre">'pmi'</span></code> or <code class="docutils literal"><span class="pre">'+-i'</span></code> gives e.g. <code class="docutils literal"><span class="pre">1.00e-12</span> <span class="pre">cm</span> <span class="pre">+/-</span> <span class="pre">1.2e-13</span> <span class="pre">cm</span></code></li>
+<li><code class="docutils literal"><span class="pre">'concise'</span></code> or <code class="docutils literal"><span class="pre">'()'</span></code> gives e.g. <code class="docutils literal"><span class="pre">1.00(12)e-12</span> <span class="pre">cm</span></code></li>
+<li><code class="docutils literal"><span class="pre">'ueq'</span></code> or <code class="docutils literal"><span class="pre">'u</span> <span class="pre">equals'</span></code> gives e.g.
+<code class="docutils literal"><span class="pre">1.00e-12</span> <span class="pre">cm</span> <span class="pre">with</span> <span class="pre">u</span> <span class="pre">=</span> <span class="pre">1.2e-13</span> <span class="pre">cm</span></code></li>
+<li><code class="docutils literal"><span class="pre">'x'</span></code> or <code class="docutils literal"><span class="pre">'x</span> <span class="pre">only'</span></code> gives e.g. <code class="docutils literal"><span class="pre">1.00e-12</span> <span class="pre">cm</span></code></li>
+<li><code class="docutils literal"><span class="pre">'xf'</span></code> gives e.g. <code class="docutils literal"><span class="pre">1.00e-12</span></code></li>
+<li><code class="docutils literal"><span class="pre">'u'</span></code> or <code class="docutils literal"><span class="pre">'u</span> <span class="pre">only'</span></code> gives <code class="docutils literal"><span class="pre">1.2e-13</span> <span class="pre">cm</span></code></li>
+<li><code class="docutils literal"><span class="pre">'uf'</span></code> gives <code class="docutils literal"><span class="pre">1.2e-13</span></code></li>
+</ul>
+<p>The following styles display a mean and confidence interval based on
+data from a Monte-Carlo simulation (if no simulated data is available
+the string <code class="docutils literal"><span class="pre">'no</span> <span class="pre">simulated</span> <span class="pre">data'</span></code> is returned):</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">'pmsim'</span></code> gives e.g. <code class="docutils literal"><span class="pre">(1.01</span> <span class="pre">+</span> <span class="pre">0.11</span> <span class="pre">-</span> <span class="pre">0.13)e-12</span> <span class="pre">cm</span></code></li>
+<li><code class="docutils literal"><span class="pre">'pmsimi'</span></code> gives e.g. <code class="docutils literal"><span class="pre">1.01e-12</span> <span class="pre">cm</span> <span class="pre">+</span> <span class="pre">1.1e-13</span> <span class="pre">cm</span> <span class="pre">-</span> <span class="pre">1.3e-11</span> <span class="pre">cm</span></code></li>
+<li><code class="docutils literal"><span class="pre">'mcisim'</span></code> gives e.g.
+<code class="docutils literal"><span class="pre">mean</span> <span class="pre">=</span> <span class="pre">1.01e-12</span> <span class="pre">cm,</span> <span class="pre">confidence</span> <span class="pre">interval</span> <span class="pre">=</span> <span class="pre">[8.8e-13</span> <span class="pre">cm,</span> <span class="pre">1.13e-12</span> <span class="pre">cm]</span></code></li>
+<li><code class="docutils literal"><span class="pre">'cisim'</span></code> gives e.g <code class="docutils literal"><span class="pre">[8.8e-13</span> <span class="pre">cm,</span> <span class="pre">1.13e-12</span> <span class="pre">cm]</span></code></li>
+<li><code class="docutils literal"><span class="pre">'usim'</span></code> gives the standard deviation e.g. <code class="docutils literal"><span class="pre">1.2e-13</span> <span class="pre">cm</span></code></li>
+<li><code class="docutils literal"><span class="pre">'ufsim'</span></code> gives the standard deviation e.g. <code class="docutils literal"><span class="pre">1.2e-13</span></code></li>
+</ul>
+<p>Note if uunit has been defined for the gummy instance, then concise
+style and pm style are not valid and the display will default to pmi
+style.</p>
+<p>The style can be set either at the class or the instance level.</p>
+</li>
+<li><p class="first"><strong>nsig</strong>: (int) This number of significant figures to display for
+the uncertainty. The default is 2. This can be set at the class or
+instance level.  If nsig is set to -1, then the uncertainty will not
+be explicitly printed but the x value will be rounded so that the
+expanded uncertainty U is between 1 and 10 counts in the last
+digit.</p>
+</li>
+<li><p class="first"><strong>show_k</strong>: (bool or None) Determines whether the coverage
+factor (<em>k</em>) is printed along with the value and uncertianty. If this
+is set to None (the default value), then <em>k</em> will be displayed if
+the <a class="reference internal" href="#k">k</a> property or <em>k</em> parameter
+has been set to a value other than 1.</p>
+</li>
+<li><p class="first"><strong>show_p</strong>: (bool or None) Determines whether the level of
+confidence for the uncertainty (<em>p</em>) is printed along with the value
+and uncertainty. If this is set to None (the default value), then
+<em>p</em> will be displayed if the <a class="reference internal" href="#p">p</a> property or
+<em>p</em> parameter has been set.</p>
+</li>
+<li><p class="first"><strong>show_dof</strong>: (bool or None) Determines whether the
+effective number of degrees of freedom is printed along with the
+value and uncertainty. If this is set to None (the default
+value), then <em>dof</em> will be displayed if the value of the
+<a class="reference internal" href="#dof">dof</a> property is less than 10.</p>
+</li>
+<li><p class="first"><strong>show_name</strong>: (bool) If this is <code class="docutils literal"><span class="pre">True</span></code> and the
+<a class="reference internal" href="#name">name</a> of the gummy is not None then the gummy will
+be displayed as <code class="docutils literal"><span class="pre">[*name*]</span> <span class="pre">=</span> <span class="pre">...</span></code></p>
+</li>
+<li><p class="first"><strong>sci_notation</strong>: (bool or None) Determines whether the
+scientific notation will be used. If this is set to None (the
+default value) then scientific notation will be used if the value of
+the <a class="reference internal" href="#x">x</a> property has an exponent greater than the
+<em>sci_notation_high</em> attribute or an exponent less than
+<em>sci_notation_low</em> attribute.</p>
+</li>
+<li><p class="first"><strong>sci_notation_high</strong>: (int) See the <em>sci_notation</em> attribute,
+default is 7.</p>
+</li>
+<li><p class="first"><strong>sci_notation_low</strong>: (int) See the <em>sci_notation</em> attribute,
+default is -3.</p>
+</li>
+</ul>
+<ul class="simple" id="solidus">
+<li><strong>solidus</strong>: (bool) Determines whether unit are displayed with
+negative exponents (if <em>solidus</em> is <code class="docutils literal"><span class="pre">False</span></code>) or if a solidus
+(back-slash) is used to separate units in the numerator and
+denominator of a composite unit (when <em>solidus</em> is <code class="docutils literal"><span class="pre">True</span></code>, this is
+the default).</li>
+</ul>
+<ul class="simple" id="mulsep">
+<li><strong>mulsep</strong>: (bool) If <code class="docutils literal"><span class="pre">True</span></code> an asterix, &#8216;*&#8217;, or dot,
+&#8216;·&#8217;, is used to separate units in a composite unit, and a space is
+used if <em>mulsep</em> is <code class="docutils literal"><span class="pre">False</span></code>. The default is <code class="docutils literal"><span class="pre">False</span></code>.</li>
+</ul>
+<ul class="simple" id="slashaxis">
+<li><strong>slashaxis</strong>: (bool) Affects plots axes labeling where units are
+used. If <code class="docutils literal"><span class="pre">True</span></code> e.g. an axis may be labeled &#8216;Time / s&#8217; while if
+<code class="docutils literal"><span class="pre">False</span></code> it would be labeled &#8216;Time (s)&#8217;.</li>
+</ul>
+<ul class="simple" id="printer">
+<li><strong>printer</strong>: Get or set the prefered display printer. This is a
+string with one of the following values: &#8216;any&#8217;, &#8216;latex&#8217;,
+&#8216;html&#8217;, &#8216;unicode&#8217;, &#8216;ascii&#8217;, or &#8216;any_but_latex&#8217;.
+&#8216;any&#8217; will usually pick html or latex output when running in an
+IPython console or Jupyter notebook and unicode otherwise.
+&#8220;any_but_latex&#8221; will usually pick html when running in an IPython
+console or Jupyter notebook and unicode otherwise. &#8216;latex&#8217; and &#8216;html&#8217;
+are only available when running under IPython. If these printers are
+not available the display will default to &#8216;unicode&#8217;.</li>
+</ul>
+</div>
+<div class="section" id="gummy-display-methods">
+<h3>gummy display methods<a class="headerlink" href="#gummy-display-methods" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>latex(style=None, k=None, p=None, show_k=None, show_p=None,
+show_dof=None, show_name=None, nsig=None, solidus=None,
+mulsep=None)</strong>: Prints the gummy using LaTeX if this method is
+executed from a latex capable Ipython console or from a Jupyter or
+Ipython notebook. All parameters are optional. Any parameters that
+are not None override the corresponding attributes of the calling
+gummy.</li>
+<li><strong>html(style=None, k=None, p=None, show_k=None, show_p=None,
+show_dof=None, show_name=None, nsig=None, solidus=None,
+mulsep=None)</strong>: Prints the gummy using HTML if this method is
+executed from an Ipython console or from a Jupyter or Ipython
+notebook. All parameters are optional. Any parameters that are not
+None override the corresponding attributes of the calling gummy.</li>
+<li><strong>unicode(style=None, k=None, p=None, show_k=None, show_p=None,
+show_dof=None, show_name=None, nsig=None, solidus=None,
+mulsep=None)</strong>: Prints the gummy using unicode characters. Any
+parameters that are not None override the corresponding attributes of
+the calling gummy. If <code class="docutils literal"><span class="pre">g</span></code> is a gummy, then <code class="docutils literal"><span class="pre">g.unicode()</span></code> is equivalent to
+<code class="docutils literal"><span class="pre">print(g.tounicode(...))</span></code>.</li>
+<li><strong>ascii(style=None, k=None, p=None, show_k=None, show_p=None,
+show_dof=None, show_name=None, nsig=None, solidus=None,
+mulsep=None)</strong>: Prints the gummy using unicode characters. Any
+parameters that are not None override the corresponding attributes of
+the calling gummy. If <code class="docutils literal"><span class="pre">g</span></code> is a gummy, then <code class="docutils literal"><span class="pre">g.ascii()</span></code> equivalent to
+<code class="docutils literal"><span class="pre">print(g.toascii(...))</span></code>.</li>
+<li><strong>tostring(fmt=None, style=None, k=None, p=None, show_k=None,
+show_p=None, show_dof=None, show_name=None, nsig=None,
+solidus=None, mulsep=None)</strong>: Returns a string displaying the value
+of the gummy in the desired format. The fmt parameter is a string
+with the value in {&#8220;unicode&#8221;,&#8221;latex&#8221;,&#8221;html&#8221;,&#8221;ascii&#8221;} or None. fmt
+will default to &#8216;ascii&#8217; if self.printer is&#8217;ascii&#8217; or &#8216;unicode&#8217;
+otherwise. Any other parameters that are not None override the
+corresponding attributes of self.</li>
+<li><strong>tohtml(style=None, k=None, p=None, show_k=None, show_p=None,
+show_dof=None, show_name=None, nsig=None, solidus=None,
+mulsep=None)</strong>: Returns a string with the value as an html fragment.
+All parameters are optional. Any parameters that are not None
+override the corresponding attributes of the calling gummy. This is
+equivalent to the gummy.tostring method with the <em>fmt</em> parameter set
+to &#8216;html&#8217;.</li>
+<li><strong>tolatex(style=None, k=None, p=None, show_k=None, show_p=None,
+show_dof=None, show_name=None, nsig=None, solidus=None,
+mulsep=None)</strong>: Returns a string with the value as an LaTeX fragment.
+It is assumed that LaTeX is in math mode. All parameters are
+optional. Any parameters that are not None override the corresponding
+attributes of the calling gummy. This is equivalent to the
+gummy.tostring method with the <em>fmt</em> parameter set to &#8216;latex&#8217;.</li>
+<li><strong>toascii(style=None, k=None, p=None, show_k=None, show_p=None,
+show_dof=None, show_name=None, nsig=None, solidus=None,
+mulsep=None)</strong>: Returns a string with the value formatted so that
+only ASCII characters are used. All parameters are optional. Any
+parameters that are not None override the corresponding attributes of
+the calling gummy. This is equivalent to the gummy.tostring method
+with the <em>fmt</em> parameter set &#8216;ascii&#8217;.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="class-distribution-and-sub-classes">
+<span id="distribution"></span><h1>class Distribution and sub-classes<a class="headerlink" href="#class-distribution-and-sub-classes" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="docutils literal"><span class="pre">Distribution</span></code> class is the abstract base class for objects which
+represent the the probability distributions that the gummy Monte-Carlo
+samples are drawn from. Instances of these <code class="docutils literal"><span class="pre">Distributions</span></code> can used as
+the <em>x</em> parameter when creating gummys. The
+distributions below are built into the gummy package and custom
+distributions can also be defined by the user.</p>
+<ul class="simple" id="arcsindist">
+<li>class metrolopy.<strong>ArcSinDist(center=None, half_width=None,
+lower_limit=None, upper_limit=None)</strong>: Arcsin distribution, specify
+either <em>center</em> and <em>half_width</em> or <em>lower_limit</em> and <em>upper_limit</em>.</li>
+</ul>
+<ul class="simple" id="binomialdist">
+<li>class metrolopy. <strong>BinomialDist(n, p)</strong>: Binomial distribution with number of
+trials <em>n</em> and success probability <em>p</em>.</li>
+</ul>
+<ul class="simple" id="convolution">
+<li>class metrolopy.<strong>Convolution(func, d1, d2, ...)</strong>: Normally this Distribution
+is not created directly, but is the result of mathematical operations
+involving gummys. This sub-class represents distributions resulting from
+applying <em>func</em> to <em>d1</em>, <em>d2</em>, ... The
+function <em>func</em> takes an the same number of scalar arguments as there
+are <em>d1</em>, <em>d2</em>, ... parameters and returns a scalar. <em>d1</em>, <em>d2</em>, ... can
+be either instances of <code class="docutils literal"><span class="pre">Distribution</span></code> subclasses or scalar values.</li>
+</ul>
+<ul class="simple" id="curvlineartrapdist">
+<li>class metrolopy.<strong>CurvlinearTrapDist(center=None, half_width=None,
+limit_half_range=None, lower_limit=None, upper_limit=None)</strong>:
+Curvlinear trapezoidal
+distribution, <em>limit_half_range</em> is required. Also either <em>center</em> and
+<em>half_width</em> or <em>lower_limit</em> and <em>upper_limit</em> are required. This is
+intended to represent a variable that follows a uniform distribution but
+where the upper and lower limits are not exactly known and may vary by
+up to the <em>limit_half_range</em> from the given lower and upper limit
+values.</li>
+</ul>
+<ul id="exponentialdist">
+<li><p class="first">class metrolopy.<strong>ExponentialDist(scale=None, rate=None)</strong>:
+Exponential distribution with probability density function:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">;</span><span class="n">rate</span><span class="p">)</span> <span class="o">=</span> <span class="n">rate</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">rate</span><span class="o">*</span><span class="n">x</span><span class="p">)</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Specify either <em>scale</em> or <em>rate</em> (<em>scale</em> = 1/<em>rate</em>), but not both.</p>
+</li>
+</ul>
+<ul class="simple" id="gammadist">
+<li>class metrolopy.<strong>GammaDist(shape, scale)</strong>: Gamma distribution with the
+<em>shape</em> and <em>scale</em> parameters.</li>
+</ul>
+<ul class="simple">
+<li>class metrolopy.<strong>LaplaceDist(x, scale)</strong>: Laplace distribution with location
+parameter <em>x</em> and <em>scale</em> parameter.</li>
+</ul>
+<ul class="simple" id="lognormaldiat">
+<li>class metrolopy.<strong>LogNormalDist(mu=None,sigma=None)</strong>: Log-normal distribution
+where the logrithm of the random variable has mean <em>mu</em> and standard
+deviation <em>sigma</em>.</li>
+</ul>
+<ul class="simple" id="multinormaldist">
+<li>class metrolopy.<strong>MultiNormalDist(mean, cov)</strong>:
+Multivariate normal distribution. The parameter <em>mean</em> is a list of mean
+values for each dimension and <em>cov</em> is the variance-covariance matrix.</li>
+</ul>
+<ul class="simple" id="mutitdist">
+<li>class metrolopy.<strong>MultiTDist(mean, cov, dof)</strong>: Multivariate shifted and
+scaled Students&#8217;s <em>t</em> distribution. The parameter <em>mean</em> is a list of mean
+values for each dimension and <em>cov</em> is the variance-covariance matrix.
+The parameter <em>dof</em> is the number of degrees of freedom and must be
+scalar; all dimensions must have the same number of degrees of freedom.</li>
+</ul>
+<ul class="simple" id="multivariatedist">
+<li>class metrolopy.<strong>MultvariateDistribution(nd)</strong>: Abstract base class for
+mulit-variate distributions. <em>nd</em> is the number of dimensions.</li>
+</ul>
+<ul class="simple" id="normaldist">
+<li>class metrolopy.<strong>NormalDist(x, s)</strong>: Normal distribution with mean <em>x</em> and
+standard deviation <em>s</em>.</li>
+</ul>
+<ul class="simple" id="poissondist">
+<li>class metrolopy.<strong>PoissonDist(lam)</strong>: Poisson
+distribution with rate parameter <em>lam</em>.</li>
+</ul>
+<ul class="simple" id="tdist">
+<li>class metrolopy.<strong>TDist(x, s, dof)</strong>: Shifted and scaled Students&#8217;s <em>t</em>
+distribution with degrees of freedom <em>dof</em>, mean <em>x</em>, and scale factor <em>s</em>.</li>
+</ul>
+<ul class="simple" id="trapezoidaldist">
+<li>class metrolopy.<strong>TrapezoidalDist(lower_limit, upper_limit, top_to_base_ratio)</strong>:
+Trapezoidal distribution</li>
+</ul>
+<ul class="simple" id="triangulardist">
+<li>class metrolopy.<strong>TriangularDist(mode, half_width=None, left_width=None,
+right_width=None, lower_limit=None, upper_limit=None)</strong>:
+Triangular distribution. For a symmetric distribution specify
+<em>half_width</em>, otherwise specify two, and only two, of the parameters
+<em>left_width</em>, <em>right_width</em>, <em>lower_limit</em>, <em>upper_limit</em>.</li>
+</ul>
+<ul class="simple" id="uniformdist">
+<li>class metrolopy.<strong>UniformDist(center=None, half_width=None,
+lower_limit=None, upper_limit=None)</strong>:
+A uniform distribution. Specify two, and only two, of the parameters
+<em>center</em>, <em>half_width</em>, <em>lower_limit</em> and <em>upper_limit</em> .</li>
+</ul>
+<ul class="simple" id="weibulldist">
+<li>class metrolopy.<strong>WeibullDist(shape, scale)</strong>: Weibull distribution with
+<em>shape</em> and <em>scale</em> parameters.</li>
+</ul>
+<div class="section" id="custom-distributions">
+<h2>custom distributions<a class="headerlink" href="#custom-distributions" title="Permalink to this headline">¶</a></h2>
+<p>Custom distributions can be implemented by creating a class that
+inherits from the <code class="docutils literal"><span class="pre">Distribution</span></code> class and implements the following
+methods:</p>
+<ul class="simple">
+<li><strong>random(self, n=None)</strong>: Return a numpy array of <em>n</em> values
+drawn from the distribution. If <em>n</em> is None then a single scalar
+value should be returned. Preferably use, as a random number
+generator, the numpy <code class="docutils literal"><span class="pre">RandomState</span></code> object accessed with the
+<code class="docutils literal"><span class="pre">Distribution.random_state</span></code> static method.</li>
+<li><strong>x(self)</strong>: A scalar &#8220;center&#8221; of the distribution. This is used to
+get the <a class="reference internal" href="#x">x</a> value of a gummy defined with the
+distribution.</li>
+<li><strong>u(self)</strong>: A scalar &#8220;standard uncertainty&#8221; of the distribution
+(usually the standard deviation). This is used to get the
+<a class="reference internal" href="#lower-u"><span class="std std-ref">u</span></a> value of a gummy defined with the distribution.</li>
+</ul>
+<p>for example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ChiSquaredDist</span><span class="p">(</span><span class="n">Distribution</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dof</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dof</span> <span class="o">=</span> <span class="n">dof</span>
+
+    <span class="k">def</span> <span class="nf">random</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">random_state</span><span class="p">()</span><span class="o">.</span><span class="n">chisquare</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dof</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dof</span>
+
+    <span class="k">def</span> <span class="nf">u</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dof</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="custom-multi-variate-distributions">
+<h2>custom multi-variate distributions<a class="headerlink" href="#custom-multi-variate-distributions" title="Permalink to this headline">¶</a></h2>
+<p>To create a multi-variate distribution, inherit from the
+<code class="docutils literal"><span class="pre">MultivariateDistribution</span></code> class and define the following methods:</p>
+<ul class="simple">
+<li><strong>simulate(self, n)</strong>: Return a numpy array of <em>n</em> samples drawn
+from the distribution. Preferably use, as a random number generator,
+the numpy <code class="docutils literal"><span class="pre">RandomState</span></code> object accessed with the
+<code class="docutils literal"><span class="pre">Distribution.random_state()</span></code> static method.  For a distribution with
+number of dimensions <em>nd</em>, the shape of the returned array must be
+(<em>nd</em>, <em>n</em>).</li>
+<li><strong>x(self)</strong>: a list or array with the &#8220;center&#8221; of the distribution
+for each dimension (usually the mean of the distribution). This is
+used to get the <a class="reference internal" href="#x">x</a> values of gummys defined with the
+distribution.</li>
+<li><strong>u(self)</strong>: A list or array with &#8220;standard uncertainty&#8221; of the
+distribution (usually the standard deviation) for each dimension.
+This is used to get the <a class="reference internal" href="#lower-u"><span class="std std-ref">u</span></a> values of gummys defined
+with the distribution.</li>
+</ul>
+<p>and the following read-only property</p>
+<ul class="simple">
+<li><strong>cov</strong>: (read-only property) Returns the variance-covariance matrix</li>
+</ul>
+<p>The <code class="docutils literal"><span class="pre">__init__</span></code> function must also call the
+<code class="docutils literal"><span class="pre">MultivariateDistribution</span></code> <code class="docutils literal"><span class="pre">__init__</span></code> with the number of
+dimensions nd of the distribution e.g. <code class="docutils literal"><span class="pre">super().__init__(nd)</span></code>.</p>
+<p>for example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DirechletDist</span><span class="p">(</span><span class="n">MultivariateDistribution</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">alpha</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+
+        <span class="n">a0</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="n">a0</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">a0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">/</span><span class="n">a0</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">alpha</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_u</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">*</span><span class="p">(</span><span class="n">a0</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="n">b</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">alpha</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cov</span> <span class="o">=</span> <span class="p">[[</span><span class="n">ai</span><span class="o">*</span><span class="p">(</span><span class="n">a0</span> <span class="o">-</span> <span class="n">ai</span><span class="p">)</span><span class="o">/</span><span class="n">b</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span> <span class="k">else</span> <span class="o">-</span><span class="n">ai</span><span class="o">*</span><span class="n">aj</span><span class="o">/</span><span class="n">b</span>
+                      <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">ai</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">alpha</span><span class="p">)]</span>
+                      <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">aj</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">alpha</span><span class="p">)]</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simdata</span> <span class="o">=</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">random_state</span><span class="p">()</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
+
+    <span class="k">def</span> <span class="nf">u</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_u</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">cov</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cov</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="built-in-mathematical-functions">
+<span id="functions"></span><h1>built-in mathematical functions<a class="headerlink" href="#built-in-mathematical-functions" title="Permalink to this headline">¶</a></h1>
+<p>The following functions are installed as part of the gummy package can
+take gummy, jummy, or float arguments. Arguments must be
+dimensionless for transcendental functions.</p>
+<p>metrolopy.<strong>absolute(x)</strong>: equivalent to abs(x)</p>
+<p>metrolopy.<strong>add(x1,x2)</strong>: equivalent to z1 + x2</p>
+<p>metrolopy.<strong>angle(x)</strong>: returns the complex argument of x</p>
+<p>metrolopy.<strong>arccos(x)</strong>: inverse cosine of x</p>
+<p>metrolopy.<strong>arccosh(x)</strong>: inverse hyperbolic cosine of x</p>
+<p>metrolopy.<strong>arcsin(x)</strong>: inverse sine of x</p>
+<p>metrolopy.<strong>arcsinh(x)</strong>: inverse hyperbolic sine of x</p>
+<p>metrolopy.<strong>arctan(x)</strong>: inverse tangent of x</p>
+<p>metrolopy.<strong>arctanh(x)</strong>: inverse hyperbolic tangent of x</p>
+<p>metrolopy.<strong>arctan2(x,y)</strong>: arctan of x/y and giving the correct quadrant</p>
+<p>metrolopy.<strong>araound(x,n=0)</strong>: x rounded to n digits</p>
+<p>metrolopy.<strong>cbrt(x)</strong>: cube root of x</p>
+<p>metrolopy.<strong>ceil(x)</strong>: ceiling of x</p>
+<p>metrolopy.<strong>conj(x)</strong>: complex conjugate of x</p>
+<p>metrolopy.<strong>cos(x)</strong>: cosine of x</p>
+<p>metrolopy.<strong>cosh(x)</strong>: hyperbolic cosine of x</p>
+<p>metrolopy.<strong>cross(*args,**kwds)</strong>: alias for numpy.cross</p>
+<p>metrolopy.<strong>cumpord(*args,**kwds)</strong>: alias for numpy.cumprod</p>
+<p>metrolopy.<strong>cumsum(*args,**kwds)</strong>: alias for numpy.cumsum</p>
+<p>metrolopy.<strong>diff(*args,**kwds)</strong>: alias for numpy.diff</p>
+<p>metrolopy.<strong>divide(x1,x2)</strong>: equivalent to x1 / x2</p>
+<p>metrolopy.<strong>divmod(x1,x2)</strong>: returns (x1 // x2, x1 % x2)</p>
+<p>metrolopy.<strong>ediff1d(*args,**kwds)</strong>: alias for numpy.ediff1d</p>
+<p>metrolopy.<strong>exp(x)</strong>: natural exponential function</p>
+<p>metrolopy.<strong>expm1(x)</strong>: exp(x) - 1</p>
+<p>metrolopy.<strong>exp2(x)</strong>: exponential function with base 2</p>
+<p>metrolopy.<strong>fabs(x)</strong>: equivalent to the built-in python function abs</p>
+<p>metrolopy.<strong>fix(x)</strong>: returns x rounded towards zero</p>
+<p>metrolopy.<strong>floor(x)</strong>: floor of x</p>
+<p>metrolopy.<strong>floor_divide(x1,x2)</strong>: equivalent to x1 // x2</p>
+<p>metrolopy.<strong>gradient(*args,**kwds)</strong>: alias for numpy.gradient</p>
+<p>metrolopy.<strong>heaviside(x,h0)</strong>: Heavyside function: 0 for x &lt; 0, h0 at x
+== 0, and 1 for x &gt; 0</p>
+<p>metrolopy.<strong>imag(x)</strong>: returns the imaginary part of x</p>
+<p>metrolopy.<strong>log(x)</strong>: natural logarithm of x</p>
+<p>metrolopy.<strong>logaddexp(x,y)</strong>: loge(ex + ey)</p>
+<p>metrolopy.<strong>logaddexp2(x,y)</strong>: log2(2x + 2y)</p>
+<p>metrolopy.<strong>log1p(x)</strong>: natural logarithm of 1 + x</p>
+<p>metrolopy.<strong>log2(x)</strong>: logarithm base 2 of x</p>
+<p>metrolopy.<strong>log10(x)</strong>: logarithm base 10 of x</p>
+<p>metrolopy.<strong>mod(x)</strong>: x1 % x2</p>
+<p>metrolopy.<strong>modf(x1,x2)</strong>: returns (x1 % 1, x1 // 1)</p>
+<p>metrolopy.<strong>multiply(x1,x2)</strong>: equivalent to x1 * x2</p>
+<p>metrolopy.<strong>negative(x)</strong>: equivalent to -x</p>
+<p>metrolopy.<strong>power(x1,x2)</strong>: equivalent to x1**x2</p>
+<p>metrolopy.<strong>prod(*args,**kwds)</strong>: alias for numpy.prod</p>
+<p>metrolopy.<strong>real(x)</strong>: returns the real part of x</p>
+<p>metrolopy.<strong>reciprocal(x)</strong>: equivalent to 1/x</p>
+<p>metrolopy.<strong>remainder(x)</strong>: x1 % x2</p>
+<p>metrolopy.<strong>rint(x)</strong>: x rounded to the nearest integer value</p>
+<p>metrolopy.<strong>sin(x)</strong>: sine of x</p>
+<p>metrolopy.<strong>sign(x)</strong>: sign function, -1 for x &lt; 0, 0 for x == 0, and 1
+for x &gt; 0</p>
+<p>metrolopy.<strong>sinh(x)</strong>: hyperbolic sine of x</p>
+<p>metrolopy.<strong>square(x)</strong>: square of x</p>
+<p>metrolopy.<strong>sqrt(x)</strong>: the square root of x</p>
+<p>metrolopy.<strong>subtract(x1,x2)</strong>: equivalent to x1 - x2</p>
+<p>metrolopy.<strong>sum(*args,**kwds)</strong>: alias for numpy.sum</p>
+<p>metrolopy.<strong>tan(x)</strong>: tangent of x</p>
+<p>metrolopy.<strong>tanh(x)</strong>: hyperbolic tangent of x</p>
+<p>metrolopy.<strong>true_divide(x1,x2)</strong>: equivalent to x1 / x2</p>
+<p>metrolopy.<strong>trunc(x)</strong>: x rounded towards zero</p>
+</div>
+<div class="section" id="class-unit">
+<span id="id1"></span><h1>class Unit<a class="headerlink" href="#class-unit" title="Permalink to this headline">¶</a></h1>
+<p>The gummy class uses <code class="docutils literal"><span class="pre">Unit</span></code> instances to represent physical units. A
+number of units are loaded with the gummy package. See the
+<a class="reference internal" href="#search-units">search_units</a> function to get a list of all
+available units. Custom units can also be defined by creating instances
+of the <code class="docutils literal"><span class="pre">Unit</span></code> class or a sub-class. Though you
+can assign the instance to a variable, this is not necessary since units
+can be accessed using string names. E.g. we can define:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Unit</span><span class="p">(</span><span class="s1">&#39;weird meter&#39;</span><span class="p">,</span><span class="s1">&#39;wm&#39;</span><span class="p">,</span><span class="n">conversion</span><span class="o">=</span><span class="n">Conversion</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="mf">0.9144</span><span class="p">),</span><span class="n">add_symbol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="p">(</span><span class="mf">3.3</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;wm&#39;</span><span class="p">)</span>
+<span class="go">3.3 wm</span>
+</pre></div>
+</div>
+<p>class metrolopy.<strong>Unit(name, symbol, conversion=None,
+short_name=None, add_symbol=False,
+html_symbol=None, latex_symbol=None,
+ascii_symbol=None, description=None, order = -1)</strong>:
+Creating an instance of this class creates a representation of a
+physical unit and adds it to the unit library. Units already in the unit
+library or derived units made up of other units in the unit library can
+be accessed by passing a text string with the unit name or symbol to the
+static method <a class="reference internal" href="#unit-unit"><span class="std std-ref">unit</span></a> . (In most cases you
+do not need to call the <a class="reference internal" href="#unit-unit"><span class="std std-ref">unit</span></a> method directly; a gummy object
+will automatically call this method when a gummy property or method is
+passed a string that references a unit).</p>
+<div class="section" id="unit-parameters">
+<h2>Unit parameters<a class="headerlink" href="#unit-parameters" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first"><strong>name</strong>: (str) The name of the unit. The name can be used access
+the unit with the <a class="reference internal" href="#unit-unit"><span class="std std-ref">unit</span></a> method, but
+note that if you define a Unit with an identical name to a previously
+defined unit then the older name will be shadowed.</p>
+</li>
+<li><p class="first"><strong>symbol</strong>: (str) A unicode symbol used when displaying the unit.
+If the <em>add_symbol</em> parameter is set to <code class="docutils literal"><span class="pre">True</span></code>, then this symbol
+can also be used to access the unit with the
+<a class="reference internal" href="#unit-unit"><span class="std std-ref">unit</span></a> method. A gummy is normally
+printed with a space between the value and the unit, however this
+space is removed if the symbol string starts with a tab character.</p>
+</li>
+<li><p class="first"><strong>conversion</strong> (<code class="docutils literal"><span class="pre">Conversion</span></code> instance, optional, default is
+None) A <code class="docutils literal"><span class="pre">Conversion</span></code> instance representing the conversion to
+another unit. The conversion takes as its first argument the other
+unit and as the second argument the conversion factor (float or gummy)
+to the other unit, e.g.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Unit</span><span class="p">(</span><span class="s1">&#39;inch&#39;</span><span class="p">,</span><span class="s1">&#39;in&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Unit</span><span class="p">(</span><span class="s1">&#39;foot&#39;</span><span class="p">,</span><span class="s1">&#39;ft&#39;</span><span class="p">,</span><span class="n">conversion</span><span class="o">=</span><span class="n">Conversion</span><span class="p">(</span><span class="s1">&#39;in&#39;</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Unit</span><span class="p">(</span><span class="s1">&#39;yard&#39;</span><span class="p">,</span><span class="s1">&#39;yd&#39;</span><span class="p">,</span><span class="n">conversion</span><span class="o">=</span><span class="n">Conversion</span><span class="p">(</span><span class="s1">&#39;ft&#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Circular conversion chains must be avoided. This will generate a
+<code class="docutils literal"><span class="pre">CircularUnitConversionError</span></code> exception:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Unit</span><span class="p">(</span><span class="s1">&#39;inch&#39;</span><span class="p">,</span><span class="s1">&#39;in&#39;</span><span class="p">,</span><span class="n">conversion</span><span class="o">=</span><span class="n">Conversion</span><span class="p">(</span><span class="s1">&#39;yd&#39;</span><span class="p">,</span><span class="mi">1</span><span class="o">/</span><span class="mi">36</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Unit</span><span class="p">(</span><span class="s1">&#39;foot&#39;</span><span class="p">,</span><span class="s1">&#39;ft&#39;</span><span class="p">,</span><span class="n">conversion</span><span class="o">=</span><span class="n">Conversion</span><span class="p">(</span><span class="s1">&#39;in&#39;</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Unit</span><span class="p">(</span><span class="s1">&#39;yard&#39;</span><span class="p">,</span><span class="s1">&#39;yd&#39;</span><span class="p">,</span><span class="n">conversion</span><span class="o">=</span><span class="n">Conversion</span><span class="p">(</span><span class="s1">&#39;ft&#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The exception will not be raised until a unit conversion is attempted
+using one of these units and not immediately after the units are
+defined. An equivalent and allowable way of defining the first set of
+units above is:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Unit</span><span class="p">(</span><span class="s1">&#39;inch&#39;</span><span class="p">,</span><span class="s1">&#39;in&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Unit</span><span class="p">(</span><span class="s1">&#39;foot&#39;</span><span class="p">,</span><span class="s1">&#39;ft&#39;</span><span class="p">,</span><span class="n">conversion</span><span class="o">=</span><span class="n">Conversion</span><span class="p">(</span><span class="s1">&#39;in&#39;</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Unit</span><span class="p">(</span><span class="s1">&#39;yard&#39;</span><span class="p">,</span><span class="s1">&#39;yd&#39;</span><span class="p">,</span><span class="n">conversion</span><span class="o">=</span><span class="n">Conversion</span><span class="p">(</span><span class="s1">&#39;in&#39;</span><span class="p">,</span><span class="mi">36</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first"><strong>short_name</strong>: (str, optional, default is None) An
+alternate short name for the unit that can be used with the
+<a class="reference internal" href="#unit-unit"><span class="std std-ref">unit</span></a> method.</p>
+</li>
+<li><p class="first"><strong>add_symbol</strong>: (bool, optional, default is <code class="docutils literal"><span class="pre">False</span></code>) If this
+is <code class="docutils literal"><span class="pre">True</span></code>, the symbol, in addition to the <em>name</em> and <em>short_name</em>
+can be used to look up the with the
+<a class="reference internal" href="#unit-unit"><span class="std std-ref">unit</span></a> method.</p>
+</li>
+<li><p class="first"><strong>html_symbol, latex_symbol, ascii_symbol</strong>: (str, optional,
+default is None): html, latex, and ascii versions of the symbol
+if they are different from the unicode representation of the symbol.
+A gummy is normally printed with a space between the value and the
+unit, however this space is removed if the symbol string starts with
+a tab character.</p>
+</li>
+<li><p class="first"><strong>description</strong>: (str, optional, default is None) A description
+of the unit. Words used in the description can be searched using the
+<a class="reference internal" href="#search-units">search_units</a> function.</p>
+</li>
+<li><p class="first"><strong>order</strong>: (int, default is -1) When composite units are printed, the
+symbols with the lowest <em>order</em> value will be printed to the left (unless
+this behavior is overridden with the <a class="reference internal" href="#unit-reorder"><span class="std std-ref">reorder</span></a> method).</p>
+</li>
+</ul>
+</div>
+<div class="section" id="unit-static-methods">
+<h2>Unit static methods<a class="headerlink" href="#unit-static-methods" title="Permalink to this headline">¶</a></h2>
+<ul class="simple" id="unit-unit">
+<li>static <strong>unit(text, exception=True)</strong>: This method is called whenever a
+string referencing a Unit is
+passed to a gummy property or method.  This method finds and returns a Unit
+instance from the Unit library. The parameter <em>text</em> may be a string representing
+the unit. The string can contain the name, short name or (if the unit
+was created with <em>add_symbol</em> set to <code class="docutils literal"><span class="pre">True</span></code>) the symbol of the unit.
+This parameter may also be a combination of names and/or symbols of
+several different units.
+Spaces or the character &#8216;*&#8217; represent multiplication, the character
+&#8216;/&#8217; represents division and the string &#8216;**&#8217; represents the power
+operator.  For example txt can be: <code class="docutils literal"><span class="pre">'kg</span> <span class="pre">m**2/s'</span></code> or equivalently
+<code class="docutils literal"><span class="pre">'kilogram*metre*metre*second**-1'</span></code> or <code class="docutils literal"><span class="pre">'(kg/s)*m**2'</span></code>. If a unit
+name contains a space, &#8216;*&#8217; or &#8216;/&#8217; character then the name must be
+enclosed in square brackets, e.g: <code class="docutils literal"><span class="pre">'[light</span> <span class="pre">year]'</span></code>. If <em>text</em> is a
+Unit instance, then that instance is returned.  If <em>text</em> is the integer
+1 or the string <code class="docutils literal"><span class="pre">'1'</span></code>, then the instance <em>one</em> is returned.
+If the parameter <em>exception</em> is True a <code class="docutils literal"><span class="pre">UnitNotFoundError</span></code> or
+<code class="docutils literal"><span class="pre">UnitLibError</span></code> is raised if a unit is not found that matches
+<em>text</em>. If the parameter <em>exception</em> is False and a unit is not found, then this
+method returns <code class="docutils literal"><span class="pre">None</span></code> without raising an exception. The default is
+<code class="docutils literal"><span class="pre">True</span></code>.</li>
+</ul>
+<ul id="unit-reorder">
+<li><p class="first">static <strong>reorder(txt)</strong>: This changes the order in which the symbols of
+composite derived units are printed. For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Unit</span><span class="o">.</span><span class="n">unit</span><span class="p">(</span><span class="s1">&#39;ft lb&#39;</span><span class="p">))</span>
+<span class="go">ft lb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Unit</span><span class="o">.</span><span class="n">unit</span><span class="p">(</span><span class="s1">&#39;lb ft&#39;</span><span class="p">))</span>  <span class="c1">#This is the same unit as above and prints identically</span>
+<span class="go">ft lb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Unit</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="s1">&#39;lb ft&#39;</span><span class="p">)</span>  <span class="c1">#Now the order will be changed when the unit is displayed</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Unit</span><span class="o">.</span><span class="n">unit</span><span class="p">(</span><span class="s1">&#39;ft lb&#39;</span><span class="p">))</span>
+<span class="go">lb ft</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">static <strong>alias(alias, unit)</strong>: Creates an alias (an alternate name) that can
+be used to reference a Unit. The parameter <em>alias</em> is a string
+containing the new alias. The parameter <em>unit</em> is a string
+referencing the Unit (or the Unit instance itself) that will be
+assigned the alias.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="unit-properties">
+<h2>Unit properties<a class="headerlink" href="#unit-properties" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><strong>aliases</strong>: (read-only) Returns a set of the unshadowed aliases of the unit.</li>
+<li><strong>shadowed_aliases</strong>: (read-only) Returns a set of any aliases that have
+been shadowed by other unit definitions.</li>
+<li><strong>is_dimensionless</strong>: (read-only) Returns <cite>True</cite> if a conversion exists
+between <cite>self</cite> and the Unit instance <cite>one</cite>, and <cite>False</cite> if not.</li>
+<li><strong>units</strong>: (read-only) Returns a list of the constituent units and their
+exponents, e.g. for kg m**2/s <em>units</em> would return [(kg, 1), (m, 2), (s, -1)].</li>
+</ul>
+</div>
+<div class="section" id="unit-sub-classes">
+<h2>Unit sub-classes<a class="headerlink" href="#unit-sub-classes" title="Permalink to this headline">¶</a></h2>
+<p>For examples of unit definitions using the following Unit sub-classes
+see the siunit.py and usunits.py modules in the gummy package</p>
+<ul>
+<li><p class="first">class metrolopy.<strong>PrefixedUnit</strong>: Creates a set of units with SI prefixes
+(..., kilo, mega, giga, ...).  For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">PrefixedUnit</span><span class="p">(</span><span class="s1">&#39;metre&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="n">additional_names</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;meter&#39;</span><span class="p">,),</span><span class="n">add_symbol</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+             <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;SI unit of length&#39;</span><span class="p">,</span>
+             <span class="n">base_description</span><span class="o">=</span><span class="s1">&#39;SI base unit of length&#39;</span><span class="p">)</span>
+
+<span class="n">PrefixedUnit</span><span class="p">(</span><span class="s1">&#39;inch&#39;</span><span class="p">,</span><span class="s1">&#39;in&#39;</span><span class="p">,</span><span class="n">Conversion</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="mf">0.0254</span><span class="p">),</span><span class="n">prefixes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;micro&#39;</span><span class="p">],</span>
+             <span class="n">add_symbol</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;unit of length&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The definition above for the metre generates a set of units using all of the
+SI prefixes.  But the prefixes key word is used with the inch definition so
+that only the inch and microinch are generated.</p>
+</li>
+<li><p class="first">class metrolopy.<strong>BinaryPrefixedUnit</strong>: Creates a set of unit with binary
+prefixes (..., kibi, mebi, gibi, ...)</p>
+</li>
+<li><p class="first">class metrolopy.<strong>NonlinearUnit</strong>: Abstract base class for <code class="docutils literal"><span class="pre">LogUnit</span></code> and
+<code class="docutils literal"><span class="pre">OffsetUnit</span></code></p>
+</li>
+<li><p class="first">class metrolopy.<strong>LogUnit</strong>: Generates logrithmic units (e.g. decibel or
+neper).  For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">LogUnit</span><span class="p">(</span><span class="s1">&#39;decibel sound pressure level&#39;</span><span class="p">,</span><span class="s1">&#39;dB&#39;</span><span class="p">,</span>
+        <span class="n">LogConversion</span><span class="p">(</span><span class="n">gummy</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;uPa&#39;</span><span class="p">),</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">),</span>
+        <span class="n">short_name</span><span class="o">=</span><span class="s1">&#39;dB(SPL)&#39;</span><span class="p">,</span><span class="n">add_symbol</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;sound pressure level in air&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The conversion is defined here with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">LogConversion</span><span class="p">(</span><span class="n">reference</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">,</span> <span class="n">log_base</span><span class="p">,</span> <span class="n">log_func</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>so that the conversion to the LogUnit from the <em>reference</em> unit is given by:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">multiplier</span><span class="o">*</span><span class="n">log_func</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">reference</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span>
+</pre></div>
+</div>
+<p>and the conversion back is given by:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">reference</span><span class="o">*</span><span class="n">log_base</span><span class="o">**</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">offset</span><span class="p">)</span><span class="o">/</span><span class="n">multiplier</span>
+</pre></div>
+</div>
+<p>gummys with a LogUnit may only be added or subtrated from gummys with that
+same unit.  gummys with a LogUnit may only be multiplied or divided by
+gummys with a linear unit.</p>
+</li>
+<li><p class="first">class metrolopy.<strong>OffsetUnit</strong>: Generated units with an offset origin
+(degree Celsius or degree Fahrenheit).  For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">OffsetUnit</span><span class="p">(</span><span class="s1">&#39;degree Fahrenheit&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\u00B0</span><span class="s1">F&#39;</span><span class="p">,</span> <span class="n">OffsetConversion</span><span class="p">(</span><span class="s1">&#39;degR&#39;</span><span class="p">,</span><span class="mf">459.67</span><span class="p">),</span>
+         <span class="n">latex_symbol</span><span class="o">=</span><span class="s1">&#39;^{\circ}F&#39;</span> <span class="p">,</span><span class="n">ascii_symbol</span><span class="o">=</span><span class="s1">&#39;degF&#39;</span><span class="p">,</span> <span class="n">add_symbol</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+         <span class="n">description</span><span class="o">=</span><span class="s1">&#39;unit of temperature&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The conversion is defined with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">OffsetConversion</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <em>unit</em> must be linear unit (with not offset origin) that differs from
+the OffsetUnit only by the offset.  In addition to the OffsetUnit, an
+_IntervalUnit is generated which has name equal to the OffsetUnit name with
+&#8216; interval&#8217; appended and &#8216;-i&#8217; appended to the short name or symbol alias.
+The _IntervalUnit appears when OffsetUnits are subtracted or when an
+OffsetUnit is used in a _CompositeUnit.  A gummy with an OffsetUnit may be
+added to another quanitity only if that quaitiy is a gummy with the
+corresponding _IntervalUnit.</p>
+</li>
+<li><p class="first">class metrolopy.<strong>_CompositeUnit</strong>:  Represents a derived unit made up
+of several Unit (or Unit sub-class) instances combined.</p>
+</li>
+<li><p class="first">class metrolopy.<strong>_One</strong>:  The instance of this class <em>one</em> represents
+the number 1 and is the default unit for a gummy.  Dimensionless units are
+defined as any Unit where a conversion to <em>one</em> exists.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="class-jummy">
+<span id="jummy"></span><h1>class jummy<a class="headerlink" href="#class-jummy" title="Permalink to this headline">¶</a></h1>
+<p>class
+metrolopy.<strong>jummy(real=None,imag=None,r=None,phi=None,cov=None,unit=one</strong></p>
+<p>A jummy object represents a complex valued quantity with gummy real and
+imaginary components.</p>
+<div class="section" id="jummy-parameters">
+<h2>jummy parameters<a class="headerlink" href="#jummy-parameters" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><strong>real,imag,r,phi</strong>: (float or gummy) The value may be specified
+in either Cartesian coordinates using the <em>real</em> and <em>imag</em>
+parameters or polar coordinates with the <em>r</em> and <em>phi</em> parameters.
+The pair <em>real</em>, <em>imag</em> or <em>r</em>, <em>phi</em> may both be gummy or both be
+float. If they are float then <em>cov</em> and <em>unit</em> may also be
+specified.</li>
+<li><strong>cov</strong>: (2 x 2 list, <code class="docutils literal"><span class="pre">tuple</span></code> or <code class="docutils literal"><span class="pre">numpy.ndarray</span></code> of
+float) The variance-covariance matrix for either the pair <em>real</em>,
+<em>imag</em> or the pair <em>r</em>, <em>phi</em>.</li>
+<li><strong>unit</strong>: (str or <code class="docutils literal"><span class="pre">Unit</span></code> or list or <code class="docutils literal"><span class="pre">tuple</span></code>, or
+<code class="docutils literal"><span class="pre">numpy.ndarray</span></code> of length 2 of str or <code class="docutils literal"><span class="pre">Unit</span></code>) Units for
+<em>real</em>, <em>imag</em> or <em>r</em>, <em>phi</em>. In the case that <em>real</em> and <em>imag</em> are
+specified with different units, there must exist a conversion between
+the two units. Units for <em>phi</em> must be dimensionless.</li>
+</ul>
+</div>
+<div class="section" id="jummy-properties">
+<h2>jummy properties<a class="headerlink" href="#jummy-properties" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><strong>x</strong>: (read-only) returns <code class="docutils literal"><span class="pre">complex(jummy.real.x,jummy.imag.x)</span></code></li>
+<li><strong>cov</strong>: (read-only) returns the variance-covariance matrix between
+<code class="docutils literal"><span class="pre">jummy.real</span></code> and <code class="docutils literal"><span class="pre">jummy.imag</span></code></li>
+<li><strong>real</strong>: (read-only) a gummy representing the real part of the value</li>
+<li><strong>imag</strong>: (read-only) a gummy representing the imaginary part of the
+value</li>
+<li><strong>unit</strong>: Gets or sets the units of jummy.real and jummy.imag. If the
+units of jummy.real are different from jummy.imag then a tuple of
+Unit and length 2 is returned. Otherwise a <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> instance
+is returned.</li>
+</ul>
+</div>
+<div class="section" id="jummy-methods">
+<h2>jummy methods<a class="headerlink" href="#jummy-methods" title="Permalink to this headline">¶</a></h2>
+<p>In addition to the methods below, the <a class="reference external" href="#gummy-display-methods">gummy class display
+methods</a> can also be used with the jummy
+class</p>
+<ul>
+<li><p class="first"><strong>conjugate()</strong>: returns the (jummy valued) complex conjugate</p>
+</li>
+<li><p class="first"><strong>angle()</strong> returns a gummy representing Arg(jummy)</p>
+</li>
+<li><p class="first"><strong>copy(self,formatting=True)</strong>: Returns a copy of the jummy. If the
+<em>formatting</em> parameter is <code class="docutils literal"><span class="pre">True</span></code> the display formatting information
+will be copied and if <code class="docutils literal"><span class="pre">False</span></code> the display formatting will be set to
+the default for a new jummy.</p>
+</li>
+<li><p class="first">classmethod <strong>apply(function, derivative, arg1, arg2, ...)</strong>: A classmethod that
+applies a function to one or more jummy objects propagating the
+uncertainty.</p>
+<p><strong>apply parameters</strong>:</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><strong>function</strong>: The the function to be applied. The function should
+take one or more float or <code class="docutils literal"><span class="pre">complex</span></code> arguments and return a
+float or <code class="docutils literal"><span class="pre">complex</span></code> value.</p>
+</li>
+<li><p class="first"><strong>derivative</strong>: The name of a second function that gives the
+derivatives with respect to the arguments of <em>function</em>. <em>derivative</em>
+should take an equal number of arguments as <em>function</em>. If <em>function</em>
+takes one argument <em>derivative</em> should return a float and if
+<em>function</em> takes more than one argument then derivative should return
+a <code class="docutils literal"><span class="pre">tuple</span></code>, list or <code class="docutils literal"><span class="pre">numpy.ndarray</span></code> of float that contains
+the derivatives with respect to each argument. The derivatives with
+respect to each argument may be real or complex values, in which case
+<em>function</em> is assumed to be holomorphic. Or the derivative may be a 2
+x 2 matrix of the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span> <span class="n">du</span><span class="o">/</span><span class="n">dx</span><span class="p">,</span> <span class="n">du</span><span class="o">/</span><span class="n">dy</span> <span class="p">],</span>
+ <span class="p">[</span> <span class="n">dv</span><span class="o">/</span><span class="n">dx</span><span class="p">,</span> <span class="n">dv</span><span class="o">/</span><span class="n">dy</span> <span class="p">]]</span>
+</pre></div>
+</div>
+<p>where function(x + j<em>y) = u + j</em>v.</p>
+</li>
+<li><p class="first">arg1, arg2, ...**: One or more arguments to which <em>function</em> will
+be applied. These arguments need not all be jummy objects; arguments
+such as floats will be taken to be constants with no uncertainty.
+They may also be numpy.ndarrays in which case the usual numpy
+broadcasting rules apply.</p>
+</li>
+</ul>
+<p><strong>apply returns</strong>:  If none of the arguments <em>arg1</em>, <em>arg2</em>, ... are gummy
+or jummy then the
+return value is the same type as the return value of <em>function</em>.
+Otherwise apply returns either a gummy or a jummy depending on whether
+<em>function</em> has a float or a complex return value.</p>
+</div></blockquote>
+</li>
+<li><p class="first">classmethod <strong>napply(function, arg1, arg2, ...)</strong>: A classmethod that applies a
+function to one or more jummy objects propagating the uncertainty.
+This method is similar to <code class="docutils literal"><span class="pre">jummy.apply</span></code> except that the derivatives
+are computed numerically so a derivative function does not need to be
+supplied.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="curve-fitting">
+<h1>curve fitting<a class="headerlink" href="#curve-fitting" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="class-fit">
+<span id="fit"></span><h2>class Fit<a class="headerlink" href="#class-fit" title="Permalink to this headline">¶</a></h2>
+<p>class metrolopy.<strong>Fit(x, y=None, f=None, p0=None, ux=None, uy=None,
+sigma_is_known=True, xunit=None, yunit=None, solver=None,
+maxiter=None, nprop=False, **keywords)</strong></p>
+<p>A class for performing non-linear fitting. The fit function may be
+passed in the parameter <em>f</em> or may be specified by sub-classing <code class="docutils literal"><span class="pre">Fit</span></code>
+and overriding the <a class="reference internal" href="#f">f</a> method.</p>
+<div class="section" id="fit-parameters">
+<h3>Fit parameters<a class="headerlink" href="#fit-parameters" title="Permalink to this headline">¶</a></h3>
+<p>All parameters except x are optional</p>
+<ul>
+<li><p class="first"><strong>x</strong>: The x-coordinates of the data. This is a list or
+numpy.ndarray of floats or gummys (all point must be of the same
+type, floats and gummys may not be mixed). The x-coordinates may be
+one dimensional or may be multi-dimensional. For d-dimensional
+coordinates with (with N total data points) this parameter should be
+of the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">x1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x1</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">...</span> <span class="p">,</span> <span class="n">x1</span><span class="p">[</span><span class="n">N</span><span class="p">]],</span>
+ <span class="p">[</span><span class="n">x2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x2</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">...</span> <span class="p">,</span> <span class="n">x2</span><span class="p">[</span><span class="n">N</span><span class="p">]],</span>
+ <span class="o">.</span>
+ <span class="o">.</span>
+ <span class="o">.</span>
+ <span class="p">[</span><span class="n">xd</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">xd</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">...</span> <span class="p">,</span> <span class="n">xd</span><span class="p">[</span><span class="n">N</span><span class="p">]]]</span>
+</pre></div>
+</div>
+<p>If gummys are given, then the must be dimensionless unless the
+get_puints method is implemented in a subclass.</p>
+</li>
+<li><p class="first"><strong>y</strong>: The y-coordinates of the data (shape and type requirements are
+the same as for the x-coordinates). This may be omitted only if the
+odr solver is used.</p>
+</li>
+<li><p class="first"><strong>f</strong>: The fit function. For d dimensional x-coordinates and k fit
+parameters it should be of the form f(x1,x2,...,xd,p1,p2,...,pk) and
+return a float or (if <em>y</em> is multi-dimensional) a list or array of
+floats. This parameter is required unless the f method is overridden
+in a subclass.</p>
+</li>
+<li><p class="first"><strong>p0</strong>: (list or numpy.ndarray of float) The inital
+values for the fit parameters. This parameter is required unless the
+get_p0 method is overridden in a subclass.</p>
+</li>
+<li><p class="first"><strong>ux</strong>: (float or list or numpy.ndarray of float)
+Uncertainty in the x values. This should not be specified if the <em>x</em>
+argument contains gummys. If <em>ux</em> is specified then only the odr
+solver may be used. The default is None.</p>
+</li>
+<li><p class="first"><strong>uy</strong>: (float or list or numpy.ndarray of float)
+Uncertainty in the y values. This should not be specified if the y
+argument contains gummys. The default is None.</p>
+</li>
+<li><p class="first"><strong>sigma_is_known</strong>: (bool) If this is <code class="docutils literal"><span class="pre">True</span></code> then any
+uncertainties in the data (either as gummys in the <em>x</em> or <em>y</em> values
+or in the <em>ux</em> or <em>uy</em> parameters) are used to calculate the
+uncertainties in the fit. Otherwise, the uncertainties are based on
+the standard deviation of the residuals and the uncertainties in the
+data are used only for weighting the data points. This parameter is
+ignored if <em>nprop</em> is True.</p>
+</li>
+<li><p class="first"><strong>xunits</strong>, <strong>yunits</strong> (str, default None) units for the x
+and y coordinates. These should not be specified if the <em>x</em> and <em>y</em>
+parameters contain gummys. These may only be specified if the
+get_punits method is overridden in a subclass.</p>
+</li>
+<li><p class="first"><strong>solver</strong>: ({&#8216;nls&#8217; , &#8216;odr&#8217;, None}) If
+<em>solver</em> = &#8216;nls&#8217; then scipy.optimize.leastsq is used to perform the
+fit. If <em>solver</em> = &#8216;odr&#8217; then scipy.odr is used. &#8216;nls&#8217; may not be
+used if the y-coordinate is None or multi-dimensional or if there is
+uncertainty in the x-coordinates. If this is None, then &#8216;nls&#8217; will be
+used when possible. Any keyword parameters not recognized by <code class="docutils literal"><span class="pre">Fit</span></code>
+will be passed to the solver.</p>
+</li>
+<li><p class="first"><strong>maxiter</strong>: (int) The maximum number of iterations that the
+solver may use. f this is None or omitted then the default value for
+the solver will be used.</p>
+</li>
+<li><p class="first"><strong>nprop</strong>: (bool, default <code class="docutils literal"><span class="pre">False</span></code>) If this is <code class="docutils literal"><span class="pre">True</span></code> then
+uncertainties in the fit will be numerically calculated by varying
+each data point. This will not work if there are more than a few data
+points or if the fit is not very stable. If this is <code class="docutils literal"><span class="pre">False</span></code> than
+the covariance matrix generated by the solver will be used to
+calculate the uncertainties.</p>
+</li>
+<li><p class="first"><strong>other keywords</strong>: Any additional keyword parameters will be passed
+to the solver.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="fit-properties">
+<h3>Fit properties<a class="headerlink" href="#fit-properties" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>p</strong>: (read-only, list of gummy) The fitted values for the fit
+function parameters as correlated gummys</li>
+<li><strong>pf</strong>: (read-only, list of float) The fitted values for the
+fit function parameters as floats</li>
+<li><strong>res</strong>: (read-only, numpy.ndarray of float ) the fit residuals</li>
+<li><strong>s</strong>: (read-only,float) the standard deviation (or, when there
+are uncertainties for the input data, the square root of the reduced
+chi-squared) of the residuals</li>
+<li><strong>cov</strong>: (read-only, numpy.ndarray) the covariance matrix
+generated by the solver</li>
+<li><strong>fit_output</strong>: (read-only) the raw output of the solver</li>
+<li><strong>x</strong>: (read-only, numpy.ndarray of float or of gummy)
+numpy array of the x-coordinates of the data.</li>
+<li><strong>xf</strong>: (read-only, numpy.ndarray of float) numpy array of the
+x-coordinates of the data as floats</li>
+<li><strong>xdim</strong>: (read-only,int) the dimension of the x-coordinates</li>
+<li><strong>ux</strong>: (read-only, float, numpy.ndarray of float or
+None): uncertainties in the x-coordinates</li>
+<li><strong>y</strong>: (read-only, numpy.ndarray of float or of gummy)
+numpy array of the y-coordinates of the data.</li>
+<li><strong>yf</strong>: (read-only, numpy.ndarray of float) numpy array of the
+yx-coordinates of the data as floats</li>
+<li><strong>ydim</strong>: (read-only,int) the dimension of the y-coordinates</li>
+<li><strong>uy</strong>: (read-only, float, numpy.ndarray of float or
+None): uncertainties in they-coordinates</li>
+<li><strong>count</strong>: (read-only, int) the number of data points</li>
+<li><strong>p0</strong>: (read-only, list of float) The initial values for the
+fit function parameters</li>
+<li><strong>solver</strong>: (read-only, str) the solver used</li>
+<li><strong>punits</strong>: (read-only, list of <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a>) the units of
+the fit parameters</li>
+<li><strong>nparam</strong>: (read-only, int) the number of fit parameters</li>
+</ul>
+</div>
+<div class="section" id="fit-methods">
+<h3>Fit methods<a class="headerlink" href="#fit-methods" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>ypred(x1,x2,...)</strong>: Takes xdim floats and returns a gummy
+representing the predicted value at that x-coordinate.</p>
+</li>
+<li><p class="first"><strong>ypredf(x1,x2,...)</strong>: Takes xdim floats and returns a float giving
+the predicted value at that x-coordinate.</p>
+</li>
+<li><p class="first"><strong>plot(data_format=&#8217;ko&#8217;, data_options={}, show_data=True,
+error_bars=True, error_bar_k=1, fit_format=&#8217;k-&#8216;, fit_options={},
+show_fit=True, cik=None, cip=None, ciformat=&#8217;g-&#8216;, cioptions={},
+clk=None, clp=None, clformat=&#8217;r-&#8216;, cloptions = {}, xmin=None,
+xmax=None, xlabel=None, ylabel=None, hold=False,
+plot_points=None)</strong>: plots the data (only available if <em>x</em> and <em>y</em> are
+one-dimensional)</p>
+<p><strong>plot parameters</strong> (all parameters are optional):</p>
+<ul class="simple">
+<li><strong>data_format</strong>: (str) The format string passed to pylab.plot
+or pylab.errorbar when plotting the data points. The default is
+&#8216;ko&#8217;.</li>
+<li><strong>data_options</strong>: (dict) A dictionary containg key words that
+are passed to pylab.plot or pylab.errorbar when plotting the data
+points.</li>
+<li><strong>show_data</strong>: (bool) Whether or not to plot the data points.
+The default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
+<li><strong>error_bars</strong>: (bool) Whether or not to plot error bars on
+the data points (if uncertainty values were defined for the data).
+The default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
+<li><strong>error_bar_k</strong>: (float or int) Coverage factor for the
+error bars. The length of the error bars are determined by
+multiplying the standard uncertainty for each data point by this
+quantity. The default value is 1.</li>
+<li><strong>fit_format</strong>: (str) The format string passed to pylab.plot
+or pylab.errorbar when plotting the fitted curve. The default is
+&#8216;k-&#8216;.</li>
+<li><strong>fit_options</strong>: (dict) A dictionary containg key words that
+are passed to pylab.plot or pylab.errorbar when plotting the
+fitted curve.</li>
+<li><strong>show_fit</strong>: (bool) Whether or not to plot the fitted curve.
+The default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
+<li><strong>xmin</strong> and <strong>xmax</strong>: (float) The lower and upper limits of
+the fitted, confidence interval and control limit curves. If this
+is None, the limits are equal to x1 +/- (x2 -
+x1)*Fit.over_plot where x1 is the x value of the first data
+point, x2 is the x value of the last data point and Fit.over_plot
+is an attribute of the Fit object with default value 0.05.</li>
+<li><strong>xlabel</strong> and <strong>ylabel</strong>: (str) Labels for the x and y axes.
+If units are defined for the x or y axes, the unit symbol will be
+added to the end of the labels defined here. If these are set to
+None, then the values of the <code class="docutils literal"><span class="pre">Fit.xlabel</span></code> and <code class="docutils literal"><span class="pre">Fit.ylabel</span></code>
+attributes will be used. The default is None.</li>
+<li><strong>plot_points</strong>: (int) The number of points to use in each
+curve when plotting the fit, confidence interval, and control
+limit curves. If this is set to None, then the value of the
+Fit.plot_points attribute will be used, which has a default value
+of 100.</li>
+<li><strong>hold</strong>: (bool) If hold is <code class="docutils literal"><span class="pre">False</span></code> then <code class="docutils literal"><span class="pre">pylab.show()</span></code> is
+executed just before this function returns.</li>
+<li><strong>cik</strong>: (float or None) Coverage factor for the
+uncertainty bands in the plot. If <em>cik</em> and <em>cip</em> are None (
+the default values) then uncertainty bands will not be shown. Do
+not specify both <em>cik</em> and <em>cip</em>.</li>
+<li><strong>cip</strong>: (float or None) Confidence level for the
+uncertainty bands in the plot. If <em>cik</em> and <em>cip</em> are None (
+the default values) then uncertainty bands will not be shown. Do
+not specify both <em>cik</em> and <em>cip</em>.</li>
+<li><strong>ciformat</strong>: (str, default is &#8216;g-&#8216;) Format string passes
+to the pylab.plot command that plots the uncertainty bands.</li>
+<li><strong>cioptions</strong>: (dict) Keywork options passed to the pylab.plot
+command that plots the uncertainty bands.</li>
+<li><strong>clk</strong>,<strong>clp</strong>,<strong>clformat</strong>, and <strong>cloptions</strong>: Control limit
+options, same as above for the uncertainty bands. The control
+limit band is the control limit coverage factor multiplied by the
+RSS of the fit uncertainty and the standard deviation of the
+residuals.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="fit-abstract-methods">
+<h3>Fit abstract methods<a class="headerlink" href="#fit-abstract-methods" title="Permalink to this headline">¶</a></h3>
+<p>These methods may be overridden when sub-classing <code class="docutils literal"><span class="pre">Fit</span></code></p>
+<ul id="f">
+<li><p class="first"><strong>f(self,x1,x2,...,xd,p1,p2,...,pk)</strong>: The fit function. The
+function to fit. It must either have signature f(self,x,p1,p2,...,pn)
+where there are p1 to pn are the n fit parameters and the independent
+variable <em>x</em> has one dimension, or f(self,x1,x2,...,xm,p1,p2,...,pn)
+where the independent variable x has m dimensions at each
+observation. <em>f</em> should return either a float or a 1-d array of
+floats depending on the dimension of the response variable <em>y</em>.</p>
+</li>
+<li><p class="first"><strong>jac(self,x1,x2,...,xk,p1,p2,...,pk)</strong>: The Jacobian. This method
+may optionally be overridden in a derived class. If not overridden,
+this method throws a NotImplementedError() the derivatives will be
+calculated numerically.</p>
+<p>It must have the same signature as the <em>f</em> method and return a list
+of derivatives of the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">df</span><span class="o">/</span><span class="n">dx1</span><span class="p">,</span><span class="n">df</span><span class="o">/</span><span class="n">dx2</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">df</span><span class="o">/</span><span class="n">dp1</span><span class="p">,</span><span class="n">df</span><span class="o">/</span><span class="n">dp2</span><span class="p">,</span><span class="o">...</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>if f returns a scalar or:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">df1</span><span class="o">/</span><span class="n">dx1</span><span class="p">,</span><span class="n">df1</span><span class="o">/</span><span class="n">dx2</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">df1</span><span class="o">/</span><span class="n">dp1</span><span class="p">,</span><span class="n">df1</span><span class="o">/</span><span class="n">dp2</span><span class="p">,</span><span class="o">...</span><span class="p">],</span>
+ <span class="p">[</span><span class="n">df2</span><span class="o">/</span><span class="n">dx1</span><span class="p">,</span><span class="n">df2</span><span class="o">/</span><span class="n">dx2</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">df2</span><span class="o">/</span><span class="n">dp1</span><span class="p">,</span><span class="n">df2</span><span class="o">/</span><span class="n">dp2</span><span class="p">,</span><span class="o">...</span><span class="p">],</span><span class="o">...</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>if f returns a 1-d array [f1,f2,...].</p>
+</li>
+<li><p class="first"><strong>get_p0(self)</strong>: Returns an initial guess for the fit parameters
+based on the input <em>x</em> and <em>y</em> data. This is not required, but if it
+is not implemented then the p0 parameter is a required parameter for
+the <strong>init</strong> method.</p>
+</li>
+<li><p class="first"><strong>get_punits(self)</strong>: Returns a list units for the fit parameters.
+This is not required, but if it is not implemented then only float
+values or dimensionless gummys may be as the x and y parameters and
+the xunit and yunit parameters to the <strong>init</strong> method may not be
+used.</p>
+</li>
+<li><p class="first"><strong>funicode(self), flatex(self), fhtml(self)</strong>: Returns a str
+containing unicode, latex, and html representations of the fit
+function.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="sub-classes-of-fit-for-some-common-functions">
+<h2>sub-classes of Fit for some common functions<a class="headerlink" href="#sub-classes-of-fit-for-some-common-functions" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">metrolopy.<strong>PolyFit(x, y, deg=1, p0=None, ux=None, uy=None,
+sigma_is_known=True, xunit=None, yunit=None, solver=None,
+maxiter=None, nprop=False, **keywords)</strong>:  Fits the <em>x</em>, <em>y</em> data to a
+polynomial. In addition to the parameters
+for <a class="reference internal" href="#fit">Fit</a>, <code class="docutils literal"><span class="pre">PolyFit</span></code> takes the parameter <em>deg</em> which is
+the degree of the polynomial. The solver parameter can take the
+string <code class="docutils literal"><span class="pre">'ols'</span></code> in addition to the &#8216;odr&#8217; and &#8216;nls&#8217;
+solvers defined by class <code class="docutils literal"><span class="pre">Fit</span></code>. A linear
+fit algorithm, ols, will be used by default if <em>x</em> and <em>y</em> are one
+dimensional and there is no uncertainty in the x-values. The odr
+solver must be used if there is uncertainty in the x-values or if the
+y-coordinates are multi-dimensional. By the nonlinear least squares
+solver, nls, will be used by if <em>x</em> is multi-dimensional. Initial
+values <em>p0</em> may be specified if the nls or odr solvers are used, but
+are not required. Both the <em>x</em> and <em>y</em> data may have units.</p>
+</li>
+<li><p class="first">metrolopy.<strong>SinFit(x, y, p0=None, ux=None, uy=None,
+sigma_is_known=True, xunit=None, yunit=None, solver=None,
+maxiter=None, nprop=False, **keywords)</strong>: Fits the x,y data to a
+function of the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="#fit">Fit</a> class for the parameters, properties and methods of
+this class.  This class is pretty good at guessing initial parameters.</p>
+</li>
+<li><p class="first">metrolopy.<strong>ExpFit(x, y, p0=None, ux=None, uy=None,
+sigma_is_known=True, xunit=None, yunit=None, solver=None,
+maxiter=None, nprop=False, **keywords)</strong>: Fits the x,y data to a
+function of the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="#fit">Fit</a> class for the parameters, properties and methods of
+this class.</p>
+</li>
+<li><p class="first">metrolopy.<strong>DoubleExpFit(x, y, p0=None, ux=None, uy=None,
+sigma_is_known=True, xunit=None, yunit=None, solver=None,
+maxiter=None, nprop=False, **keywords)</strong>: Fits the x,y data to a
+function of the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="#fit">Fit</a> class for the parameters, properties and methods of
+this class.</p>
+</li>
+<li><p class="first">metrolopy.<strong>OneOverTFit(x, y, p0=None, ux=None, uy=None,
+sigma_is_known=True, xunit=None, yunit=None, solver=None,
+maxiter=None, nprop=False, **keywords)</strong>: Fits the x,y data to a
+function of the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">x</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="#fit">Fit</a> class for the parameters, properties and methods of
+this class.</p>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">MetroloPy</a></li>
+<li><a class="reference internal" href="#class-gummy">class gummy</a><ul>
+<li><a class="reference internal" href="#gummy-parameters">gummy parameters</a></li>
+<li><a class="reference internal" href="#basic-gummy-properties">basic gummy properties</a></li>
+<li><a class="reference internal" href="#basic-gummy-methods">basic gummy methods</a></li>
+<li><a class="reference internal" href="#arithmetic-operations-and-functions-involving-gummys">arithmetic operations and functions involving gummys</a><ul>
+<li><a class="reference internal" href="#gummy-methods-for-applying-numerical-functions">gummy methods for applying numerical functions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gummy-properties-and-methods-related-to-units-and-unit-conversion">gummy properties and methods related to units and unit conversion</a><ul>
+<li><a class="reference internal" href="#gummy-properties-related-to-units">gummy properties related to units</a></li>
+<li><a class="reference internal" href="#gummy-methods-related-to-units">gummy methods related to units</a></li>
+<li><a class="reference internal" href="#unit-search-function">unit search function</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gummy-properties-and-methods-related-to-monte-carlo-simulation">gummy properties and methods related to Monte-Carlo simulation</a><ul>
+<li><a class="reference internal" href="#gummy-properties-related-to-monte-carlo-simulation">gummy properties related to Monte-Carlo simulation</a></li>
+<li><a class="reference internal" href="#gummy-methods-related-to-monte-carlo-simulation">gummy methods related to Monte-Carlo simulation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gummy-properties-and-methods-related-to-display-and-formatting">gummy properties and methods related to display and formatting</a><ul>
+<li><a class="reference internal" href="#gummy-formatting-properties-and-attributes">gummy formatting properties and attributes</a></li>
+<li><a class="reference internal" href="#gummy-display-methods">gummy display methods</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#class-distribution-and-sub-classes">class Distribution and sub-classes</a><ul>
+<li><a class="reference internal" href="#custom-distributions">custom distributions</a></li>
+<li><a class="reference internal" href="#custom-multi-variate-distributions">custom multi-variate distributions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#built-in-mathematical-functions">built-in mathematical functions</a></li>
+<li><a class="reference internal" href="#class-unit">class Unit</a><ul>
+<li><a class="reference internal" href="#unit-parameters">Unit parameters</a></li>
+<li><a class="reference internal" href="#unit-static-methods">Unit static methods</a></li>
+<li><a class="reference internal" href="#unit-properties">Unit properties</a></li>
+<li><a class="reference internal" href="#unit-sub-classes">Unit sub-classes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#class-jummy">class jummy</a><ul>
+<li><a class="reference internal" href="#jummy-parameters">jummy parameters</a></li>
+<li><a class="reference internal" href="#jummy-properties">jummy properties</a></li>
+<li><a class="reference internal" href="#jummy-methods">jummy methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#curve-fitting">curve fitting</a><ul>
+<li><a class="reference internal" href="#class-fit">class Fit</a><ul>
+<li><a class="reference internal" href="#fit-parameters">Fit parameters</a></li>
+<li><a class="reference internal" href="#fit-properties">Fit properties</a></li>
+<li><a class="reference internal" href="#fit-methods">Fit methods</a></li>
+<li><a class="reference internal" href="#fit-abstract-methods">Fit abstract methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sub-classes-of-fit-for-some-common-functions">sub-classes of Fit for some common functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/hand_made_doc.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, National Research Council Canada.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>
