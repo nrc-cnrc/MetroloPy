@@ -37,4 +37,3 @@ MetroloPy can do much more including Monte-Carlo uncertainty propagation, genera
 
 * [a tutorial](https://nrc-cnrc.github.io/MetroloPy/_static/tutorial.html) (or  <a href="https://nrc-cnrc.github.io/MetroloPy/_downloads/tutorial.ipynb" download> download the tutorial as Jupyter notebook</a>)
 * [the documentation](https://nrc-cnrc.github.io/MetroloPy/)
-* [the issues page on GitHub](https://github.com/nrc-cnrc/Metrolopy/issues)
