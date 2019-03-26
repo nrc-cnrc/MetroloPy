@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>MetroloPy, the docs &#8212; metrolopy 0.5 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">metrolopy 0.5 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="toctree-wrapper compound">
+</div>
+<div class="section" id="metrolopy-the-docs">
+<h1>MetroloPy, the docs<a class="headerlink" href="#metrolopy-the-docs" title="Permalink to this headline">¶</a></h1>
+<p>tools for dealing with physical quantities:  uncertainty propagation and unit
+conversion</p>
+<div class="section" id="getting-started">
+<h2>getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>MetroloPy is a pure python package and requires Python 3 and the
+<a class="reference external" href="https://www.scipy.org/">SciPy</a> stack (NumPy, SciPy, Pandas, and IPython).
+It looks best in a <a class="reference external" href="https://jupyter.org/">Jupyter notebook</a>.</p>
+<p>Install MetroloPy with pip:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install metrolopy
+</pre></div>
+</div>
+<p>Physical quantities can then be represented in Python as <a class="reference external" href="hand_made_doc.html#class-gummy">gummy</a> objects:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">metrolopy</span> <span class="k">as</span> <span class="nn">uc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">gummy</span><span class="p">(</span><span class="mf">1.2345</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.0234</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;cm&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="go">1.234(23) cm</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">gummy</span><span class="p">(</span><span class="mf">3.034</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.174</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;mm&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">gummy</span><span class="p">(</span><span class="n">uc</span><span class="o">.</span><span class="n">UniformDist</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="mf">0.9345</span><span class="p">,</span><span class="n">half_width</span><span class="o">=</span><span class="mf">0.096</span><span class="p">),</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;N&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">f</span><span class="o">/</span><span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">b</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span>
+<span class="go">2.50(21) N/cm<sup>2</sup></span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;kPa&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">uunit</span> <span class="o">=</span> <span class="s1">&#39;%&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span>
+<span class="go">25.0 kPa &plusmn; 8.5%</span>
+</pre></div>
+</div><p>MetroloPy can do much more including <a class="reference external" href="_static/tutorial.html#Monte-Carlo-uncertainty-propagation">Monte-Carlo uncertainty propagation</a>,
+generating <a class="reference external" href="_static/tutorial.html#an-uncertainty-budget">uncertainty budget tables</a>, and <a class="reference external" href="_static/tutorial.html#curve-fitting">curve fitting</a>.  It can also handle
+<a class="reference external" href="_static/tutorial.html#expanded-uncertainty">expanded uncertainties</a>, <a class="reference external" href="_static/tutorial.html#degrees-of-freedom-and-uncertainty-types">degrees of freedom</a>, <a class="reference external" href="_static/tutorial.html#creating-correlated-gummys">correlated quantities</a>, and
+<a class="reference external" href="hand_made_doc.html#jummy">complex valued quantities</a>.</p>
+</div>
+<div class="section" id="further-reading">
+<h2>further reading<a class="headerlink" href="#further-reading" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="_static/tutorial.html">a tutorial</a> (or  <a class="reference download internal" href="_downloads/tutorial.ipynb" download=""><code class="xref download docutils literal"><span class="pre">download</span> <span class="pre">the</span> <span class="pre">tutorial</span> <span class="pre">as</span> <span class="pre">a</span> <span class="pre">Jupyter</span> <span class="pre">notebook</span></code></a>)</li>
+<li><a class="reference internal" href="hand_made_doc.html#hand-made-doc"><span class="std std-ref">the API documentation</span></a> (see the auto-generated docs below for an alternative set of documentation)</li>
+<li><a class="reference external" href="_static/units.html">a list of the measurement units built into MetroloPy</a></li>
+<li><a class="reference internal" href="todo.html#todo"><span class="std std-ref">package development and to do</span></a></li>
+<li><a class="reference external" href="https://github.com/nrc-cnrc/Metrolopy/issues">the issues page on GitHub</a></li>
+<li><a class="reference external" href="https://github.com/nrc-cnrc/Metrolopy/">the source code on GitHub</a></li>
+</ul>
+</div>
+<div class="section" id="the-auto-generated-docs-indices-and-tables">
+<h2>the auto-generated docs (indices and tables)<a class="headerlink" href="#the-auto-generated-docs-indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<p>These pages were automatically generated from the doc strings in the source
+code.  They are slightly more comprehensive but perhaps slightly more confusing
+than the handmade API docs referenced in the further reading section above.</p>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+<div class="section" id="where-did-the-name-for-the-gummy-class-come-from">
+<h2>Where did the name for the gummy class come from?<a class="headerlink" href="#where-did-the-name-for-the-gummy-class-come-from" title="Permalink to this headline">¶</a></h2>
+<p>The name comes from the
+<a class="reference external" href="https://www.bipm.org/en/publications/guides/gum.html">JGCM/ISO Guide to the Expression of Uncertainty in Measurement</a>
+which is also known as the GUM.  The GUM is the international standard used by
+metrology institutes and calibration labs for expressing and propagating
+measurement uncertainty.  The gummy object implements many of the
+recommendations outlined in the GUM.</p>
+<p>Other references of note are the
+<a class="reference external" href="https://www.bipm.org/en/measurement-units/rev-si/#communication">draft 9th edition of the SI Brochure</a>
+which contains the definitions of the SI units, and
+<a class="reference external" href="https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication1038.pdf">NIST Special Publication 1038</a>
+where many of the US customary units are defined.  Some physical constants
+used for unit definitions are from the
+<a class="reference external" href="http://www.codata.org/committees-and-groups/fundamental-physical-constants">2014 CODATA recommended values</a>
+and the
+<a class="reference external" href="http://maia.usno.navy.mil/NSFA/IAU2009_consts.html">IAU 2009 system of astronomical constants</a>.</p>
+</div>
+<div class="section" id="version-history">
+<h2>version history<a class="headerlink" href="#version-history" title="Permalink to this headline">¶</a></h2>
+<p>Version 0.5, built 26 March 2019, is the first public release.</p>
+</div>
+<div class="section" id="author">
+<h2>author<a class="headerlink" href="#author" title="Permalink to this headline">¶</a></h2>
+<p>Harold Parks, <a class="reference external" href="mailto:parksh&#37;&#52;&#48;nrc&#46;ca">parksh<span>&#64;</span>nrc<span>&#46;</span>ca</a>, National Research Council Canada</p>
+</div>
+<div class="section" id="license">
+<h2>license<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>MetroloPy is distributed as free software under the terms of the
+<a class="reference external" href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License version 3</a>.
+In practice, this license imposes
+no restriction on using MetroloPy. However, if you want to further convey
+verbatim or modified versions of the code you must do so under the same license
+terms. Please contact NRC if you wish to license MetroloPy under different
+terms.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">MetroloPy, the docs</a><ul>
+<li><a class="reference internal" href="#getting-started">getting started</a></li>
+<li><a class="reference internal" href="#further-reading">further reading</a></li>
+<li><a class="reference internal" href="#the-auto-generated-docs-indices-and-tables">the auto-generated docs (indices and tables)</a></li>
+<li><a class="reference internal" href="#where-did-the-name-for-the-gummy-class-come-from">Where did the name for the gummy class come from?</a></li>
+<li><a class="reference internal" href="#version-history">version history</a></li>
+<li><a class="reference internal" href="#author">author</a></li>
+<li><a class="reference internal" href="#license">license</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">metrolopy 0.5 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, National Research Council Canada.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>
