@@ -12,7 +12,7 @@ Install MetroloPy with pip:
 $ pip install metrolopy
 ```
 
-Physical quantities can then be represented in Python as `gummy` objects:
+Physical quantities can then be represented in Python as `gummy` objects with an uncertianty and (or) a unit:
 
 <pre><code>&gt;&gt;&gt; import metrolopy as uc
 &gt;&gt;&gt; a = uc.gummy(1.2345,u=0.0234,unit='cm')
