@@ -26,7 +26,8 @@ Install MetroloPy with pip::
 
     $ pip install metrolopy
 
-Physical quantities can then be represented in Python as `gummy`_ objects:
+Physical quantities can then be represented in Python as `gummy`_ objects
+with an uncertainty and (or) a unit:
 
 .. _gummy: hand_made_doc.html#class-gummy
 
@@ -116,7 +117,7 @@ and the
 version history
 ===============
 
-Version 0.5, built 26 March 2019, is the first public release.
+Version 0.5.0, built 26 March 2019, is the first public release.
 
 
 author
