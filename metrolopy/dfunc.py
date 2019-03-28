@@ -26,6 +26,7 @@ some support for numpy broadcasting for functions and operators.
 """
 
 import numpy as np
+from numbers import Real,Integral
 
 def _f_darctan2(x1,x2):
     return (x2/(x1**2 + x2**2),-x1/(x1**2 + x2**2))
@@ -39,12 +40,12 @@ def _f_dlogaddexp2(x1,x2):
            2**x2*np.log(2)/(2**x1 + 2**x2))
 
 def _f_heaviside(x,h0):
-    if not isinstance(h0,(int,np.integer,float,np.float)):
-        raise TypeError('h0 must be an int or float')
+    if not isinstance(h0,Real):
+        raise TypeError('h0 must be a real number')
     return x._apply(np.heaviside,0,x,h0)
 
 def _f_around(x,n=0):
-    if not isinstance(n,(int,np.integer)):
+    if not isinstance(n,Integral):
         raise TypeError('n must be an int')
     return x._nprnd(lambda y: np.around(y,n))
 

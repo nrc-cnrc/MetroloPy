@@ -923,7 +923,7 @@ gummy methods related to Monte-Carlo simulation
       the mean value (as given by gummy.xsim). The default is True.
 
    -  **mean_marker_options**: (dict) A dictionary containing keywords to
-      be passed to the pylab.axvline method which draws the mean marker.
+      be passed to the pyplot.axvline method which draws the mean marker.
       For example setting this to {'color'='r','linewidth'=4} makes the
       mean marker red and with thickness of four points.
 
@@ -932,16 +932,16 @@ gummy methods related to Monte-Carlo simulation
       True.
 
    -  **ci_marker_options**: (dict) A dictionary containing keywords to be
-      passed to the pylab.axvline method which draws the confidence
+      passed to the pyplot.axvline method which draws the confidence
       interval markers.
 
-   -  **hold**: (bool) If this is False pylab.show() is called before this
-      method exits. If it is True pylab.show() is not called. The
+   -  **hold**: (bool) If this is False pyplot.show() is called before this
+      method exits. If it is True pyplot.show() is not called. The
       default is False.
 
    -  **plot_options**: These are optional keyword arguments that are
-      passed to the pylab.hist method. For example bins=50 overrides the
-      default number of bins (100). For other options see the pylab.hist
+      passed to the pyplot.hist method. For example bins=50 overrides the
+      default number of bins (100). For other options see the pyplot.hist
       documentation.
 
 .. _covplot:
@@ -973,15 +973,15 @@ gummy methods related to Monte-Carlo simulation
       the mean values of *x* and *y*. The default is False.
 
    -  **mean_marker_options**: (dict) A dictionary of options to be
-      passed to the pylab.axvline and pylab.axhline methods that draw
+      passed to the pyplot.axvline and pyplot.axhline methods that draw
       the mean\_marker.
 
-   -  **hold**: (bool) If this is False pylab.show() is called before
-      this method exits. If it is True pylab.show() is not called. The
+   -  **hold**: (bool) If this is False pyplot.show() is called before
+      this method exits. If it is True pyplot.show() is not called. The
       default is False.
 
    -  **plot_options**: These are optional keyword arguments that are
-      passed to the pylab.plot method. For example ms=0.1 decreases the
+      passed to the pyplot.plot method. For example ms=0.1 decreases the
       size of the dots in the plot.
 
 gummy properties and methods related to display and formatting
@@ -2035,12 +2035,12 @@ Fit methods
 
    **plot parameters** (all parameters are optional):
    
-   -  **data\_format**: (str) The format string passed to pylab.plot
-      or pylab.errorbar when plotting the data points. The default is
+   -  **data\_format**: (str) The format string passed to pyplot.plot
+      or pyplot.errorbar when plotting the data points. The default is
       'ko'.
 
    -  **data\_options**: (dict) A dictionary containg key words that
-      are passed to pylab.plot or pylab.errorbar when plotting the data
+      are passed to pyplot.plot or pyplot.errorbar when plotting the data
       points.
 
    -  **show\_data**: (bool) Whether or not to plot the data points.
@@ -2055,12 +2055,12 @@ Fit methods
       multiplying the standard uncertainty for each data point by this
       quantity. The default value is 1.
 
-   -  **fit\_format**: (str) The format string passed to pylab.plot
-      or pylab.errorbar when plotting the fitted curve. The default is
+   -  **fit\_format**: (str) The format string passed to pyplot.plot
+      or pyplot.errorbar when plotting the fitted curve. The default is
       'k-'.
 
    -  **fit\_options**: (dict) A dictionary containg key words that
-      are passed to pylab.plot or pylab.errorbar when plotting the
+      are passed to pyplot.plot or pyplot.errorbar when plotting the
       fitted curve.
 
    -  **show\_fit**: (bool) Whether or not to plot the fitted curve.
@@ -2085,7 +2085,7 @@ Fit methods
       Fit.plot\_points attribute will be used, which has a default value
       of 100.
 
-   -  **hold**: (bool) If hold is ``False`` then ``pylab.show()`` is
+   -  **hold**: (bool) If hold is ``False`` then ``pyplot.show()`` is
       executed just before this function returns.
 
    -  **cik**: (float or None) Coverage factor for the
@@ -2099,9 +2099,9 @@ Fit methods
       not specify both *cik* and *cip*.
 
    -  **ciformat**: (str, default is 'g-') Format string passes
-      to the pylab.plot command that plots the uncertainty bands.
+      to the pyplot.plot command that plots the uncertainty bands.
 
-   -  **cioptions**: (dict) Keywork options passed to the pylab.plot
+   -  **cioptions**: (dict) Keywork options passed to the pyplot.plot
       command that plots the uncertainty bands.
 
    -  **clk**,\ **clp**,\ **clformat**, and **cloptions**: Control limit

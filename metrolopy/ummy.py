@@ -36,12 +36,13 @@ from collections import namedtuple
 from warnings import warn
 from math import isnan,isinf,isfinite,sqrt,log
 from fractions import Fraction
+from numbers import Rational,Integral
 
 _FInfo = namedtuple('_FIinfo','rel_u precision warn_u ')
 _iinfo = _FInfo(rel_u=0,precision=0,warn_u=0)
 _finfodict = {}
 def _getfinfo(x):
-    if isinstance(x,(int,np.integer,Fraction)):
+    if isinstance(x,Rational):
         return _iinfo
     t = type(x)
     try:
@@ -138,7 +139,7 @@ class ummy(Dfunc):
         except TypeError:
             raise TypeError('u must be a real number >= 0')
                 
-        if self.rounding_u and not isinstance(x,(int,np.integer,Fraction)):
+        if self.rounding_u and not isinstance(x,Rational):
             finfo = _getfinfo(x)
             if finfo is _iinfo:
                 warn('numpy.finfo cannot get the floating point accuracy for x\nno uncertainty will be included to account for floating point rounding errors',UncertiantyPrecisionWarning)
@@ -157,7 +158,7 @@ class ummy(Dfunc):
         self._u = u
         
         try:
-            if not isinstance(dof,(int,np.integer,np.floating)):
+            if not isinstance(dof,Rational):
                 dof = float(dof)
             if dof <= 0 or isnan(dof):
                 raise TypeError()
@@ -476,7 +477,7 @@ class ummy(Dfunc):
         
     @staticmethod       
     def _format_mantissa(fmt,x,sig,thousand_spaces=True,parenth=False,const=False):
-        if isinstance(x,Fraction):
+        if isinstance(x,Rational):
             x = float(x)
             
         try:
@@ -806,7 +807,12 @@ class ummy(Dfunc):
         if not isinstance(b,ummy):
             if b == 0:
                 raise ZeroDivisionError('division by zero')
-            r = type(self)(self._x/b, abs(self._u/b), dof=self._dof)
+            if (isinstance(self._x,Integral) and 
+                isinstance(b,Integral)):
+                x = Fraction(self._x,b)
+            else:
+                x = self._x/b
+            r = type(self)(x, abs(self._u/b), dof=self._dof)
             if r._ref is not None:
                 r._ref = self._ref
                 r._refs = np.sign(b)*self._refs
@@ -816,7 +822,11 @@ class ummy(Dfunc):
         if b._x == 0:
             raise ZeroDivisionError('division by zero')
         else:
-            x = self._x/b._x
+            if (isinstance(self._x,Integral) and 
+                isinstance(b._x,Integral)):
+                x = Fraction(self._x,b._x)
+            else:
+                x = self._x/b._x
             
         u = _combu(self._u/b._x,self._x*b._u/b._x**2,c)
 
@@ -848,7 +858,11 @@ class ummy(Dfunc):
         if self._x == 0:
             raise ZeroDivisionError('division by zero')
         else:
-            x = b/self._x
+            if (isinstance(self._x,Integral) and 
+                isinstance(b,Integral)):
+                x = Fraction(b,self._x)
+            else:
+                x = b/self._x
         u = abs(b*self._u/self._x**2)
         r = type(self)(x,u,dof=self._dof)
         if r._ref is not None:
@@ -862,7 +876,11 @@ class ummy(Dfunc):
                 raise ValueError('a negative or zero value cannot be raised to a non-integer power')
             if b == 0:
                     return type(self)(1)
-            x = self._x**b
+            if (isinstance(self._x,Integral) and 
+                isinstance(b,Integral) and b._x < 0):
+                x = Fraction(1,self._x**-b)
+            else:
+                x = self._x**b
             u = abs(b*self._x**(b-1)*self._u)
             r = type(self)(x,u,dof=self._dof)
             if r._ref is not None:
@@ -877,7 +895,11 @@ class ummy(Dfunc):
             raise ValueError('a negative or zero value cannot raised to a power which has an uncertainty')            
                 
         c = self.correlation(b)
-        x = self._x**b._x
+        if (isinstance(self._x,Integral) and 
+                isinstance(b._x,Integral) and b._x < 0):
+            x = Fraction(1,self._x**-b._x)
+        else:
+            x = self._x**b._x
         da = b._x*self._x**(b._x-1)
         lgx = log(self._x)
         try:
@@ -916,7 +938,11 @@ class ummy(Dfunc):
     def _rpow(self,b):
         if b == 0:
             return type(self)(0)
-        x = b**self._x
+        if (isinstance(self._x,Integral) and 
+            isinstance(b,Integral) and self._x < 0):
+            x = Fraction(1,b**-self._x)
+        else:
+            x = b**self._x
         lgb = log(b)
         try:
             lgb = type(b)(lgb)

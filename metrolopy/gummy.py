@@ -41,14 +41,24 @@ from .pmethod import _Pmthd
 from .printing import PrettyPrinter,MetaPrettyPrinter
 from .dfunc import Dfunc
 from .dfunc import _f_darctan2 as darctan2
-from math import isnan, isinf
+from math import isnan, isinf,log10
 from fractions import Fraction
+from numbers import Complex,Integral
 
 def _ku(k,u):
     try:
         return k*u
     except:
-        return type(u)(k)*u
+        return type(u)(k)*u # in case gummy.u is a decimal.Decimal 
+    
+def _lg10(x):
+    try:
+        return x.log10() # in case x is a decimal.Decimal
+    except:
+        try:
+            return log10(x)
+        except:
+            return log10(float(x)) # in case x is a fraction.Fraction
     
     
 class MetaGummy(MetaPrettyPrinter,MetaNummy):
@@ -1266,7 +1276,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             default is `True`.
            
         mean_marker_options:  `dict`, optional
-            A dictionary containing keywords to be passed to the `pylab.axvline`
+            A dictionary containing keywords to be passed to the `pyplot.axvline`
             method which draws the mean marker.  For example setting this to
             ``{'color'='r','linewidth'=4}`` makes the mean marker red and with
             a thickness of four points.
@@ -1276,20 +1286,20 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             limits of the confidence interval.  The default is `True`.
            
         ci_marker_options:  `dict`, optional
-            A dictionary containing keywords to be passed to the `pylab.axvline`
+            A dictionary containing keywords to be passed to the `pyplot.axvline`
             method which draws the confidence interval markers.
             
         hold:  `bool`, optional
-            If this is `False` ``pylab.show()`` is called before this method exits.
-            If it is `True` ``pylab.show()`` is not called.  The default is
+            If this is `False` ``pyplot.show()`` is called before this method exits.
+            If it is `True` ``pyplot.show()`` is not called.  The default is
             `False`.
            
         plot_options:
-             These are optional keyword arguments that are passed to the `pylab.hist`
+             These are optional keyword arguments that are passed to the `pyplot.hist`
              method.  For example bins=50 overrides the default number of bins (100).
-             For other options see the `pylab.hist` documentation.
+             For other options see the `pyplot.hist` documentation.
         """
-        import pylab as plt
+        import matplotlib.pyplot as plt
                     
         g = self.copy(True)
         if p is not None and p != self.p:
@@ -1388,18 +1398,18 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
            
         mean_marker_options:  `dict`, optional
             A dictionary of options to be passed to the
-            `pylab.axvline` and `pylab.axhline` methods that draw the `mean_marker`.
+            `pyplot.axvline` and `pyplot.axhline` methods that draw the `mean_marker`.
            
         hold:  `bool`, optional
-            If this is `False` then ``pylab.show()`` is called before this method
-            exits.  If it is `True` ``pylab.show()`` is not called.  The default is
+            If this is `False` then ``pyplot.show()`` is called before this method
+            exits.  If it is `True` ``pyplot.show()`` is not called.  The default is
             `False`.
            
         plot_options:  These are optional keyword arguments that are passed to
-             the `pylab.plot` method.  For example ``ms=0.1`` decreases the size of the
+             the `pyplot.plot` method.  For example ``ms=0.1`` decreases the size of the
              dots in the plot.
         """
-        import pylab as plt
+        import matplotlib.pyplot as plt
         
         if math is None:
             math = cls.latex_math_plot
@@ -2066,10 +2076,11 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         xabs = abs(x)
             
         if xabs != 0 and not isinf(xabs) and not isnan(xabs):
-            try:
-                xexp = _floor(np.log10(xabs))
-            except:
-                xexp = _floor(np.log10(float(xabs)))
+            lgx = _lg10(xabs)
+            if lgx < 0 and int(lgx) == lgx:
+                xexp = _floor(lgx) + 1
+            else:
+                xexp = _floor(lgx)
             oexp = xexp
         else:
             xexp = None
@@ -2077,7 +2088,11 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             
         if self._u == 0 or isnan(self._u) or isinf(self._u):
             if isinstance(x,Fraction):
-                return ('x',(str(x),'',xsym))
+                fstr = str(x)
+                dstr = str(float(x)).split('e')[0]
+                if len(fstr) <= len(dstr):
+                    return ('x',(str(x),'',xsym))
+                x = float(x)
             if xexp is None:
                 xexp = 0
             if xsig is not None:
@@ -2113,13 +2128,19 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         else:
             # lgadd makes sure the sig figs are displayed correctly if a leading
             # 9 is rounded to a 10.
-            lgadd = np.log10(1/(1-10**-nsig/2))+10**-16
+            lgadd = _lg10(1/(1-10**-nsig/2))+10**-16
             if sim and abs(self.cisim[1]-self.cisim[0]) != 0 and not isinf(self.cisim[0]) and not isinf(self.cisim[1]) and not isnan(self.cisim[0]) and not isnan(self.cisim[1]):
-                xcnt = _floor(np.log10(abs((self.cisim[1]-self.cisim[0])/2))+lgadd)
+                xcnt = _floor(_lg10(abs((self.cisim[1]-self.cisim[0])/2))+lgadd)
             if style != 'ueq' and not isinstance(self._U,gummy):
-                xcnt = _floor(np.log10(abs(self._U))+type(self._U)(lgadd))
+                try:
+                    xcnt = _floor(_lg10(abs(self._U))+lgadd)
+                except:
+                    xcnt = _floor(_lg10(abs(self._U))+type(self._U)(lgadd))
             else:
-                xcnt = _floor(np.log10(abs(_ku(self._k,self._u)))+type(self._u)(lgadd))
+                try:
+                    xcnt = _floor(_lg10(abs(_ku(self._k,self._u)))+lgadd)
+                except:
+                    xcnt = _floor(_lg10(abs(_ku(self._k,self._u)))+type(self._u)(lgadd))
             uuexp = xcnt - nsig + 1
                     
             # Round x to zero if it is smaller that one count in the last
@@ -2199,7 +2220,10 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                 if style == 'pm' or style == 'pmsim' or uabs == 0 or isinf(uabs) or isnan(uabs):
                     uexp = xexp
                 else:
-                    uexp = _floor(np.log10(uabs)+type(uabs)(lgadd))
+                    try:
+                        uexp = _floor(_lg10(uabs)+lgadd)
+                    except:
+                        uexp = _floor(_lg10(uabs)+type(uabs)(lgadd))
                     
                 psn = False
                 if style == 'concise':
@@ -2257,7 +2281,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                             uret.append((utxt1,'',xsym))
                 elif style in ['cisim','mcisim']:
                     if self.cisim[0] != 0 and not isinf(self.cisim[0]) and not isnan(self.cisim[0]):
-                        x0exp = _floor(np.log10(abs(self.cisim[0])))
+                        x0exp = _floor(_lg10(abs(self.cisim[0])))
                     else:
                         x0exp = 0
                     if (((self.sci_notation is None and 
@@ -2270,7 +2294,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                         uret.append((gummy._format_mantissa(fmt,self.cisim[0],-uuexp,self.thousand_spaces),'',xsym))
                     
                     if self.cisim[1] != 0 and not isinf(self.cisim[1]) and not isnan(self.cisim[1]):
-                        x1exp = _floor(np.log10(abs(self.cisim[1])))
+                        x1exp = _floor(_lg10(abs(self.cisim[1])))
                     else:
                         x1exp = 0
                     if (((self.sci_notation is None and 
@@ -2371,7 +2395,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                 return 'inf'
             return '\u221E'
             
-        if isinstance(dof, int):
+        if isinstance(dof,Integral):
             return str(dof)
         return '{:.1f}'.format(dof)
         
@@ -2548,7 +2572,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
         
     def _add(self, v):
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._radd(self)
         if isinstance(v,jummy):
             return v._radd(self)
@@ -2566,7 +2590,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
                 
     def _radd(self, v):
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._add(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._add(self)
@@ -2577,7 +2601,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _sub(self, v):
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._rsub(self)
         if isinstance(v,jummy):
             return v._rsub(self)
@@ -2595,7 +2619,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
                 
     def _rsub(self, v):
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._sub(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._sub(self)
@@ -2606,7 +2630,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
         
     def _mul(self, v):
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._rmul(self)
         if isinstance(v,jummy):
             return v._rmul(self)
@@ -2624,7 +2648,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rmul(self, v):
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._mul(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._mul(self)
@@ -2635,7 +2659,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _truediv(self, v):
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._rtruediv(self)
         if isinstance(v,jummy):
             return v._rtruediv(self)
@@ -2653,7 +2677,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rtruediv(self, v):
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._truediv(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._truediv(self)
@@ -2666,7 +2690,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
     def _pow(self, v):
         if v == 0:
             return gummy(1)
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._rpow(self)
         if isinstance(v,jummy):
             return v._rpow(self)
@@ -2684,7 +2708,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rpow(self, v):
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._pow(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._pow(self)
@@ -2700,7 +2724,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return ret
     
     def _mod(self, v):
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._rmod(self)
         if isinstance(v,jummy):
             return v._rmod(self)
@@ -2718,7 +2742,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rmod(self, v):
-        if isinstance(v,complex):
+        if isinstance(v,Complex):
             return jummy(v)._mod(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._mod(self)
@@ -2929,7 +2953,7 @@ class jummy(PrettyPrinter,Dfunc):
                         self._imag = gummy(real.unit.zero(),unit=real.unit)
                         self._imag.unit = real.unit
                 else:
-                    if isinstance(real,complex):
+                    if isinstance(real,Complex):
                         self._real = gummy(real.real,unit=unit)
                         self._imag = gummy(real.imag,unit=unit)
                     else:
@@ -2942,7 +2966,7 @@ class jummy(PrettyPrinter,Dfunc):
                 if cov is not None or unit is not one:
                     raise ValueError('cov or unit may not be specified if real or imag is a gummy')
     
-                if isinstance(real,complex) or isinstance(real,jummy) or isinstance(imag,complex) or isinstance(imag,jummy):
+                if isinstance(real,Complex) or isinstance(real,jummy) or isinstance(imag,Complex) or isinstance(imag,jummy):
                     raise ValueError('real and imag must be real numbers or gummys')
     
                 self._real = gummy(real)
@@ -3152,7 +3176,7 @@ class jummy(PrettyPrinter,Dfunc):
             rd = rd[0]
             jd = jd[0]
             
-        if isinstance(fx,complex):
+        if isinstance(fx,Complex):
             r = gummy._apply(lambda *a: func(*a).real,None,*args,fxdx=(fx.real,rd,x))
             j = gummy._apply(lambda *a: func(*a).imag,None,*args,fxdx=(fx.imag,jd,x))
             if isinstance(r,ummy) or isinstance(j,ummy):
@@ -3182,7 +3206,7 @@ class jummy(PrettyPrinter,Dfunc):
             return [cls._napply(lambda *y: func(*y)[i],*args,fxx=(fx[i],x)) 
                     for i in range(len(fx))]
             
-        if isinstance(fx,complex):
+        if isinstance(fx,Complex):
             r = gummy._napply(lambda *a: func(*a).real,*args,fxx=(fx.real,x))
             j = gummy._napply(lambda *a: func(*a).imag,*args,fxx=(fx.imag,x))
             return jummy(real=r,imag=j)

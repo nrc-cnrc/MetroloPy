@@ -28,6 +28,7 @@ gummys.
 import numpy as np
 from .gummy import gummy,jummy
 from .ummy import ummy
+from numbers import Complex
 
 def _callg(f,*args):
     # decide whether to call jummy.apply, gummy.apply or ummy.apply
@@ -41,7 +42,7 @@ def _callg(f,*args):
             g = a
         if isinstance(a,ummy):
             u = a
-        if isinstance(a,complex):
+        if isinstance(a,Complex):
             c = True
     if g is not None:
         if c:
