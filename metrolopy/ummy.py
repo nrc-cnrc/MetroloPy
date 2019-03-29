@@ -247,6 +247,12 @@ class ummy(Dfunc):
         self._copy(self,r,formatting=formatting,tofloat=tofloat)
         return r
         
+    def tofloat(self):
+        """
+        Returns a copy of the gummy with x an u converted to floats.
+        """
+        return self.copy(formatting=False,tofloat=True)
+    
     def correlation(self, g):
         """
         Returns the correlation coefficient between `self` and `g`."""

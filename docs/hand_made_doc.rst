@@ -25,7 +25,7 @@ gummy parameters
 ----------------
 (all parameters except *x* are optional)
 
--  **x**: (float or Distribution_ ) Either a
+-  **x**: (real number or Distribution_ ) Either a
    number representing the value of the gummy or a
    Distribution_ instance that represents the
    probability distribution of the gummy. If *x* is a
@@ -37,12 +37,12 @@ gummy parameters
 
        >>> g = gummy(UniformDist(center = 2.25, half_width = 0.12))
 
-   Note that if *x* is a float value, the uncertainty distribution is
+   Note that if *x* is a number, the uncertainty distribution is
    assumed to be either a :ref:`Normal distribution<NormalDist>` or a
    :ref:`shifted and scaled Students's t distribution<TDist>` depending on
    the value of the *dof* parameter.
 
--  **u**: (float >= 0) A number representing the uncertainty in *x*.
+-  **u**: (real number >= 0) A number representing the uncertainty in *x*.
    By default *u* is taken to be the standard ("1-sigma") uncertainty, 
    however if *k* or *p* are specified then *u* is taken to be the
    corresponding expanded uncertainty. Also by default, when the *uunit*
@@ -65,7 +65,7 @@ gummy parameters
 -  **dof**: (float or int > 0) The number of degrees of freedom upon
    which the uncertainty is based. The default is ``float('inf')``.
 
--  **k**: (float > 0) The coverage factor for *u*. The value of the
+-  **k**: (float or int > 0) The coverage factor for *u*. The value of the
    *u* parameter is divided by the coverage factor to get the standard
    uncertainty for the new gummy. If the paramter *p* is specified then
    the coverage factor is calculated using *p* and the value of the *k*
@@ -285,11 +285,18 @@ basic gummy methods
    matrix of a list or array of gummys. The return value is a
    numpy.ndarray.
 
--  **copy(formatting=True)**: Returns a copy of the gummy. The copy will
+-  **copy(formatting=True, tofloat=False)**: Returns a copy of the gummy.  
+   The copy will
    be have a correlation coefficient of 1 with the original gummy. If
    the *formatting* parameter is ``True`` the display formatting
    information will be copied and if ``False`` the display formatting
-   will be set to the default for a new gummy.
+   will be set to the default for a new gummy.  If *tofloat* is ``True``
+   then the *x* and *u* values in the new gummy will be converted to
+   floats.
+   
+-  **tofloat()**:  Returns a copy with the *x* and *u* values converted
+   to float values.  Equivalent to 
+   ``copy(formatting=Flase,tofloat=True)``.
 
 -  **ufrom(x)**: Gets the standard uncertainty contributed from
    particular gummys or utype_ if all other
@@ -541,7 +548,11 @@ c_ property). Exponents must be dimensionless (that is a
 conversion from the exponent unit to the unit *one* must exist) and if
 the exponent has an uncertainty, the base must be dimensionless.
 Nonlinear units such as the decibel and the degree Celsius affect the
-behavior of gummys under certain operations.
+behavior of gummys under certain operations.  Most functions and
+operations respect the numpy boadcasting rules when passed numpy arrays.
+Operation and functions are first tried with no type conversions and
+if that fails all *x* and *u* values are converted to floats and the
+operation of function is tried again.
 
 The gummy module installs a number of common mathematical
 functions_ that can be applied directly to dimensionless
