@@ -245,7 +245,7 @@ basic gummy properties
    taken to be the standard deviation of the mean (*s*/sqrt(*n*), where *s* is
    the sample standard deviation and *n* is the number of measurements).
    However there is some "extra uncertainty" because the sample standard
-   deviation does not exactly equal to the population standard deviation.
+   deviation does not exactly equal the population standard deviation.
    This is taken into account by using a Student's *t* distribution to
    calculate the expanded uncertainty. However it has been pointed out,
    by those who advocate a Bayesian point of view, that the probability
@@ -550,7 +550,7 @@ gummys, e.g::
     >>> import gummy as uc
     >>> g = uc.gummy(0.123,0.022) 
     >>> uc.sin(g)
-    0.851(12)
+    0.123(22)
 
 For numpy version 1.13 or later, many numpy functions can be applied
 directly to dimensionless gummys, e.g::
@@ -559,7 +559,7 @@ directly to dimensionless gummys, e.g::
     >>> import gummy as uc
     >>> g = uc.gummy(0.123,0.022) 
     >>> np.cos(g)
-    -0.525(19)
+    0.9924(27)
         
 
 The two class methods immediately below may also be used to apply an
