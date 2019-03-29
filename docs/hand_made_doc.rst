@@ -541,7 +541,8 @@ c_ property). Exponents must be dimensionless (that is a
 conversion from the exponent unit to the unit *one* must exist) and if
 the exponent has an uncertainty, the base must be dimensionless.
 Nonlinear units such as the decibel and the degree Celsius affect the
-behavior of gummys under certain operations.
+behavior of gummys under certain operations.  Most functions and
+operations respect the numpy boadcasting rules when passed numpy arrays.
 
 The gummy module installs a number of common mathematical
 functions_ that can be applied directly to dimensionless
