@@ -155,27 +155,38 @@ fdict = {np.angle:  lambda x: x.angle(),
          np.isposinf:  lambda x: np.isposinf(x.x)
         }
 
+def _call(f,*x):
+    try:
+        return f(*x)
+    except:
+        x = [a.tofloat() if isinstance(a,Dfunc) else float(x) for a in x]
+        return f(*x)
         
 def _broadcast(f,x):
     # used for the binary operations __add__, ...
     if isinstance(x,np.ndarray):
         bx = np.broadcast(x)
-        ret = np.array([f(*b) for b in bx])
+        ret = np.array([_call(f,*b) for b in bx])
         if bx.shape == ():
             ret = ret.item()
         else:
             ret = ret.reshape(bx.shape)
         return ret
-    return f(x)
+    return _call(f,x)
 
 class Dfunc:
     """
     Class `Dfunc` is an abstract base class that provides some support for numpy
     broadcasting for functions and operators.  An inheriting class must implement
-    the `_apply(self,function,derivative,*args)`, `_napply(self,function,*args)`
-    methods, as well as `_add(x)`, `_radd(x)`, `_sub(x)`, ...
+    the `_apply(self,function,derivative,*args)`, `_napply(self,function,*args)`,
+    and `tofloat(self)` methods, as well as `_add(x)`, `_radd(x)`, `_sub(x)`, ...
     """
     
+    def tofloat(self):
+        # this should return a copy of self with the x and u properties converted t
+        # to float values
+        raise NotImplementedError()
+        
     @classmethod
     def apply(cls,function,derivative,*args):
         """
@@ -242,9 +253,9 @@ class Dfunc:
         
         bargs = np.broadcast(*args)
         if bargs.shape == ():
-            return cls._apply(function,derivative,*args)
+            return _call(lambda *x: cls._apply(function,derivative,*x), *args) 
         
-        ret = np.array([cls._apply(function,derivative,*a) for a in bargs])
+        ret = np.array([_call(lambda *x: cls._apply(function,derivative,*x), *a) for a in bargs])
         ret = ret.reshape(bargs.shape)
         return ret
     
@@ -300,9 +311,9 @@ class Dfunc:
         
         bargs = np.broadcast(*args)
         if bargs.shape == ():
-            return cls._napply(function,*args)
+            return _call(lambda *x: cls._napply(function,*x), *args)
         
-        ret = np.array([cls._napply(function,*a) for a in bargs])
+        ret = np.array([_call(lambda *x: cls._napply(function,*x), *a) for a in bargs])
         ret = ret.reshape(bargs.shape)
         return ret
        
