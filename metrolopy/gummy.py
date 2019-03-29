@@ -32,7 +32,7 @@ module.  The gummy object, in turn, inherits from the nummy object.
 
 import numpy as np
 
-from .ummy import ummy, _isscalar, _floor, _iinfo
+from .ummy import ummy, _isscalar, _floor
 from .nummy import nummy,MetaNummy
 from .exceptions import IncompatibleUnitsError,NoUnitConversionFoundError
 from .unit import Unit,one
@@ -43,7 +43,7 @@ from .dfunc import Dfunc
 from .dfunc import _f_darctan2 as darctan2
 from math import isnan, isinf,log10
 from fractions import Fraction
-from numbers import Complex,Integral
+from numbers import Number,Real,Complex,Integral,Rational
 
 def _ku(k,u):
     try:
@@ -327,11 +327,16 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             self._p_method = _Pmthd(p_method)
             
         if p is not None:
+            p = float(p)
             self._k = self._p_method.fptok(p,dof,gummy.bayesian)
             self._p = p
             self._pm = p
             self._set_k = False
         else:
+            if isinstance(k,Integral):
+                k = int(k)
+            else:
+                k = float(k)
             self._k = k
             if k != 1 or dof == float('inf'):
                 self._p = self._p_method.fktop(k,dof=dof,bayesian=gummy.bayesian)
@@ -2087,44 +2092,33 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             oexp = 0
             
         if self._u == 0 or isnan(self._u) or isinf(self._u):
-            if isinstance(x,Fraction):
-                fstr = str(x)
-                dstr = str(float(x)).split('e')[0]
-                if len(fstr) <= len(dstr):
+            if isinstance(x,Rational) and not isinstance(x,Integral):
+                fstr = str(x).split('/')[-1]
+                dstr = str(float(x)).split('e')[0].split('E')[0].split('.')[-1]
+                dstr.strip().strip('0')
+                if len(dstr) > 3 and len(dstr) > len(fstr):
                     return ('x',(str(x),'',xsym))
-                x = float(x)
             if xexp is None:
-                xexp = 0
+                return ('x',(str(x),'',xsym))
             if xsig is not None:
                 if xabs > 10**(xexp+1) - 10**(xexp-xsig)/2:
                     xexp += 1
-            if (xexp is not None and (self.finfo is not _iinfo or self.display_as_float) and
+            if (xexp is not None and
                     ((self.sci_notation is None and (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                     or self.sci_notation)):
-                x = x*10**(-xexp)
-                if xsig is None:
-                    if self.finfo is _iinfo:
-                        xsig = None
-                    else:
-                        xsig = self.finfo.precision
-                    const = True
+                if isinstance(x,Rational) and xexp > 0:
+                    x = Fraction(x,10**xexp)
                 else:
+                    x = x*10**(-xexp)
+                if xsig is not None:
                     xsig = xsig - 1
-                    const = False
-                return ('x',(gummy._format_mantissa(fmt,x,xsig,self.thousand_spaces,const=const),
+                return ('x',(gummy._format_mantissa(fmt,x,xsig,self.thousand_spaces),
                          gummy._format_exp(fmt,xexp),
                          xsym))
             else:
-                if xsig is None:
-                    if self.finfo is _iinfo:
-                        xsig = None
-                    else:
-                        xsig = self.finfo.precision
-                    const = True
-                else:
+                if xsig is not None:
                     xsig = -xexp + xsig - 1
-                    const = False
-                return ('x',(gummy._format_mantissa(fmt,x,xsig,self.thousand_spaces,const=const),'',xsym))
+                return ('x',(gummy._format_mantissa(fmt,x,xsig,self.thousand_spaces),'',xsym))
         else:
             # lgadd makes sure the sig figs are displayed correctly if a leading
             # 9 is rounded to a 10.
@@ -2143,6 +2137,9 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     xcnt = _floor(_lg10(abs(_ku(self._k,self._u)))+type(self._u)(lgadd))
             uuexp = xcnt - nsig + 1
                     
+            if xexp is not None and xexp - uuexp > 15 and style in ['pm','concise']:
+                style = 'pmi'
+                
             # Round x to zero if it is smaller that one count in the last
             # digit of the expanded uncertainty.
             if xabs < 10**uuexp/2:
@@ -2216,7 +2213,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     if self.display_as_float:
                         ub = [float(i) for i in ub]
 
-                uabs = abs(u)                
+                uabs = abs(u)     
                 if style == 'pm' or style == 'pmsim' or uabs == 0 or isinf(uabs) or isnan(uabs):
                     uexp = xexp
                 else:
@@ -2572,7 +2569,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
         
     def _add(self, v):
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._radd(self)
         if isinstance(v,jummy):
             return v._radd(self)
@@ -2590,7 +2587,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
                 
     def _radd(self, v):
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._add(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._add(self)
@@ -2601,7 +2598,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _sub(self, v):
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._rsub(self)
         if isinstance(v,jummy):
             return v._rsub(self)
@@ -2619,7 +2616,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
                 
     def _rsub(self, v):
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._sub(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._sub(self)
@@ -2630,7 +2627,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
         
     def _mul(self, v):
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._rmul(self)
         if isinstance(v,jummy):
             return v._rmul(self)
@@ -2648,7 +2645,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rmul(self, v):
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._mul(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._mul(self)
@@ -2659,7 +2656,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _truediv(self, v):
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._rtruediv(self)
         if isinstance(v,jummy):
             return v._rtruediv(self)
@@ -2677,7 +2674,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rtruediv(self, v):
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._truediv(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._truediv(self)
@@ -2690,7 +2687,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
     def _pow(self, v):
         if v == 0:
             return gummy(1)
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._rpow(self)
         if isinstance(v,jummy):
             return v._rpow(self)
@@ -2708,7 +2705,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rpow(self, v):
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._pow(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._pow(self)
@@ -2724,7 +2721,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return ret
     
     def _mod(self, v):
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._rmod(self)
         if isinstance(v,jummy):
             return v._rmod(self)
@@ -2742,7 +2739,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rmod(self, v):
-        if isinstance(v,Complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._mod(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._mod(self)
@@ -2953,7 +2950,7 @@ class jummy(PrettyPrinter,Dfunc):
                         self._imag = gummy(real.unit.zero(),unit=real.unit)
                         self._imag.unit = real.unit
                 else:
-                    if isinstance(real,Complex):
+                    if not isinstance(real,Real) and isinstance(real,Complex):
                         self._real = gummy(real.real,unit=unit)
                         self._imag = gummy(real.imag,unit=unit)
                     else:
@@ -2966,7 +2963,7 @@ class jummy(PrettyPrinter,Dfunc):
                 if cov is not None or unit is not one:
                     raise ValueError('cov or unit may not be specified if real or imag is a gummy')
     
-                if isinstance(real,Complex) or isinstance(real,jummy) or isinstance(imag,Complex) or isinstance(imag,jummy):
+                if (isinstance(real,Number) and not isinstance(real,Real)) or isinstance(real,jummy) or (isinstance(imag,Number) and not isinstance(imag,Real)) or isinstance(imag,jummy):
                     raise ValueError('real and imag must be real numbers or gummys')
     
                 self._real = gummy(real)
@@ -3176,7 +3173,7 @@ class jummy(PrettyPrinter,Dfunc):
             rd = rd[0]
             jd = jd[0]
             
-        if isinstance(fx,Complex):
+        if not isinstance(fx,Real) and isinstance(fx,Complex):
             r = gummy._apply(lambda *a: func(*a).real,None,*args,fxdx=(fx.real,rd,x))
             j = gummy._apply(lambda *a: func(*a).imag,None,*args,fxdx=(fx.imag,jd,x))
             if isinstance(r,ummy) or isinstance(j,ummy):
@@ -3206,7 +3203,7 @@ class jummy(PrettyPrinter,Dfunc):
             return [cls._napply(lambda *y: func(*y)[i],*args,fxx=(fx[i],x)) 
                     for i in range(len(fx))]
             
-        if isinstance(fx,Complex):
+        if not isinstance(fx,Real) and isinstance(fx,Complex):
             r = gummy._napply(lambda *a: func(*a).real,*args,fxx=(fx.real,x))
             j = gummy._napply(lambda *a: func(*a).imag,*args,fxx=(fx.imag,x))
             return jummy(real=r,imag=j)

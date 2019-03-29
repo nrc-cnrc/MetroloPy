@@ -552,7 +552,9 @@ behavior of gummys under certain operations.  Most functions and
 operations respect the numpy boadcasting rules when passed numpy arrays.
 Operation and functions are first tried with no type conversions and
 if that fails all *x* and *u* values are converted to floats and the
-operation of function is tried again.
+operation of function is tried again. Set 
+``metrolopy.dfunc.try_fconvert = False`` to disable this automatic
+conversion to float values.
 
 The gummy module installs a number of common mathematical
 functions_ that can be applied directly to dimensionless

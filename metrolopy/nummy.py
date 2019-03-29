@@ -29,7 +29,7 @@ import numpy as np
 from .ummy import ummy
 from .distributions import (Distribution,TDist,NormalDist,MultivariateElement,
                             MultivariateDistribution,MultiNormalDist,MultiTDist)
-from math import isinf,isfinite,sqrt
+from math import isinf,isfinite,isnan,sqrt
 
 def _bop(f,npf,s,b):
     if not nummy._mcpropagate:
@@ -188,16 +188,18 @@ class nummy(ummy,metaclass=MetaNummy):
             
         else:
             super().__init__(x,u=u,dof=dof,utype=utype)
-            if self._u == 0:
+            x = float(x)
+            u = float(self._u)
+            if self._u == 0 or isnan(x) or isinf(x) or isnan(u):
                 self._dist = x
             elif isinf(self._dof):
-                self._dist = NormalDist(x,self._u)
+                self._dist = NormalDist(x,u)
             else:
                 if nummy._bayesian:
-                    self._dist = TDist(x,self._u*(self._dof-2)/self._dof,self._dof)
+                    self._dist = TDist(x,u*(self._dof-2)/self._dof,self._dof)
                     self._dof = float('inf')
                 else:
-                    self._dist = TDist(x,self._u,self._dof)
+                    self._dist = TDist(x,u,self._dof)
             
     @property
     def distribution(self):

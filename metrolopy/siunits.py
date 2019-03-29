@@ -423,7 +423,7 @@ with _BuiltinLib():
     Unit('Earth mass','M\u2295',Conversion(_kg,_const_earth_mass),add_symbol=True,
          order=0,html_symbol='<i>M</i><sub>&#x2295;</sub>',latex_symbol='\t\tM_{\oplus}',
          ascii_symbol='M(E)',description='astronomical unit of mass')
-    _Jy = Unit('jansky','Jy',Conversion(_W*_m**-2*_Hz**-1,1e-26),add_symbol=True,
+    _Jy = Unit('jansky','Jy',Conversion(_W*_m**-2*_Hz**-1,Fraction('1e-26')),add_symbol=True,
          decription='astronomical unit, spectral flux density, spectral irradiance')
     LogUnit('monochromatic AB magnitude','m(AB)',
             LogConversion(gummy(3631,unit=_Jy),-2.5,10,_lg10),

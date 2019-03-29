@@ -158,7 +158,9 @@ class ummy(Dfunc):
         self._u = u
         
         try:
-            if not isinstance(dof,Rational):
+            if isinstance(dof,Integral):
+                dof = int(dof)
+            else:
                 dof = float(dof)
             if dof <= 0 or isnan(dof):
                 raise TypeError()
@@ -482,10 +484,7 @@ class ummy(Dfunc):
         return self.__str__()
         
     @staticmethod       
-    def _format_mantissa(fmt,x,sig,thousand_spaces=True,parenth=False,const=False):
-        if isinstance(x,Rational):
-            x = float(x)
-            
+    def _format_mantissa(fmt,x,sig,thousand_spaces=True,parenth=False,const=False):            
         try:
             if isnan(x):
                 return 'nan'
@@ -509,25 +508,27 @@ class ummy(Dfunc):
             # for large int values the above np functions can generate an error
             pass
         
-        if sig is not None:
-            try:
-                s = np.round(x,sig)
-            except:
-                try:
-                    s = round(x,sig)
-                except:
-                    s = round(float(x),sig)
+        ellipses = ''
+        if isinstance(x,Rational) and sig is None:
+            if x == int(x):
+                s = str(int(x))
+            else:
+                n = 10**(15 - _floor(np.log10(float(x))))*x
+                if int(n) != n:
+                    ellipses = '...'
+                s = str(round(float(x),15))
+        elif sig is None:
+            s = str(x)
         else:
-            s = x
-            
-        if const:
-            s = str(s)
-        else:
-            if sig is None:
-                sig = 15
+            x = float(x)
+            e = 15 - _floor(np.log10(x))
+            if sig > e:
+                ellipses = '...'
+                sig = e
             if sig < 0:
                 sig = 0
-            s = ('{:.' + str(sig) + 'f}').format(x)
+            s = round(x,sig)
+            s = ('{:.' + str(sig) + 'f}').format(s)
         
         if parenth:
             s = s.replace('.','')
@@ -560,7 +561,7 @@ class ummy(Dfunc):
             nl = d - i - 1
             
             if nr <= 4 and nl <= 4:
-                return s
+                return s + ellipses
                 
             s = list(s)    
             if nr > 4:
@@ -574,7 +575,7 @@ class ummy(Dfunc):
             if s.endswith(sp):
                 s = s[:-(len(sp))]
                 
-        return s
+        return s + ellipses
         
     @classmethod
     def _get_dof(cls,dof1, dof2, u, u1, u2, d1, d2, c):

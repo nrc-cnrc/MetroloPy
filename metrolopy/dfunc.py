@@ -155,24 +155,32 @@ fdict = {np.angle:  lambda x: x.angle(),
          np.isposinf:  lambda x: np.isposinf(x.x)
         }
 
+
+try_fconvert = True
 def _call(f,*x):
-    try:
-        return f(*x)
-    except:
-        x = [a.tofloat() if isinstance(a,Dfunc) else float(x) for a in x]
-        return f(*x)
+    if try_fconvert:
+        try:
+            return f(*x)
+        except:
+            x = [a.tofloat() if isinstance(a,Dfunc) else float(x) for a in x]
+            return f(*x)
+
+    return f(*x)
+    
+   
         
 def _broadcast(f,x):
     # used for the binary operations __add__, ...
     if isinstance(x,np.ndarray):
         bx = np.broadcast(x)
-        ret = np.array([_call(f,*b) for b in bx])
+        ret = np.array([f(*b) for b in bx])
         if bx.shape == ():
             ret = ret.item()
         else:
             ret = ret.reshape(bx.shape)
         return ret
     return _call(f,x)
+
 
 class Dfunc:
     """
@@ -183,8 +191,8 @@ class Dfunc:
     """
     
     def tofloat(self):
-        # this should return a copy of self with the x and u properties converted t
-        # to float values
+        # this should return a copy of self with the x and u properties 
+        # converted to float values
         raise NotImplementedError()
         
     @classmethod
@@ -322,10 +330,10 @@ class Dfunc:
             return None
         
         try:
-            return self._apply(ufunc,ddict[ufunc],*args)
+            return _call(lambda *x: self._apply(ufunc,ddict[ufunc],*x), *args)
         except KeyError:
             try:
-                return fdict[ufunc](*args)
+                return _call(fdict[ufunc],*args)
             except KeyError:
                 return None
             
