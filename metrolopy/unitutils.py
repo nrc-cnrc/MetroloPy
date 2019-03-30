@@ -243,7 +243,12 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                         else:
                             g = gummy(1,unit=u)
                         gc = g.convert(u.conversion.unit)
-                        ctxt = g.tostring(fmt=fmt) + ' = ' + gc.tostring(fmt=fmt)
+                        ctxt = g.tostring(fmt=fmt)
+                        if fmt == 'html':
+                            ctxt += '&nbsp;=&nbsp;' 
+                        else:
+                            ctxt = ' = '
+                        ctxt += gc.tostring(fmt=fmt)
                         if fmt == 'latex':
                             txt += ', $ ' + ctxt + ' $'
                         else:
