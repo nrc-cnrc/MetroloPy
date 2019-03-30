@@ -1821,14 +1821,14 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                 if self._ubreakdown is None or len(self._ubreakdown) != len(v) - 2:
                     if self.k == 1:
                         if fmt == 'html':
-                            pm = ' with <i>u</i> = '
+                            pm = ' with <i>u</i>&nbsp;=&nbsp;'
                         elif fmt == 'latex':
                             pm = norm(' with ') + 'u = '
                         else:
                             pm = ' with u = '
                     else:
                         if fmt == 'html':
-                            pm = ' with <i>U</i> = '
+                            pm = ' with <i>U</i>&nbsp;=&nbsp;'
                         elif fmt == 'latex':
                             pm = norm(' with ') + 'U = '
                         else:
@@ -1841,11 +1841,11 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                         b = str(self._ubreakdown[i])
                         if fmt == 'html':
                             if i == 0:
-                                pm = ' with <i>u</i><sub>'+b+'</sub> = '
+                                pm = ' with <i>u</i><sub>'+b+'</sub>&nbsp;=&nbsp;'
                             elif i == len(v) - 3:
-                                pm = ' and <i>u</i><sub>'+b+'</sub> = '
+                                pm = ' and <i>u</i><sub>'+b+'</sub>&nbsp;=&nbsp;'
                             else:
-                                pm = ', <i>u</i><sub>'+b+'</sub> = '
+                                pm = ', <i>u</i><sub>'+b+'</sub>&nbsp;=&nbsp;'
                         elif fmt == 'latex':
                             if i == 0:
                                 pm = norm(' with ') + 'u_{' + norm(b) + '} = '
@@ -1980,7 +1980,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     else:
                         k = self.k
                     if fmt == 'html':
-                        itxt += '<i>k</i> = ' + gummy._k_to_str(k)
+                        itxt += '<i>k</i>&nbsp;=&nbsp;' + gummy._k_to_str(k)
                     else:
                         itxt += 'k = ' + gummy._k_to_str(k)
                     
@@ -2022,7 +2022,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                         itxt = ' with '
                         
                     if fmt == 'html':
-                        itxt += '<i>&nu;</i> = ' + gummy._dof_to_str(self.dof,fmt)
+                        itxt += '<i>&nu;</i>&nbsp;=&nbsp;' + gummy._dof_to_str(self.dof,fmt)
                     elif fmt == 'latex':
                         itxt = norm(itxt)
                         itxt += r'\nu = ' + gummy._dof_to_str(self.dof,fmt)
@@ -2343,14 +2343,13 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         if unit == '':
             return ''
             
-        if fmt == 'latex':
-            if unit.startswith('\t'):
-                unit = unit[1:]
-            else:
-                unit = r'\:' + unit
+        if unit.startswith('\t'):
+            unit = unit[1:]
         else:
-            if unit.startswith('\t'):
-                unit = unit[1:]
+            if fmt == 'latex':
+                unit = r'\:' + unit
+            elif fmt == 'html':
+                unit = '&nbsp;' + unit
             else:
                 unit = ' ' + unit
             
