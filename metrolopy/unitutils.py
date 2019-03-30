@@ -189,7 +189,11 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
         txt = "<span style=\"font-family: 'Times New Roman', Times, serif;font-size:1.2em\">\n"
     else:
         txt  = ''
+    if fmt in ['latex','html']:
+        txt += "<ul style=\"padding: 0; Margin: 0;\">\n"
     for u in units:
+        if fmt in ['latex','html']:
+            txt += "<li>"
         try:
             if u[0] != u[1].name:
                 txt += u[0] + ', alias for: '
@@ -205,12 +209,13 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                 u = u[1]
                 txt += u.name
                 ttxt = ''
-                if isinstance(u,PrefixedUnit) and not show_all:
-                    if len(u.prefixes) == 1:
-                        ttxt = '1 prefix'
-                    else:
-                        ttxt = str(len(u.prefixes)) + ' prefixes'
-                if isinstance(u,LogUnit):
+                if isinstance(u,PrefixedUnit)
+                    if not show_all:
+                        if len(u.prefixes) == 1:
+                            ttxt = '1 prefix'
+                        else:
+                            ttxt = str(len(u.prefixes)) + ' prefixes'
+                elif isinstance(u,LogUnit):
                     if u.conversion.log_base == np.e:
                         if fmt == 'latex':
                             ttxt += ', log base ' + PrettyPrinter.latex_math('e')
@@ -220,6 +225,9 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                             ttxt += ', log base e'
                     else:
                         ttxt += ', log base ' + str(u.conversion.log_base)
+                    ttxt += ', multiplier = ' + str(u.conversion.multiplier)
+                elif isinstance(u,NonlinearUnit):
+                    ttxt += 'non-linear unit'
                     
                 if ttxt.startswith(', '):
                     ttxt = ttxt[2:]
@@ -227,16 +235,21 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                     txt += ' (' + ttxt + ')'
                 
                 if u.conversion is not None:
-                    if isinstance(u,OffsetUnit) or isinstance(u,LogUnit):
-                        g = gummy(0,unit=u)
-                    else:
-                        g = gummy(1,unit=u)
-                    gc = g.convert(u.conversion.unit)
-                    ctxt = g.tostring(fmt=fmt) + ' = ' + gc.tostring(fmt=fmt)
-                    if fmt == 'latex':
-                        txt += ', $ ' + ctxt + ' $'
-                    else:
-                        txt += ', ' + ctxt
+                    try:
+                        if isinstance(u,OffsetUnit):
+                            g = gummy(0,unit=u)
+                        elif isinstance(u,LogUnit):
+                            g = gummy(u.conversion.offset,unit=u)
+                        else:
+                            g = gummy(1,unit=u)
+                        gc = g.convert(u.conversion.unit)
+                        ctxt = g.tostring(fmt=fmt) + ' = ' + gc.tostring(fmt=fmt)
+                        if fmt == 'latex':
+                            txt += ', $ ' + ctxt + ' $'
+                        else:
+                            txt += ', ' + ctxt
+                    except:
+                        txt += ', ?? = ??'
                 elif u is not one:
                     if fmt == 'latex':
                         txt += ', symbol: $ ' + u.tostring(fmt=fmt) + ' $'
@@ -267,15 +280,13 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
             txt += '??'
                 
         if fmt == 'html' or fmt == 'latex':
-            txt += '<br>\n'
+            txt += '<li>\n'
         else:
             txt += '\n'
             
-    if fmt == 'html' or fmt == 'latex':
-        txt = txt[:-5]
-    else:
-        txt = txt[:-1]
-        
+    txt = txt[:-1]
+    if fmt in ['latex','html']:
+        txt += '</ul>'
     if fmt == 'latex':
         txt += '\n</style>'
     
