@@ -39,7 +39,7 @@ from fractions import Fraction
 from numbers import Rational,Integral
 
 try:
-    from mpmath import mp,mpf
+    from mpmath import mp,mpf,rational
 except:
     mp = mpf = None
 
@@ -1435,4 +1435,4 @@ class MFraction(Fraction):
     A fraction.Fraction sub-class that works with mpmath.mpf objects
     """
     def _mpmath_(self,p,r):
-        return mp.rational.mpq(self.numerator,self.denominator)
+        return rational.mpq(self.numerator,self.denominator)
