@@ -162,7 +162,7 @@ def _call(f,*x):
         try:
             return f(*x)
         except:
-            x = [a.tofloat() if isinstance(a,Dfunc) else float(x) for a in x]
+            x = [a.tofloat() if isinstance(a,Dfunc) else float(a) for a in x]
             return f(*x)
 
     return f(*x)

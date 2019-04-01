@@ -45,6 +45,11 @@ from math import isnan, isinf,log10
 from fractions import Fraction
 from numbers import Number,Real,Complex,Integral,Rational
 
+try:
+    import mpmath as mp
+except:
+    mp = None
+
 def _ku(k,u):
     try:
         return k*u
@@ -52,6 +57,8 @@ def _ku(k,u):
         return type(u)(k)*u # in case gummy.u is a decimal.Decimal 
     
 def _lg10(x):
+    if mp is not None and isinstance(x,mp.mpf):
+        return mp.log10(x)
     try:
         return x.log10() # in case x is a decimal.Decimal
     except:
@@ -284,8 +291,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
     mulsep = False # If True use a dot or * between units, if False us a space.
     
     slashaxis = True
-    
-    display_as_float = False
                     
     _cmp_k = None
     _cmp_p = 0.95
@@ -2075,8 +2080,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             x = self.xsim
         else:
             x = self.x
-            if self.display_as_float:
-                x = float(x)
                 
         xabs = abs(x)
             
@@ -2202,16 +2205,11 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     ub = [u]
                 elif self._ubreakdown is None:
                     u = self._U
-                    if self.display_as_float:
-                        u = float(u)
                     ub = [u]
                 else:
                     u = self._U
-                    if self.display_as_float:
-                        u = float(u)
                     ub = self._Ubr
-                    if self.display_as_float:
-                        ub = [float(i) for i in ub]
+
 
                 uabs = abs(u)     
                 if style == 'pm' or style == 'pmsim' or uabs == 0 or isinf(uabs) or isnan(uabs):

@@ -93,6 +93,7 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
     """
     from importlib import import_module
     from .prefixedunit import PrefixedUnit
+    from .nonlinearunit import NonlinearUnit
     from .offsetunit import OffsetUnit
     from .logunit import LogUnit
     from .unit import _CompositeUnit
@@ -186,11 +187,11 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
     units = sorted(units,key=lambda u:u[0].lower())
         
     if fmt == 'latex':
-        txt = "<span style=\"font-family: 'Times New Roman', Times, serif;font-size:1.2em\">\n"
+        txt = "<ul style=\"font-family: 'Times New Roman', Times, serif;font-size:1.2em\">\n"
+    elif fmt == 'html':
+        txt = "<ul>\n"
     else:
-        txt  = ''
-    if fmt in ['latex','html']:
-        txt += "<ul style=\"padding: 0; Margin: 0;\">\n"
+        txt = ''
     for u in units:
         if fmt in ['latex','html']:
             txt += "<li>"
@@ -209,14 +210,14 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                 u = u[1]
                 txt += u.name
                 ttxt = ''
-                if isinstance(u,PrefixedUnit)
+                if isinstance(u,PrefixedUnit) and not show_all:
                     if not show_all:
                         if len(u.prefixes) == 1:
                             ttxt = '1 prefix'
                         else:
                             ttxt = str(len(u.prefixes)) + ' prefixes'
                 elif isinstance(u,LogUnit):
-                    if u.conversion.log_base == np.e:
+                    if (round(float(u.conversion.log_base),3) - 2.718) < 0.001:
                         if fmt == 'latex':
                             ttxt += ', log base ' + PrettyPrinter.latex_math('e')
                         if fmt == 'html':
@@ -247,7 +248,7 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                         if fmt == 'html':
                             ctxt += '&nbsp;=&nbsp;' 
                         else:
-                            ctxt = ' = '
+                            ctxt += ' = '
                         ctxt += gc.tostring(fmt=fmt)
                         if fmt == 'latex':
                             txt += ', $ ' + ctxt + ' $'
@@ -285,15 +286,13 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
             txt += '??'
                 
         if fmt == 'html' or fmt == 'latex':
-            txt += '<li>\n'
+            txt += '</li>\n'
         else:
             txt += '\n'
             
     txt = txt[:-1]
     if fmt in ['latex','html']:
         txt += '</ul>'
-    if fmt == 'latex':
-        txt += '\n</style>'
     
     if not prnt:
         return txt

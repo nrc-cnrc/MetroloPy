@@ -196,7 +196,7 @@ with _BuiltinLib():
     Unit('square','square',Conversion(_ft**2,100),add_symbol=False,
          description='unit of area used in construction')
     Unit('gasoline gallon equivalent','gasoline-gallon-equivalent',
-         Conversion('kW h',Fraction('33.7')),add_symbol=True,description='unit of energy')
+         Conversion('kW h',33.7),add_symbol=True,description='unit of energy')
     _ttnt = PrefixedUnit('tons of TNT equivalent','t(TNT)',Conversion('GJ',4.184),add_symbol=True,
          description='unit of energy in an explosion',prefixes=['kilo','mega','giga'])
     Unit.alias('tons of TNT',_ttnt)

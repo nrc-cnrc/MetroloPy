@@ -38,15 +38,33 @@ from math import isnan,isinf,isfinite,sqrt,log
 from fractions import Fraction
 from numbers import Rational,Integral
 
+try:
+    from mpmath import mp,mpf
+except:
+    mp = mpf = None
+
 _FInfo = namedtuple('_FIinfo','rel_u precision warn_u ')
 _iinfo = _FInfo(rel_u=0,precision=0,warn_u=0)
 _finfodict = {}
 def _getfinfo(x):
     if isinstance(x,Rational):
-        return _iinfo
+        return (_iinfo,x)
+    
+    if mpf is not None and isinstance(x,mpf):
+        n = mp.prec
+        x = mpf(x)
+        try:
+            return (_finfodict[n],x)
+        except:
+            f = _FInfo(rel_u=0.4222/2**n,
+                       precision=mp.dps,
+                       warn_u = 0)
+            _finfodict[n] = f
+            return (f,x)
+        
     t = type(x)
     try:
-        return _finfodict[t]
+        return (_finfodict[t],x)
     except:
         try:
             f = np.finfo(t)
@@ -57,7 +75,7 @@ def _getfinfo(x):
         except:
             _finfodict[t] = _iinfo
             return _iinfo
-        return f
+        return (f,x)
 
 def _combu(a,b,c):
     # function for combining uncertainties,
@@ -140,19 +158,22 @@ class ummy(Dfunc):
             raise TypeError('u must be a real number >= 0')
                 
         if self.rounding_u and not isinstance(x,Rational):
-            finfo = _getfinfo(x)
+            finfo,x = _getfinfo(x)
             if finfo is _iinfo:
                 warn('numpy.finfo cannot get the floating point accuracy for x\nno uncertainty will be included to account for floating point rounding errors',UncertiantyPrecisionWarning)
             else:
                 uc = _combu(u,float(abs(x)*finfo.rel_u),0)
             
-            uinfo = _getfinfo(u)
+            uinfo = _getfinfo(u)[0]
             if uc < uinfo.warn_u and u is not 0:
                 warn('a gummy/ummy was defined with an uncertainty too small to be accurately represented by a float\nuncertainty values may contain significant numerical errors',UncertiantyPrecisionWarning)
             u = uc
             self._finfo = finfo
         else:
             self._finfo = None
+            
+        if isinstance(x,Fraction):
+            x = MFraction(x)
             
         self._x = x
         self._u = u
@@ -513,23 +534,30 @@ class ummy(Dfunc):
             if x == int(x):
                 s = str(int(x))
             else:
-                n = 10**(15 - _floor(np.log10(float(x))))*x
+                x = float(x)
+                n = 10**(15 - _floor(np.log10(x)))*x
                 if int(n) != n:
                     ellipses = '...'
-                s = str(round(float(x),15))
+                s = str(round(x,15))
         elif sig is None:
             s = str(x)
         else:
-            x = float(x)
             if x != 0:
-                e = 15 - _floor(np.log10(x))
+                if mpf is not None and isinstance(x,mpf):
+                    em = _floor(mp.log10(abs(x)))
+                else:    
+                    em = _floor(np.log10(abs(float(x))))
+                e = 15 - em
                 if sig > e:
                     ellipses = '...'
                     sig = e
             if sig < 0:
                 sig = 0
-            s = round(x,sig)
-            s = ('{:.' + str(sig) + 'f}').format(s)
+            if mpf is not None and isinstance(x,mpf):
+                s = mp.nstr(x,n=sig+1,strip_zeros=False)
+            else:
+                s = round(float(x),sig)
+                s = ('{:.' + str(sig) + 'f}').format(s)
         
         if parenth:
             s = s.replace('.','')
@@ -817,7 +845,7 @@ class ummy(Dfunc):
                 raise ZeroDivisionError('division by zero')
             if (isinstance(self._x,Integral) and 
                 isinstance(b,Integral)):
-                x = Fraction(self._x,b)
+                x = MFraction(self._x,b)
             else:
                 x = self._x/b
             r = type(self)(x, abs(self._u/b), dof=self._dof)
@@ -832,7 +860,7 @@ class ummy(Dfunc):
         else:
             if (isinstance(self._x,Integral) and 
                 isinstance(b._x,Integral)):
-                x = Fraction(self._x,b._x)
+                x = MFraction(self._x,b._x)
             else:
                 x = self._x/b._x
             
@@ -868,7 +896,7 @@ class ummy(Dfunc):
         else:
             if (isinstance(self._x,Integral) and 
                 isinstance(b,Integral)):
-                x = Fraction(b,self._x)
+                x = MFraction(b,self._x)
             else:
                 x = b/self._x
         u = abs(b*self._u/self._x**2)
@@ -886,7 +914,7 @@ class ummy(Dfunc):
                     return type(self)(1)
             if (isinstance(self._x,Integral) and 
                 isinstance(b,Integral) and b._x < 0):
-                x = Fraction(1,self._x**-b)
+                x = MFraction(1,self._x**-b)
             else:
                 x = self._x**b
             u = abs(b*self._x**(b-1)*self._u)
@@ -905,7 +933,7 @@ class ummy(Dfunc):
         c = self.correlation(b)
         if (isinstance(self._x,Integral) and 
                 isinstance(b._x,Integral) and b._x < 0):
-            x = Fraction(1,self._x**-b._x)
+            x = MFraction(1,self._x**-b._x)
         else:
             x = self._x**b._x
         da = b._x*self._x**(b._x-1)
@@ -948,7 +976,7 @@ class ummy(Dfunc):
             return type(self)(0)
         if (isinstance(self._x,Integral) and 
             isinstance(b,Integral) and self._x < 0):
-            x = Fraction(1,b**-self._x)
+            x = MFraction(1,b**-self._x)
         else:
             x = b**self._x
         lgb = log(b)
@@ -1402,3 +1430,9 @@ def _der(function,*args):
             
     return d
         
+class MFraction(Fraction):
+    """
+    A fraction.Fraction sub-class that works with mpmath.mpf objects
+    """
+    def _mpmath_(self,p,r):
+        return mp.rational.mpq(self.numerator,self.denominator)

@@ -47,13 +47,13 @@ class LogConversion(NonlinearConversion):
         self.multiplier = multiplier           
         self.log_base = log_base
         self.log_func = lambda x: log_func(x) if x > 0 else -float('inf')
-        self._lnbase = np.log(log_base)
+        self._lnbase = np.log(float(log_base))
         self.offset = offset
         
     def _to(self,g):
         g = (g - self.offset)/self.multiplier
         def f(x):
-            if x == -np.inf:
+            if x == -float('inf'):
                 return 0.0
             try:
                 return self.log_base**x

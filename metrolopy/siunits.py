@@ -29,6 +29,7 @@ by the BIPM.
 """
 
 from .gummy import gummy, _lg10
+from .ummy import MFraction
 from .unit import _BuiltinLib,Conversion,Unit
 from .prefixedunit import PrefixedUnit,BinaryPrefixedUnit
 from .logunit import LogUnit,LogConversion
@@ -37,12 +38,18 @@ from .functions import sqrt
 import numpy as np
 from fractions import Fraction
 
+try:
+    from mpmath import pi,e
+except:
+    pi = np.pi
+    e = np.e
+
 # constants from draft of the 9 edition of the SI brochure dated 18 Dec. 2018
 _const_c = 299792458 # speed of light in m/s
-_const_h = Fraction('6.62607015e-34') # planck constant in J s
-_const_hbar = _const_h/(2*np.pi)
-_const_e = Fraction('1.602176634e-19') # electron charge in C
-_const_k = Fraction('1.380649e-23') # Boltzmann constant in J/K
+_const_h = MFraction('6.62607015e-34') # planck constant in J s
+_const_hbar = _const_h/(2*pi)
+_const_e = MFraction('1.602176634e-19') # electron charge in C
+_const_k = MFraction('1.380649e-23') # Boltzmann constant in J/K
 _const_dalton = gummy(1.660539040e-27,0.000000020e-27) # unified atomic mass unit in kg
 
 # constants from CODATA 2014
@@ -50,7 +57,7 @@ _const_G = gummy(6.67408e-11,0.00031e-11) # gravitational constant in m**3/kg s*
 _const_me = gummy(9.10938356e-31,0.00000011e-31) # mass of the electron in kg
 _const_alpha = gummy(7.2973525664e-3,0.0000000017e-3) # fine structure constant
 _const_rydberg = gummy(10973731.568508,0.000065) # in 1/m
-_const_a0 = _const_alpha/(4*np.pi*_const_rydberg) # bohr radius in m
+_const_a0 = _const_alpha/(4*pi*_const_rydberg) # bohr radius in m
 _const_proton_mass = gummy(1.672621898e-27,0.000000021e-27) # in kg
 
 # constants from IAU 2009
@@ -191,7 +198,7 @@ with _BuiltinLib():
     _d = Unit('day','d',Conversion(_h,24),add_symbol=True,order=0,
               description='unit of time')
     Unit.alias('D',_d)
-    _deg = Unit('degree','\t\u00B0',Conversion(_rad,np.pi/180),add_symbol=True,order=0,
+    _deg = Unit('degree','\t\u00B0',Conversion(_rad,pi/180),add_symbol=True,order=0,
                  latex_symbol='^{\circ}',ascii_symbol='deg',
                  description='unit of angle, angular unit')
     _arcmin = Unit('arcminute',"\t'",Conversion(_deg,Fraction(1,60)),add_symbol=True,order=0,
@@ -237,7 +244,12 @@ with _BuiltinLib():
     Unit.alias('dB field',_dbf)
     Unit.alias('dB root-power',_dbf)
     
-    LogUnit('neper','Np',LogConversion(1,1,np.e,np.log),add_symbol=True)
+    def _ln(x):
+        try:
+            return np.log(x)
+        except:
+            return np.log(float(x))
+    LogUnit('neper','Np',LogConversion(1,1,e,_ln),add_symbol=True)
     
     #Non-SI units associated with the CGS and the CGS-Gaussian system of units
     PrefixedUnit('erg','erg',Conversion(_J,1e-7),add_symbol=True,order=0,
@@ -258,7 +270,7 @@ with _BuiltinLib():
                  description='CGS unit of magnetic flux')
     PrefixedUnit('gauss','G',Conversion(_T,Fraction('1e-4')),add_symbol=True,order=0,
                  description='CGS unit of magnetic flux density')
-    PrefixedUnit('oersted','Oe',Conversion(_A*_m**-1,1000/(4*np.pi)),add_symbol=True,
+    PrefixedUnit('oersted','Oe',Conversion(_A*_m**-1,1000/(4*pi)),add_symbol=True,
                  order=0,description='CGS unit of auxiliary magnetic field')
     
     # decibel units
@@ -290,7 +302,7 @@ with _BuiltinLib():
                    add_symbol=True,description='unit of voltage')
     Unit.alias('dB(V)',_dBV)
     
-    _dBv = LogUnit('decibel u','dBu',LogConversion(gummy(np.sqrt(0.6),unit=_V),20,10,_lg10),
+    _dBv = LogUnit('decibel u','dBu',LogConversion(gummy(sqrt(0.6),unit=_V),20,10,_lg10),
                    add_symbol=True,
                    description='unit of voltage, volt, decibel relative to sqrt(0.6) V')
     Unit.alias('dBu',_dBv)
@@ -394,7 +406,7 @@ with _BuiltinLib():
     _au = Unit('astronomical unit','au',Conversion(_m,149597870700),add_symbol=True,
                order=0,description='astronomical unit of length')
     Unit.alias('ua',_au)
-    PrefixedUnit('parsec','pc',Conversion(_au,648000/np.pi),add_symbol=True,order=0,
+    PrefixedUnit('parsec','pc',Conversion(_au,648000/pi),add_symbol=True,order=0,
                  prefixes=['kilo','mega','giga'],
                  description='astronomical unit of length')
     _a = PrefixedUnit('Julian year','a',Conversion(_d,Fraction('365.25')),add_symbol=True,order=0,
@@ -479,7 +491,7 @@ with _BuiltinLib():
                  order=0,description='volt-ampere apparent power')
     
     _M_W = LogUnit('moment magnitude','M(W)',
-                   LogConversion(gummy(1,unit=_dyn*_cm),2/3,10,_lg10,offset=-10.7),
+                   LogConversion(gummy(1,unit=_dyn*_cm),MFraction(2,3),10,_lg10,offset=-10.7),
                    add_symbol=True,html_symbol='<i>M</i><sub>W</sub>',
                    latex_symbol='\\textit{M}_{W}',
                    desription='moment magnitude scale, earthquake intensity')
