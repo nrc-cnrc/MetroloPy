@@ -521,10 +521,11 @@ class ummy(Dfunc):
             s = str(x)
         else:
             x = float(x)
-            e = 15 - _floor(np.log10(x))
-            if sig > e:
-                ellipses = '...'
-                sig = e
+            if x != 0:
+                e = 15 - _floor(np.log10(x))
+                if sig > e:
+                    ellipses = '...'
+                    sig = e
             if sig < 0:
                 sig = 0
             s = round(x,sig)
