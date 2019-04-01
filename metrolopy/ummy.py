@@ -71,7 +71,7 @@ def _combu(a,b,c):
         except:
             return float('nan')
     
-    if b > a:
+    if abs(b) > abs(a):
         a,b = b,a
     if b == 0:
         return a
