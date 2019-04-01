@@ -535,10 +535,11 @@ class ummy(Dfunc):
                 s = str(int(x))
             else:
                 x = float(x)
-                n = 10**(15 - _floor(np.log10(x)))*x
+                e = 14 - _floor(np.log10(x))
+                n = 10**e*x
                 if int(n) != n:
                     ellipses = '...'
-                s = str(round(x,15))
+                s = str(round(x,e))
         elif sig is None:
             s = str(x)
         else:
