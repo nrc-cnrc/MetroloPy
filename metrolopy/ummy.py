@@ -92,7 +92,7 @@ def _combu(a,b,c):
     if abs(b) > abs(a):
         a,b = b,a
     if b == 0:
-        return a
+        return abs(a)
         
     r = b/a
     x = 1 + r**2 + 2*c*r
