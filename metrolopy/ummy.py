@@ -1371,8 +1371,8 @@ def _der(function,*args):
     n = len(args)
     if n == 1:
         arg = args[0]
-        if not isinstance(arg,ummy):
-            return function(arg)
+        if not isinstance(arg,ummy) or arg._u == 0:
+            return 0
                 
         df = None
         a = np.empty([8,8])
@@ -1403,7 +1403,7 @@ def _der(function,*args):
             v[i] = a
     d = np.zeros(n)
     for i,p in enumerate(args):
-        if isinstance(p,ummy) and p._ref is not None:          
+        if isinstance(p,ummy) and p._u > 0:          
             df = None
             s = 2*p.u
             x1 = np.array(v)
