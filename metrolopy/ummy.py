@@ -140,6 +140,8 @@ class ummy(Dfunc):
     #   rounding errors
     rounding_u = False
     
+    max_digits = 15
+    
     def __init__(self,x,u=0,dof=float('inf'),utype=None):
         if isinstance(x,ummy):
              self._copy(x,self,formatting=False)
@@ -548,7 +550,7 @@ class ummy(Dfunc):
                     em = _floor(mp.log10(abs(x)))
                 else:    
                     em = _floor(np.log10(abs(float(x))))
-                e = 15 - em
+                e = self.max_digits - em
                 if sig > e:
                     ellipses = '...'
                     sig = e
