@@ -36,7 +36,6 @@ from .logunit import LogUnit,LogConversion
 from .offsetunit import OffsetUnit,OffsetConversion
 from .functions import sqrt
 import numpy as np
-from fractions import Fraction
 
 pi = np.pi
 e = np.e
