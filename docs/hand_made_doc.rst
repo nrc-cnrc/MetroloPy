@@ -40,7 +40,9 @@ gummy parameters
    Note that if *x* is a number, the uncertainty distribution is
    assumed to be either a :ref:`Normal distribution<NormalDist>` or a
    :ref:`shifted and scaled Students's t distribution<TDist>` depending on
-   the value of the *dof* parameter.
+   the value of the *dof* parameter.  In addition to a float or 
+   Distribution, *x* can be int, numpy.floating, numpy.integer, 
+   fraction.Fraction, or mpmath.mpf.
 
 -  **u**: (real number >= 0) A number representing the uncertainty in *x*.
    By default *u* is taken to be the standard ("1-sigma") uncertainty, 
@@ -547,8 +549,12 @@ but a conversion must exist between the units, see also the
 c_ property). Exponents must be dimensionless (that is a
 conversion from the exponent unit to the unit *one* must exist) and if
 the exponent has an uncertainty, the base must be dimensionless.
-Nonlinear units such as the decibel and the degree Celsius affect the
-behavior of gummys under certain operations.  Most functions and
+Dividing gummys with int values results in a gummy with a
+fractions.Fraction value. Nonlinear units such as the decibel and 
+the degree Celsius affect the
+behavior of gummys under certain operations.  
+
+Most functions and
 operations respect the numpy boadcasting rules when passed numpy arrays.
 Operation and functions are first tried with no type conversions and
 if that fails all *x* and *u* values are converted to floats and the
@@ -1111,6 +1117,11 @@ instance level.
    console or Jupyter notebook and unicode otherwise. 'latex' and 'html'
    are only available when running under IPython. If these printers are
    not available the display will default to 'unicode'.
+   
+.. _max_digits:
+
+-  **max_digits**:  (int) Gets or sets the maximum number of digits to display
+   for the x value.
 
 gummy display methods
 ~~~~~~~~~~~~~~~~~~~~~
