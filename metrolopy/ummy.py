@@ -697,13 +697,13 @@ class ummy(Dfunc):
         for i,a in enumerate(args):
             if isinstance(a,ummy):
                 if not isinf(a.dof):
-                    dm += np.sum((c.dot(du)[i])**4)/a.dof
+                    dm += np.sum((c.dot(du)[i]/u)**4)/a.dof
                 if a._ref is not None:
                     a._ref.combl(r,a._refs*c[i].dot(du)/u,a._refs*du[i]/u,args)
         if r._ref is not None:
             _GummyRef.check_cor(r)
         if dm > 0:
-            r._dof = u**4/dm
+            r._dof = 1/dm
         return r
         
     @classmethod
