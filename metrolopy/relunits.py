@@ -25,7 +25,7 @@ This module is loaded by the gummy.units module and is not intended be be
 imported directly.  Dimensionless units are defined here.
 """
 from .unit import _BuiltinLib,Unit,Conversion,one
-from fractions import Fraction
+from .ummy import MFraction
 
 class RatioUnit(Unit):
     """RatioUnit is used for dimensionless units like % where powers, e.g. %**2,
@@ -46,10 +46,10 @@ with _BuiltinLib():
     # The \t at the beggining of the symbol causes the space between the numerical
     # value and the unit symbol per the Chicago Manual of Style (but not the 
     # SI brochure).
-    RatioUnit('percent','\t%',Conversion(one,0.01),short_name='%',
+    RatioUnit('percent','\t%',Conversion(one,MFraction('0.01')),short_name='%',
          latex_symbol='\t\\%',add_symbol=False)
     
-    RatioUnit('part per million','ppm',Conversion(one,Fraction('1e-6')),add_symbol=True)
-    RatioUnit('part per billion','ppb',Conversion(one,Fraction('1e-9')),add_symbol=True)
-    RatioUnit('part per trillion','ppt',Conversion(one,Fraction('1e-12')),add_symbol=True)
-    RatioUnit('part per quadrillion','ppq',Conversion(one,Fraction('1e-15')),add_symbol=True)
+    RatioUnit('part per million','ppm',Conversion(one,MFraction('1e-6')),add_symbol=True)
+    RatioUnit('part per billion','ppb',Conversion(one,MFraction('1e-9')),add_symbol=True)
+    RatioUnit('part per trillion','ppt',Conversion(one,MFraction('1e-12')),add_symbol=True)
+    RatioUnit('part per quadrillion','ppq',Conversion(one,MFraction('1e-15')),add_symbol=True)
