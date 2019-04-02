@@ -621,20 +621,20 @@ class ummy(Dfunc):
         # Note that we allow the return value to be less than one,
         # but when the dof is retrieved using the dof property get method, 
         # values less than one will be rounded up to one.
-        if isinf(dof1) and isinf(dof2):
+        if (isinf(dof1) and isinf(dof2)) or u == 0:
             return float('inf')
         if isinf(dof1) or isinf(dof2):
             xt = 0
         else:
-            xt = (d1*d2*c*u1*u2)**2
+            xt = (d1*d2*c*(u1/u)*(u2/u))**2
         d = 0
         if isfinite(dof1):
-            d += ((d1*u1)**4 + xt)/dof1
+            d += ((d1*u1/u)**4 + xt)/dof1
         if isfinite(dof2):
-            d += ((d2*u2)**4 + xt)/dof2
+            d += ((d2*u2/u)**4 + xt)/dof2
         if d == 0:
             return float('inf')
-        r = u**4/d
+        r = 1/d
         if r > cls.max_dof:
             return float('inf')
         return r
