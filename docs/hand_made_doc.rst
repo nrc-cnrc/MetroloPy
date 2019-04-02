@@ -25,7 +25,7 @@ gummy parameters
 ----------------
 (all parameters except *x* are optional)
 
--  **x**: (float or Distribution_ ) Either a
+-  **x**: (real number or Distribution_ ) Either a
    number representing the value of the gummy or a
    Distribution_ instance that represents the
    probability distribution of the gummy. If *x* is a
@@ -37,12 +37,14 @@ gummy parameters
 
        >>> g = gummy(UniformDist(center = 2.25, half_width = 0.12))
 
-   Note that if *x* is a float value, the uncertainty distribution is
+   Note that if *x* is a number, the uncertainty distribution is
    assumed to be either a :ref:`Normal distribution<NormalDist>` or a
    :ref:`shifted and scaled Students's t distribution<TDist>` depending on
-   the value of the *dof* parameter.
+   the value of the *dof* parameter.  In addition to a float or 
+   Distribution, *x* can be int, numpy.floating, numpy.integer, 
+   fraction.Fraction, or mpmath.mpf.
 
--  **u**: (float >= 0) A number representing the uncertainty in *x*.
+-  **u**: (real number >= 0) A number representing the uncertainty in *x*.
    By default *u* is taken to be the standard ("1-sigma") uncertainty, 
    however if *k* or *p* are specified then *u* is taken to be the
    corresponding expanded uncertainty. Also by default, when the *uunit*
@@ -65,7 +67,7 @@ gummy parameters
 -  **dof**: (float or int > 0) The number of degrees of freedom upon
    which the uncertainty is based. The default is ``float('inf')``.
 
--  **k**: (float > 0) The coverage factor for *u*. The value of the
+-  **k**: (float or int > 0) The coverage factor for *u*. The value of the
    *u* parameter is divided by the coverage factor to get the standard
    uncertainty for the new gummy. If the paramter *p* is specified then
    the coverage factor is calculated using *p* and the value of the *k*
@@ -245,7 +247,7 @@ basic gummy properties
    taken to be the standard deviation of the mean (*s*/sqrt(*n*), where *s* is
    the sample standard deviation and *n* is the number of measurements).
    However there is some "extra uncertainty" because the sample standard
-   deviation does not exactly equal to the population standard deviation.
+   deviation does not exactly equal the population standard deviation.
    This is taken into account by using a Student's *t* distribution to
    calculate the expanded uncertainty. However it has been pointed out,
    by those who advocate a Bayesian point of view, that the probability
@@ -285,11 +287,18 @@ basic gummy methods
    matrix of a list or array of gummys. The return value is a
    numpy.ndarray.
 
--  **copy(formatting=True)**: Returns a copy of the gummy. The copy will
+-  **copy(formatting=True, tofloat=False)**: Returns a copy of the gummy.  
+   The copy will
    be have a correlation coefficient of 1 with the original gummy. If
    the *formatting* parameter is ``True`` the display formatting
    information will be copied and if ``False`` the display formatting
-   will be set to the default for a new gummy.
+   will be set to the default for a new gummy.  If *tofloat* is ``True``
+   then the *x* and *u* values in the new gummy will be converted to
+   floats.
+   
+-  **tofloat()**:  Returns a copy with the *x* and *u* values converted
+   to float values.  Equivalent to 
+   ``copy(formatting=Flase,tofloat=True)``.
 
 -  **ufrom(x)**: Gets the standard uncertainty contributed from
    particular gummys or utype_ if all other
@@ -540,8 +549,18 @@ but a conversion must exist between the units, see also the
 c_ property). Exponents must be dimensionless (that is a
 conversion from the exponent unit to the unit *one* must exist) and if
 the exponent has an uncertainty, the base must be dimensionless.
-Nonlinear units such as the decibel and the degree Celsius affect the
-behavior of gummys under certain operations.
+Dividing gummys with int values results in a gummy with a
+fractions.Fraction value. Nonlinear units such as the decibel and 
+the degree Celsius affect the
+behavior of gummys under certain operations.  
+
+Most functions and
+operations respect the numpy boadcasting rules when passed numpy arrays.
+Operation and functions are first tried with no type conversions and
+if that fails all *x* and *u* values are converted to floats and the
+operation of function is tried again. Set 
+``metrolopy.dfunc.try_fconvert = False`` to disable this automatic
+conversion to float values.
 
 The gummy module installs a number of common mathematical
 functions_ that can be applied directly to dimensionless
@@ -550,7 +569,7 @@ gummys, e.g::
     >>> import gummy as uc
     >>> g = uc.gummy(0.123,0.022) 
     >>> uc.sin(g)
-    0.851(12)
+    0.123(22)
 
 For numpy version 1.13 or later, many numpy functions can be applied
 directly to dimensionless gummys, e.g::
@@ -559,7 +578,7 @@ directly to dimensionless gummys, e.g::
     >>> import gummy as uc
     >>> g = uc.gummy(0.123,0.022) 
     >>> np.cos(g)
-    -0.525(19)
+    0.9924(27)
         
 
 The two class methods immediately below may also be used to apply an
@@ -923,7 +942,7 @@ gummy methods related to Monte-Carlo simulation
       the mean value (as given by gummy.xsim). The default is True.
 
    -  **mean_marker_options**: (dict) A dictionary containing keywords to
-      be passed to the pylab.axvline method which draws the mean marker.
+      be passed to the pyplot.axvline method which draws the mean marker.
       For example setting this to {'color'='r','linewidth'=4} makes the
       mean marker red and with thickness of four points.
 
@@ -932,16 +951,16 @@ gummy methods related to Monte-Carlo simulation
       True.
 
    -  **ci_marker_options**: (dict) A dictionary containing keywords to be
-      passed to the pylab.axvline method which draws the confidence
+      passed to the pyplot.axvline method which draws the confidence
       interval markers.
 
-   -  **hold**: (bool) If this is False pylab.show() is called before this
-      method exits. If it is True pylab.show() is not called. The
+   -  **hold**: (bool) If this is False pyplot.show() is called before this
+      method exits. If it is True pyplot.show() is not called. The
       default is False.
 
    -  **plot_options**: These are optional keyword arguments that are
-      passed to the pylab.hist method. For example bins=50 overrides the
-      default number of bins (100). For other options see the pylab.hist
+      passed to the pyplot.hist method. For example bins=50 overrides the
+      default number of bins (100). For other options see the pyplot.hist
       documentation.
 
 .. _covplot:
@@ -973,15 +992,15 @@ gummy methods related to Monte-Carlo simulation
       the mean values of *x* and *y*. The default is False.
 
    -  **mean_marker_options**: (dict) A dictionary of options to be
-      passed to the pylab.axvline and pylab.axhline methods that draw
+      passed to the pyplot.axvline and pyplot.axhline methods that draw
       the mean\_marker.
 
-   -  **hold**: (bool) If this is False pylab.show() is called before
-      this method exits. If it is True pylab.show() is not called. The
+   -  **hold**: (bool) If this is False pyplot.show() is called before
+      this method exits. If it is True pyplot.show() is not called. The
       default is False.
 
    -  **plot_options**: These are optional keyword arguments that are
-      passed to the pylab.plot method. For example ms=0.1 decreases the
+      passed to the pyplot.plot method. For example ms=0.1 decreases the
       size of the dots in the plot.
 
 gummy properties and methods related to display and formatting
@@ -1098,6 +1117,11 @@ instance level.
    console or Jupyter notebook and unicode otherwise. 'latex' and 'html'
    are only available when running under IPython. If these printers are
    not available the display will default to 'unicode'.
+   
+.. _max_digits:
+
+-  **max_digits**:  (int) Gets or sets the maximum number of digits to display
+   for the x value.
 
 gummy display methods
 ~~~~~~~~~~~~~~~~~~~~~
@@ -2035,12 +2059,12 @@ Fit methods
 
    **plot parameters** (all parameters are optional):
    
-   -  **data\_format**: (str) The format string passed to pylab.plot
-      or pylab.errorbar when plotting the data points. The default is
+   -  **data\_format**: (str) The format string passed to pyplot.plot
+      or pyplot.errorbar when plotting the data points. The default is
       'ko'.
 
    -  **data\_options**: (dict) A dictionary containg key words that
-      are passed to pylab.plot or pylab.errorbar when plotting the data
+      are passed to pyplot.plot or pyplot.errorbar when plotting the data
       points.
 
    -  **show\_data**: (bool) Whether or not to plot the data points.
@@ -2055,12 +2079,12 @@ Fit methods
       multiplying the standard uncertainty for each data point by this
       quantity. The default value is 1.
 
-   -  **fit\_format**: (str) The format string passed to pylab.plot
-      or pylab.errorbar when plotting the fitted curve. The default is
+   -  **fit\_format**: (str) The format string passed to pyplot.plot
+      or pyplot.errorbar when plotting the fitted curve. The default is
       'k-'.
 
    -  **fit\_options**: (dict) A dictionary containg key words that
-      are passed to pylab.plot or pylab.errorbar when plotting the
+      are passed to pyplot.plot or pyplot.errorbar when plotting the
       fitted curve.
 
    -  **show\_fit**: (bool) Whether or not to plot the fitted curve.
@@ -2085,7 +2109,7 @@ Fit methods
       Fit.plot\_points attribute will be used, which has a default value
       of 100.
 
-   -  **hold**: (bool) If hold is ``False`` then ``pylab.show()`` is
+   -  **hold**: (bool) If hold is ``False`` then ``pyplot.show()`` is
       executed just before this function returns.
 
    -  **cik**: (float or None) Coverage factor for the
@@ -2099,9 +2123,9 @@ Fit methods
       not specify both *cik* and *cip*.
 
    -  **ciformat**: (str, default is 'g-') Format string passes
-      to the pylab.plot command that plots the uncertainty bands.
+      to the pyplot.plot command that plots the uncertainty bands.
 
-   -  **cioptions**: (dict) Keywork options passed to the pylab.plot
+   -  **cioptions**: (dict) Keywork options passed to the pyplot.plot
       command that plots the uncertainty bands.
 
    -  **clk**,\ **clp**,\ **clformat**, and **cloptions**: Control limit

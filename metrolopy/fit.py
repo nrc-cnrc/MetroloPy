@@ -217,11 +217,11 @@ class _Fit:
         Parameters
         ----------
         data_format: `str`, optional
-            The format string passed to `pylab.plot` or `pylab.errorbar` when
+            The format string passed to `pyplot.plot` or `pyplot.errorbar` when
             plotting the data points.  The default is 'ko'.
         data_options: `dict`, optional
-            A dictionary containing key words that are passed to `pylab.plot` or
-            `pylab.errorbar` when plotting the data points.
+            A dictionary containing key words that are passed to `pyplot.plot` or
+            `pyplot.errorbar` when plotting the data points.
         show_data: `bool`, optional
             Whether or not to plot the data points. The default is `True`.
         error_bars: `bool`, optional
@@ -232,11 +232,11 @@ class _Fit:
             uncertainty for each data point by this quantity. The default value
             is 1.
         fit_format: `str`, optional
-            The format string passed to `pylab.plot` or` pylab.errorbar` when
+            The format string passed to `pyplot.plot` or` pyplot.errorbar` when
             plotting the fitted curve.  The default is 'k-'.
         fit_options: `dict`, optional
-            A dictionary containing key words that are passed to `pylab.plot`
-            or `pylab.errorbar` when plotting the fitted curve.
+            A dictionary containing key words that are passed to `pyplot.plot`
+            or `pyplot.errorbar` when plotting the fitted curve.
         show_fit: `bool`, optional
             Whether or not to plot the fitted curve. The default is `True`.
         xmin and xmax: `float`, optional
@@ -257,7 +257,7 @@ class _Fit:
             `None`, then the value of the `Fit.plot_points` attribute will be used,
             which has a default value of 100.
         hold: `bool`, optional
-            If hold is `False` then ``pylab.show()`` is executed just before this
+            If hold is `False` then ``pyplot.show()`` is executed just before this
             function returns.  The detault is `False`
         cik: `float`, `int`, or `None`', optional
             Coverage factor for the uncertainty bands  in the plot.  If `cik` and `cip`
@@ -268,17 +268,17 @@ class _Fit:
             and `cip` are None then uncertainty bands will not be shown.  Do
             not specify both `cik and `cip`.
         ciformat: `str`, optional
-            Format string passes to the `pylab.plot` command that plots the
+            Format string passes to the `pyplot.plot` command that plots the
             uncertainty bands. The default is 'g-'.
         cioptions:  `dict`, optional
-            Keywork options passed to the `pylab.plot` command that plots the
+            Keywork options passed to the `pyplot.plot` command that plots the
             uncertainty bands.
         clk,clp,clformat, cloptions:  optional
             Control limit options, same as above for the uncertainty bands.  The
             control limit band if the control limit k factor multiplied by the
             RSS of the fit uncertainty and the standard deviation of the residuals.
         """
-        import pylab
+        import matplotlib.pyplot as plt
          
         if self.xdim != 1 or self.ydim != 1:
             raise NotImplementedError('plot is only available for 1-d data')
@@ -324,13 +324,13 @@ class _Fit:
                     data_format = ''
                 if 'ls' not in data_options and 'linestyle' not in data_options:
                     data_options['ls'] = 'none'
-                pylab.errorbar(xf,yf,xerr=ux,yerr=uy,fmt=data_format,
+                plt.errorbar(xf,yf,xerr=ux,yerr=uy,fmt=data_format,
                                **data_options)
             else:
                 if data_format is None:
-                    pylab.plot(xf,yf,**data_options)
+                    plt.plot(xf,yf,**data_options)
                 else:
-                    pylab.plot(xf,yf,data_format,**data_options)            
+                    plt.plot(xf,yf,data_format,**data_options)            
             
         if show_fit or cik is not None or clk is not None or cip is not None or clp is not None:
             if xmin is None:
@@ -368,42 +368,42 @@ class _Fit:
         if show_fit:
             fy = np.array([self.ypredf(x) for x in fx])
             if fit_format is None:
-                pylab.plot(fx,fy,**fit_options)
+                plt.plot(fx,fy,**fit_options)
             else:
-                pylab.plot(fx,fy,fit_format,**fit_options)
+                plt.plot(fx,fy,fit_format,**fit_options)
         
         if cik is not None:
             u = np.array([self.ypred(x).u for x in fx])
             up = fy + u*cik
             un = fy - u*cik
             if ciformat is None:
-                pylab.plot(fx,up,**cioptions)
-                pylab.plot(fx,un,**cioptions)
+                plt.plot(fx,up,**cioptions)
+                plt.plot(fx,un,**cioptions)
             else:
-                pylab.plot(fx,up, ciformat, **cioptions)
-                pylab.plot(fx,un, ciformat, **cioptions)
+                plt.plot(fx,up, ciformat, **cioptions)
+                plt.plot(fx,un, ciformat, **cioptions)
         
         if clk is not None:
             u = np.array([self.control_limit(x, clk) for x in fx])
             upl = fy + u
             unl = fy - u
             if clformat is None:
-                pylab.plot(fx,upl,**cloptions)
-                pylab.plot(fx,unl,**cloptions)
+                plt.plot(fx,upl,**cloptions)
+                plt.plot(fx,unl,**cloptions)
             else:
-                pylab.plot(fx,upl,clformat,**cloptions)
-                pylab.plot(fx,unl,clformat,**cloptions)
+                plt.plot(fx,upl,clformat,**cloptions)
+                plt.plot(fx,unl,clformat,**cloptions)
             
         xlabel = gummy._plotlabel(xlabel,self.xunit.tostring(fmt='latex'))
         if xlabel is not None:
-            pylab.xlabel(xlabel)
+            plt.xlabel(xlabel)
             
         ylabel = gummy._plotlabel(ylabel,self.yunit.tostring(fmt='latex'))
         if ylabel is not None:
-            pylab.ylabel(ylabel)
+            plt.ylabel(ylabel)
             
         if not hold:
-            pylab.show()
+            plt.show()
             
     def control_limit(self,x,k=2):
         if self.sigma is None:

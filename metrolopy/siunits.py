@@ -28,7 +28,8 @@ The most of the units here are from the SI Brochure, draft 9th edition published
 by the BIPM.
 """
 
-from .gummy import gummy
+from .gummy import gummy, _lg10
+from .ummy import MFraction
 from .unit import _BuiltinLib,Conversion,Unit
 from .prefixedunit import PrefixedUnit,BinaryPrefixedUnit
 from .logunit import LogUnit,LogConversion
@@ -36,12 +37,15 @@ from .offsetunit import OffsetUnit,OffsetConversion
 from .functions import sqrt
 import numpy as np
 
+pi = np.pi
+e = np.e
+
 # constants from draft of the 9 edition of the SI brochure dated 18 Dec. 2018
 _const_c = 299792458 # speed of light in m/s
-_const_h = 6.62607015e-34 # planck constant in J s
-_const_hbar = _const_h/(2*np.pi)
-_const_e = 1.602176634e-19 # electron charge in C
-_const_k = 1.380649e-23 # Boltzmann constant in J/K
+_const_h = MFraction('6.62607015e-34') # planck constant in J s
+_const_hbar = _const_h/(2*pi)
+_const_e = MFraction('1.602176634e-19') # electron charge in C
+_const_k = MFraction('1.380649e-23') # Boltzmann constant in J/K
 _const_dalton = gummy(1.660539040e-27,0.000000020e-27) # unified atomic mass unit in kg
 
 # constants from CODATA 2014
@@ -49,7 +53,7 @@ _const_G = gummy(6.67408e-11,0.00031e-11) # gravitational constant in m**3/kg s*
 _const_me = gummy(9.10938356e-31,0.00000011e-31) # mass of the electron in kg
 _const_alpha = gummy(7.2973525664e-3,0.0000000017e-3) # fine structure constant
 _const_rydberg = gummy(10973731.568508,0.000065) # in 1/m
-_const_a0 = _const_alpha/(4*np.pi*_const_rydberg) # bohr radius in m
+_const_a0 = _const_alpha/(4*pi*_const_rydberg) # bohr radius in m
 _const_proton_mass = gummy(1.672621898e-27,0.000000021e-27) # in kg
 
 # constants from IAU 2009
@@ -151,9 +155,9 @@ with _BuiltinLib():
                  description='SI unit for catalytic activity')
     
     # 1990 conventional unit definitions
-    _KJ90 = 483597.9e9 # Josephson constant Hz/V, 1990 conventional value
+    _KJ90 = MFraction('483597.9e9') # Josephson constant Hz/V, 1990 conventional value
     _KJ = 2*_const_e/_const_h
-    _RK90 = 25812.807 # Von Klitzing constant in ohm, 1990 conventional value
+    _RK90 = MFraction('25812.807') # Von Klitzing constant in ohm, 1990 conventional value
     _RK = _const_h/_const_e**2
     _V90 = PrefixedUnit('volt 90','V(90)',Conversion(_V,_KJ90/_KJ),add_symbol=True,
                         html_symbol='V<sub>90</sub>',latex_symbol='V_{90}',
@@ -190,12 +194,12 @@ with _BuiltinLib():
     _d = Unit('day','d',Conversion(_h,24),add_symbol=True,order=0,
               description='unit of time')
     Unit.alias('D',_d)
-    _deg = Unit('degree','\t\u00B0',Conversion(_rad,np.pi/180),add_symbol=True,order=0,
+    _deg = Unit('degree','\t\u00B0',Conversion(_rad,pi/180),add_symbol=True,order=0,
                  latex_symbol='^{\circ}',ascii_symbol='deg',
                  description='unit of angle, angular unit')
-    _arcmin = Unit('arcminute',"\t'",Conversion(_deg,1/60),add_symbol=True,order=0,
+    _arcmin = Unit('arcminute',"\t'",Conversion(_deg,MFraction(1,60)),add_symbol=True,order=0,
                    short_name='arcmin',description='unit of angle, angular unit')
-    Unit('arcsecond','\t"',Conversion(_arcmin,1/60),add_symbol=True,order=0,
+    Unit('arcsecond','\t"',Conversion(_arcmin,MFraction(1,60)),add_symbol=True,order=0,
          short_name='arcsec',description='unit of angle, angular unit')
     Unit('hectare','ha',Conversion('hm**2',1),add_symbol=True,order=0,
          description='unit of area')
@@ -215,7 +219,7 @@ with _BuiltinLib():
                  description='unit of pressure')
     Unit('millimetre of mercury','mmHg',Conversion(_Pa,133.322387415),add_symbol=True,
          order=0,description='unit of pressure')
-    Unit('angstrom','\u212B',Conversion(_m,1e-10),add_symbol=True,order=0,
+    Unit('angstrom','\u212B',Conversion(_m,MFraction('1e-10')),add_symbol=True,order=0,
          html_symbol='&#8491;',ascii_symbol='angstrom',description='unit of length')
     
     _nm = Unit('nautical mile','M',Conversion(_m,1852),add_symbol=True,order=0,
@@ -224,24 +228,29 @@ with _BuiltinLib():
     Unit.alias('nmi',_nm)
     Unit.alias('Nm',_nm)
     
-    Unit('barn','b',Conversion(_m**2,1e-28),add_symbol=True,order=0,
+    Unit('barn','b',Conversion(_m**2,MFraction('1e-28')),add_symbol=True,order=0,
          description='unit of area')
     Unit('knot','kn',Conversion(_nm*_h**-1,1),add_symbol=True,order=0,
          description='unit of speed')
-    _dbp = LogUnit('decibel','dB',LogConversion(1,10,10,np.log10),add_symbol=True)
+    _dbp = LogUnit('decibel','dB',LogConversion(1,10,10,_lg10),add_symbol=True)
     Unit.alias('dB power',_dbp)
     Unit.alias('dB-p',_dbp)
     
-    _dbf = LogUnit('decibel field','dB',LogConversion(1,20,10,np.log10),short_name='dB-f')
+    _dbf = LogUnit('decibel field','dB',LogConversion(1,20,10,_lg10),short_name='dB-f')
     Unit.alias('dB field',_dbf)
     Unit.alias('dB root-power',_dbf)
     
-    LogUnit('neper','Np',LogConversion(1,1,np.e,np.log),add_symbol=True)
+    def _ln(x):
+        try:
+            return np.log(x)
+        except:
+            return np.log(float(x))
+    LogUnit('neper','Np',LogConversion(1,1,e,_ln),add_symbol=True)
     
     #Non-SI units associated with the CGS and the CGS-Gaussian system of units
-    PrefixedUnit('erg','erg',Conversion(_J,1e-7),add_symbol=True,order=0,
+    PrefixedUnit('erg','erg',Conversion(_J,MFraction('1e-7')),add_symbol=True,order=0,
                  description='CGS unit of energy')
-    _dyn = PrefixedUnit('dyne','dyn',Conversion(_N,1e-5),add_symbol=True,order=0,
+    _dyn = PrefixedUnit('dyne','dyn',Conversion(_N,MFraction('1e-5')),add_symbol=True,order=0,
                         description='CGS unit of force')
     PrefixedUnit('poise','P',Conversion('dyn s cm**-2',1),add_symbol=True,order=0,
                  description='CGS unit of dynamic viscosity')
@@ -253,110 +262,110 @@ with _BuiltinLib():
                  description='CGS unit of illuminance or luminous flux')
     PrefixedUnit('galileo','Gal',Conversion('cm s**-2',1),add_symbol=True,order=0,
                  description='CGS unit of acceleration')
-    PrefixedUnit('maxwell','Mx',Conversion(_Wb,1e-8),add_symbol=True,order=0,
+    PrefixedUnit('maxwell','Mx',Conversion(_Wb,MFraction('1e-8')),add_symbol=True,order=0,
                  description='CGS unit of magnetic flux')
-    PrefixedUnit('gauss','G',Conversion(_T,1e-4),add_symbol=True,order=0,
+    PrefixedUnit('gauss','G',Conversion(_T,MFraction('1e-4')),add_symbol=True,order=0,
                  description='CGS unit of magnetic flux density')
-    PrefixedUnit('oersted','Oe',Conversion(_A*_m**-1,1000/(4*np.pi)),add_symbol=True,
+    PrefixedUnit('oersted','Oe',Conversion(_A*_m**-1,1000/(4*pi)),add_symbol=True,
                  order=0,description='CGS unit of auxiliary magnetic field')
     
     # decibel units
     _dBSPL = LogUnit('decibel sound pressure level','dB',
-                 LogConversion(gummy(20,unit='uPa'),20,10,np.log10),
+                 LogConversion(gummy(20,unit='uPa'),20,10,_lg10),
                  short_name='dB(SPL)',add_symbol=False,
                  description='sound pressure level in air')
     Unit.alias('dB(20uPa)',_dBSPL)
     
     _dBuPa = LogUnit('decibel \u03BCPa','dB',
-                   LogConversion(gummy(1,unit='uPa'),20,10,np.log10),
+                   LogConversion(gummy(1,unit='uPa'),20,10,_lg10),
                    short_name='dB(uPa)',add_symbol=False,
                    description='sound pressure level in water')
     
     _dBSIL = LogUnit('decibel sound intensity level','dB',
-                 LogConversion(gummy(1e-12,unit=_W/_m**2),10,10,np.log10),
+                 LogConversion(gummy(1e-12,unit=_W/_m**2),10,10,_lg10),
                  short_name='dB(SIL)',add_symbol=False)
     
     _dBSWL = LogUnit('decibel sound power level','dB',
-                 LogConversion(gummy(1e-12,unit=_W),10,10,np.log10),
+                 LogConversion(gummy(1e-12,unit=_W),10,10,_lg10),
                  short_name='dB(SWL)',add_symbol=False)
     Unit.alias('dB(pW)',_dBSWL)
     
-    _dBm = LogUnit('decibel milliwatt','dBm',LogConversion(gummy(1,unit='mW'),10,10,np.log10),
+    _dBm = LogUnit('decibel milliwatt','dBm',LogConversion(gummy(1,unit='mW'),10,10,_lg10),
                    add_symbol=True,description='unit of power')
     Unit.alias('dB(mW)',_dBm)
     
-    _dBV = LogUnit('decibel volt','dBV',LogConversion(gummy(1,unit=_V),20,10,np.log10),
+    _dBV = LogUnit('decibel volt','dBV',LogConversion(gummy(1,unit=_V),20,10,_lg10),
                    add_symbol=True,description='unit of voltage')
     Unit.alias('dB(V)',_dBV)
     
-    _dBv = LogUnit('decibel u','dBu',LogConversion(gummy(np.sqrt(0.6),unit=_V),20,10,np.log10),
+    _dBv = LogUnit('decibel u','dBu',LogConversion(gummy(sqrt(0.6),unit=_V),20,10,_lg10),
                    add_symbol=True,
                    description='unit of voltage, volt, decibel relative to sqrt(0.6) V')
     Unit.alias('dBu',_dBv)
     
-    _dBmV = LogUnit('decibel millivolt','dBmV',LogConversion(gummy(1,unit='mV'),20,10,np.log10),
+    _dBmV = LogUnit('decibel millivolt','dBmV',LogConversion(gummy(1,unit='mV'),20,10,_lg10),
                     add_symbol=True,description='unit of voltage, volt')
     Unit.alias('dB(mV)',_dBmV)
     
-    _dBuV = LogUnit('decibel microvolt','dB\u03bcV',LogConversion(gummy(1,unit='uV'),20,10,np.log10),
+    _dBuV = LogUnit('decibel microvolt','dB\u03bcV',LogConversion(gummy(1,unit='uV'),20,10,_lg10),
                     add_symbol=True,ascii_symbol='dBuV',description='unit of voltage')
     Unit.alias('dB(uV)',_dBuV)
     
-    _dBZ = LogUnit('decibel Z','dBZ',LogConversion(gummy(1,unit='mm**6 m**-3'),10,10,np.log10),
+    _dBZ = LogUnit('decibel Z','dBZ',LogConversion(gummy(1,unit='mm**6 m**-3'),10,10,_lg10),
                     add_symbol=True,description='unit used with weather radar')
     Unit.alias('dB(Z)',_dBZ)
     
-    _dBJ = LogUnit('decibel joule','dBJ',LogConversion(gummy(1,unit=_J),10,10,np.log10),
+    _dBJ = LogUnit('decibel joule','dBJ',LogConversion(gummy(1,unit=_J),10,10,_lg10),
                     add_symbol=True,description='unit of energy')
     Unit.alias('dB(J)',_dBJ)
     
-    _dBmu = LogUnit('decibel microvolt per metre','dB\u03bc',LogConversion(gummy(1,unit='uV/m'),20,10,np.log10),
+    _dBmu = LogUnit('decibel microvolt per metre','dB\u03bc',LogConversion(gummy(1,unit='uV/m'),20,10,_lg10),
                     add_symbol=True,description='unit of voltage')
     Unit.alias('dB(uV/m)',_dBmu)
     Unit.alias('decibel microvolt per meter',_dBmu)
     
-    _dBf = LogUnit('decibel femtowatt','dBf',LogConversion(gummy(1,unit='fW'),10,10,np.log10),
+    _dBf = LogUnit('decibel femtowatt','dBf',LogConversion(gummy(1,unit='fW'),10,10,_lg10),
                     add_symbol=True,description='unit of power')
     Unit.alias('dB(fW)',_dBf)
     
-    _dBW = LogUnit('decibel watt','dBW',LogConversion(gummy(1,unit=_W),10,10,np.log10),
+    _dBW = LogUnit('decibel watt','dBW',LogConversion(gummy(1,unit=_W),10,10,_lg10),
                     add_symbol=True,description='unit of power')
     Unit.alias('dB(W)',_dBW)
     
-    _dBk = LogUnit('decibel kilowatt','dBk',LogConversion(gummy(1,unit='kW'),10,10,np.log10),
+    _dBk = LogUnit('decibel kilowatt','dBk',LogConversion(gummy(1,unit='kW'),10,10,_lg10),
                     add_symbol=True,description='unit of power')
     Unit.alias('dB(kW)',_dBk)
     
-    _dBsm = LogUnit('decibel square metre','dBsm',LogConversion(gummy(1,unit=_m**2),10,10,np.log10),
+    _dBsm = LogUnit('decibel square metre','dBsm',LogConversion(gummy(1,unit=_m**2),10,10,_lg10),
                     add_symbol=True,description='unit used to measure antenna effective area')
     Unit.alias('dB(m**2)',_dBsm)
     Unit.alias('decibel square meter',_dBsm)
     
-    _dBmm1 = LogUnit('decibel reciprocal metre','dB(m\u207b\u00b9)',LogConversion(gummy(1,unit=_m**-1),10,10,np.log10),
+    _dBmm1 = LogUnit('decibel reciprocal metre','dB(m\u207b\u00b9)',LogConversion(gummy(1,unit=_m**-1),10,10,_lg10),
                     add_symbol=True,html_symbol='dB(m<sup>-1</sup>)',
                     latex_symbol='\t\t\\mathrm{dB}(\\mathrm{m}^{-1})',
                     ascii_symbol='dB(m**-1)',
                     description='unit used to measure antenna factor')
     Unit.alias('decibel reciprocal meter',_dBmm1)
     
-    _dBHz = LogUnit('decibel hertz','dB-Hz',LogConversion(gummy(1,unit=_Hz),10,10,np.log10),
+    _dBHz = LogUnit('decibel hertz','dB-Hz',LogConversion(gummy(1,unit=_Hz),10,10,_lg10),
                     add_symbol=True,description='frequency')
     Unit.alias('dB(Hz)',_dBHz)
     
-    _dBK = LogUnit('decibel kelvin','dBK',LogConversion(gummy(1,unit=_K),10,10,np.log10),
+    _dBK = LogUnit('decibel kelvin','dBK',LogConversion(gummy(1,unit=_K),10,10,_lg10),
                     add_symbol=True,description='unit used to measure noise temperature')
     Unit.alias('dB(K)',_dBK)
     
-    _dBmm1 = LogUnit('decibel reciprocal kelvin','dB(K\u207b\u00b9)',LogConversion(gummy(1,unit=_K**-1),20,10,np.log10),
+    _dBmm1 = LogUnit('decibel reciprocal kelvin','dB(K\u207b\u00b9)',LogConversion(gummy(1,unit=_K**-1),20,10,_lg10),
                     add_symbol=True,html_symbol='dB(K<sup>-1</sup>)',
                     latex_symbol='\t\t\\mathrm{dB}(\\mathrm{K}^{-1})',
                     ascii_symbol='dB(K**-1)',description='temperature')
     
-    _mBm = LogUnit('millibel milliwatt','mBm',LogConversion(gummy(1,unit='mW'),1000,10,np.log10),
+    _mBm = LogUnit('millibel milliwatt','mBm',LogConversion(gummy(1,unit='mW'),1000,10,_lg10),
                     add_symbol=True,description='unit of power')
     Unit.alias('mB(mW)',_mBm)
     
-    LogUnit('bel','B',LogConversion(1,1,10,np.log10),add_symbol=False)
+    LogUnit('bel','B',LogConversion(1,1,10,_lg10),add_symbol=False)
     
     _bit = BinaryPrefixedUnit('bit','bit',order=0,add_symbol=True,
                               additional_names=('shannon',),
@@ -381,7 +390,7 @@ with _BuiltinLib():
     Unit.alias('nybble',_nibble)
     Unit.alias('nyble',_nibble)
     
-    PrefixedUnit('torr','Torr',Conversion(_Pa,101325/760),add_symbol=True,
+    PrefixedUnit('torr','Torr',Conversion(_Pa,MFraction(101325,760)),add_symbol=True,
                          order=0,prefixes=['milli'],description='unit of pressure')
     Unit('standard atmosphere','atm',Conversion(_Pa,101325),add_symbol=True,order=0,description='unit of pressure')
     PrefixedUnit('electronvolt','eV',Conversion(_J,_const_e),add_symbol=True,order=0,description='unit of energy, the energy gained by one electron moving across one volt')
@@ -393,10 +402,10 @@ with _BuiltinLib():
     _au = Unit('astronomical unit','au',Conversion(_m,149597870700),add_symbol=True,
                order=0,description='astronomical unit of length')
     Unit.alias('ua',_au)
-    PrefixedUnit('parsec','pc',Conversion(_au,648000/np.pi),add_symbol=True,order=0,
+    PrefixedUnit('parsec','pc',Conversion(_au,648000/pi),add_symbol=True,order=0,
                  prefixes=['kilo','mega','giga'],
                  description='astronomical unit of length')
-    _a = PrefixedUnit('Julian year','a',Conversion(_d,365.25),add_symbol=True,order=0,
+    _a = PrefixedUnit('Julian year','a',Conversion(_d,MFraction('365.25')),add_symbol=True,order=0,
                        description='astronomical unit of time',prefixes=['kilo','mega',
                        'giga','tera'],additional_names=('annum','year'),
                         additional_short_names=('yr',))
@@ -422,10 +431,10 @@ with _BuiltinLib():
     Unit('Earth mass','M\u2295',Conversion(_kg,_const_earth_mass),add_symbol=True,
          order=0,html_symbol='<i>M</i><sub>&#x2295;</sub>',latex_symbol='\t\tM_{\oplus}',
          ascii_symbol='M(E)',description='astronomical unit of mass')
-    _Jy = Unit('jansky','Jy',Conversion(_W*_m**-2*_Hz**-1,1e-26),add_symbol=True,
+    _Jy = Unit('jansky','Jy',Conversion(_W*_m**-2*_Hz**-1,MFraction('1e-26')),add_symbol=True,
          decription='astronomical unit, spectral flux density, spectral irradiance')
     LogUnit('monochromatic AB magnitude','m(AB)',
-            LogConversion(gummy(3631,unit=_Jy),-2.5,10,np.log10),
+            LogConversion(gummy(3631,unit=_Jy),-2.5,10,_lg10),
             add_symbol=True,html_symbol='<i>m</i><sub>AB</sub>',
             latex_symbol='\t\tm_{\\mathrm{AB}}',
             description='astronomical unit, spectral flux density, spectral irradiance')
@@ -478,7 +487,7 @@ with _BuiltinLib():
                  order=0,description='volt-ampere apparent power')
     
     _M_W = LogUnit('moment magnitude','M(W)',
-                   LogConversion(gummy(1,unit=_dyn*_cm),2/3,10,np.log10,offset=-10.7),
+                   LogConversion(gummy(1,unit=_dyn*_cm),MFraction(2,3),10,_lg10,offset=-10.7),
                    add_symbol=True,html_symbol='<i>M</i><sub>W</sub>',
                    latex_symbol='\\textit{M}_{W}',
                    desription='moment magnitude scale, earthquake intensity')

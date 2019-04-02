@@ -309,7 +309,7 @@ class Distribution:
         Parameters
         ----------
         hold:  `bool`, optional
-            If this is `False`, pylab.show() will be called before the method
+            If this is `False`, pyplot.show() will be called before the method
             exits.  The default is `False`
             
         xlabel:  `str` or `None`, optional
@@ -323,7 +323,7 @@ class Distribution:
             a title for the histogram, the default is `None`
         
         kwds:
-            additional key words that will be passed to the `pylab.hist` method
+            additional key words that will be passed to the `pyplot.hist` method
             that actually created the histogram
 
         Raises
@@ -332,13 +332,23 @@ class Distribution:
             if no simulated data is available from a call to
             `Distribution.simulate`.
         """
-        import pylab as plt
+        import matplotlib.pyplot as plt
         if self.simdata is None:
             raise NoSimulatedDataError('simulate must be called to generate some data')
         if not 'bins' in kwds:
             kwds['bins'] = 100
-        if not 'normed' in kwds:
-            kwds['normed'] = True
+        if not ('normed' in kwds or 'density' in kwds):
+            try:
+                from matplotlib import __version__ as version
+                version = [int(v) for v in version.split('.')[:2]]
+                usedensity = (version[0] > 2 or 
+                              (version[0] == 2 and version[1] > 0))
+            except:
+                usedensity = True
+            if usedensity:
+                kwds['density'] = True
+            else:
+                kwds['normed'] = True
         if not 'histtype' in kwds:
             kwds['histtype'] ='stepfilled'
         plt.hist(self.simsorted[np.abs(self.simsorted) != np.inf],**kwds)
@@ -410,7 +420,7 @@ class Distribution:
             the distributions to be plotted
             
         fmt:   `str`, optional
-            Format parameter passed to `pylab.plot()`, the default is 'ko'
+            Format parameter passed to `pyplot.plot()`, the default is 'ko'
         
         xlabel:  `str` or `None`
          a label for the plot x-axis, the default is `None`
@@ -422,11 +432,11 @@ class Distribution:
             a title for the histogram, the default is `None`
         
         hold:  `bool` i
-            If this is `False`, `pylab.show()` will be called before the
+            If this is `False`, `pyplot.show()` will be called before the
             method exits.  The default is `False`
             
         kwds:
-            additional key words that will be passed to `pylab.plot()`
+            additional key words that will be passed to `pyplot.plot()`
 
         Raises
         ------
@@ -434,7 +444,7 @@ class Distribution:
             if no simulated data is available from a call to
             `Distribution.simulate` for `x` and `y`.
         """
-        import pylab as plt
+        import matplotlib.pyplot as plt
         
         if x.simdata is None or y.simdata is None:
             raise NoSimulatedDataError('simulated data does not exist for both distributions')

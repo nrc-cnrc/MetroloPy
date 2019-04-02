@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>MetroloPy &#8212; metrolopy 0.5 documentation</title>
+    <title>MetroloPy &#8212; metrolopy 0.5.1rc1 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5',
+        VERSION:     '0.5.1rc1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -38,7 +38,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.1rc1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -66,7 +66,7 @@ gummy class to complex numbers.</p>
 <h2>gummy parameters<a class="headerlink" href="#gummy-parameters" title="Permalink to this headline">¶</a></h2>
 <p>(all parameters except <em>x</em> are optional)</p>
 <ul>
-<li><p class="first"><strong>x</strong>: (float or <a class="reference internal" href="#distribution">Distribution</a> ) Either a
+<li><p class="first"><strong>x</strong>: (real number or <a class="reference internal" href="#distribution">Distribution</a> ) Either a
 number representing the value of the gummy or a
 <a class="reference internal" href="#distribution">Distribution</a> instance that represents the
 probability distribution of the gummy. If <em>x</em> is a
@@ -78,12 +78,14 @@ use:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="n">UniformDist</span><span class="p">(</span><span class="n">center</span> <span class="o">=</span> <span class="mf">2.25</span><span class="p">,</span> <span class="n">half_width</span> <span class="o">=</span> <span class="mf">0.12</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Note that if <em>x</em> is a float value, the uncertainty distribution is
+<p>Note that if <em>x</em> is a number, the uncertainty distribution is
 assumed to be either a <a class="reference internal" href="#normaldist"><span class="std std-ref">Normal distribution</span></a> or a
 <a class="reference internal" href="#tdist"><span class="std std-ref">shifted and scaled Students&#8217;s t distribution</span></a> depending on
-the value of the <em>dof</em> parameter.</p>
+the value of the <em>dof</em> parameter.  In addition to a float or
+Distribution, <em>x</em> can be int, numpy.floating, numpy.integer,
+fraction.Fraction, or mpmath.mpf.</p>
 </li>
-<li><p class="first"><strong>u</strong>: (float &gt;= 0) A number representing the uncertainty in <em>x</em>.
+<li><p class="first"><strong>u</strong>: (real number &gt;= 0) A number representing the uncertainty in <em>x</em>.
 By default <em>u</em> is taken to be the standard (&#8220;1-sigma&#8221;) uncertainty,
 however if <em>k</em> or <em>p</em> are specified then <em>u</em> is taken to be the
 corresponding expanded uncertainty. Also by default, when the <em>uunit</em>
@@ -106,7 +108,7 @@ enclosed in square brackets, e.g: <code class="docutils literal"><span class="pr
 <li><p class="first"><strong>dof</strong>: (float or int &gt; 0) The number of degrees of freedom upon
 which the uncertainty is based. The default is <code class="docutils literal"><span class="pre">float('inf')</span></code>.</p>
 </li>
-<li><p class="first"><strong>k</strong>: (float &gt; 0) The coverage factor for <em>u</em>. The value of the
+<li><p class="first"><strong>k</strong>: (float or int &gt; 0) The coverage factor for <em>u</em>. The value of the
 <em>u</em> parameter is divided by the coverage factor to get the standard
 uncertainty for the new gummy. If the paramter <em>p</em> is specified then
 the coverage factor is calculated using <em>p</em> and the value of the <em>k</em>
@@ -276,7 +278,7 @@ Traditionally (e.g. the GUM 2008 edition) the standard uncertainty is
 taken to be the standard deviation of the mean (<em>s</em>/sqrt(<em>n</em>), where <em>s</em> is
 the sample standard deviation and <em>n</em> is the number of measurements).
 However there is some &#8220;extra uncertainty&#8221; because the sample standard
-deviation does not exactly equal to the population standard deviation.
+deviation does not exactly equal the population standard deviation.
 This is taken into account by using a Student&#8217;s <em>t</em> distribution to
 calculate the expanded uncertainty. However it has been pointed out,
 by those who advocate a Bayesian point of view, that the probability
@@ -318,11 +320,18 @@ list or array of gummys. The return value is a numpy.ndarray.</p>
 matrix of a list or array of gummys. The return value is a
 numpy.ndarray.</p>
 </li>
-<li><p class="first"><strong>copy(formatting=True)</strong>: Returns a copy of the gummy. The copy will
+<li><p class="first"><strong>copy(formatting=True, tofloat=False)</strong>: Returns a copy of the gummy.
+The copy will
 be have a correlation coefficient of 1 with the original gummy. If
 the <em>formatting</em> parameter is <code class="docutils literal"><span class="pre">True</span></code> the display formatting
 information will be copied and if <code class="docutils literal"><span class="pre">False</span></code> the display formatting
-will be set to the default for a new gummy.</p>
+will be set to the default for a new gummy.  If <em>tofloat</em> is <code class="docutils literal"><span class="pre">True</span></code>
+then the <em>x</em> and <em>u</em> values in the new gummy will be converted to
+floats.</p>
+</li>
+<li><p class="first"><strong>tofloat()</strong>:  Returns a copy with the <em>x</em> and <em>u</em> values converted
+to float values.  Equivalent to
+<code class="docutils literal"><span class="pre">copy(formatting=Flase,tofloat=True)</span></code>.</p>
 </li>
 <li><p class="first"><strong>ufrom(x)</strong>: Gets the standard uncertainty contributed from
 particular gummys or <a class="reference internal" href="#utype">utype</a> if all other
@@ -539,15 +548,24 @@ but a conversion must exist between the units, see also the
 <a class="reference internal" href="#c">c</a> property). Exponents must be dimensionless (that is a
 conversion from the exponent unit to the unit <em>one</em> must exist) and if
 the exponent has an uncertainty, the base must be dimensionless.
-Nonlinear units such as the decibel and the degree Celsius affect the
+Dividing gummys with int values results in a gummy with a
+fractions.Fraction value. Nonlinear units such as the decibel and
+the degree Celsius affect the
 behavior of gummys under certain operations.</p>
+<p>Most functions and
+operations respect the numpy boadcasting rules when passed numpy arrays.
+Operation and functions are first tried with no type conversions and
+if that fails all <em>x</em> and <em>u</em> values are converted to floats and the
+operation of function is tried again. Set
+<code class="docutils literal"><span class="pre">metrolopy.dfunc.try_fconvert</span> <span class="pre">=</span> <span class="pre">False</span></code> to disable this automatic
+conversion to float values.</p>
 <p>The gummy module installs a number of common mathematical
 <a class="reference internal" href="#functions">functions</a> that can be applied directly to dimensionless
 gummys, e.g:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">gummy</span> <span class="k">as</span> <span class="nn">uc</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">gummy</span><span class="p">(</span><span class="mf">0.123</span><span class="p">,</span><span class="mf">0.022</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">uc</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
-<span class="go">0.851(12)</span>
+<span class="go">0.123(22)</span>
 </pre></div>
 </div>
 <p>For numpy version 1.13 or later, many numpy functions can be applied
@@ -556,7 +574,7 @@ directly to dimensionless gummys, e.g:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">gummy</span> <span class="k">as</span> <span class="nn">uc</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">gummy</span><span class="p">(</span><span class="mf">0.123</span><span class="p">,</span><span class="mf">0.022</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
-<span class="go">-0.525(19)</span>
+<span class="go">0.9924(27)</span>
 </pre></div>
 </div>
 <p>The two class methods immediately below may also be used to apply an
@@ -894,21 +912,21 @@ omitted then the value of the gummy.style property is used.</li>
 <li><strong>mean_marker</strong>: (bool) Whether or not to display a vertical line at
 the mean value (as given by gummy.xsim). The default is True.</li>
 <li><strong>mean_marker_options</strong>: (dict) A dictionary containing keywords to
-be passed to the pylab.axvline method which draws the mean marker.
+be passed to the pyplot.axvline method which draws the mean marker.
 For example setting this to {&#8216;color&#8217;=&#8217;r&#8217;,&#8217;linewidth&#8217;=4} makes the
 mean marker red and with thickness of four points.</li>
 <li><strong>ci_marker</strong>: (bool) Whether or not to display vertical lines at the
 upper and lower limits of the confidence interval. The default is
 True.</li>
 <li><strong>ci_marker_options</strong>: (dict) A dictionary containing keywords to be
-passed to the pylab.axvline method which draws the confidence
+passed to the pyplot.axvline method which draws the confidence
 interval markers.</li>
-<li><strong>hold</strong>: (bool) If this is False pylab.show() is called before this
-method exits. If it is True pylab.show() is not called. The
+<li><strong>hold</strong>: (bool) If this is False pyplot.show() is called before this
+method exits. If it is True pyplot.show() is not called. The
 default is False.</li>
 <li><strong>plot_options</strong>: These are optional keyword arguments that are
-passed to the pylab.hist method. For example bins=50 overrides the
-default number of bins (100). For other options see the pylab.hist
+passed to the pyplot.hist method. For example bins=50 overrides the
+default number of bins (100). For other options see the pyplot.hist
 documentation.</li>
 </ul>
 </li>
@@ -934,13 +952,13 @@ or with the <em>y</em> gummy&#8217;s unit.</li>
 <li><strong>mean_marker</strong>: (bool) Whether or not to display line markers at
 the mean values of <em>x</em> and <em>y</em>. The default is False.</li>
 <li><strong>mean_marker_options</strong>: (dict) A dictionary of options to be
-passed to the pylab.axvline and pylab.axhline methods that draw
+passed to the pyplot.axvline and pyplot.axhline methods that draw
 the mean_marker.</li>
-<li><strong>hold</strong>: (bool) If this is False pylab.show() is called before
-this method exits. If it is True pylab.show() is not called. The
+<li><strong>hold</strong>: (bool) If this is False pyplot.show() is called before
+this method exits. If it is True pyplot.show() is not called. The
 default is False.</li>
 <li><strong>plot_options</strong>: These are optional keyword arguments that are
-passed to the pylab.plot method. For example ms=0.1 decreases the
+passed to the pyplot.plot method. For example ms=0.1 decreases the
 size of the dots in the plot.</li>
 </ul>
 </li>
@@ -1055,6 +1073,10 @@ IPython console or Jupyter notebook and unicode otherwise.
 console or Jupyter notebook and unicode otherwise. &#8216;latex&#8217; and &#8216;html&#8217;
 are only available when running under IPython. If these printers are
 not available the display will default to &#8216;unicode&#8217;.</li>
+</ul>
+<ul class="simple" id="max-digits">
+<li><strong>max_digits</strong>:  (int) Gets or sets the maximum number of digits to display
+for the x value.</li>
 </ul>
 </div>
 <div class="section" id="gummy-display-methods">
@@ -1867,11 +1889,11 @@ plot_points=None)</strong>: plots the data (only available if <em>x</em> and <em
 one-dimensional)</p>
 <p><strong>plot parameters</strong> (all parameters are optional):</p>
 <ul class="simple">
-<li><strong>data_format</strong>: (str) The format string passed to pylab.plot
-or pylab.errorbar when plotting the data points. The default is
+<li><strong>data_format</strong>: (str) The format string passed to pyplot.plot
+or pyplot.errorbar when plotting the data points. The default is
 &#8216;ko&#8217;.</li>
 <li><strong>data_options</strong>: (dict) A dictionary containg key words that
-are passed to pylab.plot or pylab.errorbar when plotting the data
+are passed to pyplot.plot or pyplot.errorbar when plotting the data
 points.</li>
 <li><strong>show_data</strong>: (bool) Whether or not to plot the data points.
 The default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
@@ -1882,11 +1904,11 @@ The default is <code class="docutils literal"><span class="pre">True</span></cod
 error bars. The length of the error bars are determined by
 multiplying the standard uncertainty for each data point by this
 quantity. The default value is 1.</li>
-<li><strong>fit_format</strong>: (str) The format string passed to pylab.plot
-or pylab.errorbar when plotting the fitted curve. The default is
+<li><strong>fit_format</strong>: (str) The format string passed to pyplot.plot
+or pyplot.errorbar when plotting the fitted curve. The default is
 &#8216;k-&#8216;.</li>
 <li><strong>fit_options</strong>: (dict) A dictionary containg key words that
-are passed to pylab.plot or pylab.errorbar when plotting the
+are passed to pyplot.plot or pyplot.errorbar when plotting the
 fitted curve.</li>
 <li><strong>show_fit</strong>: (bool) Whether or not to plot the fitted curve.
 The default is <code class="docutils literal"><span class="pre">True</span></code>.</li>
@@ -1906,7 +1928,7 @@ curve when plotting the fit, confidence interval, and control
 limit curves. If this is set to None, then the value of the
 Fit.plot_points attribute will be used, which has a default value
 of 100.</li>
-<li><strong>hold</strong>: (bool) If hold is <code class="docutils literal"><span class="pre">False</span></code> then <code class="docutils literal"><span class="pre">pylab.show()</span></code> is
+<li><strong>hold</strong>: (bool) If hold is <code class="docutils literal"><span class="pre">False</span></code> then <code class="docutils literal"><span class="pre">pyplot.show()</span></code> is
 executed just before this function returns.</li>
 <li><strong>cik</strong>: (float or None) Coverage factor for the
 uncertainty bands in the plot. If <em>cik</em> and <em>cip</em> are None (
@@ -1917,8 +1939,8 @@ uncertainty bands in the plot. If <em>cik</em> and <em>cip</em> are None (
 the default values) then uncertainty bands will not be shown. Do
 not specify both <em>cik</em> and <em>cip</em>.</li>
 <li><strong>ciformat</strong>: (str, default is &#8216;g-&#8216;) Format string passes
-to the pylab.plot command that plots the uncertainty bands.</li>
-<li><strong>cioptions</strong>: (dict) Keywork options passed to the pylab.plot
+to the pyplot.plot command that plots the uncertainty bands.</li>
+<li><strong>cioptions</strong>: (dict) Keywork options passed to the pyplot.plot
 command that plots the uncertainty bands.</li>
 <li><strong>clk</strong>,<strong>clp</strong>,<strong>clformat</strong>, and <strong>cloptions</strong>: Control limit
 options, same as above for the uncertainty bands. The control
@@ -2135,7 +2157,7 @@ this class.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.1rc1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

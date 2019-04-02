@@ -36,16 +36,35 @@ from collections import namedtuple
 from warnings import warn
 from math import isnan,isinf,isfinite,sqrt,log
 from fractions import Fraction
+from numbers import Rational,Integral
+
+try:
+    from mpmath import mp,mpf,rational
+except:
+    mp = mpf = None
 
 _FInfo = namedtuple('_FIinfo','rel_u precision warn_u ')
 _iinfo = _FInfo(rel_u=0,precision=0,warn_u=0)
 _finfodict = {}
 def _getfinfo(x):
-    if isinstance(x,(int,np.integer,Fraction)):
-        return _iinfo
+    if isinstance(x,Rational):
+        return (_iinfo,x)
+    
+    if mpf is not None and isinstance(x,mpf):
+        n = mp.prec
+        x = mpf(x)
+        try:
+            return (_finfodict[n],x)
+        except:
+            f = _FInfo(rel_u=0.4222/2**n,
+                       precision=mp.dps,
+                       warn_u = 0)
+            _finfodict[n] = f
+            return (f,x)
+        
     t = type(x)
     try:
-        return _finfodict[t]
+        return (_finfodict[t],x)
     except:
         try:
             f = np.finfo(t)
@@ -56,7 +75,7 @@ def _getfinfo(x):
         except:
             _finfodict[t] = _iinfo
             return _iinfo
-        return f
+        return (f,x)
 
 def _combu(a,b,c):
     # function for combining uncertainties,
@@ -70,10 +89,10 @@ def _combu(a,b,c):
         except:
             return float('nan')
     
-    if b > a:
+    if abs(b) > abs(a):
         a,b = b,a
     if b == 0:
-        return a
+        return abs(a)
         
     r = b/a
     x = 1 + r**2 + 2*c*r
@@ -121,6 +140,8 @@ class ummy(Dfunc):
     #   rounding errors
     rounding_u = False
     
+    max_digits = 15
+    
     def __init__(self,x,u=0,dof=float('inf'),utype=None):
         if isinstance(x,ummy):
              self._copy(x,self,formatting=False)
@@ -138,14 +159,14 @@ class ummy(Dfunc):
         except TypeError:
             raise TypeError('u must be a real number >= 0')
                 
-        if self.rounding_u and not isinstance(x,(int,np.integer,Fraction)):
-            finfo = _getfinfo(x)
+        if self.rounding_u and not isinstance(x,Rational):
+            finfo,x = _getfinfo(x)
             if finfo is _iinfo:
                 warn('numpy.finfo cannot get the floating point accuracy for x\nno uncertainty will be included to account for floating point rounding errors',UncertiantyPrecisionWarning)
             else:
                 uc = _combu(u,float(abs(x)*finfo.rel_u),0)
             
-            uinfo = _getfinfo(u)
+            uinfo = _getfinfo(u)[0]
             if uc < uinfo.warn_u and u is not 0:
                 warn('a gummy/ummy was defined with an uncertainty too small to be accurately represented by a float\nuncertainty values may contain significant numerical errors',UncertiantyPrecisionWarning)
             u = uc
@@ -153,11 +174,16 @@ class ummy(Dfunc):
         else:
             self._finfo = None
             
+        if isinstance(x,Fraction):
+            x = MFraction(x)
+            
         self._x = x
         self._u = u
         
         try:
-            if not isinstance(dof,(int,np.integer,np.floating)):
+            if isinstance(dof,Integral):
+                dof = int(dof)
+            else:
                 dof = float(dof)
             if dof <= 0 or isnan(dof):
                 raise TypeError()
@@ -246,6 +272,12 @@ class ummy(Dfunc):
         self._copy(self,r,formatting=formatting,tofloat=tofloat)
         return r
         
+    def tofloat(self):
+        """
+        Returns a copy of the gummy with x an u converted to floats.
+        """
+        return self.copy(formatting=False,tofloat=True)
+    
     def correlation(self, g):
         """
         Returns the correlation coefficient between `self` and `g`."""
@@ -400,7 +432,7 @@ class ummy(Dfunc):
         return ret
         
     def __str__(self):
-        x = self._x
+        x = float(self._x)
         try:
             xabs = abs(x)
            
@@ -409,7 +441,7 @@ class ummy(Dfunc):
             else:
                 xexp = None
                 
-            u = self.u
+            u = float(self.u)
             
             if self._u == 0 or isnan(self._u) or isinf(self._u):
                 if xexp is None:
@@ -417,20 +449,16 @@ class ummy(Dfunc):
                 else:
                     if (((self.sci_notation is None and (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation) ):
-                        xtxt = ummy._format_mantissa('unicode',x*10**(-xexp),
-                                                     self.finfo.precision,
-                                                     self.thousand_spaces,
-                                                     const=True)
+                        xtxt = self._format_mantissa('unicode',x*10**(-xexp),
+                                                     self.finfo.precision)
                         etxt = 'e'
                         if xexp >= 0:
                             etxt += '+'
                         etxt += str(xexp)
                         return xtxt + etxt
                     else:
-                        return ummy._format_mantissa('unicode',x,
-                                                     self.finfo.precision,
-                                                     self.thousand_spaces,
-                                                     const=True)
+                        return self._format_mantissa('unicode',x,
+                                                     self.finfo.precision)
                     
             uabs = abs(u)
             if uabs != 0:
@@ -445,23 +473,20 @@ class ummy(Dfunc):
             
             if (((self.sci_notation is None and (xp > self.sci_notation_high or xp < self.sci_notation_low)) 
                         or self.sci_notation) or psn or (xexp is not None and (uexp > xexp and xexp == 0))):
-                xtxt = ummy._format_mantissa('unicode',x*10**(-xp),-uexp+xp+self.nsig-1,
-                                             self.thousand_spaces)
+                xtxt = self._format_mantissa('unicode',x*10**(-xp),-uexp+xp+self.nsig-1)
                 etxt = 'e'
                 if xp >= 0:
                     etxt += '+'
                 etxt += str(xp)
             else:
-                xtxt = ummy._format_mantissa('unicode',x,-uexp+self.nsig-1,
-                                                 self.thousand_spaces)
+                xtxt = self._format_mantissa('unicode',x,-uexp+self.nsig-1)
                 etxt = ''
                 
             if self.nsig <= 0:
                 return xtxt + etxt
     
-            utxt = ummy._format_mantissa('unicode',u*10**(-uexp),self.nsig-1,
-                                             self.thousand_spaces,True)
-            return xtxt + '{' + utxt + '}' + etxt
+            utxt = self._format_mantissa('unicode',u*10**(-uexp),self.nsig-1,parenth=True)
+            return xtxt + '(' + utxt + ')' + etxt
         except:
             try:
                 return(str(self.x) + '{' + str(self.u) + '}' + '??')
@@ -473,12 +498,8 @@ class ummy(Dfunc):
                 
     def __repr__(self):
         return self.__str__()
-        
-    @staticmethod       
-    def _format_mantissa(fmt,x,sig,thousand_spaces=True,parenth=False,const=False):
-        if isinstance(x,Fraction):
-            x = float(x)
-            
+          
+    def _format_mantissa(self,fmt,x,sig,parenth=False):            
         try:
             if isnan(x):
                 return 'nan'
@@ -502,25 +523,40 @@ class ummy(Dfunc):
             # for large int values the above np functions can generate an error
             pass
         
-        if sig is not None:
-            try:
-                s = np.round(x,sig)
-            except:
-                try:
-                    s = round(x,sig)
-                except:
-                    s = round(float(x),sig)
+        ellipses = ''
+        if isinstance(x,Rational) and sig is None:
+            if x == int(x):
+                s = str(int(x))
+            else:
+                xf = float(x)
+                e = 15 - _floor(np.log10(abs(xf)))
+                if e < 0:
+                    e = 0
+                n = 10**e*x
+                if int(n) != n:
+                    ellipses = '...'
+                s = str(round(xf,e))
+        elif sig is None:
+            s = str(x)
         else:
-            s = x
-            
-        if const:
-            s = str(s)
-        else:
-            if sig is None:
-                sig = 15
+            if x != 0 and self.max_digits is not None:
+                if mpf is not None and isinstance(x,mpf):
+                    em = _floor(mp.log10(abs(x)))
+                else:    
+                    em = _floor(np.log10(abs(float(x))))
+                e = self.max_digits - em
+                if e < 0:
+                    e = 0
+                if sig > e and sig > 0:
+                    ellipses = '...'
+                    sig = e
             if sig < 0:
                 sig = 0
-            s = ('{:.' + str(sig) + 'f}').format(x)
+            if mpf is not None and isinstance(x,mpf):
+                s = mp.nstr(x,n=sig+1,strip_zeros=False)
+            else:
+                s = round(float(x),sig)
+                s = ('{:.' + str(sig) + 'f}').format(s)
         
         if parenth:
             s = s.replace('.','')
@@ -528,7 +564,7 @@ class ummy(Dfunc):
             if len(s) == 0:
                 s = '0'
             return s
-        elif thousand_spaces:
+        elif self.thousand_spaces:
             # Now insert spaces every three digits
             if fmt == 'html':
                 sp = '&thinsp;'
@@ -553,7 +589,7 @@ class ummy(Dfunc):
             nl = d - i - 1
             
             if nr <= 4 and nl <= 4:
-                return s
+                return s + ellipses
                 
             s = list(s)    
             if nr > 4:
@@ -567,7 +603,7 @@ class ummy(Dfunc):
             if s.endswith(sp):
                 s = s[:-(len(sp))]
                 
-        return s
+        return s + ellipses
         
     @classmethod
     def _get_dof(cls,dof1, dof2, u, u1, u2, d1, d2, c):
@@ -577,20 +613,20 @@ class ummy(Dfunc):
         # Note that we allow the return value to be less than one,
         # but when the dof is retrieved using the dof property get method, 
         # values less than one will be rounded up to one.
-        if isinf(dof1) and isinf(dof2):
+        if (isinf(dof1) and isinf(dof2)) or u == 0:
             return float('inf')
         if isinf(dof1) or isinf(dof2):
             xt = 0
         else:
-            xt = (d1*d2*c*u1*u2)**2
+            xt = (d1*d2*c*(u1/u)*(u2/u))**2
         d = 0
         if isfinite(dof1):
-            d += ((d1*u1)**4 + xt)/dof1
+            d += ((d1*u1/u)**4 + xt)/dof1
         if isfinite(dof2):
-            d += ((d2*u2)**4 + xt)/dof2
+            d += ((d2*u2/u)**4 + xt)/dof2
         if d == 0:
             return float('inf')
-        r = u**4/d
+        r = 1/d
         if r > cls.max_dof:
             return float('inf')
         return r
@@ -625,7 +661,7 @@ class ummy(Dfunc):
         
         c = ummy.correlation_matrix(args)
         du = np.array([a.u*p if isinstance(a,ummy) else 0 for a,p in zip(args,d)])
-        mu = np.max(du)
+        mu = np.max([abs(a) for a in du])
         if mu != 0:
             dun = du/mu
         else:
@@ -653,13 +689,13 @@ class ummy(Dfunc):
         for i,a in enumerate(args):
             if isinstance(a,ummy):
                 if not isinf(a.dof):
-                    dm += np.sum((c.dot(du)[i])**4)/a.dof
+                    dm += np.sum((c.dot(du)[i]/u)**4)/a.dof
                 if a._ref is not None:
                     a._ref.combl(r,a._refs*c[i].dot(du)/u,a._refs*du[i]/u,args)
         if r._ref is not None:
             _GummyRef.check_cor(r)
         if dm > 0:
-            r._dof = u**4/dm
+            r._dof = 1/dm
         return r
         
     @classmethod
@@ -806,7 +842,12 @@ class ummy(Dfunc):
         if not isinstance(b,ummy):
             if b == 0:
                 raise ZeroDivisionError('division by zero')
-            r = type(self)(self._x/b, abs(self._u/b), dof=self._dof)
+            if (isinstance(self._x,Integral) and 
+                isinstance(b,Integral)):
+                x = MFraction(self._x,b)
+            else:
+                x = self._x/b
+            r = type(self)(x, abs(self._u/b), dof=self._dof)
             if r._ref is not None:
                 r._ref = self._ref
                 r._refs = np.sign(b)*self._refs
@@ -816,7 +857,11 @@ class ummy(Dfunc):
         if b._x == 0:
             raise ZeroDivisionError('division by zero')
         else:
-            x = self._x/b._x
+            if (isinstance(self._x,Integral) and 
+                isinstance(b._x,Integral)):
+                x = MFraction(self._x,b._x)
+            else:
+                x = self._x/b._x
             
         u = _combu(self._u/b._x,self._x*b._u/b._x**2,c)
 
@@ -848,7 +893,11 @@ class ummy(Dfunc):
         if self._x == 0:
             raise ZeroDivisionError('division by zero')
         else:
-            x = b/self._x
+            if (isinstance(self._x,Integral) and 
+                isinstance(b,Integral)):
+                x = MFraction(b,self._x)
+            else:
+                x = b/self._x
         u = abs(b*self._u/self._x**2)
         r = type(self)(x,u,dof=self._dof)
         if r._ref is not None:
@@ -862,22 +911,34 @@ class ummy(Dfunc):
                 raise ValueError('a negative or zero value cannot be raised to a non-integer power')
             if b == 0:
                     return type(self)(1)
-            x = self._x**b
+            if (isinstance(self._x,Integral) and 
+                isinstance(b,Integral) and b < 0):
+                x = MFraction(1,self._x**-b)
+            else:
+                x = self._x**b
             u = abs(b*self._x**(b-1)*self._u)
             r = type(self)(x,u,dof=self._dof)
             if r._ref is not None:
                 r._ref = self._ref
                 if self._x < 0:
-                    r._refs = -((-1)**b)*self._refs
+                    sgn = -((-1)**b)
                 else:
-                    r._refs = self._refs
+                    sgn = 1
+                if b < 0:
+                    sgn = -sgn
+                r._refs = sgn*self._refs
+                    
             return r
 
         if self._x <= 0:
             raise ValueError('a negative or zero value cannot raised to a power which has an uncertainty')            
                 
         c = self.correlation(b)
-        x = self._x**b._x
+        if (isinstance(self._x,Integral) and 
+                isinstance(b._x,Integral) and b._x < 0):
+            x = MFraction(1,self._x**-b._x)
+        else:
+            x = self._x**b._x
         da = b._x*self._x**(b._x-1)
         lgx = log(self._x)
         try:
@@ -897,11 +958,14 @@ class ummy(Dfunc):
             r._dof = b._dof
             return r
         if b._ref is None:
-            r._ref = self._ref
+            r._ref = self._ref 
             if self._x < 0:
-                r._refs = -((-1)**b._x)*self._refs
+                sgn = -((-1)**b._x)
             else:
-                r._refs = self._refs        
+                sgn = 1
+            if b < 0:
+                sgn = -sgn
+            r._refs = sgn*self._refs
             r._dof = self._dof
             return r
         
@@ -916,7 +980,11 @@ class ummy(Dfunc):
     def _rpow(self,b):
         if b == 0:
             return type(self)(0)
-        x = b**self._x
+        if (isinstance(self._x,Integral) and 
+            isinstance(b,Integral) and self._x < 0):
+            x = MFraction(1,b**-self._x)
+        else:
+            x = b**self._x
         lgb = log(b)
         try:
             lgb = type(b)(lgb)
@@ -1306,8 +1374,8 @@ def _der(function,*args):
     n = len(args)
     if n == 1:
         arg = args[0]
-        if not isinstance(arg,ummy):
-            return function(arg)
+        if not isinstance(arg,ummy) or arg._u == 0:
+            return 0
                 
         df = None
         a = np.empty([8,8])
@@ -1338,7 +1406,7 @@ def _der(function,*args):
             v[i] = a
     d = np.zeros(n)
     for i,p in enumerate(args):
-        if isinstance(p,ummy) and p._ref is not None:          
+        if isinstance(p,ummy) and p._u > 0:          
             df = None
             s = 2*p.u
             x1 = np.array(v)
@@ -1368,3 +1436,9 @@ def _der(function,*args):
             
     return d
         
+class MFraction(Fraction):
+    """
+    A fraction.Fraction sub-class that works with mpmath.mpf objects
+    """
+    def _mpmath_(self,p,r):
+        return rational.mpq(self.numerator,self.denominator)

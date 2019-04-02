@@ -28,6 +28,8 @@ gummys.
 import numpy as np
 from .gummy import gummy,jummy
 from .ummy import ummy
+from numbers import Complex
+from .dfunc import _call
 
 def _callg(f,*args):
     # decide whether to call jummy.apply, gummy.apply or ummy.apply
@@ -41,7 +43,7 @@ def _callg(f,*args):
             g = a
         if isinstance(a,ummy):
             u = a
-        if isinstance(a,complex):
+        if isinstance(a,Complex):
             c = True
     if g is not None:
         if c:
@@ -49,7 +51,7 @@ def _callg(f,*args):
         return g.__array_ufunc__(f,'__call__',*args)
     if u is not None:
         return u.__array_ufunc__(f,'__call__',*args)
-    return f(*args)
+    return _call(f,*args)
 
 def _bcallg(f,*args):
     # broadcast f across any arrays in args.

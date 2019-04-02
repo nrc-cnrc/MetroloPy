@@ -26,6 +26,7 @@ some support for numpy broadcasting for functions and operators.
 """
 
 import numpy as np
+from numbers import Real,Integral
 
 def _f_darctan2(x1,x2):
     return (x2/(x1**2 + x2**2),-x1/(x1**2 + x2**2))
@@ -39,12 +40,12 @@ def _f_dlogaddexp2(x1,x2):
            2**x2*np.log(2)/(2**x1 + 2**x2))
 
 def _f_heaviside(x,h0):
-    if not isinstance(h0,(int,np.integer,float,np.float)):
-        raise TypeError('h0 must be an int or float')
+    if not isinstance(h0,Real):
+        raise TypeError('h0 must be a real number')
     return x._apply(np.heaviside,0,x,h0)
 
 def _f_around(x,n=0):
-    if not isinstance(n,(int,np.integer)):
+    if not isinstance(n,Integral):
         raise TypeError('n must be an int')
     return x._nprnd(lambda y: np.around(y,n))
 
@@ -154,6 +155,18 @@ fdict = {np.angle:  lambda x: x.angle(),
          np.isposinf:  lambda x: np.isposinf(x.x)
         }
 
+
+try_fconvert = True
+def _call(f,*x):
+    if try_fconvert:
+        try:
+            return f(*x)
+        except:
+            x = [a.tofloat() if isinstance(a,Dfunc) else float(a) for a in x]
+            return f(*x)
+
+    return f(*x)
+   
         
 def _broadcast(f,x):
     # used for the binary operations __add__, ...
@@ -165,16 +178,22 @@ def _broadcast(f,x):
         else:
             ret = ret.reshape(bx.shape)
         return ret
-    return f(x)
+    return _call(f,x)
+
 
 class Dfunc:
     """
     Class `Dfunc` is an abstract base class that provides some support for numpy
     broadcasting for functions and operators.  An inheriting class must implement
-    the `_apply(self,function,derivative,*args)`, `_napply(self,function,*args)`
-    methods, as well as `_add(x)`, `_radd(x)`, `_sub(x)`, ...
+    the `_apply(self,function,derivative,*args)`, `_napply(self,function,*args)`,
+    and `tofloat(self)` methods, as well as `_add(x)`, `_radd(x)`, `_sub(x)`, ...
     """
     
+    def tofloat(self):
+        # this should return a copy of self with the x and u properties 
+        # converted to float values
+        raise NotImplementedError()
+        
     @classmethod
     def apply(cls,function,derivative,*args):
         """
@@ -241,9 +260,9 @@ class Dfunc:
         
         bargs = np.broadcast(*args)
         if bargs.shape == ():
-            return cls._apply(function,derivative,*args)
+            return _call(lambda *x: cls._apply(function,derivative,*x), *args) 
         
-        ret = np.array([cls._apply(function,derivative,*a) for a in bargs])
+        ret = np.array([_call(lambda *x: cls._apply(function,derivative,*x), *a) for a in bargs])
         ret = ret.reshape(bargs.shape)
         return ret
     
@@ -299,9 +318,9 @@ class Dfunc:
         
         bargs = np.broadcast(*args)
         if bargs.shape == ():
-            return cls._napply(function,*args)
+            return _call(lambda *x: cls._napply(function,*x), *args)
         
-        ret = np.array([cls._napply(function,*a) for a in bargs])
+        ret = np.array([_call(lambda *x: cls._napply(function,*x), *a) for a in bargs])
         ret = ret.reshape(bargs.shape)
         return ret
        
@@ -310,10 +329,10 @@ class Dfunc:
             return None
         
         try:
-            return self._apply(ufunc,ddict[ufunc],*args)
+            return _call(lambda *x: self._apply(ufunc,ddict[ufunc],*x), *args)
         except KeyError:
             try:
-                return fdict[ufunc](*args)
+                return _call(fdict[ufunc],*args)
             except KeyError:
                 return None
             

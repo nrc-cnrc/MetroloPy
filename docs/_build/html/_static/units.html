@@ -11753,7 +11753,7 @@ div#notebook {
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><a href="../index.html">back to the MetroloPy documentation home page</a></p>
 <hr>
-<h1 id="MetroloPy-built-in-units">MetroloPy built-in units<a class="anchor-link" href="#MetroloPy-built-in-units">&#182;</a></h1><p>Units can be referenced by both name and alias.  If a unit name or alias contains a space, '*' or '/' character then the name must be enclosed in square brackets, e.g: '[light year]'.  Units can be combined into derived units: spaces or the character '*' represent multiplication, the character '/' represents division and the string '**' represents the power operator.  An example of a derived unit reference is 'kg&nbsp;m**2/s' which is equivalent to 'kilogram*metre*metre*second**-1' and to '(kg/s)*m**2'.</p>
+<h1 id="MetroloPy-built-in-units">MetroloPy built-in units<a class="anchor-link" href="#MetroloPy-built-in-units">&#182;</a></h1><p>Units can be referenced by both name and alias.  If a unit name or alias contains a space, '*', or '/' character then the name must be enclosed in square brackets, e.g: '[light year]'.  If a unit name or alias contains parentheses and the text inside the parentheses can be interpreted as a Unit then the name must also be enclosed in square brackets.  Units can be combined into derived units: spaces or the character '*' represent multiplication, the character '/' represents division and the string '**' represents the power operator.  An example of a derived unit reference is 'kg&nbsp;m**2/s' which is equivalent to 'kilogram*metre*metre*second**-1' and to '(kg/s)*m**2'.</p>
 <p>Users can also define custom units by creating instances of the <a href="../hand_made_doc.html#class-unit">Unit</a> class or a sub-class.</p>
 <p>The <a href="../hand_made_doc.html#search-units">search_units</a> function can list all available units:</p>
 
@@ -11780,211 +11780,212 @@ div#notebook {
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-1<br>
-acre, 1 acre = 10 ch<sup>2</sup><br>
-acre-foot, 1 acre ft = 43560 ft<sup>3</sup>, aliases: acre-ft, acre ft<br>
-ampere (20 prefixes), symbol: A, alias: A<br>
-ampere 90 (20 prefixes), 1 A<sub>90</sub> = 1 V<sub>90</sub>/&Omega;<sub>90</sub>, alias: A(90)<br>
-angstrom, 1 &#8491; = 1.0 &times; 10<sup>-10</sup> m, alias: Å<br>
-arcminute, 1' = 0.016&thinsp;666&thinsp;666&thinsp;666&thinsp;7°, aliases: arcmin, '<br>
-arcsecond, 1" = 0.016&thinsp;666&thinsp;666&thinsp;666&thinsp;7', aliases: arcsec, "<br>
-astronomical unit, 1 au = 1.495&thinsp;978&thinsp;707 &times; 10<sup>11</sup> m, aliases: au, ua<br>
-bar (20 prefixes), 1 bar = 100&thinsp;000 Pa<br>
-barn, 1 b = 1.0 &times; 10<sup>-28</sup> m<sup>2</sup>, alias: b<br>
-barrel, 1 bbl = 31.5 gal, aliases: bbl, liquid barrel, liquid bbl<br>
-becquerel (20 prefixes), 1 Bq = 1 1/s, alias: Bq<br>
-bel (log base 10), 0 B = 1.0<br>
-bit (16 prefixes), symbol: bit, alias: shannon<br>
-board-foot, 1 board-foot = 1 ft<sup>2</sup>&thinsp;in, alias: board-ft<br>
-bohr, 1 <i>a</i><sub>0</sub> = <span>5.291&thinsp;772&thinsp;106&thinsp;8(12) &times; 10<sup>-11</sup> m</span>, aliases: a0, a(0)<br>
-bushel, 1 bu = 4 pk, alias: bu<br>
-byte (16 prefixes), 1 B = 8 bit, alias: B<br>
-cable, 1 cb = 120 ftm, alias: cb<br>
-calorie, 1 cal = 4.184 J, aliases: cal, calth, thermochemical calorie<br>
-candela (20 prefixes), symbol: cd, alias: cd<br>
-chain, 1 ch = 4 rd, alias: ch<br>
-coulomb (20 prefixes), 1 C = 1 s&thinsp;A, alias: C<br>
-coulomb 90 (20 prefixes), 1 C<sub>90</sub> = 1 V<sub>90</sub>&thinsp;s/&Omega;<sub>90</sub>, alias: C(90)<br>
-cubic foot, 1 cu ft = 1 ft<sup>3</sup>, aliases: cu-ft, cu ft<br>
-cubic inch, 1 cu in = 1 in<sup>3</sup>, aliases: cu-in, cu in<br>
-cubic yard, 1 cu yd = 1 yd<sup>3</sup>, aliases: cu-yd, cu yd<br>
-cup, 1 cp = 0.5 pt, alias: cp<br>
-dalton (20 prefixes), 1 Da = <span>1.660&thinsp;539&thinsp;040(20) &times; 10<sup>-27</sup> kg</span>, alias: Da<br>
-day, 1 d = 24 h, aliases: d, D<br>
-decibel (log base 10), 0 dB = 1.0, aliases: dB, dB power, dB-p<br>
-decibel femtowatt (log base 10), 0 dBf = 1.0 fW, aliases: dBf, dB(fW)<br>
-decibel field (log base 10), 0 dB = 1.0, aliases: dB-f, dB field, dB root-power<br>
-decibel hertz (log base 10), 0 dB-Hz = 1.0 Hz, aliases: dB-Hz, dB(Hz)<br>
-decibel joule (log base 10), 0 dBJ = 1.0 J, aliases: dBJ, dB(J)<br>
-decibel kelvin (log base 10), 0 dBK = 1.0 K, aliases: dBK, dB(K)<br>
-decibel kilowatt (log base 10), 0 dBk = 1.0 kW, aliases: dBk, dB(kW)<br>
-decibel microvolt (log base 10), 0 dBμV = 1.0 &mu;V, aliases: dBuV, dB(uV), dBμV<br>
-decibel microvolt per metre (log base 10), 0 dBμ = 1.0 &mu;V/m, aliases: dBμ, dB(uV/m), decibel microvolt per meter<br>
-decibel millivolt (log base 10), 0 dBmV = 1.0 mV, aliases: dBmV, dB(mV)<br>
-decibel milliwatt (log base 10), 0 dBm = 1.0 mW, aliases: dBm, dB(mW)<br>
-decibel reciprocal kelvin (log base 10), 0 dB(K<sup>-1</sup>) = 1.0 1/K, aliases: dB(K**-1), dB(K⁻¹)<br>
-decibel reciprocal metre (log base 10), 0 dB(m<sup>-1</sup>) = 1.0 1/m, aliases: dB(m**-1), dB(m⁻¹), decibel reciprocal meter<br>
-decibel sound intensity level (log base 10), 0 dB = 1.0 &times; 10<sup>-12</sup> W/m<sup>2</sup>, alias: dB(SIL)<br>
-decibel sound power level (log base 10), 0 dB = 1.0 &times; 10<sup>-12</sup> W, aliases: dB(SWL), dB(pW)<br>
-decibel sound pressure level (log base 10), 0 dB = 20.0 &mu;Pa, aliases: dB(SPL), dB(20uPa)<br>
-decibel square metre (log base 10), 0 dBsm = 1.0 m<sup>2</sup>, aliases: dBsm, dB(m**2), decibel square meter<br>
-decibel u (log base 10), 0 dBu = 0.774&thinsp;596&thinsp;669&thinsp;241 V, alias: dBu<br>
-decibel volt (log base 10), 0 dBV = 1.0 V, aliases: dBV, dB(V)<br>
-decibel watt (log base 10), 0 dBW = 1.0 W, aliases: dBW, dB(W)<br>
-decibel Z (log base 10), 0 dBZ = 1.0 mm<sup>6</sup>/m<sup>3</sup>, aliases: dBZ, dB(Z)<br>
-decibel μPa (log base 10), 0 dB = 1.0 &mu;Pa, alias: dB(uPa)<br>
-degree, 1° = 0.017&thinsp;453&thinsp;292&thinsp;519&thinsp;9 rad, aliases: deg, °<br>
-degree Celsius, 0 °C = 273.15 K, aliases: degC, deg C, degree C, °C<br>
-degree Fahrenheit, 0 °F = 459.67 °R, aliases: degF, deg F, degree F, °F<br>
-degree Rankine, 1 °R = 0.555&thinsp;555&thinsp;555&thinsp;556 K, aliases: degR, deg R, degree R, °R<br>
-dram, 1 dr = 0.0625 oz, alias: dr<br>
-dry barrel, 1 bu = 7056 in<sup>3</sup>, alias: dry-bbl<br>
-dry gallon, 1 gal = 268.8025 in<sup>3</sup>, alias: dry-gal<br>
-dry pint, 1 pt = 0.5 qt, alias: dry-pt<br>
-dry quart, 1 qt = 0.25 gal, alias: dry-qt<br>
-dyne (20 prefixes), 1 dyn = 1.0 &times; 10<sup>-5</sup> N, alias: dyn<br>
-Earth mass, 1 <i>M</i><sub>&#x2295;</sub> = <span>5.972&thinsp;37(28) &times; 10<sup>24</sup> kg</span>, aliases: M(E), M⊕<br>
-electon mass, 1 <i>m</i><sub>e</sub> = <span>9.109&thinsp;383&thinsp;56(11) &times; 10<sup>-31</sup> kg</span>, alias: m(e)<br>
-electronvolt (20 prefixes), 1 eV = 1.602&thinsp;176&thinsp;634 &times; 10<sup>-19</sup> J, alias: eV<br>
-elementary charge, 1 <i>e</i> = 1.602&thinsp;176&thinsp;634 &times; 10<sup>-19</sup> C, alias: e<br>
-erg (20 prefixes), 1 erg = 1.0 &times; 10<sup>-7</sup> J<br>
-farad (20 prefixes), 1 F = 1 C/V, alias: F<br>
-farad 90 (20 prefixes), 1 F<sub>90</sub> = 1 s/&Omega;<sub>90</sub>, alias: F(90)<br>
-fathom, 1 ftm = 2 yd, alias: ftm<br>
-fluid dram, 1 fl dr = 60 min, aliases: fl-dr, fl dr<br>
-fluid ounce, 1 fl oz = 0.25 gi, aliases: fl-oz, fl oz<br>
-foot, 1 ft = 12 in, alias: ft<br>
-foot-pound, 1 ft·lb = 1 ft&thinsp;lbf, aliases: ft-lb, ft-lbf, ft·lb, ft·lbf<br>
-furlong, 1 fur = 10 ch, alias: fur<br>
-galileo (20 prefixes), 1 Gal = 1 cm/s<sup>2</sup>, alias: Gal<br>
-gallon, 1 gal = 231 in<sup>3</sup>, aliases: gal, liquid gal, liquid gallon<br>
-gasoline gallon equivalent, 1 gasoline-gallon-equivalent = 33.7 kW&thinsp;h, alias: gasoline-gallon-equivalent<br>
-gauss (20 prefixes), 1 G = 1.0 &times; 10<sup>-4</sup> T, alias: G<br>
-gill, 1 gi = 0.5 cp, alias: gi<br>
-grain, 1 gr = 1.428&thinsp;571&thinsp;428&thinsp;57 &times; 10<sup>-4</sup> lb, alias: gr<br>
-gray (20 prefixes), 1 Gy = 1 J/kg, alias: Gy<br>
-hand, 1 hand = 4 in<br>
-hartley, 1 Hart = 3.321&thinsp;928&thinsp;094&thinsp;89 bit, aliases: Hart, ban, dit<br>
-hartree, 1 <i>E</i><sub>h</sub> = 1 ℏ<sup>2</sup>/(<i>a</i><sub>0</sub><sup>2</sup>&thinsp;<i>m</i><sub>e</sub>), aliases: E_h, Ha<br>
-hectare, 1 ha = 1 hm<sup>2</sup>, alias: ha<br>
-henry (20 prefixes), 1 H = 1 Wb/A, alias: H<br>
-henry 90 (20 prefixes), 1 H<sub>90</sub> = 1 &Omega;<sub>90</sub>&thinsp;s, alias: H(90)<br>
-hertz (20 prefixes), 1 Hz = 1 1/s, alias: Hz<br>
-hogshead, 1 hogshead = 65 gal<br>
-horsepower, 1 hp = 550 ft&thinsp;lbf/s, alias: hp<br>
-hour, 1 h = 60 min, alias: h<br>
-hundredweight, 1 cwt = 100 lb, alias: cwt<br>
-inch (1 prefix), 1 in = 0.0254 m, alias: in<br>
-international prototype kilogram, 1 <i>m</i>(&#x1d4a6;) = <span>1.000&thinsp;000&thinsp;000(12) kg</span>, aliases: m(K), IPK<br>
-IT British thermal unit, 1 BTU = 1055.055&thinsp;852&thinsp;62 J, aliases: BTU, Btu<br>
-jansky, 1 Jy = 1.0 &times; 10<sup>-26</sup> W/(Hz&thinsp;m<sup>2</sup>), alias: Jy<br>
-joule (20 prefixes), 1 J = 1 N&thinsp;m, alias: J<br>
-Julian year (4 prefixes), 1 a = 365.25 d, aliases: a, annum, year, yr<br>
-Jupiter mass, 1 <i>M</i><sub>J</sub> = <span>1.898&thinsp;580(88) &times; 10<sup>27</sup> kg</span>, aliases: M(J), M(Jup)<br>
-katal (20 prefixes), 1 kat = 1 mol/s, alias: kat<br>
-kelvin (20 prefixes), symbol: K, alias: K<br>
-kelvin 54 (20 prefixes), 1 K<sub>54</sub> = <span>1.000&thinsp;000&thinsp;00(37) K</span>, alias: K(54)<br>
-kilogram (20 prefixes), symbol: kg, alias: kg<br>
-knot, 1 kn = 1 M/h, alias: kn<br>
-large calorie, 1 Cal = 1000 cal, aliases: Cal, Calorie, dietary calorie, kcal, kilocalorie<br>
-league, 1 lea = 3 mi, alias: lea<br>
-light hour, 1 light-hour = 1 h&thinsp;<i>c</i>, alias: light-hour<br>
-light minute, 1 light-minute = 1 min&thinsp;<i>c</i>, alias: light-minute<br>
-light second, 1 light-second = 1 <i>c</i>&thinsp;s, alias: light-second<br>
-light year, 1 ly = 1 a&thinsp;<i>c</i>, alias: ly<br>
-link, 1 li = 0.66 ft, alias: li<br>
-litre (20 prefixes), 1 L = 1 dm<sup>3</sup>, aliases: L, liter<br>
-long hundredweight, 1 long cwt = 112 lb, alias: long cwt<br>
-long ton, 1 long ton = 2240 lb<br>
-lumen (20 prefixes), 1 lm = 1 sr&thinsp;cd, alias: lm<br>
-lux (20 prefixes), 1 lx = 1 lm/m<sup>2</sup>, alias: lx<br>
-maxwell (20 prefixes), 1 Mx = 1.0 &times; 10<sup>-8</sup> Wb, alias: Mx<br>
-metre (20 prefixes), symbol: m, aliases: m, meter<br>
-mile, 1 mi = 1760 yd, alias: mi<br>
-millibel milliwatt (log base 10), 0 mBm = 1.0 mW, aliases: mBm, mB(mW)<br>
-millimetre of mercury, 1 mmHg = 133.322&thinsp;387&thinsp;415 Pa, alias: mmHg<br>
-minim, 1 min = 0.0125 tsp<br>
-minute, 1 min = 60 s, alias: min<br>
-mole (20 prefixes), symbol: mol, alias: mol<br>
-moment magnitude (log base 10), 0 <i>M</i><sub>W</sub> = 1.122&thinsp;018&thinsp;454&thinsp;3 &times; 10<sup>16</sup> dyn&thinsp;cm, aliases: M(W), MMS<br>
-monochromatic AB magnitude (log base 10), 0 <i>m</i><sub>AB</sub> = 3631.0 Jy, alias: m(AB)<br>
-natural unit of action, 1 ℏ = 1.054&thinsp;571&thinsp;817&thinsp;65 &times; 10<sup>-34</sup> J&thinsp;s, aliases: h-bar, ℏ<br>
-natural unit of information, 1 nat = 1.442&thinsp;695&thinsp;040&thinsp;89 bit, aliases: nat, nepit, nit<br>
-nautical mile, 1 M = 1852 m, aliases: M, NM, Nm, nmi<br>
-neper (log base <i>e</i>), 0 Np = 1.0, alias: Np<br>
-newton (20 prefixes), 1 N = 1 kg&thinsp;m/s<sup>2</sup>, alias: N<br>
-nibble, 1 nibble = 4 bit, aliases: nybble, nyble<br>
-oersted (20 prefixes), 1 Oe = 79.577&thinsp;471&thinsp;545&thinsp;9 A/m, alias: Oe<br>
-ohm (20 prefixes), 1 &Omega; = 1 V/A, alias: Ω<br>
-ohm 90 (20 prefixes), 1 &Omega;<sub>90</sub> = 1.000&thinsp;000&thinsp;017&thinsp;79 &Omega;, aliases: ohm(90), Ω(90)<br>
-oil barrel, 1 bbl = 42 gal<br>
-ounce, 1 oz = 0.0625 lb, aliases: oz, avdp oz, avoirdupois ounce<br>
-parsec (3 prefixes), 1 pc = 206&thinsp;264.806&thinsp;247 au, alias: pc<br>
-part per billion, 1 ppb = 1.0 &times; 10<sup>-9</sup>, alias: ppb<br>
-part per million, 1 ppm = 1.0 &times; 10<sup>-6</sup>, alias: ppm<br>
-part per quadrillion, 1 ppq = 1.0 &times; 10<sup>-15</sup>, alias: ppq<br>
-part per trillion, 1 ppt = 1.0 &times; 10<sup>-12</sup>, alias: ppt<br>
-pascal (20 prefixes), 1 Pa = 1 N/m<sup>2</sup>, alias: Pa<br>
-peck, 1 pk = 2 gal, alias: pk<br>
-pennyweight, 1 dwt = 24 gr, alias: dwt<br>
-percent, 1% = 0.01, alias: %<br>
-phot (20 prefixes), 1 ph = 1 sr&thinsp;cd/cm<sup>2</sup>, alias: ph<br>
-pica, 1 P/ = 0.166&thinsp;666&thinsp;666&thinsp;667 in, alias: P/<br>
-pint, 1 pt = 0.5 qt, aliases: pt, liquid pint, liquid pt<br>
-Planck charge, 1 <i>q</i><sub>P</sub> = <span>1.875&thinsp;546&thinsp;038&thinsp;15(22) &times; 10<sup>-18</sup> C</span>, alias: q(P)<br>
-Planck length, 1 <i>l</i><sub>P</sub> = <span>1.616&thinsp;228(38) &times; 10<sup>-35</sup> m</span>, alias: l(P)<br>
-Planck mass, 1 <i>m</i><sub>P</sub> = <span>2.176&thinsp;470(51) &times; 10<sup>-8</sup> kg</span>, alias: m(P)<br>
-Planck temperature, 1 <i>T</i><sub>P</sub> = <span>1.416&thinsp;808(33) &times; 10<sup>32</sup> K</span>, alias: T(P)<br>
-Planck time, 1 <i>t</i><sub>P</sub> = <span>5.391&thinsp;16(13) &times; 10<sup>-44</sup> s</span>, alias: t(P)<br>
-point, 1 p = 0.083&thinsp;333&thinsp;333&thinsp;333&thinsp;3 P/, alias: p<br>
-poise (20 prefixes), 1 P = 1 dyn&thinsp;s/cm<sup>2</sup>, alias: P<br>
-pound (1 prefix), 1 lb = 0.453&thinsp;592&thinsp;37 kg, aliases: lb, avdp lb, avoirdupois pound, lbm, pound mass<br>
-pound force, 1 lbf = 9.806&thinsp;65 lb&thinsp;m/s<sup>2</sup>, alias: lbf<br>
-pound per square inch, 1 psi = 1 lbf/in<sup>2</sup>, alias: psi<br>
-pound-foot, 1 lb·ft = 1 ft&thinsp;lbf, aliases: lb-ft, lbf-lft, lbf·ft, lb·ft<br>
-proton mass, 1 <i>m</i><sub>p</sub> = <span>1.672&thinsp;621&thinsp;898(21) &times; 10<sup>-27</sup> kg</span>, alias: m(p)<br>
-quart, 1 qt = 0.25 gal, aliases: qt, liquid qt, liquid quart<br>
-rack unit, 1 U = 1.75 in<br>
-radian (20 prefixes), 1 rad = 1 m/m, alias: rad<br>
-reduced compton wavelength, 1 ƛ<sub>C</sub> = 1 ℏ/(<i>m</i><sub>e</sub>&thinsp;<i>c</i>), aliases: lambda(C), ƛ(C)<br>
-rod, 1 rd = 25 ft, alias: rd<br>
-root hertz, 1 &radic;<span style="text-decoration:overline;">Hz</span> = 1 Hz<sup>1/2</sup>, aliases: sqrtHz, √Hz<br>
-second (20 prefixes), symbol: s, alias: s<br>
-section, 1 section = 640 acre<br>
-short ton, 1 tn = 2000 lb, alias: tn<br>
-shot, 1 jig = 3 Tbsp, alias: jig<br>
-siemens (20 prefixes), 1 S = 1 A/V, aliases: S, mho<br>
-sievert (20 prefixes), 1 Sv = 1 J/kg, alias: Sv<br>
-siriometer, 1 Sm = 1&thinsp;000&thinsp;000 au<br>
-slug, 1 slug = 1 lbf&thinsp;s<sup>2</sup>/ft<br>
-solar mass, 1 <i>M</i><sub>&#x2609;</sub> = <span>1.988&thinsp;475(92) &times; 10<sup>30</sup> kg</span>, aliases: M(solar), M(Sun), M☉<br>
-speed of light, 1 <i>c</i> = 2.997&thinsp;924&thinsp;58 &times; 10<sup>8</sup> m/s, alias: c<br>
-square, 1 square = 100 ft<sup>2</sup><br>
-standard atmosphere, 1 atm = 101&thinsp;325 Pa, alias: atm<br>
-steradian (20 prefixes), 1 sr = 1 m<sup>2</sup>/m<sup>2</sup>, alias: sr<br>
-stilb (20 prefixes), 1 sb = 1 cd/cm<sup>2</sup>, alias: sb<br>
-stokes (20 prefixes), 1 St = 1 cm<sup>2</sup>/s, alias: St<br>
-survey foot, 1 ft = 0.304&thinsp;800&thinsp;609&thinsp;601 m<br>
-survey mile, 1 mi = 8 fur, alias: statute mile<br>
-survey township, 1 twp = 36 section, alias: twp<br>
-tablespoon, 1 Tbsp = 0.5 fl oz, alias: Tbsp<br>
-teaspoon, 1 tsp = 0.333&thinsp;333&thinsp;333&thinsp;333 Tbsp, alias: tsp<br>
-tesla (20 prefixes), 1 T = 1 Wb/m<sup>2</sup>, alias: T<br>
-thousandth of an inch, 1 mil = 0.001 in, aliases: mil, thou, thousandth<br>
-tonne (12 prefixes), 1 t = 1000 kg, aliases: t, metric ton<br>
-tons of TNT equivalent (3 prefixes), 1 t(TNT) = 4.184 GJ, aliases: t(TNT), tons of tnt, tons of TNT<br>
-torr (1 prefix), 1 Torr = 133.322&thinsp;368&thinsp;421 Pa, alias: Torr<br>
-troy ounce, 1 oz t = 20 dwt, aliases: oz-t, oz t<br>
-troy pound, 1 lb t = 12 oz t, aliases: lb-t, lb t<br>
-volt (20 prefixes), 1 V = 1 W/A, alias: V<br>
-volt 90 (20 prefixes), 1 V<sub>90</sub> = 1.000&thinsp;000&thinsp;106&thinsp;67 V, alias: V(90)<br>
-volt ampere (20 prefixes), 1 VA = 1 V&thinsp;A, alias: VA<br>
-volt ampere reactive (20 prefixes), 1 var = 1 V&thinsp;A, alias: var<br>
-watt (20 prefixes), 1 W = 1 J/s, alias: W<br>
-watt 90 (20 prefixes), 1 W<sub>90</sub> = 1 A<sub>90</sub>&thinsp;V<sub>90</sub>, alias: W(90)<br>
-wavenumber, alias for: 1/cm<br>
-weber (20 prefixes), 1 Wb = 1 V&thinsp;s, alias: Wb<br>
-yard, 1 yd = 3 ft, alias: yd
+<ul>
+<li>1</li>
+<li>acre, 1&nbsp;acre&nbsp;=&nbsp;10&nbsp;ch<sup>2</sup></li>
+<li>acre-foot, 1&nbsp;acre ft&nbsp;=&nbsp;43560&nbsp;ft<sup>3</sup>, aliases: acre-ft, acre ft</li>
+<li>ampere (20 prefixes), symbol: A, alias: A</li>
+<li>ampere 90 (20 prefixes), 1&nbsp;A<sub>90</sub>&nbsp;=&nbsp;1&nbsp;V<sub>90</sub>/&Omega;<sub>90</sub>, alias: A(90)</li>
+<li>angstrom, 1&nbsp;&#8491;&nbsp;=&nbsp;1 &times; 10<sup>-10</sup>&nbsp;m, alias: Å</li>
+<li>arcminute, 1'&nbsp;=&nbsp;1/60°, aliases: arcmin, '</li>
+<li>arcsecond, 1"&nbsp;=&nbsp;1/60', aliases: arcsec, "</li>
+<li>astronomical unit, 1&nbsp;au&nbsp;=&nbsp;1.495&thinsp;978&thinsp;707 &times; 10<sup>11</sup>&nbsp;m, aliases: au, ua</li>
+<li>bar (20 prefixes), 1&nbsp;bar&nbsp;=&nbsp;100&thinsp;000&nbsp;Pa</li>
+<li>barn, 1&nbsp;b&nbsp;=&nbsp;1 &times; 10<sup>-28</sup>&nbsp;m<sup>2</sup>, alias: b</li>
+<li>barrel, 1&nbsp;bbl&nbsp;=&nbsp;31.5&nbsp;gal, aliases: bbl, liquid barrel, liquid bbl</li>
+<li>becquerel (20 prefixes), 1&nbsp;Bq&nbsp;=&nbsp;1&nbsp;1/s, alias: Bq</li>
+<li>bel (log base 10, multiplier = 1), 0&nbsp;B&nbsp;=&nbsp;1</li>
+<li>bit (16 prefixes), symbol: bit, alias: shannon</li>
+<li>board-foot, 1&nbsp;board-foot&nbsp;=&nbsp;1&nbsp;ft<sup>2</sup>&thinsp;in, alias: board-ft</li>
+<li>bohr, 1&nbsp;<i>a</i><sub>0</sub>&nbsp;=&nbsp;<span>5.291&thinsp;772&thinsp;106&thinsp;8(12) &times; 10<sup>-11</sup>&nbsp;m</span>, aliases: a0, a(0)</li>
+<li>bushel, 1&nbsp;bu&nbsp;=&nbsp;4&nbsp;pk, alias: bu</li>
+<li>byte (16 prefixes), 1&nbsp;B&nbsp;=&nbsp;8&nbsp;bit, alias: B</li>
+<li>cable, 1&nbsp;cb&nbsp;=&nbsp;120&nbsp;ftm, alias: cb</li>
+<li>calorie, 1&nbsp;cal&nbsp;=&nbsp;4.184&nbsp;J, aliases: cal, calth, thermochemical calorie</li>
+<li>candela (20 prefixes), symbol: cd, alias: cd</li>
+<li>chain, 1&nbsp;ch&nbsp;=&nbsp;4&nbsp;rd, alias: ch</li>
+<li>coulomb (20 prefixes), 1&nbsp;C&nbsp;=&nbsp;1&nbsp;s&thinsp;A, alias: C</li>
+<li>coulomb 90 (20 prefixes), 1&nbsp;C<sub>90</sub>&nbsp;=&nbsp;1&nbsp;V<sub>90</sub>&thinsp;s/&Omega;<sub>90</sub>, alias: C(90)</li>
+<li>cubic foot, 1&nbsp;cu ft&nbsp;=&nbsp;1&nbsp;ft<sup>3</sup>, aliases: cu-ft, cu ft</li>
+<li>cubic inch, 1&nbsp;cu in&nbsp;=&nbsp;1&nbsp;in<sup>3</sup>, aliases: cu-in, cu in</li>
+<li>cubic yard, 1&nbsp;cu yd&nbsp;=&nbsp;1&nbsp;yd<sup>3</sup>, aliases: cu-yd, cu yd</li>
+<li>cup, 1&nbsp;cp&nbsp;=&nbsp;0.5&nbsp;pt, alias: cp</li>
+<li>dalton (20 prefixes), 1&nbsp;Da&nbsp;=&nbsp;<span>1.660&thinsp;539&thinsp;040(20) &times; 10<sup>-27</sup>&nbsp;kg</span>, alias: Da</li>
+<li>day, 1&nbsp;d&nbsp;=&nbsp;24&nbsp;h, aliases: d, D</li>
+<li>decibel (log base 10, multiplier = 10), 0&nbsp;dB&nbsp;=&nbsp;1, aliases: dB, dB power, dB-p</li>
+<li>decibel femtowatt (log base 10, multiplier = 10), 0&nbsp;dBf&nbsp;=&nbsp;1&nbsp;fW, aliases: dBf, dB(fW)</li>
+<li>decibel field (log base 10, multiplier = 20), 0&nbsp;dB&nbsp;=&nbsp;1, aliases: dB-f, dB field, dB root-power</li>
+<li>decibel hertz (log base 10, multiplier = 10), 0&nbsp;dB-Hz&nbsp;=&nbsp;1&nbsp;Hz, aliases: dB-Hz, dB(Hz)</li>
+<li>decibel joule (log base 10, multiplier = 10), 0&nbsp;dBJ&nbsp;=&nbsp;1&nbsp;J, aliases: dBJ, dB(J)</li>
+<li>decibel kelvin (log base 10, multiplier = 10), 0&nbsp;dBK&nbsp;=&nbsp;1&nbsp;K, aliases: dBK, dB(K)</li>
+<li>decibel kilowatt (log base 10, multiplier = 10), 0&nbsp;dBk&nbsp;=&nbsp;1&nbsp;kW, aliases: dBk, dB(kW)</li>
+<li>decibel microvolt (log base 10, multiplier = 20), 0&nbsp;dBμV&nbsp;=&nbsp;1&nbsp;&mu;V, aliases: dBuV, dB(uV), dBμV</li>
+<li>decibel microvolt per metre (log base 10, multiplier = 20), 0&nbsp;dBμ&nbsp;=&nbsp;1&nbsp;&mu;V/m, aliases: dBμ, dB(uV/m), decibel microvolt per meter</li>
+<li>decibel millivolt (log base 10, multiplier = 20), 0&nbsp;dBmV&nbsp;=&nbsp;1&nbsp;mV, aliases: dBmV, dB(mV)</li>
+<li>decibel milliwatt (log base 10, multiplier = 10), 0&nbsp;dBm&nbsp;=&nbsp;1&nbsp;mW, aliases: dBm, dB(mW)</li>
+<li>decibel reciprocal kelvin (log base 10, multiplier = 20), 0&nbsp;dB(K<sup>-1</sup>)&nbsp;=&nbsp;1&nbsp;1/K, aliases: dB(K**-1), dB(K⁻¹)</li>
+<li>decibel reciprocal metre (log base 10, multiplier = 10), 0&nbsp;dB(m<sup>-1</sup>)&nbsp;=&nbsp;1&nbsp;1/m, aliases: dB(m**-1), dB(m⁻¹), decibel reciprocal meter</li>
+<li>decibel sound intensity level (log base 10, multiplier = 10), 0&nbsp;dB&nbsp;=&nbsp;1.0 &times; 10<sup>-12</sup>&nbsp;W/m<sup>2</sup>, alias: dB(SIL)</li>
+<li>decibel sound power level (log base 10, multiplier = 10), 0&nbsp;dB&nbsp;=&nbsp;1.0 &times; 10<sup>-12</sup>&nbsp;W, aliases: dB(SWL), dB(pW)</li>
+<li>decibel sound pressure level (log base 10, multiplier = 20), 0&nbsp;dB&nbsp;=&nbsp;20&nbsp;&mu;Pa, aliases: dB(SPL), dB(20uPa)</li>
+<li>decibel square metre (log base 10, multiplier = 10), 0&nbsp;dBsm&nbsp;=&nbsp;1&nbsp;m<sup>2</sup>, aliases: dBsm, dB(m**2), decibel square meter</li>
+<li>decibel u (log base 10, multiplier = 20), 0&nbsp;dBu&nbsp;=&nbsp;0.774&thinsp;596&thinsp;669&thinsp;241&nbsp;V, alias: dBu</li>
+<li>decibel volt (log base 10, multiplier = 20), 0&nbsp;dBV&nbsp;=&nbsp;1&nbsp;V, aliases: dBV, dB(V)</li>
+<li>decibel watt (log base 10, multiplier = 10), 0&nbsp;dBW&nbsp;=&nbsp;1&nbsp;W, aliases: dBW, dB(W)</li>
+<li>decibel Z (log base 10, multiplier = 10), 0&nbsp;dBZ&nbsp;=&nbsp;1&nbsp;mm<sup>6</sup>/m<sup>3</sup>, aliases: dBZ, dB(Z)</li>
+<li>decibel μPa (log base 10, multiplier = 20), 0&nbsp;dB&nbsp;=&nbsp;1&nbsp;&mu;Pa, alias: dB(uPa)</li>
+<li>degree, 1°&nbsp;=&nbsp;0.017&thinsp;453&thinsp;292&thinsp;519&thinsp;943&thinsp;295&nbsp;rad, aliases: deg, °</li>
+<li>degree Celsius (non-linear unit), 0&nbsp;°C&nbsp;=&nbsp;273.15&nbsp;K, aliases: degC, deg C, degree C, °C</li>
+<li>degree Fahrenheit (non-linear unit), 0&nbsp;°F&nbsp;=&nbsp;459.67&nbsp;°R, aliases: degF, deg F, degree F, °F</li>
+<li>degree Rankine, 1&nbsp;°R&nbsp;=&nbsp;5/9&nbsp;K, aliases: degR, deg R, degree R, °R</li>
+<li>dram, 1&nbsp;dr&nbsp;=&nbsp;1/16&nbsp;oz, alias: dr</li>
+<li>dry barrel, 1&nbsp;bu&nbsp;=&nbsp;7056&nbsp;in<sup>3</sup>, alias: dry-bbl</li>
+<li>dry gallon, 1&nbsp;gal&nbsp;=&nbsp;107521/400&nbsp;in<sup>3</sup>, alias: dry-gal</li>
+<li>dry pint, 1&nbsp;pt&nbsp;=&nbsp;0.5&nbsp;qt, alias: dry-pt</li>
+<li>dry quart, 1&nbsp;qt&nbsp;=&nbsp;0.25&nbsp;gal, alias: dry-qt</li>
+<li>dyne (20 prefixes), 1&nbsp;dyn&nbsp;=&nbsp;1 &times; 10<sup>-5</sup>&nbsp;N, alias: dyn</li>
+<li>Earth mass, 1&nbsp;<i>M</i><sub>&#x2295;</sub>&nbsp;=&nbsp;<span>5.972&thinsp;37(28) &times; 10<sup>24</sup>&nbsp;kg</span>, aliases: M(E), M⊕</li>
+<li>electon mass, 1&nbsp;<i>m</i><sub>e</sub>&nbsp;=&nbsp;<span>9.109&thinsp;383&thinsp;56(11) &times; 10<sup>-31</sup>&nbsp;kg</span>, alias: m(e)</li>
+<li>electronvolt (20 prefixes), 1&nbsp;eV&nbsp;=&nbsp;1.602&thinsp;176&thinsp;634 &times; 10<sup>-19</sup>&nbsp;J, alias: eV</li>
+<li>elementary charge, 1&nbsp;<i>e</i>&nbsp;=&nbsp;1.602&thinsp;176&thinsp;634 &times; 10<sup>-19</sup>&nbsp;C, alias: e</li>
+<li>erg (20 prefixes), 1&nbsp;erg&nbsp;=&nbsp;1 &times; 10<sup>-7</sup>&nbsp;J</li>
+<li>farad (20 prefixes), 1&nbsp;F&nbsp;=&nbsp;1&nbsp;C/V, alias: F</li>
+<li>farad 90 (20 prefixes), 1&nbsp;F<sub>90</sub>&nbsp;=&nbsp;1&nbsp;s/&Omega;<sub>90</sub>, alias: F(90)</li>
+<li>fathom, 1&nbsp;ftm&nbsp;=&nbsp;2&nbsp;yd, alias: ftm</li>
+<li>fluid dram, 1&nbsp;fl dr&nbsp;=&nbsp;60&nbsp;min, aliases: fl-dr, fl dr</li>
+<li>fluid ounce, 1&nbsp;fl oz&nbsp;=&nbsp;0.25&nbsp;gi, aliases: fl-oz, fl oz</li>
+<li>foot, 1&nbsp;ft&nbsp;=&nbsp;12&nbsp;in, alias: ft</li>
+<li>foot-pound, 1&nbsp;ft·lb&nbsp;=&nbsp;1&nbsp;ft&thinsp;lbf, aliases: ft-lb, ft-lbf, ft·lb, ft·lbf</li>
+<li>furlong, 1&nbsp;fur&nbsp;=&nbsp;10&nbsp;ch, alias: fur</li>
+<li>galileo (20 prefixes), 1&nbsp;Gal&nbsp;=&nbsp;1&nbsp;cm/s<sup>2</sup>, alias: Gal</li>
+<li>gallon, 1&nbsp;gal&nbsp;=&nbsp;231&nbsp;in<sup>3</sup>, aliases: gal, liquid gal, liquid gallon</li>
+<li>gasoline gallon equivalent, 1&nbsp;gasoline-gallon-equivalent&nbsp;=&nbsp;33.7&nbsp;kW&thinsp;h, alias: gasoline-gallon-equivalent</li>
+<li>gauss (20 prefixes), 1&nbsp;G&nbsp;=&nbsp;1 &times; 10<sup>-4</sup>&nbsp;T, alias: G</li>
+<li>gill, 1&nbsp;gi&nbsp;=&nbsp;0.5&nbsp;cp, alias: gi</li>
+<li>grain, 1&nbsp;gr&nbsp;=&nbsp;1/7000&nbsp;lb, alias: gr</li>
+<li>gray (20 prefixes), 1&nbsp;Gy&nbsp;=&nbsp;1&nbsp;J/kg, alias: Gy</li>
+<li>hand, 1&nbsp;hand&nbsp;=&nbsp;4&nbsp;in</li>
+<li>hartley, 1&nbsp;Hart&nbsp;=&nbsp;3.321&thinsp;928&thinsp;094&thinsp;89&nbsp;bit, aliases: Hart, ban, dit</li>
+<li>hartree, 1&nbsp;<i>E</i><sub>h</sub>&nbsp;=&nbsp;1&nbsp;ℏ<sup>2</sup>/(<i>a</i><sub>0</sub><sup>2</sup>&thinsp;<i>m</i><sub>e</sub>), aliases: E_h, Ha</li>
+<li>hectare, 1&nbsp;ha&nbsp;=&nbsp;1&nbsp;hm<sup>2</sup>, alias: ha</li>
+<li>henry (20 prefixes), 1&nbsp;H&nbsp;=&nbsp;1&nbsp;Wb/A, alias: H</li>
+<li>henry 90 (20 prefixes), 1&nbsp;H<sub>90</sub>&nbsp;=&nbsp;1&nbsp;&Omega;<sub>90</sub>&thinsp;s, alias: H(90)</li>
+<li>hertz (20 prefixes), 1&nbsp;Hz&nbsp;=&nbsp;1&nbsp;1/s, alias: Hz</li>
+<li>hogshead, 1&nbsp;hogshead&nbsp;=&nbsp;65&nbsp;gal</li>
+<li>horsepower, 1&nbsp;hp&nbsp;=&nbsp;550&nbsp;ft&thinsp;lbf/s, alias: hp</li>
+<li>hour, 1&nbsp;h&nbsp;=&nbsp;60&nbsp;min, alias: h</li>
+<li>hundredweight, 1&nbsp;cwt&nbsp;=&nbsp;100&nbsp;lb, alias: cwt</li>
+<li>inch (1 prefix), 1&nbsp;in&nbsp;=&nbsp;0.0254&nbsp;m, alias: in</li>
+<li>international prototype kilogram, 1&nbsp;<i>m</i>(&#x1d4a6;)&nbsp;=&nbsp;<span>1.000&thinsp;000&thinsp;000(12)&nbsp;kg</span>, aliases: m(K), IPK</li>
+<li>IT British thermal unit, 1&nbsp;BTU&nbsp;=&nbsp;1055.055&thinsp;852&thinsp;62&nbsp;J, aliases: BTU, Btu</li>
+<li>jansky, 1&nbsp;Jy&nbsp;=&nbsp;1 &times; 10<sup>-26</sup>&nbsp;W/(Hz&thinsp;m<sup>2</sup>), alias: Jy</li>
+<li>joule (20 prefixes), 1&nbsp;J&nbsp;=&nbsp;1&nbsp;N&thinsp;m, alias: J</li>
+<li>Julian year (4 prefixes), 1&nbsp;a&nbsp;=&nbsp;365.25&nbsp;d, aliases: a, annum, year, yr</li>
+<li>Jupiter mass, 1&nbsp;<i>M</i><sub>J</sub>&nbsp;=&nbsp;<span>1.898&thinsp;580(88) &times; 10<sup>27</sup>&nbsp;kg</span>, aliases: M(J), M(Jup)</li>
+<li>katal (20 prefixes), 1&nbsp;kat&nbsp;=&nbsp;1&nbsp;mol/s, alias: kat</li>
+<li>kelvin (20 prefixes), symbol: K, alias: K</li>
+<li>kelvin 54 (20 prefixes), 1&nbsp;K<sub>54</sub>&nbsp;=&nbsp;<span>1.000&thinsp;000&thinsp;00(37)&nbsp;K</span>, alias: K(54)</li>
+<li>kilogram (20 prefixes), symbol: kg, alias: kg</li>
+<li>knot, 1&nbsp;kn&nbsp;=&nbsp;1&nbsp;M/h, alias: kn</li>
+<li>large calorie, 1&nbsp;Cal&nbsp;=&nbsp;1000&nbsp;cal, aliases: Cal, Calorie, dietary calorie, kcal, kilocalorie</li>
+<li>league, 1&nbsp;lea&nbsp;=&nbsp;3&nbsp;mi, alias: lea</li>
+<li>light hour, 1&nbsp;light-hour&nbsp;=&nbsp;1&nbsp;h&thinsp;<i>c</i>, alias: light-hour</li>
+<li>light minute, 1&nbsp;light-minute&nbsp;=&nbsp;1&nbsp;min&thinsp;<i>c</i>, alias: light-minute</li>
+<li>light second, 1&nbsp;light-second&nbsp;=&nbsp;1&nbsp;<i>c</i>&thinsp;s, alias: light-second</li>
+<li>light year, 1&nbsp;ly&nbsp;=&nbsp;1&nbsp;a&thinsp;<i>c</i>, alias: ly</li>
+<li>link, 1&nbsp;li&nbsp;=&nbsp;0.66&nbsp;ft, alias: li</li>
+<li>litre (20 prefixes), 1&nbsp;L&nbsp;=&nbsp;1&nbsp;dm<sup>3</sup>, aliases: L, liter</li>
+<li>long hundredweight, 1&nbsp;long cwt&nbsp;=&nbsp;112&nbsp;lb, alias: long cwt</li>
+<li>long ton, 1&nbsp;long ton&nbsp;=&nbsp;2240&nbsp;lb</li>
+<li>lumen (20 prefixes), 1&nbsp;lm&nbsp;=&nbsp;1&nbsp;sr&thinsp;cd, alias: lm</li>
+<li>lux (20 prefixes), 1&nbsp;lx&nbsp;=&nbsp;1&nbsp;lm/m<sup>2</sup>, alias: lx</li>
+<li>maxwell (20 prefixes), 1&nbsp;Mx&nbsp;=&nbsp;1 &times; 10<sup>-8</sup>&nbsp;Wb, alias: Mx</li>
+<li>metre (20 prefixes), symbol: m, aliases: m, meter</li>
+<li>mile, 1&nbsp;mi&nbsp;=&nbsp;1760&nbsp;yd, alias: mi</li>
+<li>millibel milliwatt (log base 10, multiplier = 1000), 0&nbsp;mBm&nbsp;=&nbsp;1&nbsp;mW, aliases: mBm, mB(mW)</li>
+<li>millimetre of mercury, 1&nbsp;mmHg&nbsp;=&nbsp;133.322&thinsp;387&thinsp;415&nbsp;Pa, alias: mmHg</li>
+<li>minim, 1&nbsp;min&nbsp;=&nbsp;0.125&nbsp;tsp</li>
+<li>minute, 1&nbsp;min&nbsp;=&nbsp;60&nbsp;s, alias: min</li>
+<li>mole (20 prefixes), symbol: mol, alias: mol</li>
+<li>moment magnitude (log base 10, multiplier = 2/3), -10.7&nbsp;<i>M</i><sub>W</sub>&nbsp;=&nbsp;1.0&nbsp;dyn&thinsp;cm, aliases: M(W), MMS</li>
+<li>monochromatic AB magnitude (log base 10, multiplier = -2.5), 0&nbsp;<i>m</i><sub>AB</sub>&nbsp;=&nbsp;3631.0&nbsp;Jy, alias: m(AB)</li>
+<li>natural unit of action, 1&nbsp;ℏ&nbsp;=&nbsp;1.054&thinsp;571&thinsp;817&thinsp;646&thinsp;156&thinsp;5 &times; 10<sup>-34</sup>&nbsp;J&thinsp;s, aliases: h-bar, ℏ</li>
+<li>natural unit of information, 1&nbsp;nat&nbsp;=&nbsp;1.442&thinsp;695&thinsp;040&thinsp;89&nbsp;bit, aliases: nat, nepit, nit</li>
+<li>nautical mile, 1&nbsp;M&nbsp;=&nbsp;1852&nbsp;m, aliases: M, Nm, NM, nmi</li>
+<li>neper (log base <i>e</i>, multiplier = 1), 0&nbsp;Np&nbsp;=&nbsp;1.0, alias: Np</li>
+<li>newton (20 prefixes), 1&nbsp;N&nbsp;=&nbsp;1&nbsp;kg&thinsp;m/s<sup>2</sup>, alias: N</li>
+<li>nibble, 1&nbsp;nibble&nbsp;=&nbsp;4&nbsp;bit, aliases: nybble, nyble</li>
+<li>oersted (20 prefixes), 1&nbsp;Oe&nbsp;=&nbsp;79.577&thinsp;471&thinsp;545&thinsp;947&thinsp;67&nbsp;A/m, alias: Oe</li>
+<li>ohm (20 prefixes), 1&nbsp;&Omega;&nbsp;=&nbsp;1&nbsp;V/A, alias: Ω</li>
+<li>ohm 90 (20 prefixes), 1&nbsp;&Omega;<sub>90</sub>&nbsp;=&nbsp;1.000&thinsp;000&thinsp;017&thinsp;793&thinsp;668...&nbsp;&Omega;, aliases: ohm(90), Ω(90)</li>
+<li>oil barrel, 1&nbsp;bbl&nbsp;=&nbsp;42&nbsp;gal</li>
+<li>ounce, 1&nbsp;oz&nbsp;=&nbsp;1/16&nbsp;lb, aliases: oz, avdp oz, avoirdupois ounce</li>
+<li>parsec (3 prefixes), 1&nbsp;pc&nbsp;=&nbsp;206&thinsp;264.806&thinsp;247&thinsp;096&thinsp;36&nbsp;au, alias: pc</li>
+<li>part per billion, 1&nbsp;ppb&nbsp;=&nbsp;1 &times; 10<sup>-9</sup>, alias: ppb</li>
+<li>part per million, 1&nbsp;ppm&nbsp;=&nbsp;1 &times; 10<sup>-6</sup>, alias: ppm</li>
+<li>part per quadrillion, 1&nbsp;ppq&nbsp;=&nbsp;1 &times; 10<sup>-15</sup>, alias: ppq</li>
+<li>part per trillion, 1&nbsp;ppt&nbsp;=&nbsp;1 &times; 10<sup>-12</sup>, alias: ppt</li>
+<li>pascal (20 prefixes), 1&nbsp;Pa&nbsp;=&nbsp;1&nbsp;N/m<sup>2</sup>, alias: Pa</li>
+<li>peck, 1&nbsp;pk&nbsp;=&nbsp;2&nbsp;gal, alias: pk</li>
+<li>pennyweight, 1&nbsp;dwt&nbsp;=&nbsp;24&nbsp;gr, alias: dwt</li>
+<li>percent, 1%&nbsp;=&nbsp;0.01, alias: %</li>
+<li>phot (20 prefixes), 1&nbsp;ph&nbsp;=&nbsp;1&nbsp;sr&thinsp;cd/cm<sup>2</sup>, alias: ph</li>
+<li>pica, 1&nbsp;P/&nbsp;=&nbsp;1/6&nbsp;in, alias: P/</li>
+<li>pint, 1&nbsp;pt&nbsp;=&nbsp;0.5&nbsp;qt, aliases: pt, liquid pint, liquid pt</li>
+<li>Planck charge, 1&nbsp;<i>q</i><sub>P</sub>&nbsp;=&nbsp;<span>1.875&thinsp;546&thinsp;038&thinsp;15(22) &times; 10<sup>-18</sup>&nbsp;C</span>, alias: q(P)</li>
+<li>Planck length, 1&nbsp;<i>l</i><sub>P</sub>&nbsp;=&nbsp;<span>1.616&thinsp;228(38) &times; 10<sup>-35</sup>&nbsp;m</span>, alias: l(P)</li>
+<li>Planck mass, 1&nbsp;<i>m</i><sub>P</sub>&nbsp;=&nbsp;<span>2.176&thinsp;470(51) &times; 10<sup>-8</sup>&nbsp;kg</span>, alias: m(P)</li>
+<li>Planck temperature, 1&nbsp;<i>T</i><sub>P</sub>&nbsp;=&nbsp;<span>1.416&thinsp;808(33) &times; 10<sup>32</sup>&nbsp;K</span>, alias: T(P)</li>
+<li>Planck time, 1&nbsp;<i>t</i><sub>P</sub>&nbsp;=&nbsp;<span>5.391&thinsp;16(13) &times; 10<sup>-44</sup>&nbsp;s</span>, alias: t(P)</li>
+<li>point, 1&nbsp;p&nbsp;=&nbsp;1/12&nbsp;P/, alias: p</li>
+<li>poise (20 prefixes), 1&nbsp;P&nbsp;=&nbsp;1&nbsp;dyn&thinsp;s/cm<sup>2</sup>, alias: P</li>
+<li>pound (1 prefix), 1&nbsp;lb&nbsp;=&nbsp;0.453&thinsp;592&thinsp;37&nbsp;kg, aliases: lb, avdp lb, avoirdupois pound, lbm, pound mass</li>
+<li>pound force, 1&nbsp;lbf&nbsp;=&nbsp;9.806&thinsp;65&nbsp;lb&thinsp;m/s<sup>2</sup>, alias: lbf</li>
+<li>pound per square inch, 1&nbsp;psi&nbsp;=&nbsp;1&nbsp;lbf/in<sup>2</sup>, alias: psi</li>
+<li>pound-foot, 1&nbsp;lb·ft&nbsp;=&nbsp;1&nbsp;ft&thinsp;lbf, aliases: lb-ft, lbf-lft, lbf·ft, lb·ft</li>
+<li>proton mass, 1&nbsp;<i>m</i><sub>p</sub>&nbsp;=&nbsp;<span>1.672&thinsp;621&thinsp;898(21) &times; 10<sup>-27</sup>&nbsp;kg</span>, alias: m(p)</li>
+<li>quart, 1&nbsp;qt&nbsp;=&nbsp;0.25&nbsp;gal, aliases: qt, liquid qt, liquid quart</li>
+<li>rack unit, 1&nbsp;U&nbsp;=&nbsp;1.75&nbsp;in</li>
+<li>radian (20 prefixes), 1&nbsp;rad&nbsp;=&nbsp;1&nbsp;m/m, alias: rad</li>
+<li>reduced compton wavelength, 1&nbsp;ƛ<sub>C</sub>&nbsp;=&nbsp;1&nbsp;ℏ/(<i>m</i><sub>e</sub>&thinsp;<i>c</i>), aliases: lambda(C), ƛ(C)</li>
+<li>rod, 1&nbsp;rd&nbsp;=&nbsp;25&nbsp;ft, alias: rd</li>
+<li>root hertz, 1&nbsp;&radic;<span style="text-decoration:overline;">Hz</span>&nbsp;=&nbsp;1&nbsp;Hz<sup>1/2</sup>, aliases: sqrtHz, √Hz</li>
+<li>second (20 prefixes), symbol: s, alias: s</li>
+<li>section, 1&nbsp;section&nbsp;=&nbsp;640&nbsp;acre</li>
+<li>short ton, 1&nbsp;tn&nbsp;=&nbsp;2000&nbsp;lb, alias: tn</li>
+<li>shot, 1&nbsp;jig&nbsp;=&nbsp;3&nbsp;Tbsp, alias: jig</li>
+<li>siemens (20 prefixes), 1&nbsp;S&nbsp;=&nbsp;1&nbsp;A/V, aliases: S, mho</li>
+<li>sievert (20 prefixes), 1&nbsp;Sv&nbsp;=&nbsp;1&nbsp;J/kg, alias: Sv</li>
+<li>siriometer, 1&nbsp;Sm&nbsp;=&nbsp;1&thinsp;000&thinsp;000&nbsp;au</li>
+<li>slug, 1&nbsp;slug&nbsp;=&nbsp;1&nbsp;lbf&thinsp;s<sup>2</sup>/ft</li>
+<li>solar mass, 1&nbsp;<i>M</i><sub>&#x2609;</sub>&nbsp;=&nbsp;<span>1.988&thinsp;475(92) &times; 10<sup>30</sup>&nbsp;kg</span>, aliases: M(solar), M(Sun), M☉</li>
+<li>speed of light, 1&nbsp;<i>c</i>&nbsp;=&nbsp;2.997&thinsp;924&thinsp;58 &times; 10<sup>8</sup>&nbsp;m/s, alias: c</li>
+<li>square, 1&nbsp;square&nbsp;=&nbsp;100&nbsp;ft<sup>2</sup></li>
+<li>standard atmosphere, 1&nbsp;atm&nbsp;=&nbsp;101&thinsp;325&nbsp;Pa, alias: atm</li>
+<li>steradian (20 prefixes), 1&nbsp;sr&nbsp;=&nbsp;1&nbsp;m<sup>2</sup>/m<sup>2</sup>, alias: sr</li>
+<li>stilb (20 prefixes), 1&nbsp;sb&nbsp;=&nbsp;1&nbsp;cd/cm<sup>2</sup>, alias: sb</li>
+<li>stokes (20 prefixes), 1&nbsp;St&nbsp;=&nbsp;1&nbsp;cm<sup>2</sup>/s, alias: St</li>
+<li>survey foot, 1&nbsp;ft&nbsp;=&nbsp;1200/3937&nbsp;m</li>
+<li>survey mile, 1&nbsp;mi&nbsp;=&nbsp;8&nbsp;fur, alias: statute mile</li>
+<li>survey township, 1&nbsp;twp&nbsp;=&nbsp;36&nbsp;section, alias: twp</li>
+<li>tablespoon, 1&nbsp;Tbsp&nbsp;=&nbsp;0.5&nbsp;fl oz, alias: Tbsp</li>
+<li>teaspoon, 1&nbsp;tsp&nbsp;=&nbsp;1/3&nbsp;Tbsp, alias: tsp</li>
+<li>tesla (20 prefixes), 1&nbsp;T&nbsp;=&nbsp;1&nbsp;Wb/m<sup>2</sup>, alias: T</li>
+<li>thousandth of an inch, 1&nbsp;mil&nbsp;=&nbsp;0.001&nbsp;in, aliases: mil, thou, thousandth</li>
+<li>tonne (12 prefixes), 1&nbsp;t&nbsp;=&nbsp;1000&nbsp;kg, aliases: t, metric ton</li>
+<li>tons of TNT equivalent (3 prefixes), 1&nbsp;t(TNT)&nbsp;=&nbsp;4.184&nbsp;GJ, aliases: t(TNT), tons of tnt, tons of TNT</li>
+<li>torr (1 prefix), 1&nbsp;Torr&nbsp;=&nbsp;20265/152&nbsp;Pa, alias: Torr</li>
+<li>troy ounce, 1&nbsp;oz t&nbsp;=&nbsp;20&nbsp;dwt, aliases: oz-t, oz t</li>
+<li>troy pound, 1&nbsp;lb t&nbsp;=&nbsp;12&nbsp;oz t, aliases: lb-t, lb t</li>
+<li>volt (20 prefixes), 1&nbsp;V&nbsp;=&nbsp;1&nbsp;W/A, alias: V</li>
+<li>volt 90 (20 prefixes), 1&nbsp;V<sub>90</sub>&nbsp;=&nbsp;71207857995393/71207850400000&nbsp;V, alias: V(90)</li>
+<li>volt ampere (20 prefixes), 1&nbsp;VA&nbsp;=&nbsp;1&nbsp;V&thinsp;A, alias: VA</li>
+<li>volt ampere reactive (20 prefixes), 1&nbsp;var&nbsp;=&nbsp;1&nbsp;V&thinsp;A, alias: var</li>
+<li>watt (20 prefixes), 1&nbsp;W&nbsp;=&nbsp;1&nbsp;J/s, alias: W</li>
+<li>watt 90 (20 prefixes), 1&nbsp;W<sub>90</sub>&nbsp;=&nbsp;1&nbsp;A<sub>90</sub>&thinsp;V<sub>90</sub>, alias: W(90)</li>
+<li>wavenumber, alias for: 1/cm</li>
+<li>weber (20 prefixes), 1&nbsp;Wb&nbsp;=&nbsp;1&nbsp;V&thinsp;s, alias: Wb</li>
+<li>yard, 1&nbsp;yd&nbsp;=&nbsp;3&nbsp;ft, alias: yd</li></ul>
 </div>
 
 </div>

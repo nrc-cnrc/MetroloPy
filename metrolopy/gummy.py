@@ -32,7 +32,7 @@ module.  The gummy object, in turn, inherits from the nummy object.
 
 import numpy as np
 
-from .ummy import ummy, _isscalar, _floor, _iinfo
+from .ummy import ummy, _isscalar, _floor
 from .nummy import nummy,MetaNummy
 from .exceptions import IncompatibleUnitsError,NoUnitConversionFoundError
 from .unit import Unit,one
@@ -41,14 +41,31 @@ from .pmethod import _Pmthd
 from .printing import PrettyPrinter,MetaPrettyPrinter
 from .dfunc import Dfunc
 from .dfunc import _f_darctan2 as darctan2
-from math import isnan, isinf
+from math import isnan, isinf,log10
 from fractions import Fraction
+from numbers import Number,Real,Complex,Integral,Rational
+
+try:
+    import mpmath as mp
+except:
+    mp = None
 
 def _ku(k,u):
     try:
         return k*u
     except:
-        return type(u)(k)*u
+        return type(u)(k)*u # in case gummy.u is a decimal.Decimal 
+    
+def _lg10(x):
+    if mp is not None and isinstance(x,mp.mpf):
+        return mp.log10(x)
+    try:
+        return x.log10() # in case x is a decimal.Decimal
+    except:
+        try:
+            return log10(x)
+        except:
+            return log10(float(x)) # in case x is a fraction.Fraction
     
     
 class MetaGummy(MetaPrettyPrinter,MetaNummy):
@@ -274,8 +291,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
     mulsep = False # If True use a dot or * between units, if False us a space.
     
     slashaxis = True
-    
-    display_as_float = False
                     
     _cmp_k = None
     _cmp_p = 0.95
@@ -317,11 +332,16 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             self._p_method = _Pmthd(p_method)
             
         if p is not None:
+            p = float(p)
             self._k = self._p_method.fptok(p,dof,gummy.bayesian)
             self._p = p
             self._pm = p
             self._set_k = False
         else:
+            if isinstance(k,Integral):
+                k = int(k)
+            else:
+                k = float(k)
             self._k = k
             if k != 1 or dof == float('inf'):
                 self._p = self._p_method.fktop(k,dof=dof,bayesian=gummy.bayesian)
@@ -1266,7 +1286,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             default is `True`.
            
         mean_marker_options:  `dict`, optional
-            A dictionary containing keywords to be passed to the `pylab.axvline`
+            A dictionary containing keywords to be passed to the `pyplot.axvline`
             method which draws the mean marker.  For example setting this to
             ``{'color'='r','linewidth'=4}`` makes the mean marker red and with
             a thickness of four points.
@@ -1276,20 +1296,20 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             limits of the confidence interval.  The default is `True`.
            
         ci_marker_options:  `dict`, optional
-            A dictionary containing keywords to be passed to the `pylab.axvline`
+            A dictionary containing keywords to be passed to the `pyplot.axvline`
             method which draws the confidence interval markers.
             
         hold:  `bool`, optional
-            If this is `False` ``pylab.show()`` is called before this method exits.
-            If it is `True` ``pylab.show()`` is not called.  The default is
+            If this is `False` ``pyplot.show()`` is called before this method exits.
+            If it is `True` ``pyplot.show()`` is not called.  The default is
             `False`.
            
         plot_options:
-             These are optional keyword arguments that are passed to the `pylab.hist`
+             These are optional keyword arguments that are passed to the `pyplot.hist`
              method.  For example bins=50 overrides the default number of bins (100).
-             For other options see the `pylab.hist` documentation.
+             For other options see the `pyplot.hist` documentation.
         """
-        import pylab as plt
+        import matplotlib.pyplot as plt
                     
         g = self.copy(True)
         if p is not None and p != self.p:
@@ -1388,18 +1408,18 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
            
         mean_marker_options:  `dict`, optional
             A dictionary of options to be passed to the
-            `pylab.axvline` and `pylab.axhline` methods that draw the `mean_marker`.
+            `pyplot.axvline` and `pyplot.axhline` methods that draw the `mean_marker`.
            
         hold:  `bool`, optional
-            If this is `False` then ``pylab.show()`` is called before this method
-            exits.  If it is `True` ``pylab.show()`` is not called.  The default is
+            If this is `False` then ``pyplot.show()`` is called before this method
+            exits.  If it is `True` ``pyplot.show()`` is not called.  The default is
             `False`.
            
         plot_options:  These are optional keyword arguments that are passed to
-             the `pylab.plot` method.  For example ``ms=0.1`` decreases the size of the
+             the `pyplot.plot` method.  For example ``ms=0.1`` decreases the size of the
              dots in the plot.
         """
-        import pylab as plt
+        import matplotlib.pyplot as plt
         
         if math is None:
             math = cls.latex_math_plot
@@ -1806,14 +1826,14 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                 if self._ubreakdown is None or len(self._ubreakdown) != len(v) - 2:
                     if self.k == 1:
                         if fmt == 'html':
-                            pm = ' with <i>u</i> = '
+                            pm = ' with <i>u</i>&nbsp;=&nbsp;'
                         elif fmt == 'latex':
                             pm = norm(' with ') + 'u = '
                         else:
                             pm = ' with u = '
                     else:
                         if fmt == 'html':
-                            pm = ' with <i>U</i> = '
+                            pm = ' with <i>U</i>&nbsp;=&nbsp;'
                         elif fmt == 'latex':
                             pm = norm(' with ') + 'U = '
                         else:
@@ -1826,11 +1846,11 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                         b = str(self._ubreakdown[i])
                         if fmt == 'html':
                             if i == 0:
-                                pm = ' with <i>u</i><sub>'+b+'</sub> = '
+                                pm = ' with <i>u</i><sub>'+b+'</sub>&nbsp;=&nbsp;'
                             elif i == len(v) - 3:
-                                pm = ' and <i>u</i><sub>'+b+'</sub> = '
+                                pm = ' and <i>u</i><sub>'+b+'</sub>&nbsp;=&nbsp;'
                             else:
-                                pm = ', <i>u</i><sub>'+b+'</sub> = '
+                                pm = ', <i>u</i><sub>'+b+'</sub>&nbsp;=&nbsp;'
                         elif fmt == 'latex':
                             if i == 0:
                                 pm = norm(' with ') + 'u_{' + norm(b) + '} = '
@@ -1965,7 +1985,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     else:
                         k = self.k
                     if fmt == 'html':
-                        itxt += '<i>k</i> = ' + gummy._k_to_str(k)
+                        itxt += '<i>k</i>&nbsp;=&nbsp;' + gummy._k_to_str(k)
                     else:
                         itxt += 'k = ' + gummy._k_to_str(k)
                     
@@ -2007,7 +2027,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                         itxt = ' with '
                         
                     if fmt == 'html':
-                        itxt += '<i>&nu;</i> = ' + gummy._dof_to_str(self.dof,fmt)
+                        itxt += '<i>&nu;</i>&nbsp;=&nbsp;' + gummy._dof_to_str(self.dof,fmt)
                     elif fmt == 'latex':
                         itxt = norm(itxt)
                         itxt += r'\nu = ' + gummy._dof_to_str(self.dof,fmt)
@@ -2060,68 +2080,69 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             x = self.xsim
         else:
             x = self.x
-            if self.display_as_float:
-                x = float(x)
                 
         xabs = abs(x)
             
         if xabs != 0 and not isinf(xabs) and not isnan(xabs):
-            try:
-                xexp = _floor(np.log10(xabs))
-            except:
-                xexp = _floor(np.log10(float(xabs)))
+            lgx = _lg10(xabs)
+            if lgx < 0 and int(lgx) == lgx:
+                xexp = _floor(lgx) + 1
+            else:
+                xexp = _floor(lgx)
             oexp = xexp
         else:
             xexp = None
             oexp = 0
             
         if self._u == 0 or isnan(self._u) or isinf(self._u):
-            if isinstance(x,Fraction):
-                return ('x',(str(x),'',xsym))
+            if isinstance(x,Rational) and not isinstance(x,Integral):
+                fstr = str(x).split('/')[-1]
+                dstr = str(float(x)).split('e')[0].split('E')[0].split('.')[-1]
+                dstr.strip().strip('0')
+                if len(dstr) > 3 and len(dstr) > len(fstr):
+                    return ('x',(str(x),'',xsym))
             if xexp is None:
-                xexp = 0
+                return ('x',(str(x),'',xsym))
             if xsig is not None:
                 if xabs > 10**(xexp+1) - 10**(xexp-xsig)/2:
                     xexp += 1
-            if (xexp is not None and (self.finfo is not _iinfo or self.display_as_float) and
+            if (xexp is not None and
                     ((self.sci_notation is None and (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                     or self.sci_notation)):
-                x = x*10**(-xexp)
-                if xsig is None:
-                    if self.finfo is _iinfo:
-                        xsig = None
-                    else:
-                        xsig = self.finfo.precision
-                    const = True
+                if isinstance(x,Rational) and xexp > 0:
+                    x = Fraction(x,10**xexp)
                 else:
+                    x = x*10**(-xexp)
+                if xsig is not None:
                     xsig = xsig - 1
-                    const = False
-                return ('x',(gummy._format_mantissa(fmt,x,xsig,self.thousand_spaces,const=const),
+                return ('x',(self._format_mantissa(fmt,x,xsig),
                          gummy._format_exp(fmt,xexp),
                          xsym))
             else:
-                if xsig is None:
-                    if self.finfo is _iinfo:
-                        xsig = None
-                    else:
-                        xsig = self.finfo.precision
-                    const = True
-                else:
+                if xsig is not None:
                     xsig = -xexp + xsig - 1
-                    const = False
-                return ('x',(gummy._format_mantissa(fmt,x,xsig,self.thousand_spaces,const=const),'',xsym))
+                return ('x',(self._format_mantissa(fmt,x,xsig),'',xsym))
         else:
             # lgadd makes sure the sig figs are displayed correctly if a leading
             # 9 is rounded to a 10.
-            lgadd = np.log10(1/(1-10**-nsig/2))+10**-16
+            lgadd = _lg10(1/(1-10**-nsig/2))+10**-16
             if sim and abs(self.cisim[1]-self.cisim[0]) != 0 and not isinf(self.cisim[0]) and not isinf(self.cisim[1]) and not isnan(self.cisim[0]) and not isnan(self.cisim[1]):
-                xcnt = _floor(np.log10(abs((self.cisim[1]-self.cisim[0])/2))+lgadd)
+                xcnt = _floor(_lg10(abs((self.cisim[1]-self.cisim[0])/2))+lgadd)
             if style != 'ueq' and not isinstance(self._U,gummy):
-                xcnt = _floor(np.log10(abs(self._U))+type(self._U)(lgadd))
+                try:
+                    xcnt = _floor(_lg10(abs(self._U))+lgadd)
+                except:
+                    xcnt = _floor(_lg10(abs(self._U))+type(self._U)(lgadd))
             else:
-                xcnt = _floor(np.log10(abs(_ku(self._k,self._u)))+type(self._u)(lgadd))
+                try:
+                    xcnt = _floor(_lg10(abs(_ku(self._k,self._u)))+lgadd)
+                except:
+                    xcnt = _floor(_lg10(abs(_ku(self._k,self._u)))+type(self._u)(lgadd))
             uuexp = xcnt - nsig + 1
                     
+            if xexp is not None and xexp - uuexp > self.max_digits and style in ['pm','concise']:
+                style = 'pmi'
+                
             # Round x to zero if it is smaller that one count in the last
             # digit of the expanded uncertainty.
             if xabs < 10**uuexp/2:
@@ -2150,12 +2171,12 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                         (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation)):
                     x = x*10**(-xexp)
-                    xret = (gummy._format_mantissa(fmt,x,xexp-uuexp,self.thousand_spaces),
+                    xret = (self._format_mantissa(fmt,x,xexp-uuexp),
                             gummy._format_exp(fmt,xexp),
                             xsym)
                     return tuple([style,xret] + uret)
                 else:
-                    xret = (gummy._format_mantissa(fmt,x,-uuexp,self.thousand_spaces),'',xsym)
+                    xret = (self._format_mantissa(fmt,x,-uuexp),'',xsym)
                     return tuple([style,xret] + uret)
             elif ugummy and style in ['pmsim','pmsimi']:
                 usm = self.Usim
@@ -2168,12 +2189,12 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                         (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation)):
                     x = x*10**(-xexp)
-                    xret = (gummy._format_mantissa(fmt,x,xexp-uuexp,self.thousand_spaces),
+                    xret = (self._format_mantissa(fmt,x,xexp-uuexp),
                             gummy._format_exp(fmt,xexp),
                             xsym)
                     return (style,xret,uret0,uret1)
                 else:
-                    xret = (gummy._format_mantissa(fmt,x,-uuexp,self.thousand_spaces),'',xsym)
+                    xret = (self._format_mantissa(fmt,x,-uuexp),'',xsym)
                     return (style,xret,uret0,uret1)
             else:
                 if sim:
@@ -2184,22 +2205,20 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     ub = [u]
                 elif self._ubreakdown is None:
                     u = self._U
-                    if self.display_as_float:
-                        u = float(u)
                     ub = [u]
                 else:
                     u = self._U
-                    if self.display_as_float:
-                        u = float(u)
                     ub = self._Ubr
-                    if self.display_as_float:
-                        ub = [float(i) for i in ub]
 
-                uabs = abs(u)                
+
+                uabs = abs(u)     
                 if style == 'pm' or style == 'pmsim' or uabs == 0 or isinf(uabs) or isnan(uabs):
                     uexp = xexp
                 else:
-                    uexp = _floor(np.log10(uabs)+type(uabs)(lgadd))
+                    try:
+                        uexp = _floor(_lg10(uabs)+lgadd)
+                    except:
+                        uexp = _floor(_lg10(uabs)+type(uabs)(lgadd))
                     
                 psn = False
                 if style == 'concise':
@@ -2211,28 +2230,24 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                 if (((self.sci_notation is None and 
                         (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation) or psn):
-                    xtxt = gummy._format_mantissa(fmt,x*10**(-xexp),xexp-uuexp,
-                                             self.thousand_spaces)
+                    xtxt = self._format_mantissa(fmt,x*10**(-xexp),xexp-uuexp)
                     xetxt = gummy._format_exp(fmt,xexp)
                     xret = (xtxt,xetxt,xsym)
                 else:
-                    xtxt = gummy._format_mantissa(fmt,x,-uuexp,self.thousand_spaces)
+                    xtxt = self._format_mantissa(fmt,x,-uuexp)
                     xret = (xtxt,'',xsym)
                     
                 uret = []
                 if style == 'concise':
                     for ue in ub:
-                        utxt = ummy._format_mantissa(fmt,ue*10**(-uexp),nsig-1,
-                                                         self.thousand_spaces,True)
+                        utxt = self._format_mantissa(fmt,ue*10**(-uexp),nsig-1,parenth=True)
                         uret.append((utxt,'',xsym))
                 elif style in ['pmsim','pmsimi']:
                     if (((self.sci_notation is None and 
                             (uexp > self.sci_notation_high or uexp < self.sci_notation_low)) 
                             or self.sci_notation)):
-                        utxt0 = ummy._format_mantissa(fmt,self.Usim[0]*10**(-uexp),uexp-uuexp,
-                                             self.thousand_spaces)
-                        utxt1 = ummy._format_mantissa(fmt,self.Usim[1]*10**(-uexp),uexp-uuexp,
-                                             self.thousand_spaces)
+                        utxt0 = self._format_mantissa(fmt,self.Usim[0]*10**(-uexp),uexp-uuexp)
+                        utxt1 = self._format_mantissa(fmt,self.Usim[1]*10**(-uexp),uexp-uuexp)
                         uetxt = gummy._format_exp(fmt,uexp)
                         if utxt0 == utxt1:
                             if style == 'pmsim':
@@ -2244,8 +2259,8 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                             uret.append((utxt0,uetxt,xsym))
                             uret.append((utxt1,uetxt,xsym))
                     else:
-                        utxt0 = ummy._format_mantissa(fmt,self.Usim[0],-uuexp,self.thousand_spaces)
-                        utxt1 = ummy._format_mantissa(fmt,self.Usim[1],-uuexp,self.thousand_spaces)
+                        utxt0 = self._format_mantissa(fmt,self.Usim[0],-uuexp)
+                        utxt1 = self._format_mantissa(fmt,self.Usim[1],-uuexp)
                         if utxt0 == utxt1:
                             if style == 'pmsim':
                                 style = 'pm'
@@ -2257,30 +2272,30 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                             uret.append((utxt1,'',xsym))
                 elif style in ['cisim','mcisim']:
                     if self.cisim[0] != 0 and not isinf(self.cisim[0]) and not isnan(self.cisim[0]):
-                        x0exp = _floor(np.log10(abs(self.cisim[0])))
+                        x0exp = _floor(_lg10(abs(self.cisim[0])))
                     else:
                         x0exp = 0
                     if (((self.sci_notation is None and 
                             (x0exp > self.sci_notation_high or x0exp < self.sci_notation_low)) 
                             or self.sci_notation)):
-                        ci0 = gummy._format_mantissa(fmt,self.cisim[0]*10**(-x0exp),x0exp-uuexp,self.thousand_spaces)
+                        ci0 = self._format_mantissa(fmt,self.cisim[0]*10**(-x0exp),x0exp-uuexp)
                         xe0txt = gummy._format_exp(fmt,x0exp)
                         uret.append((ci0,xe0txt,xsym))                 
                     else:
-                        uret.append((gummy._format_mantissa(fmt,self.cisim[0],-uuexp,self.thousand_spaces),'',xsym))
+                        uret.append((self._format_mantissa(fmt,self.cisim[0],-uuexp),'',xsym))
                     
                     if self.cisim[1] != 0 and not isinf(self.cisim[1]) and not isnan(self.cisim[1]):
-                        x1exp = _floor(np.log10(abs(self.cisim[1])))
+                        x1exp = _floor(_lg10(abs(self.cisim[1])))
                     else:
                         x1exp = 0
                     if (((self.sci_notation is None and 
                             (x1exp > self.sci_notation_high or x1exp < self.sci_notation_low)) 
                             or self.sci_notation)):
-                        ci1 = gummy._format_mantissa(fmt,self.cisim[1]*10**(-x1exp),x1exp-uuexp,self.thousand_spaces)
+                        ci1 = self._format_mantissa(fmt,self.cisim[1]*10**(-x1exp),x1exp-uuexp)
                         xe1txt = gummy._format_exp(fmt,x1exp)
                         uret.append((ci1,xe1txt,xsym))
                     else:
-                        uret.append((gummy._format_mantissa(fmt,self.cisim[1],-uuexp,self.thousand_spaces),'',xsym))
+                        uret.append((self._format_mantissa(fmt,self.cisim[1],-uuexp),'',xsym))
                 else:
                     if style == 'ueq':
                         uxp = uexp - nsig + 1
@@ -2290,13 +2305,12 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                             (uexp > self.sci_notation_high or uexp < self.sci_notation_low)) 
                             or self.sci_notation)):
                         for ue in ub:
-                            utxt = ummy._format_mantissa(fmt,ue*10**(-uexp),uexp-uxp,
-                                                 self.thousand_spaces)
+                            utxt = self._format_mantissa(fmt,ue*10**(-uexp),uexp-uxp)
                             uetxt = gummy._format_exp(fmt,uexp)
                             uret.append((utxt,uetxt,xsym))
                     else:
                         for ue in ub:
-                            utxt = ummy._format_mantissa(fmt,ue,-uxp,self.thousand_spaces)
+                            utxt = self._format_mantissa(fmt,ue,-uxp)
                             uret.append((utxt,'',xsym))
                     
                 return tuple([style,xret]+uret)
@@ -2322,14 +2336,13 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         if unit == '':
             return ''
             
-        if fmt == 'latex':
-            if unit.startswith('\t'):
-                unit = unit[1:]
-            else:
-                unit = r'\:' + unit
+        if unit.startswith('\t'):
+            unit = unit[1:]
         else:
-            if unit.startswith('\t'):
-                unit = unit[1:]
+            if fmt == 'latex':
+                unit = r'\:' + unit
+            elif fmt == 'html':
+                unit = '&nbsp;' + unit
             else:
                 unit = ' ' + unit
             
@@ -2371,7 +2384,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                 return 'inf'
             return '\u221E'
             
-        if isinstance(dof, int):
+        if isinstance(dof,Integral):
             return str(dof)
         return '{:.1f}'.format(dof)
         
@@ -2548,7 +2561,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
         
     def _add(self, v):
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._radd(self)
         if isinstance(v,jummy):
             return v._radd(self)
@@ -2566,7 +2579,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
                 
     def _radd(self, v):
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._add(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._add(self)
@@ -2577,7 +2590,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _sub(self, v):
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._rsub(self)
         if isinstance(v,jummy):
             return v._rsub(self)
@@ -2595,7 +2608,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
                 
     def _rsub(self, v):
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._sub(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._sub(self)
@@ -2606,7 +2619,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
         
     def _mul(self, v):
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._rmul(self)
         if isinstance(v,jummy):
             return v._rmul(self)
@@ -2624,7 +2637,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rmul(self, v):
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._mul(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._mul(self)
@@ -2635,7 +2648,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _truediv(self, v):
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._rtruediv(self)
         if isinstance(v,jummy):
             return v._rtruediv(self)
@@ -2653,7 +2666,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rtruediv(self, v):
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._truediv(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._truediv(self)
@@ -2666,7 +2679,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
     def _pow(self, v):
         if v == 0:
             return gummy(1)
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._rpow(self)
         if isinstance(v,jummy):
             return v._rpow(self)
@@ -2684,7 +2697,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rpow(self, v):
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._pow(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._pow(self)
@@ -2700,7 +2713,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return ret
     
     def _mod(self, v):
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._rmod(self)
         if isinstance(v,jummy):
             return v._rmod(self)
@@ -2718,7 +2731,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         return r
     
     def _rmod(self, v):
-        if isinstance(v,complex):
+        if not isinstance(v,Real) and isinstance(v,Complex):
             return jummy(v)._mod(self)
         if isinstance(v,jummy) or isinstance(v,ummy):
             return v._mod(self)
@@ -2929,7 +2942,7 @@ class jummy(PrettyPrinter,Dfunc):
                         self._imag = gummy(real.unit.zero(),unit=real.unit)
                         self._imag.unit = real.unit
                 else:
-                    if isinstance(real,complex):
+                    if not isinstance(real,Real) and isinstance(real,Complex):
                         self._real = gummy(real.real,unit=unit)
                         self._imag = gummy(real.imag,unit=unit)
                     else:
@@ -2942,7 +2955,7 @@ class jummy(PrettyPrinter,Dfunc):
                 if cov is not None or unit is not one:
                     raise ValueError('cov or unit may not be specified if real or imag is a gummy')
     
-                if isinstance(real,complex) or isinstance(real,jummy) or isinstance(imag,complex) or isinstance(imag,jummy):
+                if (isinstance(real,Number) and not isinstance(real,Real)) or isinstance(real,jummy) or (isinstance(imag,Number) and not isinstance(imag,Real)) or isinstance(imag,jummy):
                     raise ValueError('real and imag must be real numbers or gummys')
     
                 self._real = gummy(real)
@@ -3152,7 +3165,7 @@ class jummy(PrettyPrinter,Dfunc):
             rd = rd[0]
             jd = jd[0]
             
-        if isinstance(fx,complex):
+        if not isinstance(fx,Real) and isinstance(fx,Complex):
             r = gummy._apply(lambda *a: func(*a).real,None,*args,fxdx=(fx.real,rd,x))
             j = gummy._apply(lambda *a: func(*a).imag,None,*args,fxdx=(fx.imag,jd,x))
             if isinstance(r,ummy) or isinstance(j,ummy):
@@ -3182,7 +3195,7 @@ class jummy(PrettyPrinter,Dfunc):
             return [cls._napply(lambda *y: func(*y)[i],*args,fxx=(fx[i],x)) 
                     for i in range(len(fx))]
             
-        if isinstance(fx,complex):
+        if not isinstance(fx,Real) and isinstance(fx,Complex):
             r = gummy._napply(lambda *a: func(*a).real,*args,fxx=(fx.real,x))
             j = gummy._napply(lambda *a: func(*a).imag,*args,fxx=(fx.imag,x))
             return jummy(real=r,imag=j)
