@@ -166,7 +166,6 @@ def _call(f,*x):
             return f(*x)
 
     return f(*x)
-    
    
         
 def _broadcast(f,x):

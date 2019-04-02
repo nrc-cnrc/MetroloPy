@@ -197,9 +197,9 @@ with _BuiltinLib():
     _deg = Unit('degree','\t\u00B0',Conversion(_rad,pi/180),add_symbol=True,order=0,
                  latex_symbol='^{\circ}',ascii_symbol='deg',
                  description='unit of angle, angular unit')
-    _arcmin = Unit('arcminute',"\t'",Conversion(_deg,Fraction(1,60)),add_symbol=True,order=0,
+    _arcmin = Unit('arcminute',"\t'",Conversion(_deg,MFraction(1,60)),add_symbol=True,order=0,
                    short_name='arcmin',description='unit of angle, angular unit')
-    Unit('arcsecond','\t"',Conversion(_arcmin,Fraction(1,60)),add_symbol=True,order=0,
+    Unit('arcsecond','\t"',Conversion(_arcmin,MFraction(1,60)),add_symbol=True,order=0,
          short_name='arcsec',description='unit of angle, angular unit')
     Unit('hectare','ha',Conversion('hm**2',1),add_symbol=True,order=0,
          description='unit of area')

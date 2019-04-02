@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>metrolopy package &#8212; metrolopy 0.5 documentation</title>
+    <title>metrolopy package &#8212; metrolopy 0.5.1rc1 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5',
+        VERSION:     '0.5.1rc1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -38,7 +38,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.1rc1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -354,8 +354,8 @@ some support for numpy broadcasting for functions and operators.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Class <cite>Dfunc</cite> is an abstract base class that provides some support for numpy
 broadcasting for functions and operators.  An inheriting class must implement
-the <cite>_apply(self,function,derivative,*args)</cite>, <cite>_napply(self,function,*args)</cite>
-methods, as well as <cite>_add(x)</cite>, <cite>_radd(x)</cite>, <cite>_sub(x)</cite>, ...</p>
+the <cite>_apply(self,function,derivative,*args)</cite>, <cite>_napply(self,function,*args)</cite>,
+and <cite>tofloat(self)</cite> methods, as well as <cite>_add(x)</cite>, <cite>_radd(x)</cite>, <cite>_sub(x)</cite>, ...</p>
 <dl class="classmethod">
 <dt id="metrolopy.dfunc.Dfunc.apply">
 <em class="property">classmethod </em><code class="descname">apply</code><span class="sig-paren">(</span><em>function</em>, <em>derivative</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.dfunc.Dfunc.apply" title="Permalink to this definition">¶</a></dt>
@@ -483,6 +483,11 @@ a complex return value.</p>
 </pre></div>
 </div>
 </dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.dfunc.Dfunc.tofloat">
+<code class="descname">tofloat</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.dfunc.Dfunc.tofloat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -713,13 +718,13 @@ the interval and above the upper limit of the interval.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>x, y</strong> (<cite>Distribution</cite>) &#8211; the distributions to be plotted</li>
-<li><strong>fmt</strong> (<cite>str</cite>, optional) &#8211; Format parameter passed to <cite>pylab.plot()</cite>, the default is &#8216;ko&#8217;</li>
+<li><strong>fmt</strong> (<cite>str</cite>, optional) &#8211; Format parameter passed to <cite>pyplot.plot()</cite>, the default is &#8216;ko&#8217;</li>
 <li><strong>xlabel</strong> (<cite>str</cite> or <cite>None</cite>) &#8211; a label for the plot x-axis, the default is <cite>None</cite></li>
 <li><strong>ylabel</strong> (<cite>str</cite> or <cite>None</cite>) &#8211; a label for the plot y-axis, the default is <cite>None</cite></li>
 <li><strong>title</strong> (<cite>str</cite> or <cite>None</cite>) &#8211; a title for the histogram, the default is <cite>None</cite></li>
-<li><strong>hold</strong> (<cite>bool</cite> i) &#8211; If this is <cite>False</cite>, <cite>pylab.show()</cite> will be called before the
+<li><strong>hold</strong> (<cite>bool</cite> i) &#8211; If this is <cite>False</cite>, <cite>pyplot.show()</cite> will be called before the
 method exits.  The default is <cite>False</cite></li>
-<li><strong>kwds</strong> &#8211; additional key words that will be passed to <cite>pylab.plot()</cite></li>
+<li><strong>kwds</strong> &#8211; additional key words that will be passed to <cite>pyplot.plot()</cite></li>
 </ul>
 </td>
 </tr>
@@ -771,13 +776,13 @@ method exits.  The default is <cite>False</cite></li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>hold</strong> (<cite>bool</cite>, optional) &#8211; If this is <cite>False</cite>, pylab.show() will be called before the method
+<li><strong>hold</strong> (<cite>bool</cite>, optional) &#8211; If this is <cite>False</cite>, pyplot.show() will be called before the method
 exits.  The default is <cite>False</cite></li>
 <li><strong>xlabel</strong> (<cite>str</cite> or <cite>None</cite>, optional) &#8211; a label for the histogram horizontal axis, the default is <cite>None</cite></li>
 <li><strong>ylabel</strong> (<cite>str</cite> or <cite>None</cite>, optional) &#8211; a label for the histogram vertical axis, the default is &#8216;probability
 density&#8217;</li>
 <li><strong>title</strong> (<cite>str</cite> or <cite>None</cite>) &#8211; a title for the histogram, the default is <cite>None</cite></li>
-<li><strong>kwds</strong> &#8211; additional key words that will be passed to the <cite>pylab.hist</cite> method
+<li><strong>kwds</strong> &#8211; additional key words that will be passed to the <cite>pyplot.hist</cite> method
 that actually created the histogram</li>
 </ul>
 </td>
@@ -3385,11 +3390,11 @@ the <cite>y</cite> gummy&#8217;s unit.</li>
 <li><strong>mean_marker</strong> (<cite>bool</cite>, optional) &#8211; Whether or not to display line markers at the mean
 values of <cite>x</cite> and <cite>y</cite>.  The default is <cite>False</cite>.</li>
 <li><strong>mean_marker_options</strong> (<cite>dict</cite>, optional) &#8211; A dictionary of options to be passed to the
-<cite>pylab.axvline</cite> and <cite>pylab.axhline</cite> methods that draw the <cite>mean_marker</cite>.</li>
-<li><strong>hold</strong> (<cite>bool</cite>, optional) &#8211; If this is <cite>False</cite> then <code class="docutils literal"><span class="pre">pylab.show()</span></code> is called before this method
-exits.  If it is <cite>True</cite> <code class="docutils literal"><span class="pre">pylab.show()</span></code> is not called.  The default is
+<cite>pyplot.axvline</cite> and <cite>pyplot.axhline</cite> methods that draw the <cite>mean_marker</cite>.</li>
+<li><strong>hold</strong> (<cite>bool</cite>, optional) &#8211; If this is <cite>False</cite> then <code class="docutils literal"><span class="pre">pyplot.show()</span></code> is called before this method
+exits.  If it is <cite>True</cite> <code class="docutils literal"><span class="pre">pyplot.show()</span></code> is not called.  The default is
 <cite>False</cite>.</li>
-<li><strong>plot_options</strong> (<em>These are optional keyword arguments that are passed to</em>) &#8211; the <cite>pylab.plot</cite> method.  For example <code class="docutils literal"><span class="pre">ms=0.1</span></code> decreases the size of the
+<li><strong>plot_options</strong> (<em>These are optional keyword arguments that are passed to</em>) &#8211; the <cite>pyplot.plot</cite> method.  For example <code class="docutils literal"><span class="pre">ms=0.1</span></code> decreases the size of the
 dots in the plot.</li>
 </ul>
 </td>
@@ -3443,11 +3448,6 @@ either a correlation_matrix or a covariance_matrix is defined, the
 joint distribution for Monte-Carlo calculations (but not first-
 order calculations) will default to a multivariate normal distribution.</p>
 </dd></dl>
-
-<dl class="attribute">
-<dt id="metrolopy.gummy.gummy.display_as_float">
-<code class="descname">display_as_float</code><em class="property"> = False</em><a class="headerlink" href="#metrolopy.gummy.gummy.display_as_float" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="metrolopy.gummy.gummy.exception_on_fmt_error">
@@ -3513,20 +3513,20 @@ title is auto-generated.  The default value is <cite>True</cite></li>
 then the value of the <cite>gummy.style</cite> class property is used.</li>
 <li><strong>mean_marker</strong> (<cite>bool</cite>, optional) &#8211; Whether or not to display a vertical line at the mean value The
 default is <cite>True</cite>.</li>
-<li><strong>mean_marker_options</strong> (<cite>dict</cite>, optional) &#8211; A dictionary containing keywords to be passed to the <cite>pylab.axvline</cite>
+<li><strong>mean_marker_options</strong> (<cite>dict</cite>, optional) &#8211; A dictionary containing keywords to be passed to the <cite>pyplot.axvline</cite>
 method which draws the mean marker.  For example setting this to
 <code class="docutils literal"><span class="pre">{'color'='r','linewidth'=4}</span></code> makes the mean marker red and with
 a thickness of four points.</li>
 <li><strong>ci_marker</strong> (<cite>bool</cite>, optional) &#8211; Whether or not to display vertical lines at the upper and lower
 limits of the confidence interval.  The default is <cite>True</cite>.</li>
-<li><strong>ci_marker_options</strong> (<cite>dict</cite>, optional) &#8211; A dictionary containing keywords to be passed to the <cite>pylab.axvline</cite>
+<li><strong>ci_marker_options</strong> (<cite>dict</cite>, optional) &#8211; A dictionary containing keywords to be passed to the <cite>pyplot.axvline</cite>
 method which draws the confidence interval markers.</li>
-<li><strong>hold</strong> (<cite>bool</cite>, optional) &#8211; If this is <cite>False</cite> <code class="docutils literal"><span class="pre">pylab.show()</span></code> is called before this method exits.
-If it is <cite>True</cite> <code class="docutils literal"><span class="pre">pylab.show()</span></code> is not called.  The default is
+<li><strong>hold</strong> (<cite>bool</cite>, optional) &#8211; If this is <cite>False</cite> <code class="docutils literal"><span class="pre">pyplot.show()</span></code> is called before this method exits.
+If it is <cite>True</cite> <code class="docutils literal"><span class="pre">pyplot.show()</span></code> is not called.  The default is
 <cite>False</cite>.</li>
-<li><strong>plot_options</strong> &#8211; These are optional keyword arguments that are passed to the <cite>pylab.hist</cite>
+<li><strong>plot_options</strong> &#8211; These are optional keyword arguments that are passed to the <cite>pyplot.hist</cite>
 method.  For example bins=50 overrides the default number of bins (100).
-For other options see the <cite>pylab.hist</cite> documentation.</li>
+For other options see the <cite>pyplot.hist</cite> documentation.</li>
 </ul>
 </td>
 </tr>
@@ -4948,9 +4948,16 @@ of gummy.</p>
 
 <dl class="attribute">
 <dt id="metrolopy.ummy.GummyTag.tags">
-<code class="descname">tags</code><em class="property"> = &lt;WeakValueDictionary at 0x9698400&gt;</em><a class="headerlink" href="#metrolopy.ummy.GummyTag.tags" title="Permalink to this definition">¶</a></dt>
+<code class="descname">tags</code><em class="property"> = &lt;WeakValueDictionary at 0x98cc240&gt;</em><a class="headerlink" href="#metrolopy.ummy.GummyTag.tags" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="metrolopy.ummy.MFraction">
+<em class="property">class </em><code class="descclassname">metrolopy.ummy.</code><code class="descname">MFraction</code><a class="headerlink" href="#metrolopy.ummy.MFraction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">fractions.Fraction</span></code></p>
+<p>A fraction.Fraction sub-class that works with mpmath.mpf objects</p>
 </dd></dl>
 
 <dl class="class">
@@ -5102,6 +5109,11 @@ gummys and strings.</td>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="metrolopy.ummy.ummy.max_digits">
+<code class="descname">max_digits</code><em class="property"> = 15</em><a class="headerlink" href="#metrolopy.ummy.ummy.max_digits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="metrolopy.ummy.ummy.max_dof">
 <code class="descname">max_dof</code><em class="property"> = 10000</em><a class="headerlink" href="#metrolopy.ummy.ummy.max_dof" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -5140,6 +5152,12 @@ gummys and strings.</td>
 <dt id="metrolopy.ummy.ummy.thousand_spaces">
 <code class="descname">thousand_spaces</code><em class="property"> = True</em><a class="headerlink" href="#metrolopy.ummy.ummy.thousand_spaces" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.ummy.tofloat">
+<code class="descname">tofloat</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.tofloat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the gummy with x an u converted to floats.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="metrolopy.ummy.ummy.u">
@@ -5623,7 +5641,7 @@ Conversion Factors for General Use&#8221;, May 2006.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.1rc1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

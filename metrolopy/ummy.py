@@ -432,7 +432,7 @@ class ummy(Dfunc):
         return ret
         
     def __str__(self):
-        x = self._x
+        x = float(self._x)
         try:
             xabs = abs(x)
            
@@ -441,7 +441,7 @@ class ummy(Dfunc):
             else:
                 xexp = None
                 
-            u = self.u
+            u = float(self.u)
             
             if self._u == 0 or isnan(self._u) or isinf(self._u):
                 if xexp is None:
@@ -449,20 +449,16 @@ class ummy(Dfunc):
                 else:
                     if (((self.sci_notation is None and (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation) ):
-                        xtxt = ummy._format_mantissa('unicode',x*10**(-xexp),
-                                                     self.finfo.precision,
-                                                     self.thousand_spaces,
-                                                     const=True)
+                        xtxt = self._format_mantissa('unicode',x*10**(-xexp),
+                                                     self.finfo.precision)
                         etxt = 'e'
                         if xexp >= 0:
                             etxt += '+'
                         etxt += str(xexp)
                         return xtxt + etxt
                     else:
-                        return ummy._format_mantissa('unicode',x,
-                                                     self.finfo.precision,
-                                                     self.thousand_spaces,
-                                                     const=True)
+                        return self._format_mantissa('unicode',x,
+                                                     self.finfo.precision)
                     
             uabs = abs(u)
             if uabs != 0:
@@ -477,23 +473,20 @@ class ummy(Dfunc):
             
             if (((self.sci_notation is None and (xp > self.sci_notation_high or xp < self.sci_notation_low)) 
                         or self.sci_notation) or psn or (xexp is not None and (uexp > xexp and xexp == 0))):
-                xtxt = ummy._format_mantissa('unicode',x*10**(-xp),-uexp+xp+self.nsig-1,
-                                             self.thousand_spaces)
+                xtxt = self._format_mantissa('unicode',x*10**(-xp),-uexp+xp+self.nsig-1)
                 etxt = 'e'
                 if xp >= 0:
                     etxt += '+'
                 etxt += str(xp)
             else:
-                xtxt = ummy._format_mantissa('unicode',x,-uexp+self.nsig-1,
-                                                 self.thousand_spaces)
+                xtxt = self._format_mantissa('unicode',x,-uexp+self.nsig-1)
                 etxt = ''
                 
             if self.nsig <= 0:
                 return xtxt + etxt
     
-            utxt = ummy._format_mantissa('unicode',u*10**(-uexp),self.nsig-1,
-                                             self.thousand_spaces,True)
-            return xtxt + '{' + utxt + '}' + etxt
+            utxt = self._format_mantissa('unicode',u*10**(-uexp),self.nsig-1,parenth=True)
+            return xtxt + '(' + utxt + ')' + etxt
         except:
             try:
                 return(str(self.x) + '{' + str(self.u) + '}' + '??')
@@ -505,9 +498,8 @@ class ummy(Dfunc):
                 
     def __repr__(self):
         return self.__str__()
-        
-    @staticmethod       
-    def _format_mantissa(fmt,x,sig,thousand_spaces=True,parenth=False,const=False):            
+          
+    def _format_mantissa(self,fmt,x,sig,parenth=False):            
         try:
             if isnan(x):
                 return 'nan'
@@ -572,7 +564,7 @@ class ummy(Dfunc):
             if len(s) == 0:
                 s = '0'
             return s
-        elif thousand_spaces:
+        elif self.thousand_spaces:
             # Now insert spaces every three digits
             if fmt == 'html':
                 sp = '&thinsp;'
@@ -920,7 +912,7 @@ class ummy(Dfunc):
             if b == 0:
                     return type(self)(1)
             if (isinstance(self._x,Integral) and 
-                isinstance(b,Integral) and b._x < 0):
+                isinstance(b,Integral) and b < 0):
                 x = MFraction(1,self._x**-b)
             else:
                 x = self._x**b
@@ -929,9 +921,13 @@ class ummy(Dfunc):
             if r._ref is not None:
                 r._ref = self._ref
                 if self._x < 0:
-                    r._refs = -((-1)**b)*self._refs
+                    sgn = -((-1)**b)
                 else:
-                    r._refs = self._refs
+                    sgn = 1
+                if b < 0:
+                    sgn = -sgn
+                r._refs = sgn*self._refs
+                    
             return r
 
         if self._x <= 0:
@@ -962,11 +958,14 @@ class ummy(Dfunc):
             r._dof = b._dof
             return r
         if b._ref is None:
-            r._ref = self._ref
+            r._ref = self._ref 
             if self._x < 0:
-                r._refs = -((-1)**b._x)*self._refs
+                sgn = -((-1)**b._x)
             else:
-                r._refs = self._refs        
+                sgn = 1
+            if b < 0:
+                sgn = -sgn
+            r._refs = sgn*self._refs
             r._dof = self._dof
             return r
         

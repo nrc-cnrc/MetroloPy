@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import gummy as uc
+import metrolopy as uc
 import numpy as np
 import warnings
+from fractions import Fraction
+
+try:
+    import mpmath as mp
+except:
+    mp = None
 
 rand = np.random.RandomState()
 
@@ -387,7 +393,7 @@ def display(g):
         g.ascii()
                 
 def make_gummy(sign=None,exp=None,uexp=-6,sometimes_small=True,dof=None,
-               unit=None,units=None):
+               unit=None,units=None,mpf=False):
     
     utypes = ['A','B','D',None]
     if units is None:
@@ -412,6 +418,11 @@ def make_gummy(sign=None,exp=None,uexp=-6,sometimes_small=True,dof=None,
     if sometimes_small and not rand.randint(10):
         uexp -= 4
     u = abs(x)*u*10**uexp
+    
+    if mpf and mp is not None and not rand.randint(4):
+        x = mp.mpf(x)
+        if rand.randint(2):
+            u = mp.mpf(u)
         
     if dof is None:
         if not rand.randint(4):
@@ -427,6 +438,236 @@ def make_gummy(sign=None,exp=None,uexp=-6,sometimes_small=True,dof=None,
     g = uc.gummy(x,u=u,dof=dof,unit=unit,utype=utype)
     
     return (g,x,u,dof,unit,utype)
+
+def make_number(sign=None,gconst=True,exp=None,fionly=True):
+    q = rand.randint(4)
+    if fionly and q > 1:
+        q = 1
+    if q == 0:
+        if exp is not None:
+            x = rand.randint(10**(exp+1))
+        else:
+            x = rand.randint(100000)
+    if q == 1 or q == 2:
+        x = rand.rand()*0.9 + 0.1
+        if exp is None:
+            exp = rand.randint(1,6)
+            if rand.randint(2):
+                exp = -exp
+
+        x = x*10**exp
+    if q == 2 and mp is not None:
+        x = mp.mpf(x)
+    elif q == 3:
+        if exp is not None:
+            a = rand.randint(10**(exp+1))
+            b = rand.randint(10**(exp+1))
+        else:
+            a = rand.randint(100000)
+            b = rand.randint(100000)
+        if b == 0:
+            x = Fraction(0)
+        else:
+            x = Fraction(a,b)
+        
+    
+    if sign is None:
+        if rand.randint(2):
+            x = -x
+    else:
+        x *= sign
+    
+    if gconst and rand.randint(2):
+        x = uc.gummy(x)
+        
+    return x
+
+def binary_func(f,df,sim=False,exp=None,fionly=False,uexp=-6):
+    if sim:
+        dof = dof=float('inf')
+    else:
+        dof = None
+    a,ax,au,adof,_,_ = make_gummy(unit=1,dof=dof,exp=exp,mpf=(not fionly),uexp=uexp)
+    if rand.randint(2):
+        b = make_number(exp=exp,fionly=fionly)
+        if isinstance(b,uc.gummy):
+            bx = b.x
+        else:
+            bx = b
+        bu = 0
+        bdof = float('inf')
+    else:
+        b,bx,bu,bdof,_,_ = make_gummy(unit=1,dof=dof,exp=exp,mpf=(not fionly),uexp=uexp)
+        
+    ax = float(ax)
+    bx = float(bx)
+    au = float(au)
+    bu = float(bu)
+    x = f(ax,bx)
+    d = df(ax,bx)
+    da = float(d[0])
+    db = float(d[1])
+    u = np.sqrt((da*au)**2 + (db*bu)**2)
+    if dof is None:
+        dof = ((da*au)**4/adof + (db*bu)**4/bdof)
+        if dof == 0:
+            dof = float('inf')
+        else:
+            dof = u**4/dof
+            
+        if dof > uc.gummy.max_dof:
+            dof = float('inf')
+        if dof < 1:
+            dof = 1
+            
+        dof = float(dof)
+            
+    g = f(a,b)
+    
+    if x == 0:
+        assert abs(g.x) < 1e-15
+    else:
+        assert abs((g.x - x)/x) < 1e-15
+        
+    if u == 0:
+        assert abs(u) < 1e-6
+    else:
+        assert abs((g.u - u)/u) < 1e-3
+    
+    if dof is not None and not np.isinf(dof):
+        assert abs((g.dof - dof)/dof) < 0.01
+    
+    if sim and abs(u/x) > 1e-10:
+        uc.gummy.simulate([a,b,g])
+        
+        assert abs((g.xsim - x)/(g.u/np.sqrt(1e5))) < 5
+        assert abs((g.u - g.usim)/g.u) < 0.1
+        
+        if g.correlation(a) > 0.1:
+            assert abs((g.correlation_sim(a)-g.correlation(a))/g.correlation(a)) < 0.1
+            
+        if isinstance(b,uc.gummy) and g.correlation(b) > 0.1:
+            assert abs((g.correlation_sim(b)-g.correlation(b))/g.correlation(b)) < 0.1
+    
+def test_add(n=1000,sim=False):
+    def f(a,b):
+        return a + b
+    def df(ax,bx):
+        return (1,1)
+    for i in range(n):
+        binary_func(f,df,sim=sim)
+        
+def test_sub(n=1000,sim=False):
+    def f(a,b):
+        return a - b
+    def df(ax,bx):
+        return (1,-1)
+    for i in range(n):
+        binary_func(f,df,sim=sim)
+        
+def test_mul(n=1000,sim=False):
+    def f(a,b):
+        return a*b
+    def df(ax,bx):
+        return (bx,ax)
+    for i in range(n):
+        binary_func(f,df,sim=sim)
+        
+def test_div(n=1000,sim=False):
+    def f(a,b):
+        return a/b
+    def df(ax,bx):
+        return (1/bx,-ax/bx**2)
+    for i in range(n):
+        binary_func(f,df,sim=sim)
+        
+def test_pow(n=1000,sim=False):
+    def f(a,b):
+        return abs(a)**b
+    def df(ax,bx):
+        ax = abs(ax)
+        return (bx*ax**(bx-1),np.log(ax)*ax**bx)
+    for i in range(n):
+        binary_func(f,df,sim=sim,exp=0)
+        
+def test_mod(n=1000,sim=False):
+    def f(a,b):
+        return a%b
+    def df(ax,bx):
+        return (1,np.sign(bx)*abs(ax//bx))
+    for i in range(n):
+        binary_func(f,df,sim=sim,fionly=True)
+    
+def test_abs(n=1000,sim=False):
+    def f(a,b):
+        return abs(a)*abs(b)
+    def df(ax,bx):
+        return (abs(bx),abs(ax))
+    for i in range(n):
+        binary_func(f,df,sim=sim)
+        
+def test_neg(n=1000,sim=False):
+    def f(a,b):
+        return (-a)*b
+    def df(ax,bx):
+        return (-bx,-ax)
+    for i in range(n):
+        binary_func(f,df,sim=sim)
+        
+def test_pos(n=1000,sim=False):
+    def f(a,b):
+        return (+a)*b
+    def df(ax,bx):
+        return (-bx,-ax)
+    for i in range(n):
+        binary_func(f,df,sim=sim)
+        
+def test_sincos(n=1000,sim=False):
+    def f(a,b):
+        return uc.sin(a) + uc.cos(b)
+    def df(ax,bx):
+        return (uc.cos(ax),-uc.sin(bx))
+    for i in range(n):
+        binary_func(f,df,sim=sim)
+        
+def test_npsincos(n=1000,sim=False):
+    def f(a,b):
+        return np.sin(a) + np.cos(b)
+    def df(ax,bx):
+        return (np.cos(ax),-np.sin(bx))
+    for i in range(n):
+        binary_func(f,df,sim=sim,fionly=True)
+        
+def test_ap1sincos(n=1000,sim=False):
+    def f(a,b):
+        return uc.gummy.apply(np.sin,np.cos,a) + uc.gummy.napply(np.cos,b)
+    def df(ax,bx):
+        return (np.cos(ax),-np.sin(bx))
+    for i in range(n):
+        binary_func(f,df,sim=sim,fionly=True,exp=0)
+        
+def test_ap2sincos(n=1000,sim=False):
+    def ff(a,b):
+        return np.sin(a) + np.cos(b)
+    def df(ax,bx):
+        return (np.cos(ax),-np.sin(bx))
+    def f(a,b):
+        return uc.gummy.apply(ff,df,a,b)
+
+    for i in range(n):
+        binary_func(f,df,sim=sim,fionly=True)
+        
+def test_apnsincos(n=1000,sim=False):
+    def ff(a,b):
+        return np.sin(a) + np.cos(b)
+    def df(ax,bx):
+        return (np.cos(ax),-np.sin(bx))
+    def f(a,b):
+        return uc.gummy.napply(ff,a,b)
+
+    for i in range(n):
+        binary_func(f,df,sim=sim,fionly=True,exp=0)
+        
 
 def test_ubreakdown(n=None,prnt=False,budget=False):
     
