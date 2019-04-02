@@ -38,11 +38,8 @@ from .functions import sqrt
 import numpy as np
 from fractions import Fraction
 
-try:
-    from mpmath import pi,e
-except:
-    pi = np.pi
-    e = np.e
+pi = np.pi
+e = np.e
 
 # constants from draft of the 9 edition of the SI brochure dated 18 Dec. 2018
 _const_c = 299792458 # speed of light in m/s
