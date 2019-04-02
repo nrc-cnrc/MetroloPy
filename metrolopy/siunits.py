@@ -156,9 +156,9 @@ with _BuiltinLib():
                  description='SI unit for catalytic activity')
     
     # 1990 conventional unit definitions
-    _KJ90 = 483597.9e9 # Josephson constant Hz/V, 1990 conventional value
+    _KJ90 = MFraction('483597.9e9') # Josephson constant Hz/V, 1990 conventional value
     _KJ = 2*_const_e/_const_h
-    _RK90 = 25812.807 # Von Klitzing constant in ohm, 1990 conventional value
+    _RK90 = MFraction('25812.807') # Von Klitzing constant in ohm, 1990 conventional value
     _RK = _const_h/_const_e**2
     _V90 = PrefixedUnit('volt 90','V(90)',Conversion(_V,_KJ90/_KJ),add_symbol=True,
                         html_symbol='V<sub>90</sub>',latex_symbol='V_{90}',
