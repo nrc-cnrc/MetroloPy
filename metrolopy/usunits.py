@@ -43,7 +43,7 @@ with _BuiltinLib():
     _ft = Unit('foot','ft',Conversion(_in,12),add_symbol=True,description='unit of length')
     _yd = Unit('yard','yd',Conversion(_ft,3),add_symbol=True,description='unit of length')
     Unit('mile','mi',Conversion(_yd,1760),add_symbol=True,description='unit of length')
-    _pica = Unit('pica','P/',Conversion(_in,Fraction(1,6)),add_symbol=True,description='unit of length')
+    _pica = Unit('pica','P/',Conversion(_in,MFraction(1,6)),add_symbol=True,description='unit of length')
     Unit('point','p',Conversion(_pica,MFraction(1,12)),add_symbol=True,description='unit of length')
     Unit('link','li',Conversion(_ft,MFraction(33,50)),add_symbol=True,description='unit of length')
     Unit('survey foot','ft',Conversion('m',MFraction(1200,3937)),add_symbol=False,description='unit of length')
