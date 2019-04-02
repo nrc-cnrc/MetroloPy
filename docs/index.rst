@@ -117,7 +117,8 @@ and the
 version history
 ===============
 
-Version 0.5.0, built 26 March 2019, is the first public release.
+* Version 0.5.0, built 26 March 2019, is the first public release.
+* Version 0.5.1, built 2 April 2019, fixed some minor bugs and improved support for fraction.Fraction and mpmath.mpf values.
 
 
 author
