@@ -536,22 +536,26 @@ class ummy(Dfunc):
             if x == int(x):
                 s = str(int(x))
             else:
-                x = float(x)
-                e = 14 - _floor(np.log10(x))
+                xf = float(x)
+                e = 15 - _floor(np.log10(abs(xf)))
+                if e < 0:
+                    e = 0
                 n = 10**e*x
                 if int(n) != n:
                     ellipses = '...'
-                s = str(round(x,e))
+                s = str(round(xf,e))
         elif sig is None:
             s = str(x)
         else:
-            if x != 0:
+            if x != 0 and self.max_digits is not None:
                 if mpf is not None and isinstance(x,mpf):
                     em = _floor(mp.log10(abs(x)))
                 else:    
                     em = _floor(np.log10(abs(float(x))))
                 e = self.max_digits - em
-                if sig > e:
+                if e < 0:
+                    e = 0
+                if sig > e and sig > 0:
                     ellipses = '...'
                     sig = e
             if sig < 0:
