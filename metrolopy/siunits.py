@@ -220,7 +220,7 @@ with _BuiltinLib():
                  description='unit of pressure')
     Unit('millimetre of mercury','mmHg',Conversion(_Pa,133.322387415),add_symbol=True,
          order=0,description='unit of pressure')
-    Unit('angstrom','\u212B',Conversion(_m,Fraction('1e-10')),add_symbol=True,order=0,
+    Unit('angstrom','\u212B',Conversion(_m,MFraction('1e-10')),add_symbol=True,order=0,
          html_symbol='&#8491;',ascii_symbol='angstrom',description='unit of length')
     
     _nm = Unit('nautical mile','M',Conversion(_m,1852),add_symbol=True,order=0,
@@ -229,7 +229,7 @@ with _BuiltinLib():
     Unit.alias('nmi',_nm)
     Unit.alias('Nm',_nm)
     
-    Unit('barn','b',Conversion(_m**2,Fraction('1e-28')),add_symbol=True,order=0,
+    Unit('barn','b',Conversion(_m**2,MFraction('1e-28')),add_symbol=True,order=0,
          description='unit of area')
     Unit('knot','kn',Conversion(_nm*_h**-1,1),add_symbol=True,order=0,
          description='unit of speed')
@@ -249,9 +249,9 @@ with _BuiltinLib():
     LogUnit('neper','Np',LogConversion(1,1,e,_ln),add_symbol=True)
     
     #Non-SI units associated with the CGS and the CGS-Gaussian system of units
-    PrefixedUnit('erg','erg',Conversion(_J,1e-7),add_symbol=True,order=0,
+    PrefixedUnit('erg','erg',Conversion(_J,MFraction('1e-7')),add_symbol=True,order=0,
                  description='CGS unit of energy')
-    _dyn = PrefixedUnit('dyne','dyn',Conversion(_N,Fraction('1e-5')),add_symbol=True,order=0,
+    _dyn = PrefixedUnit('dyne','dyn',Conversion(_N,MFraction('1e-5')),add_symbol=True,order=0,
                         description='CGS unit of force')
     PrefixedUnit('poise','P',Conversion('dyn s cm**-2',1),add_symbol=True,order=0,
                  description='CGS unit of dynamic viscosity')
@@ -263,9 +263,9 @@ with _BuiltinLib():
                  description='CGS unit of illuminance or luminous flux')
     PrefixedUnit('galileo','Gal',Conversion('cm s**-2',1),add_symbol=True,order=0,
                  description='CGS unit of acceleration')
-    PrefixedUnit('maxwell','Mx',Conversion(_Wb,Fraction('1e-8')),add_symbol=True,order=0,
+    PrefixedUnit('maxwell','Mx',Conversion(_Wb,MFraction('1e-8')),add_symbol=True,order=0,
                  description='CGS unit of magnetic flux')
-    PrefixedUnit('gauss','G',Conversion(_T,Fraction('1e-4')),add_symbol=True,order=0,
+    PrefixedUnit('gauss','G',Conversion(_T,MFraction('1e-4')),add_symbol=True,order=0,
                  description='CGS unit of magnetic flux density')
     PrefixedUnit('oersted','Oe',Conversion(_A*_m**-1,1000/(4*pi)),add_symbol=True,
                  order=0,description='CGS unit of auxiliary magnetic field')
@@ -391,7 +391,7 @@ with _BuiltinLib():
     Unit.alias('nybble',_nibble)
     Unit.alias('nyble',_nibble)
     
-    PrefixedUnit('torr','Torr',Conversion(_Pa,Fraction(101325,760)),add_symbol=True,
+    PrefixedUnit('torr','Torr',Conversion(_Pa,MFraction(101325,760)),add_symbol=True,
                          order=0,prefixes=['milli'],description='unit of pressure')
     Unit('standard atmosphere','atm',Conversion(_Pa,101325),add_symbol=True,order=0,description='unit of pressure')
     PrefixedUnit('electronvolt','eV',Conversion(_J,_const_e),add_symbol=True,order=0,description='unit of energy, the energy gained by one electron moving across one volt')
@@ -406,7 +406,7 @@ with _BuiltinLib():
     PrefixedUnit('parsec','pc',Conversion(_au,648000/pi),add_symbol=True,order=0,
                  prefixes=['kilo','mega','giga'],
                  description='astronomical unit of length')
-    _a = PrefixedUnit('Julian year','a',Conversion(_d,Fraction('365.25')),add_symbol=True,order=0,
+    _a = PrefixedUnit('Julian year','a',Conversion(_d,MFraction('365.25')),add_symbol=True,order=0,
                        description='astronomical unit of time',prefixes=['kilo','mega',
                        'giga','tera'],additional_names=('annum','year'),
                         additional_short_names=('yr',))
@@ -432,7 +432,7 @@ with _BuiltinLib():
     Unit('Earth mass','M\u2295',Conversion(_kg,_const_earth_mass),add_symbol=True,
          order=0,html_symbol='<i>M</i><sub>&#x2295;</sub>',latex_symbol='\t\tM_{\oplus}',
          ascii_symbol='M(E)',description='astronomical unit of mass')
-    _Jy = Unit('jansky','Jy',Conversion(_W*_m**-2*_Hz**-1,Fraction('1e-26')),add_symbol=True,
+    _Jy = Unit('jansky','Jy',Conversion(_W*_m**-2*_Hz**-1,MFraction('1e-26')),add_symbol=True,
          decription='astronomical unit, spectral flux density, spectral irradiance')
     LogUnit('monochromatic AB magnitude','m(AB)',
             LogConversion(gummy(3631,unit=_Jy),-2.5,10,_lg10),
