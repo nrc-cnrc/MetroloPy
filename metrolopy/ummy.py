@@ -669,7 +669,7 @@ class ummy(Dfunc):
         
         c = ummy.correlation_matrix(args)
         du = np.array([a.u*p if isinstance(a,ummy) else 0 for a,p in zip(args,d)])
-        mu = np.max(du)
+        mu = np.max([abs(a) for a in du])
         if mu != 0:
             dun = du/mu
         else:
