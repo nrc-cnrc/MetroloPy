@@ -613,11 +613,14 @@ class ummy(Dfunc):
         
         if (isinf(dof1) and isinf(dof2)) or u == 0:
             return float('inf')
-        
+
+        if abs(c) == 1:
+            return (dof1+dof2)/2
+            
         if isinf(dof1) or isinf(dof2):
             xt = 0
         else:
-            xt = (d1*d2*c*(u1/u)*(u2/u))
+            xt = 1.828427*(d1*d2*c*(u1/u)*(u2/u))
             
         d = 0
         if isfinite(dof1):
