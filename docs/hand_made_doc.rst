@@ -111,7 +111,7 @@ gummy parameters
    then the Chebyshev inequality is used. For *p* = 0.95 and *dof* =
    float('inf'), *p_method* = 'loc' gives *k* = 2.0, while *p_method*
    = 'gauss' gives *k* = 3.0 and *p_method* = 'chebyshev' gives *k* =
-   4.5.
+   4.5.  This property may only be set at the class level.
    
 .. _parameter-uunit:
 

@@ -104,12 +104,7 @@ def _combu(a,b,c):
         # maybe possibly get here due to a floating point rounding error somewhere
         return 0
     
-    x = np.sqrt(x)
-    try:
-        x = type(a)(x)
-    except:
-        pass
-    return abs(a)*x
+    return abs(a)*x**0.5
 
 def _isscalar(x):
     try:
@@ -176,6 +171,8 @@ class ummy(Dfunc):
             
         if isinstance(x,Fraction):
             x = MFraction(x)
+        if isinstance(u,Fraction):
+            u = MFraction(u)
             
         self._x = x
         self._u = u
@@ -1036,6 +1033,21 @@ class ummy(Dfunc):
             if self._ref is not None:
                 r._refs = -self._refs
         return r
+    
+    def __eq__(self,v):
+        if self is v:
+            return True
+        if isinstance(v,ummy):
+            if self._u == 0 and v._u == 0:
+                return self._x == v._x
+            if self._ref is v._ref and self._refs == v._refs:
+                if self._x == v._x and self._u == v._u:
+                    return True
+            return False
+        elif self._u == 0:
+            return self._x == v
+        else:
+            return False
         
     def __float__(self):
         return float(self.x)
