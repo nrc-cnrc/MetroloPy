@@ -355,11 +355,7 @@ class ummy(Dfunc):
             else:
                 if gummys[i]._ref is None:
                     gummys[i]._ref = _GummyRef()  
-                e = np.sqrt(m[i][i])
-                try:
-                    e = type(m[i][i])(e)
-                except:
-                    e = float(e)
+                e = m[i][i]**0.5
                 gummys[i]._u = e
         
         # Set the correlations
@@ -603,7 +599,7 @@ class ummy(Dfunc):
         return s + ellipses
         
     @classmethod
-    def _get_dof(cls,dof1, dof2, u, u1, u2, d1, d2, c):
+    def _get_dof(cls,dof1, dof2, u, du1, du2,c):
         # Use the Welch-Satterhwaite approximation to combine dof1 and dof2.
         # See [R. Willink, Metrologia, 44, 340 (2007)] concerning the use
         # of the Welch-Satterwaite approximation with correlated values.
@@ -613,26 +609,31 @@ class ummy(Dfunc):
         
         if (isinf(dof1) and isinf(dof2)) or u == 0:
             return float('inf')
+            
+        du1 = du1/u
+        du2 = du2/u
+            
+        # Willink's formula, [R. Willink, Metrologia, 44, 340 (2007)], for
+        # the W-S approximations for correlated uncertainties is:
+        # d = (du1**2 + c*du1*du2)**2/dof1 + (du2**2 + c*du1*du2)**2/dof2
+        # Willink's formula is used in the _apply method but not here.
+        
+        d = du1**4/dof1 + du2**4/dof2
+        d += 2*c**2*(((du1 + du2)**4 - du1**4 - du2**4)/
+                     ((1 - 2*c + 2*c**2)*(dof1+dof2)))
 
-        if abs(c) == 1:
-            return (dof1+dof2)/2
-            
-        if isinf(dof1) or isinf(dof2):
-            xt = 0
-        else:
-            xt = 1.828427*(d1*d2*c*(u1/u)*(u2/u))
-            
-        d = 0
-        if isfinite(dof1):
-            d += ((d1*u1/u)**2 + xt)**2/dof1
-        if isfinite(dof2):
-            d += ((d2*u2/u)**2 + xt)**2/dof2
         if d == 0:
             return float('inf')
         
         r = 1/d
         if r > cls.max_dof:
             return float('inf')
+        
+        if r < -1e-6:
+            raise ValueError('dof is negative')
+        if r < 0:
+            r == 1
+        
         return r
     
     @classmethod
@@ -678,11 +679,7 @@ class ummy(Dfunc):
                     raise FloatingPointError('u is sqrt of ' + str(mu**2*u))
                 u = 0
                 
-            u = np.sqrt(u)
-            try:
-                u = type(fx)(u)
-            except:
-                u = float(u)
+            u = u**0.5
             u = mu*u
             
         r = cls(fx,u)
@@ -694,6 +691,8 @@ class ummy(Dfunc):
         for i,a in enumerate(args):
             if isinstance(a,ummy):
                 if not isinf(a.dof):
+                    # See [R. Willink, Metrologia, 44, 340 (2007)] for this
+                    # extension of the W-S approximation to correlated values.
                     dm += np.sum(((c.dot(du)[i]/u)*(du[i]/u))**2)/a.dof
                 if a._ref is not None:
                     a._ref.combl(r,a._refs*c[i].dot(du)/u,a._refs*du[i]/u,args)
@@ -750,7 +749,7 @@ class ummy(Dfunc):
         self._ref.comb(r,self._refs*(b._u*c + self._u)/r._u,self._refs*self._u/r._u)
         b._ref.comb(r,b._refs*(self._u*c + b._u)/r._u,b._refs*b._u/r._u,self._ref)
 
-        r._dof = ummy._get_dof(self._dof, b._dof, r._u, self._u, b._u, 1, 1, c)
+        r._dof = self._get_dof(self._dof, b._dof, r._u, self._u, b._u,c)
         
         return r
     
@@ -791,7 +790,7 @@ class ummy(Dfunc):
         self._ref.comb(r,self._refs*(-b._u*c + self._u)/r._u,self._refs*self._u/r._u)
         b._ref.comb(r,b._refs*(self._u*c - b._u)/r._u,-b._refs*b._u/r._u,self._ref)
 
-        r._dof = ummy._get_dof(self._dof, b._dof, r._u, self._u, b._u, 1, -1, c)
+        r._dof = self._get_dof(self._dof, b._dof, r._u, self._u, -b._u, c)
         return r
     
     def _rsub(self,b):
@@ -833,7 +832,7 @@ class ummy(Dfunc):
         b._ref.comb(r,b._refs*(b._x*self._u*c + self._x*b._u)/r._u,
                         b._refs*self._x*b._u/r._u,self._ref)
 
-        r._dof = ummy._get_dof(self._dof,b._dof,r._u,self._u,b._u,b._x,self._x,c)
+        r._dof = self._get_dof(self._dof,b._dof,r._u,b._x*self._u,self._x*b._u,c)
         return r
     
     def _rmul(self,b):
@@ -868,7 +867,7 @@ class ummy(Dfunc):
             else:
                 x = self._x/b._x
             
-        u = _combu(self._u/b._x,self._x*b._u/b._x**2,c)
+        u = _combu(self._u/b._x,-self._x*b._u/b._x**2,c)
 
         r = type(b)(x,u)
         
@@ -890,8 +889,8 @@ class ummy(Dfunc):
         b._ref.comb(r,b._refs*(self._u*c/b._x - self._x*b._u/b._x**2)/r._u,
                         b._refs*(-self._x*b._u/(b._x**2*r._u)),self._ref)
 
-        r._dof = ummy._get_dof(self._dof, b._dof, r._u, self._u, b._u, 1/b._x,
-                               -self._x/b._x**2, c)
+        r._dof = self._get_dof(self._dof, b._dof, r._u, self._u/b._x, 
+                               -b._u*self._x/b._x**2, c)
         return r
     
     def _rtruediv(self,b):
@@ -979,7 +978,7 @@ class ummy(Dfunc):
         b._ref.comb(r,b._refs*(da*self._u*c + db*b._u)/r._u,b._refs*db*b._u/r._u,
                         self._ref)
 
-        r._dof = ummy._get_dof(self._dof, b._dof, r._u, self._u, b._u, da, db, c)
+        r._dof = self._get_dof(self._dof, b._dof, r._u, da*self._u, db*b._u, c)
         return r
     
     def _rpow(self,b):
@@ -1085,7 +1084,7 @@ class ummy(Dfunc):
 
         An arbitrary string value labeling the uncertainty type.
         """
-        if self._ref._tag is None:
+        if self._ref is None or self._ref._tag is None:
             return None
         return self._ref._tag.name
         

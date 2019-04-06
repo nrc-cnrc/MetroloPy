@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>metrolopy package &#8212; metrolopy 0.5.1 documentation</title>
+    <title>metrolopy package &#8212; metrolopy 0.5.2 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.1',
+        VERSION:     '0.5.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -38,7 +38,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -3017,7 +3017,7 @@ the instance or class level.</p>
 
 <dl class="class">
 <dt id="metrolopy.gummy.gummy">
-<em class="property">class </em><code class="descclassname">metrolopy.gummy.</code><code class="descname">gummy</code><span class="sig-paren">(</span><em>x</em>, <em>u=0</em>, <em>unit=</em>, <em>dof=inf</em>, <em>k=1</em>, <em>p=None</em>, <em>p_method=None</em>, <em>uunit=None</em>, <em>utype=None</em>, <em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">metrolopy.gummy.</code><code class="descname">gummy</code><span class="sig-paren">(</span><em>x</em>, <em>u=0</em>, <em>unit=</em>, <em>dof=inf</em>, <em>k=1</em>, <em>p=None</em>, <em>uunit=None</em>, <em>utype=None</em>, <em>name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal"><span class="pre">metrolopy.printing.PrettyPrinter</span></code></a>, <a class="reference internal" href="#metrolopy.nummy.nummy" title="metrolopy.nummy.nummy"><code class="xref py py-class docutils literal"><span class="pre">metrolopy.nummy.nummy</span></code></a></p>
 <p>A gummy object represents a numerical value with an uncertainty and (or) a
 unit.  They can be used in place of float values in Python expressions and
@@ -3627,22 +3627,6 @@ infinite or a Student&#8217;s t distribution otherwise.</p>
 <span class="go">2.9999769927034015</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="metrolopy.gummy.gummy.p_method">
-<code class="descname">p_method</code><a class="headerlink" href="#metrolopy.gummy.gummy.p_method" title="Permalink to this definition">¶</a></dt>
-<dd><p><cite>str</cite> in {&#8216;loc&#8217;, &#8216;cp&#8217;, &#8216;gauss&#8217;, &#8216;ccp&#8217;, &#8216;chebyshev&#8217;}</p>
-<p>This sets the default <cite>p_method</cite> attribute for newly created gummys which
-determines how the coverage factor is calculated from a given level of
-confidence or coverage probability <cite>p</cite>.</p>
-<p>If <cite>p_method</cite> = &#8216;loc&#8217;, then the uncertainty is assumed to be represented
-by a normal probability distribution if <cite>dof</cite> = <cite>float(&#8216;inf&#8217;)</cite> and shifted
-and scaled Student&#8217;s t distribution otherwise.  If <cite>p_method</cite> = &#8216;gauss&#8217; or
-&#8216;cp&#8217; then the Gauss inequality is used, and if <cite>p_method</cite> = &#8216;chebyshev&#8217; or
-&#8216;ccp&#8217; then the Chebyshev inequality is used.  For <cite>p</cite> = 0.95 and
-<cite>dof</cite> = <cite>float(&#8216;inf&#8217;)</cite>, <cite>p_method</cite> = &#8216;loc&#8217; gives <cite>k</cite> = 2.0, while
-<cite>p_method</cite> = &#8216;gauss&#8217; gives <cite>k</cite> = 3.0 and p_method = &#8216;chebyshev&#8217; gives <cite>k</cite> = 4.5.</p>
 </dd></dl>
 
 <dl class="method">
@@ -4948,7 +4932,7 @@ of gummy.</p>
 
 <dl class="attribute">
 <dt id="metrolopy.ummy.GummyTag.tags">
-<code class="descname">tags</code><em class="property"> = &lt;WeakValueDictionary at 0xfae3358&gt;</em><a class="headerlink" href="#metrolopy.ummy.GummyTag.tags" title="Permalink to this definition">¶</a></dt>
+<code class="descname">tags</code><em class="property"> = &lt;WeakValueDictionary at 0x98f3278&gt;</em><a class="headerlink" href="#metrolopy.ummy.GummyTag.tags" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -5641,7 +5625,7 @@ Conversion Factors for General Use&#8221;, May 2006.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

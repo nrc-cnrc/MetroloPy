@@ -187,9 +187,11 @@ class MetaGummy(MetaPrettyPrinter,MetaNummy):
         `dof` = `float('inf')`, `p_method` = 'loc' gives `k` = 2.0, while
         `p_method` = 'gauss' gives `k` = 3.0 and p_method = 'chebyshev' gives `k` = 4.5.
         """
-        return gummy._Pmthd.method
+        return gummy._p_method.method
     @p_method.setter
     def p_method(cls,v):
+        if v is None:
+            v = 'loc'
         gummy._p_method = _Pmthd(v)
         
     
@@ -306,8 +308,8 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                                     # print the will cause _ret_something() to 
                                     # be called.  Can be set to True for debugging
     
-    def __init__(self,x,u=0,unit=one,dof=float('inf'),k=1,p=None,p_method=None,
-                 uunit=None,utype=None,name=None):
+    def __init__(self,x,u=0,unit=one,dof=float('inf'),k=1,p=None,uunit=None,
+                 utype=None,name=None):
         if isinstance(x,ummy):
             self._copy(x,self,formatting=False)
             return
@@ -327,9 +329,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     uunit = None
             else:
                 uunit = None
-            
-        if p_method is not None:
-            self._p_method = _Pmthd(p_method)
             
         if p is not None:
             p = float(p)

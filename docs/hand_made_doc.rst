@@ -12,7 +12,7 @@ class gummy
 ===========
 
 class metrolopy.\ **gummy(x, u=0, unit=one, dof=float('inf'), k=1, p=None, 
-p_method=None, uunit=None, utype=None, name=None)**
+uunit=None, utype=None, name=None)**
 
 A gummy object represents a numerical value with an uncertainty and (or)
 a unit. They can be used in place of float values in Python expressions
@@ -97,21 +97,6 @@ gummy parameters
        0.22
        >>> g.u
        0.11224696052342387
-
-.. _p_method:
-
--  **p_method**: ({'loc', 'cp', 'gauss',
-   'ccp', 'chebyshev', None}) If the *p* parameter is
-   specified, *p_method* sets the method that is used to calculate the
-   coverage factor. If p_method is omitted or set to 'loc', then the
-   uncertainty is assumed to be represented by a normal probability
-   distribution if *dof* = float('inf') and shifted and scaled Student's
-   t distribution otherwise. If *p_method* = 'gauss' or 'cp' then the
-   Guass inequality is used, and if *p_method* = 'chebyshev' or 'ccp'
-   then the Chebyshev inequality is used. For *p* = 0.95 and *dof* =
-   float('inf'), *p_method* = 'loc' gives *k* = 2.0, while *p_method*
-   = 'gauss' gives *k* = 3.0 and *p_method* = 'chebyshev' gives *k* =
-   4.5.  This property may only be set at the class level.
    
 .. _parameter-uunit:
 
@@ -196,9 +181,20 @@ basic gummy properties
    the relation between the value of this property and the property *k*
    is defined by the *p_method* property
    
-.. _property-p-method:
+.. _p_method:
 
--  **p_method**: see the p_method_ parameter
+-  **p_method**: ({'loc', 'cp', 'gauss',
+   'ccp', 'chebyshev', None}) If the *p* parameter is
+   specified, *p_method* sets the method that is used to calculate the
+   coverage factor. If p_method is omitted or set to 'loc', then the
+   uncertainty is assumed to be represented by a normal probability
+   distribution if *dof* = float('inf') and shifted and scaled Student's
+   t distribution otherwise. If *p_method* = 'gauss' or 'cp' then the
+   Guass inequality is used, and if *p_method* = 'chebyshev' or 'ccp'
+   then the Chebyshev inequality is used. For *p* = 0.95 and *dof* =
+   float('inf'), *p_method* = 'loc' gives *k* = 2.0, while *p_method*
+   = 'gauss' gives *k* = 3.0 and *p_method* = 'chebyshev' gives *k* =
+   4.5.  This property may only be set at the class level.
 
 .. _name:
 
@@ -270,6 +266,9 @@ basic gummy properties
    can give some idea of the magnitude of the floating point errors, but is 
    not a substitute for a full numerical error analysis.  The default value
    is ``False``.
+   
+-  **cmp_k**, **cmp_p**: k or p values for comparisons, e.g. a > b is True
+   if c.x > k*c.u where c = b - a.  Set only at the class level.
 
 basic gummy methods
 -------------------
