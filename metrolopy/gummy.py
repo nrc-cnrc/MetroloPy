@@ -154,7 +154,7 @@ class MetaGummy(MetaPrettyPrinter,MetaNummy):
         if v <= 0:
             raise ValueError('cmp_k <= 0')
         gummy._cmp_k = v
-        gummy._cmp_p = None # k and p may not both be defined
+        gummy._cmp_p = None
         
     # The default level of confidence for new ummies
     @property
@@ -169,7 +169,7 @@ class MetaGummy(MetaPrettyPrinter,MetaNummy):
         if v <= 0 or v >= 1:
             raise ValueError('cmp_p is not in the interval (0,1)')
         gummy._cmp_p = v
-        gummy._cmp_k = None # k and p may not both be defined
+        gummy._cmp_k = None
         
     @property
     def p_method(cls):
@@ -187,9 +187,11 @@ class MetaGummy(MetaPrettyPrinter,MetaNummy):
         `dof` = `float('inf')`, `p_method` = 'loc' gives `k` = 2.0, while
         `p_method` = 'gauss' gives `k` = 3.0 and p_method = 'chebyshev' gives `k` = 4.5.
         """
-        return gummy._Pmthd.method
+        return gummy._p_method.method
     @p_method.setter
     def p_method(cls,v):
+        if v is None:
+            v = 'loc'
         gummy._p_method = _Pmthd(v)
         
     
@@ -306,8 +308,8 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                                     # print the will cause _ret_something() to 
                                     # be called.  Can be set to True for debugging
     
-    def __init__(self,x,u=0,unit=one,dof=float('inf'),k=1,p=None,p_method=None,
-                 uunit=None,utype=None,name=None):
+    def __init__(self,x,u=0,unit=one,dof=float('inf'),k=1,p=None,uunit=None,
+                 utype=None,name=None):
         if isinstance(x,ummy):
             self._copy(x,self,formatting=False)
             return
@@ -327,9 +329,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     uunit = None
             else:
                 uunit = None
-            
-        if p_method is not None:
-            self._p_method = _Pmthd(p_method)
             
         if p is not None:
             p = float(p)
@@ -660,29 +659,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             return True
         except:
             return False
-        
-    @property
-    def p_method(self):
-        """`str` in {'loc', 'cp', 'gauss', 'ccp', 'chebyshev'}
-
-        This sets the default `p_method` attribute for newly created gummys which
-        determines how the coverage factor is calculated from a given level of
-        confidence or coverage probability `p`.
-
-        If `p_method` = 'loc', then the uncertainty is assumed to be represented
-        by a normal probability distribution if `dof` = `float('inf')` and shifted
-        and scaled Student's t distribution otherwise.  If `p_method` = 'gauss' or
-        'cp' then the Gauss inequality is used, and if `p_method` = 'chebyshev' or
-        'ccp' then the Chebyshev inequality is used.  For `p` = 0.95 and
-        `dof` = `float('inf')`, `p_method` = 'loc' gives `k` = 2.0, while
-        `p_method` = 'gauss' gives `k` = 3.0 and p_method = 'chebyshev' gives `k` = 4.5.
-        """
-        
-        return self._p_method.method
-    @p_method.setter
-    def p_method(self,v):
-        self._p_method = _Pmthd(v)
-        self.p = self._p
         
     @property
     def k(self):
@@ -1053,8 +1029,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             g._k = self._k
         g._pm = self._pm
         g._p = self._p
-        if self._p_method is not gummy._p_method:
-            g._p_method = self._p_method
         if self.thousand_spaces != gummy.thousand_spaces:
             g.thousand_spaces = self.thousand_spaces
         if self.mulsep != gummy.mulsep:
@@ -1094,8 +1068,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     r._k = s._k
                 r._p = s._p
                 r._pm = s._pm
-                if s._p_method is not gummy._p_method:
-                    r._p_method = s._p_method
                 r._set_k = s._set_k
                 if tofloat:
                     r._set_U(None,None)
@@ -2767,20 +2739,8 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     return False
             else:
                 s = self
-            
-        if v is s:
-            return True
-        if isinstance(v,gummy):
-            if s._u == 0 and v._u == 0:
-                return self._x == v._x
-            if s._ref is v._ref and self._refs == v._refs:
-                if s._x == v._x and self._u == v._u:
-                    return True
-            return False
-        elif s._u == 0:
-            return s._x == v
-        else:
-            return False
+
+        return super(gummy,s).__eq__(v)
     
     def __ne__(self, v):
         if isinstance(v,gummy):
@@ -2799,91 +2759,63 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             
         if s.__eq__(v):
             return False
-        if s.__lt__(v) or s.__gt__(v):
-            return True
-        return False
+        return s.__lt__(v) or s.__gt__(v)
         
     def __lt__(self, v):
         if isinstance(v,gummy):
             try:
                 s = self.convert(v._unit)
             except NoUnitConversionFoundError:
-                raise IncompatibleUnitsError('values with incompatible units cannot be compared')
+                raise IncompatibleUnitsError('values with incompatible units cannot be compared with > or <')
         else:
             if self._unit is not one:
                 try:
                     s = self.convert(one)
                 except NoUnitConversionFoundError:
-                    raise IncompatibleUnitsError('values with incompatible units cannot be compared')
+                    raise IncompatibleUnitsError('values with incompatible units cannot be compared with > or <')
             else:
                 s = self
             
         df = s - v
-        if s._cmp_k is None:
-            k = self._p_method.fptok(gummy._cmp_p,df.dof,df.bayesian)
-        if df._x < -k*s._u:
-            return True
-        return False
+        if self._cmp_k is None:
+            k = self._p_method.fptok(self._cmp_p,df.dof,df.bayesian)
+        else:
+            k = self._cmp_k
+            
+        return (df._x < -k*df._u)
         
     def __le__(self, v):
-        if isinstance(v,gummy):
-            try:
-                s = self.convert(v._unit)
-            except NoUnitConversionFoundError:
-                raise IncompatibleUnitsError('values with incompatible units cannot be compared')
-        else:
-            if self._unit is not one:
-                try:
-                    s = self.convert(one)
-                except NoUnitConversionFoundError:
-                    raise IncompatibleUnitsError('values with incompatible units cannot be compared')
-            else:
-                s = self
-            
-        if s.__eq__(v):
+        if self.__eq__(v):
             return True
-        return s.__lt__(v)
+        return self.__lt__(v)
         
     def __gt__(self, v):
         if isinstance(v,gummy):
             try:
                 s = self.convert(v._unit)
             except NoUnitConversionFoundError:
-                raise IncompatibleUnitsError('values with incompatible units cannot be compared')
+                raise IncompatibleUnitsError('values with incompatible units cannot be compared with > or <')
         else:
             if self._unit is not one:
                 try:
                     s = self.convert(one)
                 except NoUnitConversionFoundError:
-                    raise IncompatibleUnitsError('values with incompatible units cannot be compared')
+                    raise IncompatibleUnitsError('values with incompatible units cannot be compared with > or <')
             else:
                 s = self
             
-        df = self - v
-        if s._cmp_k is None:
-            k = self._p_method.fptok(gummy._cmp_p,df.dof,df.bayesian)
-        if df._x > k*s._u:
-            return True
-        return False
+        df = s - v
+        if self._cmp_k is None:
+            k = self._p_method.fptok(self._cmp_p,df.dof,df.bayesian)
+        else:
+            k = self._cmp_k
+            
+        return (df._x > k*df._u)
         
     def __ge__(self, v):
-        if isinstance(v,gummy):
-            try:
-                s = self.convert(v._unit)
-            except NoUnitConversionFoundError:
-                raise IncompatibleUnitsError('values with incompatible units cannot be compared')
-        else:
-            if self._unit is not one:
-                try:
-                    s = self.convert(one)
-                except NoUnitConversionFoundError:
-                    raise IncompatibleUnitsError('values with incompatible units cannot be compared')
-            else:
-                s = self
-            
-        if s.__eq__(v):
+        if self.__eq__(v):
             return True
-        return s.__gt__(v)
+        return self.__gt__(v)
     
     @property
     def imag(self):

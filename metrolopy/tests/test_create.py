@@ -13,6 +13,7 @@ except:
 rand = np.random.RandomState()
 
 def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
+    print('uc.gummy.p_method may be modified\nset uc.gummy.p_method = \'loc\' to recover the default value')
     from scipy.stats import norm, t
     
     if n is None:
@@ -73,9 +74,9 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
             
             if rand.randint(2):
                 pmethods = ['loc','level of confidence','cp','coverage probability','gauss','ccp','ccp','conservative coverage probability','chebyshev']
-                p_method = pmethods[rand.randint(len(pmethods))]
+                uc.gummy.p_method = pmethods[rand.randint(len(pmethods))]
             else:
-                p_method = None
+                uc.gummy.p_method = None
             
             if unit == 'dB(SPL)':
                 if rand.randint(10) == 0:
@@ -116,6 +117,8 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
                 else:
                     if rand.randint(20) == 0:
                         U = 1e6*abs(x)*rand.rand()
+                    elif rand.randint(20) == 0:
+                        U = rand.randint(20)+1
                     else:
                         U = 1.1*abs(x)*rand.rand()
                 u = U
@@ -147,9 +150,11 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
             uc.gummy.bayesian = bayesian
             if uunit is not None and rand.randint(2):
                 uu = uc.gummy(U,unit=uunit)
-                g = uc.gummy(x,u=uu,unit=unit,dof=dof,k=k,p=p,p_method=p_method,name=name,utype=utype)
+                g = uc.gummy(x,u=uu,unit=unit,dof=dof,k=k,p=p,name=name,
+                             utype=utype)
             else:
-                g = uc.gummy(x,u=U,unit=unit,dof=dof,k=k,p=p,p_method=p_method,uunit=uunit,name=name,utype=utype)
+                g = uc.gummy(x,u=U,unit=unit,dof=dof,k=k,p=p,uunit=uunit,
+                             name=name,utype=utype)
                 
             if not const:
                 u = u/g.k
@@ -245,7 +250,6 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
                 reinit = True
                 uunit = None
                 name = None
-                p_method = 'loc'
             else:
                 reinit = False
     
@@ -304,7 +308,7 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
             else:
                 assert g.p == p
             
-            if p_method in ['loc','level of confidence',None]:
+            if uc.gummy.p_method in ['loc','level of confidence',None]:
                 if dof == float('inf'):
                     assert abs(g.k - norm.ppf(0.5 + g.p/2)) < 1e-6
                 else:
@@ -314,7 +318,7 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
                     else:
                         assert abs(g.k - t.ppf(0.5 + g.p/2,dof)) < 1e-6
                         
-            elif p_method in ['cp','coverage probability','gauss']:
+            elif uc.gummy.p_method in ['cp','coverage probability','gauss']:
                 if dof == float('inf') or bayesian:
                     if g.p is not None:
                         assert abs(g.k - 2/(3*(np.sqrt(1 - g.p)))) < 1e-6
@@ -393,20 +397,26 @@ def display(g):
         g.ascii()
                 
 def make_gummy(sign=None,exp=None,uexp=-6,sometimes_small=True,dof=None,
-               unit=None,units=None,mpf=False):
+               unit=None,units=None,mpf=False,allowzero=True,allowlargeu=True):
     
     utypes = ['A','B','D',None]
     if units is None:
         units = ['m','lb','m**2 s**3/kg**4','m**3','s**-2','1']
         
-    x = rand.rand()*0.9 + 0.1
-    
-    if exp is None:
-        exp = rand.randint(1,6)
-        if rand.randint(2):
-            exp = -exp
-            
-    x = x*10**exp
+    if rand.randint(10) == 0:
+        if exp is None:
+            x = rand.randint(6000)
+        else:
+            x = rand.randint(int(10**exp))
+    else:
+        x = rand.rand()*0.9 + 0.1
+        
+        if exp is None:
+            exp = rand.randint(1,6)
+            if rand.randint(2):
+                exp = -exp
+                
+        x = x*10**exp
     
     if sign is None:
         if rand.randint(2):
@@ -414,10 +424,16 @@ def make_gummy(sign=None,exp=None,uexp=-6,sometimes_small=True,dof=None,
     else:
         x *= sign
         
-    u = rand.rand()*0.5 + 0.5
-    if sometimes_small and not rand.randint(10):
-        uexp -= 4
-    u = abs(x)*u*10**uexp
+    if not allowzero and x == 0:
+        x = x + 1
+        
+    if allowlargeu and rand.randint(10) == 0:
+        u = rand.randint(20) + 1
+    else:
+        u = rand.rand()*0.5 + 0.5
+        if sometimes_small and not rand.randint(10):
+            uexp -= 4
+        u = abs(x)*u*10**uexp
     
     if mpf and mp is not None and not rand.randint(4):
         x = mp.mpf(x)
@@ -439,7 +455,7 @@ def make_gummy(sign=None,exp=None,uexp=-6,sometimes_small=True,dof=None,
     
     return (g,x,u,dof,unit,utype)
 
-def make_number(sign=None,gconst=True,exp=None,fionly=True):
+def make_number(sign=None,gconst=True,exp=None,fionly=True,allowzero=True):
     q = rand.randint(4)
     if fionly and q > 1:
         q = 1
@@ -479,17 +495,23 @@ def make_number(sign=None,gconst=True,exp=None,fionly=True):
     
     if gconst and rand.randint(2):
         x = uc.gummy(x)
+    
+    if not allowzero and x == 0:
+        x = x + 1
         
     return x
 
-def binary_func(f,df,sim=False,exp=None,fionly=False,uexp=-6):
+def binary_func(f,df,sim=False,exp=None,fionly=False,uexp=-6,allowazero=True,
+                allowbzero=True,allowlargeu=True):
     if sim:
         dof = dof=float('inf')
     else:
         dof = None
-    a,ax,au,adof,_,_ = make_gummy(unit=1,dof=dof,exp=exp,mpf=(not fionly),uexp=uexp)
+    a,ax,au,adof,_,_ = make_gummy(unit=1,dof=dof,exp=exp,mpf=(not fionly),
+                                  uexp=uexp,allowzero=allowazero,
+                                  allowlargeu=allowlargeu)
     if rand.randint(2):
-        b = make_number(exp=exp,fionly=fionly)
+        b = make_number(exp=exp,fionly=fionly,allowzero=allowbzero)
         if isinstance(b,uc.gummy):
             bx = b.x
         else:
@@ -497,7 +519,9 @@ def binary_func(f,df,sim=False,exp=None,fionly=False,uexp=-6):
         bu = 0
         bdof = float('inf')
     else:
-        b,bx,bu,bdof,_,_ = make_gummy(unit=1,dof=dof,exp=exp,mpf=(not fionly),uexp=uexp)
+        b,bx,bu,bdof,_,_ = make_gummy(unit=1,dof=dof,exp=exp,mpf=(not fionly),
+                                      uexp=uexp,allowzero=allowbzero,
+                                      allowlargeu=allowlargeu)
         
     ax = float(ax)
     bx = float(bx)
@@ -527,7 +551,7 @@ def binary_func(f,df,sim=False,exp=None,fionly=False,uexp=-6):
     if x == 0:
         assert abs(g.x) < 1e-15
     else:
-        assert abs((g.x - x)/x) < 1e-15
+        assert abs((g.x - x)/x) < 1e-14
         
     if u == 0:
         assert abs(u) < 1e-6
@@ -537,7 +561,7 @@ def binary_func(f,df,sim=False,exp=None,fionly=False,uexp=-6):
     if dof is not None and not np.isinf(dof):
         assert abs((g.dof - dof)/dof) < 0.01
     
-    if sim and abs(u/x) > 1e-10:
+    if sim and x != 0 and abs(u/x) > 1e-10:
         uc.gummy.simulate([a,b,g])
         
         assert abs((g.xsim - x)/(g.u/np.sqrt(1e5))) < 5
@@ -578,8 +602,12 @@ def test_div(n=1000,sim=False):
         return a/b
     def df(ax,bx):
         return (1/bx,-ax/bx**2)
+    if sim:
+        lu = False
+    else:
+        lu = True
     for i in range(n):
-        binary_func(f,df,sim=sim)
+        binary_func(f,df,sim=sim,allowbzero=False,allowlargeu=lu)
         
 def test_pow(n=1000,sim=False):
     def f(a,b):
@@ -587,8 +615,12 @@ def test_pow(n=1000,sim=False):
     def df(ax,bx):
         ax = abs(ax)
         return (bx*ax**(bx-1),np.log(ax)*ax**bx)
+    if sim:
+        lu = False
+    else:
+        lu = True
     for i in range(n):
-        binary_func(f,df,sim=sim,exp=0)
+        binary_func(f,df,sim=sim,exp=0,allowazero=False,allowlargeu=lu)
         
 def test_mod(n=1000,sim=False):
     def f(a,b):
@@ -603,8 +635,13 @@ def test_abs(n=1000,sim=False):
         return abs(a)*abs(b)
     def df(ax,bx):
         return (abs(bx),abs(ax))
+    if sim:
+        lu = False
+    else:
+        lu = True
     for i in range(n):
-        binary_func(f,df,sim=sim)
+        binary_func(f,df,sim=sim,allowlargeu=lu,allowazero=lu,
+                    allowbzero=lu)
         
 def test_neg(n=1000,sim=False):
     def f(a,b):
@@ -644,7 +681,7 @@ def test_ap1sincos(n=1000,sim=False):
     def df(ax,bx):
         return (np.cos(ax),-np.sin(bx))
     for i in range(n):
-        binary_func(f,df,sim=sim,fionly=True,exp=0)
+        binary_func(f,df,sim=sim,fionly=True,exp=0,allowlargeu=False)
         
 def test_ap2sincos(n=1000,sim=False):
     def ff(a,b):
@@ -666,8 +703,95 @@ def test_apnsincos(n=1000,sim=False):
         return uc.gummy.napply(ff,a,b)
 
     for i in range(n):
-        binary_func(f,df,sim=sim,fionly=True,exp=0)
+        binary_func(f,df,sim=sim,fionly=True,exp=0,allowlargeu=False)
         
+def test_addxmul(n=1000):
+    def f(*x):
+        r = x[0]
+        for i in range(len(x)-1):
+            r += x[i+1]
+        return r
+        
+    for j in range(n):
+        k = rand.randint(10) + 2
+        x = make_gummy(unit=1)[0]
+        a = f(*(k*[x]))
+        b = k*x
+        c = uc.gummy.apply(f,lambda *x: len(x)*[1],*(k*[x]))
+        d = uc.gummy.napply(f,*(k*[x]))
+        
+        assert abs((a.x - b.x)/b.x) < 1e-14
+        assert (a.u - b.u)/b.u < 1e-3
+        assert a.correlation(b) == 1
+        assert a.correlation(x) == 1
+        
+        assert abs((c.x - b.x)/b.x) < 1e-14
+        assert (c.u - b.u)/b.u < 1e-3
+        assert c.correlation(b) == 1
+        
+        assert abs((d.x - b.x)/b.x) < 1e-14
+        assert (d.u - b.u)/b.u < 1e-3
+        assert d.correlation(b) == 1
+        
+def test_mulxpow(n=1000):
+    def f(*x):
+        r = x[0]
+        for i in range(len(x)-1):
+            r *= x[i+1]
+        return r
+        
+    for j in range(n):
+        k = rand.randint(10) + 2
+        x = make_gummy(unit=1)[0]
+        a = f(*(k*[x]))
+        b = x**k
+        xx = x.x
+        c = uc.gummy.apply(f,lambda *x: len(x)*[xx**(k-1)],*(k*[x]))
+        d = uc.gummy.napply(f,*(k*[x]))
+        
+        assert abs((a.x - b.x)/b.x) < 1e-14
+        assert abs((a.u - b.u)/b.u) < 1e-3
+        assert a.correlation(b) == 1
+        
+        if k%2 == 0 and x.x < 0:
+            assert a.correlation(x) == -1
+        else:
+            assert a.correlation(x) == 1
+            
+        assert abs((c.x - b.x)/b.x) < 1e-14
+        assert abs((c.u - b.u)/b.u) < 1e-3
+        assert c.correlation(b) == 1
+        
+        assert abs((d.x - b.x)/b.x) < 1e-14
+        assert abs((d.u - b.u)/b.u) < 1e-3
+        assert d.correlation(b) == 1
+        
+def test_mulxnpow(n=1000):
+    def f(*x):
+        r = 1/x[0]
+        for i in range(len(x)-1):
+            r *= 1/x[i+1]
+        return r
+        
+    for j in range(n):
+        k = rand.randint(10) + 2
+        x = make_gummy(unit=1,allowzero=False,allowlargeu=False)[0]
+        a = f(*(k*[x]))
+        b = x**-k
+        d = uc.gummy.napply(f,*(k*[x]))
+        
+        assert abs((a.x - b.x)/b.x) < 1e-14
+        assert abs((a.u - b.u)/b.u) < 1e-3
+        assert a.correlation(b) == 1
+        
+        if k%2 == 0 and x.x < 0:
+            assert a.correlation(x) == 1
+        else:
+            assert a.correlation(x) == -1
+        
+        assert abs((d.x - b.x)/b.x) < 1e-14
+        assert abs((d.u - b.u)/b.u) < 1e-3
+        assert d.correlation(b) == 1
 
 def test_ubreakdown(n=None,prnt=False,budget=False):
     
@@ -769,7 +893,7 @@ def test_ubreakdown(n=None,prnt=False,budget=False):
                 
             gn = uc.gummy.napply(f,*g)
             assert abs(gn.x - xr)/abs(xr) < 1e-10
-            assert abs(gn.u - ur)/ur < 1e-5
+            assert abs(gn.u - ur)/ur < 1e3
             if dofr > 100:
                 assert gn.dof > 100
             else:

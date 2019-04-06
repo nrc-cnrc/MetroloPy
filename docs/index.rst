@@ -121,6 +121,9 @@ version history
 * Version 0.5.1, built 2 April 2019, fixed a major bug that generated negative 
   uncertainties in some cases and fixed some other minor bugs.  Improved support 
   for fraction.Fraction and mpmath.mpf values.
+* Version 0.5.2, built 5 April 2019, fixed a major bug that propagated
+  uncertainty incorrectly if a gummy was created with an uncertainty set with
+  an integer data type.  Fixed several other minor bugs.
 
 
 author

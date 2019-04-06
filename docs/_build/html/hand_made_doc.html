@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>MetroloPy &#8212; metrolopy 0.5.1 documentation</title>
+    <title>MetroloPy &#8212; metrolopy 0.5.2 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.1',
+        VERSION:     '0.5.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -38,7 +38,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -55,7 +55,7 @@
 <div class="section" id="class-gummy">
 <span id="gummy"></span><h1>class gummy<a class="headerlink" href="#class-gummy" title="Permalink to this headline">¶</a></h1>
 <p>class metrolopy.<strong>gummy(x, u=0, unit=one, dof=float(&#8216;inf&#8217;), k=1, p=None,
-p_method=None, uunit=None, utype=None, name=None)</strong></p>
+uunit=None, utype=None, name=None)</strong></p>
 <p>A gummy object represents a numerical value with an uncertainty and (or)
 a unit. They can be used in place of float values in Python expressions
 and the uncertainty can be propagated with with both first-order and
@@ -142,20 +142,6 @@ factor <em>k</em>. For example:</p>
 </div>
 </li>
 </ul>
-<ul class="simple" id="p-method">
-<li><strong>p_method</strong>: ({&#8216;loc&#8217;, &#8216;cp&#8217;, &#8216;gauss&#8217;,
-&#8216;ccp&#8217;, &#8216;chebyshev&#8217;, None}) If the <em>p</em> parameter is
-specified, <em>p_method</em> sets the method that is used to calculate the
-coverage factor. If p_method is omitted or set to &#8216;loc&#8217;, then the
-uncertainty is assumed to be represented by a normal probability
-distribution if <em>dof</em> = float(&#8216;inf&#8217;) and shifted and scaled Student&#8217;s
-t distribution otherwise. If <em>p_method</em> = &#8216;gauss&#8217; or &#8216;cp&#8217; then the
-Guass inequality is used, and if <em>p_method</em> = &#8216;chebyshev&#8217; or &#8216;ccp&#8217;
-then the Chebyshev inequality is used. For <em>p</em> = 0.95 and <em>dof</em> =
-float(&#8216;inf&#8217;), <em>p_method</em> = &#8216;loc&#8217; gives <em>k</em> = 2.0, while <em>p_method</em>
-= &#8216;gauss&#8217; gives <em>k</em> = 3.0 and <em>p_method</em> = &#8216;chebyshev&#8217; gives <em>k</em> =
-4.5.</li>
-</ul>
 <ul class="simple" id="parameter-uunit">
 <li><strong>uunit</strong>: (str or <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> ) This represents the units of
 <em>u</em>. It may be a unit with the same dimension as the <em>unit</em>
@@ -228,8 +214,19 @@ uncertainty, changing this property will change the <em>k</em> property,
 the relation between the value of this property and the property <em>k</em>
 is defined by the <em>p_method</em> property</li>
 </ul>
-<ul class="simple" id="property-p-method">
-<li><strong>p_method</strong>: see the <a class="reference internal" href="#p-method">p_method</a> parameter</li>
+<ul class="simple" id="p-method">
+<li><strong>p_method</strong>: ({&#8216;loc&#8217;, &#8216;cp&#8217;, &#8216;gauss&#8217;,
+&#8216;ccp&#8217;, &#8216;chebyshev&#8217;, None}) If the <em>p</em> parameter is
+specified, <em>p_method</em> sets the method that is used to calculate the
+coverage factor. If p_method is omitted or set to &#8216;loc&#8217;, then the
+uncertainty is assumed to be represented by a normal probability
+distribution if <em>dof</em> = float(&#8216;inf&#8217;) and shifted and scaled Student&#8217;s
+t distribution otherwise. If <em>p_method</em> = &#8216;gauss&#8217; or &#8216;cp&#8217; then the
+Guass inequality is used, and if <em>p_method</em> = &#8216;chebyshev&#8217; or &#8216;ccp&#8217;
+then the Chebyshev inequality is used. For <em>p</em> = 0.95 and <em>dof</em> =
+float(&#8216;inf&#8217;), <em>p_method</em> = &#8216;loc&#8217; gives <em>k</em> = 2.0, while <em>p_method</em>
+= &#8216;gauss&#8217; gives <em>k</em> = 3.0 and <em>p_method</em> = &#8216;chebyshev&#8217; gives <em>k</em> =
+4.5.  This property may only be set at the class level.</li>
 </ul>
 <ul id="name">
 <li><p class="first"><strong>name</strong>: An arbitrary string naming the gummy. The name is used when
@@ -301,6 +298,9 @@ Then this uncertainty is propagated like any other uncertainty. This
 can give some idea of the magnitude of the floating point errors, but is
 not a substitute for a full numerical error analysis.  The default value
 is <code class="docutils literal"><span class="pre">False</span></code>.</p>
+</li>
+<li><p class="first"><strong>cmp_k</strong>, <strong>cmp_p</strong>: k or p values for comparisons, e.g. a &gt; b is True
+if c.x &gt; k*c.u where c = b - a.  Set only at the class level.</p>
 </li>
 </ul>
 </div>
@@ -2157,7 +2157,7 @@ this class.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
