@@ -65,6 +65,8 @@ def binary_func(f,df,sim=False,exp=None,fionly=False,uexp=-6,allowazero=True,
     if dof is not None and not np.isinf(dof):
         assert abs((g.dof - dof)/dof) < 0.01
     
+    assert a.correlation(b) == 0
+    
     if sim and x != 0 and abs(u/x) > 1e-10:
         uc.gummy.simulate([a,b,g])
         
