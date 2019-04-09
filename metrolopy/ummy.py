@@ -123,23 +123,14 @@ def _check_cor(r):
             if v < _GummyRef._cortoln:
                 k.copyto(r,-1)
                 return
-
-def _icombc(r,a,b,dua,dub,c,rl=None):
-    a._ref.set_cor(r,(c*dub*(b._refs*a._refs) + dua))
-    
-    if r._ref is not a._ref:
-        a = list(a._ref._cor.items())
-        for k,cka in a:
-            if k is not None and k is not r._ref and k is not rl:
-                k.add_cor(r,cka*dua)
                 
 def _combc(r,a,b,dua,dub,c):
-    dua = a._refs*float(dua)
-    dub = b._refs*float(dub)
+    dua = float(dua)
+    dub = float(dub)
     
-    _icombc(r,a,b,dua,dub,c)
+    a._ref.combl(r,c*dub*a._refs + dua*a._refs,dua*a._refs)
     if r._ref is not a._ref:
-        _icombc(r,b,a,dub,dua,c,a._ref)
+        b._ref.combl(r,c*dua*b._refs + dub*b._refs,dub*b._refs,[a._ref])
         if r._ref is not b._ref:
             _check_cor(r)        
 
@@ -731,7 +722,8 @@ class ummy(Dfunc):
                     dm += sum(du[i]*np.dot(c,du)[i])**2)/a.dof
                 if a._ref is not None:
                     rl = [a._ref for a in args if isinstance(a,ummy)]
-                    a._ref.combl(r,a._refs*np.dot(c[i],du),a._refs*du[i],rl)
+                    a._ref.combl(r,float(a._refs*np.dot(c[i],du)),
+                                 float(a._refs*du[i]),rl)
         if r._ref is not None:
             _check_cor(r)
         if dm > 0:
@@ -1374,11 +1366,7 @@ class _GummyRef:
         if self._tag is not None:
             self._tag_refs.append(weakref.ref(g))
             
-    def combl(self,g,c1,c2,rl):
-        # This is a generalization of _combc called by gummy.apply() for
-        # functions of more than two variables.
-        c1 = float(c1)
-        c2 = float(c2)
+    def combl(self,g,c1,c2,rl=None):
         self.set_cor(g,c1)
         if g._ref is not self:
             a = list(self._cor.items())
