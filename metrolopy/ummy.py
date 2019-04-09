@@ -127,11 +127,11 @@ def _check_cor(r):
 def _icombc(r,a,b,dua,dub,c,rl=None):
     a._ref.set_cor(r,(c*dub*(b._refs*a._refs) + dua))
     
-    if r._ref is not a._ref and r._ref is not b._ref:
+    if r._ref is not a._ref:
         a = list(a._ref._cor.items())
-        for k,v in a:
+        for k,cka in a:
             if k is not None and k is not r._ref and k is not rl:
-                k.add_cor(r,dua*v)
+                k.add_cor(r,cka*dua)
                 
 def _combc(r,a,b,dua,dub,c):
     dua = a._refs*float(dua)
