@@ -380,7 +380,7 @@ class ummy(Dfunc):
     @staticmethod
     def _set_covariance_matrix(gummys, matrix):
         n = len(gummys)
-        m = np.array(matrix)
+        m = np.asarray(matrix)
         if m.shape != (n,n):
             raise ValueError('matrix must have shape len(gummys) x len(gummys)')
         
