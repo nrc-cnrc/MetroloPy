@@ -125,7 +125,7 @@ def _check_cor(r):
                 return
 
 def _icombc(r,a,b,dua,dub,c,rl=None):
-    a._ref.set_cor(r,(c*dub*b._refs*a._refs + dua))
+    a._ref.set_cor(r,(c*dub*(b._refs*a._refs) + dua))
     
     if r._ref is not a._ref and r._ref is not b._ref:
         a = list(a._ref._cor.items())
@@ -910,7 +910,10 @@ class ummy(Dfunc):
             r = type(self)(x, abs(self._u/b), dof=self._dof)
             if r._ref is not None:
                 r._ref = self._ref
-                r._refs = np.sign(b)*self._refs
+                if b < 0:
+                    r._refs = -self._refs
+                else:
+                    r._refs = self._refs
             return r
                 
         c = self.correlation(b)
@@ -934,12 +937,18 @@ class ummy(Dfunc):
             return r
         if self._ref is None:
             r._ref = b._ref
-            r._refs = -np.sign(self._x)*b._refs
+            if self._x < 0:
+                r._refs = -b._refs
+            else:
+                r._refs = b._refs
             r._dof = b._dof
             return r
         if b._ref is None:
             r._ref = self._ref
-            r._refs = np.sign(b._x)*self._refs
+            if b._x < 0:
+                r._refs = -self._refs
+            else:
+                r._refs = self._refs
             r._dof = self._dof
             return r
         
@@ -964,7 +973,10 @@ class ummy(Dfunc):
         r = type(self)(x,u,dof=self._dof)
         if r._ref is not None:
             r._ref = self._ref
-            r._refs = -np.sign(b)*self._refs
+            if b < 0:
+                r._refs = -self._refs
+            else:
+                r._refs = self._refs
         return r
     
     def _pow(self,b):
@@ -1016,7 +1028,10 @@ class ummy(Dfunc):
             return r
         if self._ref is None:
             r._ref = b._ref
-            r._refs = np.sign(self._x)*b._refs
+            if self._x < 0:
+                r._refs = -b._refs
+            else:
+                r._refs = b._refs
             r._dof = b._dof
             return r
         if b._ref is None:
@@ -1056,7 +1071,10 @@ class ummy(Dfunc):
         r = type(self)(x,u,dof=self._dof)
         if r._ref is not None:
             r._ref = self._ref
-            r._refs = np.sign(b)*self._refs
+            if b < 0:
+                r._refs = -self._refs
+            else:
+                r._refs = self._refs
         return r
     
     def _nprnd(self,f):
