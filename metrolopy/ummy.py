@@ -125,7 +125,7 @@ def _check_cor(r):
                 return
 
 def _icombc(r,a,b,dua,dub,c,rl=None):
-    a._ref.set_cor(r,(c*dub*b._refs + dua))
+    a._ref.set_cor(r,(c*dub*b._refs*a._refs + dua))
     
     if r._ref is not a._ref and r._ref is not b._ref:
         a = list(a._ref._cor.items())
