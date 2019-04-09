@@ -104,36 +104,7 @@ def _combu(a,b,c):
         # maybe possibly get here due to a floating point rounding error somewhere
         return 0
     
-    return abs(a)*x**0.5
-
-
-def _check_cor(r):
-    rl = list(r._ref._cor.items())
-    for k,v in rl:
-        if k is not None:
-            if abs(v) > 1.01:
-                raise ValueError('abs(correlation) > 1')
-            if abs(v) < _GummyRef._cortol:
-                del k._cor[r._ref]
-                del r._ref._cor[k]
-                return
-            if v > _GummyRef._cortolp:
-                k.copyto(r,1)
-                return
-            if v < _GummyRef._cortoln:
-                k.copyto(r,-1)
-                return
-                
-def _combc(r,a,b,dua,dub,c):
-    dua = float(dua)
-    dub = float(dub)
-    
-    a._ref.combl(r,c*dub*a._refs + dua*a._refs,dua*a._refs)
-    if r._ref is not a._ref:
-        b._ref.combl(r,c*dua*b._refs + dub*b._refs,dub*b._refs,[a._ref])
-        if r._ref is not b._ref:
-            _check_cor(r)        
-
+    return abs(a)*x**0.5     
 
 def _isscalar(x):
     try:
@@ -725,7 +696,7 @@ class ummy(Dfunc):
                     a._ref.combl(r,float(a._refs*np.dot(c[i],du)),
                                  float(a._refs*du[i]),rl)
         if r._ref is not None:
-            _check_cor(r)
+            r._check_cor()
         if dm > 0:
             r._dof = 1/dm
         return r
@@ -746,6 +717,33 @@ class ummy(Dfunc):
 
         return cls._apply(function,lambda *x: d,*args,fxdx=fxx)
     
+    def _check_cor(self):
+        rl = list(self._ref._cor.items())
+        for k,v in rl:
+            if k is not None:
+                if abs(v) > 1.01:
+                    raise ValueError('abs(correlation) > 1')
+                if abs(v) < _GummyRef._cortol:
+                    del k._cor[self._ref]
+                    del self._ref._cor[k]
+                    return
+                if v > _GummyRef._cortolp:
+                    k.copyto(self,1)
+                    return
+                if v < _GummyRef._cortoln:
+                    k.copyto(self,-1)
+                    return
+                
+    def _combc(self,a,b,dua,dub,c):
+        dua = float(dua)
+        dub = float(dub)
+
+        a._ref.combl(self,c*dub*a._refs + dua*a._refs,dua*a._refs)
+        if self._ref is not a._ref:
+            b._ref.combl(self,c*dua*b._refs + dub*b._refs,dub*b._refs,[a._ref])
+            if self._ref is not b._ref:
+                self._check_cor()   
+                
     def _add(self,b):
         if not isinstance(b,ummy):
             r = type(self)(self._x + b, self._u, dof=self._dof)
@@ -777,7 +775,7 @@ class ummy(Dfunc):
         dua = self._u/r._u
         dub = b._u/r._u
         
-        _combc(r,self,b,dua,dub,c)
+        r._combc(self,b,dua,dub,c)
 
         r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         
@@ -820,7 +818,7 @@ class ummy(Dfunc):
         dua = self._u/r._u
         dub = -b._u/r._u
         
-        _combc(r,self,b,dua,dub,c)
+        r._combc(self,b,dua,dub,c)
 
         r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         return r
@@ -873,7 +871,7 @@ class ummy(Dfunc):
         dua = dua/r._u
         dub = dub/r._u
         
-        _combc(r,self,b,dua,dub,c)
+        r._combc(self,b,dua,dub,c)
 
         r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         return r
@@ -945,7 +943,7 @@ class ummy(Dfunc):
         dua = dua/r._u
         dub = dub/r._u
         
-        _combc(r,self,b,dua,dub,c)
+        r._combc(self,b,dua,dub,c)
 
         r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         return r
@@ -1039,7 +1037,7 @@ class ummy(Dfunc):
         dua = dua/r._u
         dub = dub/r._u
         
-        _combc(r,self,b,dua,dub,c)
+        r._combc(self,b,dua,dub,c)
 
         r._dof = self._get_dof(self._dof, b._dof, dua, dub, c)
         return r
