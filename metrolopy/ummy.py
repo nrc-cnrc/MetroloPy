@@ -669,7 +669,7 @@ class ummy(Dfunc):
         dun = [d/maxdu for d in du]
         
         u = sum(d**2 for d in dun)
-        u += sum(args[i].correlation(args[j])*dun[i]*dun[j] 
+        u += 2*sum(args[i].correlation(args[j])*dun[i]*dun[j] 
                  for i in range(len(args)) for j in range(i+1,len(args)))
         
         if not isnan(u):
