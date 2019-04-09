@@ -34,7 +34,7 @@ from .dfunc import Dfunc
 from .exceptions import UncertiantyPrecisionWarning
 from collections import namedtuple
 from warnings import warn
-from math import isnan,isinf,isfinite,sqrt,log
+from math import isnan,isinf,sqrt,log
 from fractions import Fraction
 from numbers import Rational,Integral
 
@@ -106,6 +106,44 @@ def _combu(a,b,c):
     
     return abs(a)*x**0.5
 
+
+def _check_cor(r):
+    rl = list(r._ref._cor.items())
+    for k,v in rl:
+        if k is not None:
+            if abs(v) > 1.01:
+                raise ValueError('abs(correlation) > 1')
+            if abs(v) < _GummyRef._cortol:
+                del k._cor[r._ref]
+                del r._ref._cor[k]
+                return
+            if v > _GummyRef._cortolp:
+                k.copyto(r,1)
+                return
+            if v < _GummyRef._cortoln:
+                k.copyto(r,-1)
+                return
+
+def _icombc(r,a,b,dua,dub,c,rl=None):
+    a._ref.set_cor(r,(c*dub*b._refs + dua))
+    
+    if r._ref is not a._ref and r._ref is not b._ref:
+        a = list(a._ref._cor.items())
+        for k,v in a:
+            if k is not None and k is not r._ref and k is not rl:
+                k.add_cor(r,dua*v)
+                
+def _combc(r,a,b,dua,dub,c):
+    dua = a._refs*float(dua)
+    dub = b._refs*float(dub)
+    
+    _icombc(r,a,b,dua,dub,c)
+    if r._ref is not a._ref:
+        _icombc(r,b,a,dub,dua,c,a._ref)
+        if r._ref is not b._ref:
+            _check_cor(r)        
+
+
 def _isscalar(x):
     try:
         len(x)
@@ -117,6 +155,7 @@ def _floor(x):
     if x < 0:
         return int(x) - 1
     return int(x)
+
 
 class ummy(Dfunc):
     max_dof = 10000 # any larger dof will be rounded to float('inf')
@@ -599,7 +638,7 @@ class ummy(Dfunc):
         return s + ellipses
         
     @classmethod
-    def _get_dof(cls,dof1, dof2, u, du1, du2,c):
+    def _get_dof(cls,dof1,dof2,du1,du2,c):
         # Use the Welch-Satterhwaite approximation to combine dof1 and dof2.
         # See [R. Willink, Metrologia, 44, 340 (2007)] concerning the use
         # of the Welch-Satterwaite approximation with correlated values.
@@ -607,11 +646,8 @@ class ummy(Dfunc):
         # but when the dof is retrieved using the dof property get method, 
         # values less than one will be rounded up to one.
         
-        if (isinf(dof1) and isinf(dof2)) or u == 0:
+        if (isinf(dof1) and isinf(dof2)):
             return float('inf')
-            
-        du1 = du1/u
-        du2 = du2/u
             
         # Willink's formula, [R. Willink, Metrologia, 44, 340 (2007)], for
         # the W-S approximations for correlated uncertainties is:
@@ -661,7 +697,8 @@ class ummy(Dfunc):
             r = cls(fx,u,dof=dof)
             if r._ref is not None:
                 r._ref = arg._ref
-                r._refs = np.sign(d)
+                if d < 0:
+                    r._refs = -1
             return r
         
         c = ummy.correlation_matrix(args)
@@ -686,18 +723,19 @@ class ummy(Dfunc):
         if u == 0 or isnan(u):
             return r
             
+        du = du/u
         dm = 0
-
         for i,a in enumerate(args):
             if isinstance(a,ummy):
                 if not isinf(a.dof):
                     # See [R. Willink, Metrologia, 44, 340 (2007)] for this
                     # extension of the W-S approximation to correlated values.
-                    dm += np.sum(((c.dot(du)[i]/u)*(du[i]/u))**2)/a.dof
+                    dm += np.sum(((c.dot(du)[i])*du[i])**2)/a.dof
                 if a._ref is not None:
-                    a._ref.combl(r,a._refs*c[i].dot(du)/u,a._refs*du[i]/u,args)
+                    rl = [a._ref for a in args if isinstance(a,ummy)]
+                    a._ref.combl(r,a._refs*c[i].dot(du),a._refs*du[i],rl)
         if r._ref is not None:
-            _GummyRef.check_cor(r)
+            _check_cor(r)
         if dm > 0:
             r._dof = 1/dm
         return r
@@ -746,10 +784,12 @@ class ummy(Dfunc):
             r._dof = self._dof
             return r
             
-        self._ref.comb(r,self._refs*(b._u*c + self._u)/r._u,self._refs*self._u/r._u)
-        b._ref.comb(r,b._refs*(self._u*c + b._u)/r._u,b._refs*b._u/r._u,self._ref)
+        dua = self._u/r._u
+        dub = b._u/r._u
+        
+        _combc(r,self,b,dua,dub,c)
 
-        r._dof = self._get_dof(self._dof, b._dof, r._u, self._u, b._u,c)
+        r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         
         return r
     
@@ -787,10 +827,12 @@ class ummy(Dfunc):
             r._dof = self._dof
             return r
         
-        self._ref.comb(r,self._refs*(-b._u*c + self._u)/r._u,self._refs*self._u/r._u)
-        b._ref.comb(r,b._refs*(self._u*c - b._u)/r._u,-b._refs*b._u/r._u,self._ref)
+        dua = self._u/r._u
+        dub = -b._u/r._u
+        
+        _combc(r,self,b,dua,dub,c)
 
-        r._dof = self._get_dof(self._dof, b._dof, r._u, self._u, -b._u, c)
+        r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         return r
     
     def _rsub(self,b):
@@ -805,12 +847,17 @@ class ummy(Dfunc):
             r = type(self)(self._x*b, abs(self._u*b), dof=self._dof)
             if r._ref is not None:
                 r._ref = self._ref
-                r._refs = np.sign(b)*self._refs
+                if b < 0:
+                    r._refs = -self._refs
+                else:
+                    r._refs = self._refs
             return r
                                         
         c = self.correlation(b)
         x = self._x*b._x
-        u = _combu(b._x*self._u,self._x*b._u,c)
+        dua = b._x*self._u
+        dub = self._x*b._u
+        u = _combu(dua,dub,c)
             
         r = type(b)(x,u)
         
@@ -818,28 +865,37 @@ class ummy(Dfunc):
             return r
         if self._ref is None:
             r._ref = b._ref
-            r._refs = np.sign(self._x)*b._refs
+            if self._x < 0:
+                r._refs = -b._refs
+            else:
+                r._refs = b._refs
             r._dof = b._dof
             return r
         if b._ref is None:
             r._ref = self._ref
-            r._refs = np.sign(b._x)*self._refs
+            if b._x < 0:
+                r._refs = -self._refs
+            else:
+                r._refs = self._refs
             r._dof = self._dof
             return r
         
-        self._ref.comb(r,self._refs*(self._x*b._u*c + b._x*self._u)/r._u,
-                           self._refs*b._x*self._u/r._u)
-        b._ref.comb(r,b._refs*(b._x*self._u*c + self._x*b._u)/r._u,
-                        b._refs*self._x*b._u/r._u,self._ref)
+        dua = dua/r._u
+        dub = dub/r._u
+        
+        _combc(r,self,b,dua,dub,c)
 
-        r._dof = self._get_dof(self._dof,b._dof,r._u,b._x*self._u,self._x*b._u,c)
+        r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         return r
     
     def _rmul(self,b):
         r = type(self)(b*self._x, abs(b*self._u), dof=self._dof)
         if r._ref is not None:
             r._ref = self._ref
-            r._refs = np.sign(b)*self._refs
+            if b < 0:
+                r._refs = -self._refs
+            else:
+                r._refs = self._refs
         return r
     
     def _truediv(self,b):   
@@ -867,7 +923,10 @@ class ummy(Dfunc):
             else:
                 x = self._x/b._x
             
-        u = _combu(self._u/b._x,-self._x*b._u/b._x**2,c)
+        dua = self._u/b._x
+        dub = -self._x*b._u/b._x**2
+        
+        u = _combu(dua,dub,c)
 
         r = type(b)(x,u)
         
@@ -884,13 +943,12 @@ class ummy(Dfunc):
             r._dof = self._dof
             return r
         
-        self._ref.comb(r,self._refs*(-self._x*b._u*c/b._x**2 + self._u/b._x)/r._u,
-                           self._refs*self._u/(b._x*r._u))
-        b._ref.comb(r,b._refs*(self._u*c/b._x - self._x*b._u/b._x**2)/r._u,
-                        b._refs*(-self._x*b._u/(b._x**2*r._u)),self._ref)
+        dua = dua/r._u
+        dub = dub/r._u
+        
+        _combc(r,self,b,dua,dub,c)
 
-        r._dof = self._get_dof(self._dof, b._dof, r._u, self._u/b._x, 
-                               -b._u*self._x/b._x**2, c)
+        r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         return r
     
     def _rtruediv(self,b):
@@ -943,14 +1001,14 @@ class ummy(Dfunc):
             x = MFraction(1,self._x**-b._x)
         else:
             x = self._x**b._x
-        da = b._x*self._x**(b._x-1)
+        dua = b._x*self._x**(b._x-1)*self._u
         lgx = log(self._x)
         try:
             lgx = type(self._x)(lgx)
         except:
             pass
-        db = lgx*self._x**b._x
-        u = _combu(da*self._u,db*b._u,c)
+        dub = lgx*self._x**b._x*b._u
+        u = _combu(dua,dub,c)
         
         r = type(b)(x,u)
         
@@ -973,12 +1031,12 @@ class ummy(Dfunc):
             r._dof = self._dof
             return r
         
-        self._ref.comb(r,self._refs*(db*b._u*c + da*self._u)/r._u,
-                           self._refs*da*self._u/r._u)
-        b._ref.comb(r,b._refs*(da*self._u*c + db*b._u)/r._u,b._refs*db*b._u/r._u,
-                        self._ref)
+        dua = dua/r._u
+        dub = dub/r._u
+        
+        _combc(r,self,b,dua,dub,c)
 
-        r._dof = self._get_dof(self._dof, b._dof, r._u, da*self._u, db*b._u, c)
+        r._dof = self._get_dof(self._dof, b._dof, dua, dub, c)
         return r
     
     def _rpow(self,b):
@@ -1299,35 +1357,18 @@ class _GummyRef:
         g._refs = refs
         if self._tag is not None:
             self._tag_refs.append(weakref.ref(g))
-                            
-    def comb(self,g,c1,c2,r2=None):
-        self.set_cor(g,c1)
-        if g._ref is not self:
-            a = list(self._cor.items())
-            for k,v in a:
-                if k is not None and k is not g._ref and k is not r2:
-                    k.add_cor(g,c2*v)
-                    
-            # comb is always called twice, the second time with r2 not None.
-            # We must hold off the check till the end of the second call since
-            # there may be cancellations which assure that the correlation
-            # coefficients are less than 1.
-            if r2 is not None:
-                _GummyRef.check_cor(g)
-        
-    def combl(self,g,c1,c2,gl):
-        # This is a generalization of comb() (above) called by gummy.apply() for
+            
+    def combl(self,g,c1,c2,rl):
+        # This is a generalization of _combc called by gummy.apply() for
         # functions of more than two variables.
+        c1 = float(c1)
+        c2 = float(c2)
         self.set_cor(g,c1)
         if g._ref is not self:
             a = list(self._cor.items())
             for k,v in a:
                 if k is not None and k is not g._ref:
-                    ad = True
-                    for s in gl:
-                        if isinstance(s,ummy) and s._ref is k:
-                            ad = False
-                    if ad:
+                    if rl is None or not any([i is k for i in rl]):
                         k.add_cor(g,c2*v)
                         
     def get_tag_ref(self):

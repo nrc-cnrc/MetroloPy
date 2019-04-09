@@ -3,7 +3,7 @@
 import metrolopy as uc
 import numpy as np
 
-from uc.tests.common import rand,make_gummy
+from metrolopy.tests.common import rand,make_gummy
 
 def test_ubreakdown(n=None,prnt=False,budget=False):
     uc.gummy.p_method = None
@@ -65,7 +65,10 @@ def test_ubreakdown(n=None,prnt=False,budget=False):
                 
         xr = f(*x)
         
-        assert abs(gr.x - xr)/abs(xr) < 1e-10
+        if xr == 0:
+            assert abs(gr.x - xr) < 1e-10
+        else:
+            assert abs(gr.x - xr)/abs(xr) < 1e-10
         
         ur = 0
         for i,y in enumerate(u):

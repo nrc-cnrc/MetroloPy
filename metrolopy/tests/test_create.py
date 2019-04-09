@@ -4,7 +4,7 @@ import metrolopy as uc
 import numpy as np
 import warnings
 
-from uc.tests.common import rand,display
+from metrolopy.tests.common import rand,display
 
 
 def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
