@@ -2,7 +2,7 @@
 
 # module ummy
 
-## Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2019 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
