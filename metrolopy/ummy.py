@@ -336,20 +336,18 @@ class ummy(Dfunc):
     @staticmethod
     def correlation_matrix(gummys):
         """
-        Returns the correlation matrix of a list or array of gummys.  The return
-        value is `numpy.ndarray`.
+        Returns the correlation matrix of a list or array of gummys.
         """
-        return np.array([[b.correlation(a) if isinstance(b,ummy) else 0 
-                            for b in gummys] for a in gummys])
+        return [[b.correlation(a) if isinstance(b,ummy) else 0 
+                for b in gummys] for a in gummys]
         
     @staticmethod
     def covariance_matrix(gummys):
         """
-        Returns the variance-covariance matrix of a list or array of gummys.  The return
-        value is `numpy.ndarray`.
+        Returns the variance-covariance matrix of a list or array of gummys.
         """
-        return np.array([[b.covariance(a) if isinstance(b,ummy) else 0 for b in gummys] 
-                            for a in gummys])
+        return [[b.covariance(a) if isinstance(b,ummy) else 0 for b in gummys] 
+                for a in gummys]
                                 
     @staticmethod
     def _set_correlation_matrix(gummys, matrix):
@@ -702,13 +700,13 @@ class ummy(Dfunc):
             return r
         
         c = ummy.correlation_matrix(args)
-        du = np.array([a.u*p if isinstance(a,ummy) else 0 for a,p in zip(args,d)])
-        mu = np.max([abs(a) for a in du])
+        du = [a.u*p if isinstance(a,ummy) else 0 for a,p in zip(args,d)]
+        mu = max([abs(a) for a in du])
         if mu != 0:
             dun = du/mu
         else:
             dun = du
-        u = c.dot(dun).dot(dun)
+        u = np.dot(np.dot(c,dun),dot(dun))
         if not isnan(u):
             if u < 0:
                 if u < -1e6:
@@ -730,10 +728,10 @@ class ummy(Dfunc):
                 if not isinf(a.dof):
                     # See [R. Willink, Metrologia, 44, 340 (2007)] for this
                     # extension of the W-S approximation to correlated values.
-                    dm += np.sum(((c.dot(du)[i])*du[i])**2)/a.dof
+                    dm += sum(du[i]*np.dot(c,du)[i])**2)/a.dof
                 if a._ref is not None:
                     rl = [a._ref for a in args if isinstance(a,ummy)]
-                    a._ref.combl(r,a._refs*c[i].dot(du),a._refs*du[i],rl)
+                    a._ref.combl(r,a._refs*np.dot(c[i],du),a._refs*du[i],rl)
         if r._ref is not None:
             _check_cor(r)
         if dm > 0:
