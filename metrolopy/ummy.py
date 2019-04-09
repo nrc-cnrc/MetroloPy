@@ -321,7 +321,7 @@ class ummy(Dfunc):
             return 0
         if self._ref is None or g._ref is None:
             return 0
-        return self._refs*g._refs*self._ref.cor(g._ref)
+        return (self._refs*g._refs)*self._ref.cor(g._ref)
         
     def covariance(self,g):
         """
@@ -331,7 +331,7 @@ class ummy(Dfunc):
             return 0
         if self._ref is None or g._ref is None:
             return 0
-        return self._u*g._u*self._refs*g._refs*self._ref.cor(g._ref)
+        return self._u*g._u*(self._refs*g._refs)*self._ref.cor(g._ref)
         
     @staticmethod
     def correlation_matrix(gummys):
