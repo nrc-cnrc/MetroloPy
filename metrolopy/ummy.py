@@ -1074,12 +1074,12 @@ class ummy(Dfunc):
         
     def _mod(self,b):
         ret = ummy._apply(lambda x1,x2: x1%x2,
-                          lambda x1,x2: (1, np.sign(x2)*abs(x1//x2)),self,b)
+                          lambda x1,x2: (1, abs(x1)//x2),self,b)
         return type(self)(ret)
         
     def _rmod(self,b):
         ret = ummy._apply(lambda x1,x2: x1%x2,
-                          lambda x1,x2: (1, np.sign(x2)*abs(x1//x2)),b,self)
+                          lambda x1,x2: (1, abs(x1)//x2),b,self)
         return type(self)(ret)
         
     def __neg__(self):
