@@ -24,7 +24,8 @@ def test_ubreakdown(n=None,prnt=False,budget=False):
         g,x,u,dof,unit,utype = zip(*[make_gummy(unit=unt) for y in range(k)])
         
         for i,y in enumerate(g):
-            assert y.utype is utype[i]
+            if y._u != 0:
+                assert y.utype is utype[i]
         
         c = rand.rand()*0.9 + 0.1
         if rand.randint(2):

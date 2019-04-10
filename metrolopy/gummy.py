@@ -2100,7 +2100,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             lgadd = _lg10(1/(1-10**-nsig/2))+10**-16
             if sim and abs(self.cisim[1]-self.cisim[0]) != 0 and not isinf(self.cisim[0]) and not isinf(self.cisim[1]) and not isnan(self.cisim[0]) and not isnan(self.cisim[1]):
                 xcnt = _floor(_lg10(abs((self.cisim[1]-self.cisim[0])/2))+lgadd)
-            if style != 'ueq' and not isinstance(self._U,gummy):
+            if style != 'ueq' and not isinstance(self._U,gummy) and not isinf(self._U):
                 try:
                     xcnt = _floor(_lg10(abs(self._U))+lgadd)
                 except:

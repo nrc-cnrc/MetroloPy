@@ -118,6 +118,11 @@ def _floor(x):
         return int(x) - 1
     return int(x)
 
+def _sign(x):
+    if x < 0:
+        return -1
+    return 1
+
 
 class ummy(Dfunc):
     max_dof = 10000 # any larger dof will be rounded to float('inf')
@@ -178,8 +183,6 @@ class ummy(Dfunc):
         self._x = x
         self._u = u
         
-
-                    
         self._refs = 1
         if not isinf(u) and not isnan(u) and u > 0:
             try:
@@ -612,9 +615,6 @@ class ummy(Dfunc):
         # Note that we allow the return value to be less than one,
         # but when the dof is retrieved using the dof property get method, 
         # values less than one will be rounded up to one.
-        
-        if (isinf(dof1) and isinf(dof2)):
-            return float('inf')
             
         # Willink's formula, [R. Willink, Metrologia, 44, 340 (2007)], for
         # the W-S approximations for correlated uncertainties is:
@@ -686,19 +686,21 @@ class ummy(Dfunc):
         if u == 0 or isnan(u):
             return r
         
-        rl = [a._ref for a in args]
         du = [d/u for d in du]
-        dm = 0
+        if any(not isinf(a._dof) for a in args):
+            dm = sum(sum(args[i].correlation(args[j])*du[i]*du[j] 
+                         for i in range(len(du)))**2/args[j]._dof 
+                         for j in range(len(du)))
+            if dm > 0:
+                r._dof = 1/dm
+        
+        rl = {a._ref for a in args}
         for i,a in enumerate(args):
             s = sum(a.correlation(args[j])*du[j] for j in range(len(du)))
             a._ref.combl(r,float(a._refs*s),float(a._refs*du[i]),rl)
-            if not isinf(a._dof):
-                dm += (du[i]*s)**2/a._dof
-        if r._ref is not None:
-            r._check_cor()
-            
-        if dm > 0:
-            r._dof = 1/dm
+            if r._ref in rl:
+                break
+        r._check_cor()
             
         return r
         
@@ -719,6 +721,9 @@ class ummy(Dfunc):
         return cls._apply(function,lambda *x: d,*args,fxdx=fxx)
     
     def _check_cor(self):
+        if self._ref is None:
+            return
+        
         rl = list(self._ref._cor.items())
         for k,v in rl:
             if k is not None:
@@ -774,9 +779,10 @@ class ummy(Dfunc):
         dua = self._u/r._u
         dub = b._u/r._u
         
+        if not isinf(self._ref.dof) or not isinf(b._ref.dof):
+            r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+        
         r._combc(self,b,dua,dub,c)
-
-        r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         
         return r
     
@@ -815,9 +821,11 @@ class ummy(Dfunc):
         dua = self._u/r._u
         dub = -b._u/r._u
         
+        if not isinf(self._ref.dof) or not isinf(b._ref.dof):
+            r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+            
         r._combc(self,b,dua,dub,c)
 
-        r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         return r
     
     def _rsub(self,b):
@@ -866,9 +874,11 @@ class ummy(Dfunc):
         dua = dua/r._u
         dub = dub/r._u
         
+        if not isinf(self._ref.dof) or not isinf(b._ref.dof):
+            r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+            
         r._combc(self,b,dua,dub,c)
 
-        r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         return r
     
     def _rmul(self,b):
@@ -921,9 +931,9 @@ class ummy(Dfunc):
         if self._ref is None:
             r._ref = b._ref
             if self._x < 0:
-                r._refs = -b._refs
-            else:
                 r._refs = b._refs
+            else:
+                r._refs = -b._refs
             return r
         if b._ref is None:
             r._ref = self._ref
@@ -936,9 +946,11 @@ class ummy(Dfunc):
         dua = dua/r._u
         dub = dub/r._u
         
+        if not isinf(self._ref.dof) or not isinf(b._ref.dof):
+            r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+            
         r._combc(self,b,dua,dub,c)
 
-        r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
         return r
     
     def _rtruediv(self,b):
@@ -955,9 +967,9 @@ class ummy(Dfunc):
         if r._ref is not None:
             r._ref = self._ref
             if b < 0:
-                r._refs = -self._refs
-            else:
                 r._refs = self._refs
+            else:
+                r._refs = -self._refs
         return r
     
     def _pow(self,b):
@@ -976,7 +988,7 @@ class ummy(Dfunc):
             if r._ref is not None:
                 r._ref = self._ref
                 if self._x < 0:
-                    sgn = -((-1)**b)
+                    sgn = int(-((-1)**b))
                 else:
                     sgn = 1
                 if b < 0:
@@ -1014,23 +1026,15 @@ class ummy(Dfunc):
             else:
                 r._refs = b._refs
             return r
-        if b._ref is None:
-            r._ref = self._ref 
-            if self._x < 0:
-                sgn = -((-1)**b._x)
-            else:
-                sgn = 1
-            if b < 0:
-                sgn = -sgn
-            r._refs = sgn*self._refs
-            return r
         
         dua = dua/r._u
         dub = dub/r._u
         
+        if not isinf(self._ref.dof) or not isinf(b._ref.dof):
+            r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+            
         r._combc(self,b,dua,dub,c)
 
-        r._dof = self._get_dof(self._dof, b._dof, dua, dub, c)
         return r
     
     def _rpow(self,b):
@@ -1074,12 +1078,12 @@ class ummy(Dfunc):
         
     def _mod(self,b):
         ret = ummy._apply(lambda x1,x2: x1%x2,
-                          lambda x1,x2: (1, abs(x1)//x2),self,b)
+                          lambda x1,x2: (1, _sign(x2)*abs(x1//x2)),self,b)
         return type(self)(ret)
         
     def _rmod(self,b):
         ret = ummy._apply(lambda x1,x2: x1%x2,
-                          lambda x1,x2: (1, abs(x1)//x2),b,self)
+                          lambda x1,x2: (1, _sign(x2)*abs(x1//x2)),b,self)
         return type(self)(ret)
         
     def __neg__(self):
@@ -1371,7 +1375,7 @@ class _GummyRef:
             a = list(self._cor.items())
             for k,v in a:
                 if k is not None and k is not g._ref:
-                    if rl is None or not any([i is k for i in rl]):
+                    if rl is None or not any(i is k for i in rl):
                         k.add_cor(g,c2*v)
                         
     def get_tag_ref(self):
