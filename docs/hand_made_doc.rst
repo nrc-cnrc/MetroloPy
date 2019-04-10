@@ -280,11 +280,10 @@ basic gummy methods
    ``self`` and *g*.
 
 -  static **correlation_matrix(gummys)**: Returns the correlation matrix of a
-   list or array of gummys. The return value is a numpy.ndarray.
+   list or array of gummys.
 
 -  static **covariance_matrix(gummys)**: Returns the variance-covariance
-   matrix of a list or array of gummys. The return value is a
-   numpy.ndarray.
+   matrix of a list or array of gummys.
 
 -  **copy(formatting=True, tofloat=False)**: Returns a copy of the gummy.  
    The copy will

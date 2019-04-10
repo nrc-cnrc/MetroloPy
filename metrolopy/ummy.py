@@ -34,7 +34,7 @@ from .dfunc import Dfunc
 from .exceptions import UncertiantyPrecisionWarning
 from collections import namedtuple
 from warnings import warn
-from math import isnan,isinf,sqrt,log,log10,pi
+from math import isnan,isinf,log,log10,pi
 from fractions import Fraction
 from numbers import Rational,Integral
 
@@ -1222,7 +1222,7 @@ class ummy(Dfunc):
             for j in range(len(x)):
                 u += d[i]*d[j]*x[i].correlation(x[j])*x[i]._u*x[j]._u
                 
-        return sqrt(u)
+        return u**0.5
         
     def doffrom(self,x):
         """
