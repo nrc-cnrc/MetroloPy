@@ -124,6 +124,7 @@ version history
 * Version 0.5.2, built 5 April 2019, fixed a major bug that propagated
   uncertainty incorrectly if a gummy was created with an uncertainty set with
   an integer data type.  Fixed several other minor bugs.
+* Version 0.5.3, built 10 April 2019, minor bug fixes.
 
 
 author

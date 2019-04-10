@@ -805,7 +805,7 @@ class MultiNormalDist(MultivariateDistribution):
         self.mean = np.asarray(mean)
         self._cov = np.asarray(cov)
         nd = len(self.mean)
-        if cov.shape != (nd,nd):
+        if self._cov.shape != (nd,nd):
             ValueError('cov.shape != (len(mean),len(mean))')
         super().__init__(nd)
             
@@ -857,7 +857,7 @@ class MultiTDist(MultivariateDistribution):
         except TypeError:
             self.dof = np.array(nd*[dof])
         
-        if cov.shape != (nd,nd):
+        if self._cov.shape != (nd,nd):
             ValueError('cov.shape != (len(mean),len(mean))')
         self._elements = [MultiTElement(self,i,dof) for i in range(nd)]
         self._len = nd

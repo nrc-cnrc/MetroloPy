@@ -192,14 +192,16 @@ class nummy(ummy,metaclass=MetaNummy):
             u = float(self._u)
             if self._u == 0 or isnan(x) or isinf(x) or isnan(u):
                 self._dist = x
-            elif isinf(self._dof):
+                return
+            dof = self._dof
+            if isinf(dof):
                 self._dist = NormalDist(x,u)
             else:
                 if nummy._bayesian:
-                    self._dist = TDist(x,u*(self._dof-2)/self._dof,self._dof)
+                    self._dist = TDist(x,u*(dof-2)/dof,dof)
                     self._dof = float('inf')
                 else:
-                    self._dist = TDist(x,u,self._dof)
+                    self._dist = TDist(x,u,dof)
             
     @property
     def distribution(self):
@@ -230,8 +232,8 @@ class nummy(ummy,metaclass=MetaNummy):
         else:
             dof = self._dof
         if dof < 1:
-            # Occasionally correlations can result in a _dof less than 1;
-            # see the _get_dof method.
+            # Occasionally correlations can result in a dof less than 1;
+            # see the ummy._get_dof method.
             return 1
         return dof
     
@@ -419,14 +421,16 @@ class nummy(ummy,metaclass=MetaNummy):
             r.name = None
             if s._u == 0:
                 r._dist = r._x
-            elif isinf(s._dof):
+                return
+            dof = s._dof
+            if isinf(dof):
                 r._dist = NormalDist(s._x,s._u)
             else:
                 if r._bayesian:
-                    r._dist = TDist(s._x,s._u*(s._dof-2)/s._dof,s._dof)
+                    r._dist = TDist(s._x,s._u*(dof-2)/dof,dof)
                     r._dof = float('inf')
                 else:
-                    r._dist = TDist(s._x,s._u,s._dof)
+                    r._dist = TDist(s._x,s._u,dof)
         
     @classmethod
     def _apply(cls,function,derivative,*args,fxdx=None):
