@@ -1283,7 +1283,7 @@ class _GummyRef:
     _cortolp = 1 - 1e-8 # correlations larger than this are rounded to 1
     _cortoln = -1 + 1e-8 # correlations smaller than this are rounded to -1
     
-    def __init__(self,dof):
+    def __init__(self,dof=float('inf')):
         self._cor = weakref.WeakKeyDictionary()
         self._tag = None
         self._tag_refs = []

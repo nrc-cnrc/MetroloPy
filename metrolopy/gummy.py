@@ -509,7 +509,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     except ZeroDivisionError:
                         if not Unit.unit(unit).is_dimensionless:
                             raise NoUnitConversionFoundError('no conversion found from unit ' + str(unit) + ' to one')
-                        return float('inf')
+                        return gummy(float('inf'),unit=unit)
             else:
                 return gummy(self._unit.to_uunit(_ku(k,u),unit),unit)
 
@@ -2068,13 +2068,14 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             
         if self._u == 0 or isnan(self._u) or isinf(self._u):
             if isinstance(x,Rational) and not isinstance(x,Integral):
-                fstr = str(x).split('/')[-1]
+                ffstr = str(x)
+                fstr = ffstr.split('/')[-1]
                 dstr = str(float(x)).split('e')[0].split('E')[0].split('.')[-1]
                 dstr.strip().strip('0')
-                if len(dstr) > 3 and len(dstr) > len(fstr):
+                if len(dstr) > 3 and len(dstr) > len(fstr) and len(ffstr) < (self.max_digits + 10):
                     return ('x',(str(x),'',xsym))
             if xexp is None:
-                return ('x',(str(x),'',xsym))
+                return ('x',(self._format_mantissa(fmt,x,None),'',xsym))
             if xsig is not None:
                 if xabs > 10**(xexp+1) - 10**(xexp-xsig)/2:
                     xexp += 1
