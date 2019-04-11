@@ -185,21 +185,25 @@ class ummy(Dfunc):
         
         self._refs = 1
         if not isinf(u) and not isnan(u) and u > 0:
-            try:
-                if isinstance(dof,Integral):
-                    dof = int(dof)
-                else:
-                    dof = float(dof)
-                if dof <= 0 or isnan(dof):
-                    raise TypeError()
-            except TypeError:
-                raise TypeError('dof must be a real number > 0')
-            if dof > self.max_dof:
-                dof = float('inf')
-                
-            self._ref = _GummyRef(dof)
-            if utype is not None:
-                GummyTag.set_tag(self,utype)
+            if isinstance(dof,_GummyRef):
+                self._ref = dof
+                self._refs = utype
+            else:
+                try:
+                    if isinstance(dof,Integral):
+                        dof = int(dof)
+                    else:
+                        dof = float(dof)
+                    if dof <= 0 or isnan(dof):
+                        raise TypeError()
+                except TypeError:
+                    raise TypeError('dof must be a real number > 0')
+                if dof > self.max_dof:
+                    dof = float('inf')
+                    
+                self._ref = _GummyRef(dof)
+                if utype is not None:
+                    GummyTag.set_tag(self,utype)
         else:
             self._ref = None
         
@@ -267,9 +271,12 @@ class ummy(Dfunc):
         r._ref = s._ref
         r._refs = s._refs
         r._finfo = s._finfo
+
         if formatting:
-            if s.nsig != ummy.nsig:
+            if s.nsig != type(r).nsig:
                 r.nsig = s.nsig
+            if s.thousand_spaces != type(r).thousand_spaces:
+                r.thousand_spaces = s.thousand_spaces
     
     def copy(self,formatting=True,tofloat=False):
         """
@@ -280,7 +287,7 @@ class ummy(Dfunc):
         is true the x and u properties will be converted to float values
         before copying.
         """
-        r = type(self)(self._x,u=self._u)
+        r = type(self).__new__(type(self))
         self._copy(self,r,formatting=formatting,tofloat=tofloat)
         return r
         
@@ -657,10 +664,8 @@ class ummy(Dfunc):
         args,du = list(map(list, zip(*ad)))
             
         if len(args) == 1:
-            r = cls(fx,u=abs(du[0]))
-            r._ref = args[0]._ref
-            if du[0] < 0:
-                r._refs = -args[0]._refs
+            refs = -args[0]._refs if du[0] < 0 else args[0]._refs
+            r = cls(fx,u=abs(du[0]),dof=args[0]._ref,utype=refs)
             return r
         
         maxdu = max(abs(a) for a in du)
@@ -682,17 +687,19 @@ class ummy(Dfunc):
             u = u**0.5
             u = maxdu*u
             
-        r = cls(fx,u)
         if u == 0 or isnan(u):
-            return r
+            return cls(fx)
         
         du = [d/u for d in du]
+        dof = float('inf')
         if any(not isinf(a._dof) for a in args):
             dm = sum(sum(args[i].correlation(args[j])*du[i]*du[j] 
                          for i in range(len(du)))**2/args[j]._dof 
                          for j in range(len(du)))
             if dm > 0:
-                r._dof = 1/dm
+                dof = 1/dm
+                
+        r = cls(fx,u=u,dof=dof)
         
         rl = {a._ref for a in args}
         for i,a in enumerate(args):
@@ -752,99 +759,75 @@ class ummy(Dfunc):
                 
     def _add(self,b):
         if not isinstance(b,ummy):
-            r = type(self)(self._x + b, self._u, dof=self._dof)
-            if r._ref is not None:
-                r._ref = self._ref
-                r._refs = self._refs
-            return r
+            return type(self)(self._x + b,self._u,dof=self._ref,utype=self._refs)
     
         c = self.correlation(b)
         x = self._x + b._x
         u = _combu(self._u,b._u,c)
- 
-        r = type(b)(x,u)
-    
-        if r._ref is None:
-            return r
-            
-        if self._ref is None:
-            r._ref = b._ref
-            r._refs = b._refs
-            return r
-        if b._ref is None:
-            r._ref = self._ref
-            r._refs = self._refs
-            return r
-            
-        dua = self._u/r._u
-        dub = b._u/r._u
         
+        if u == 0:
+            return type(b)(x)
+        
+        if self._u == 0:
+            return type(b)(x,u,dof=b._ref,utype=b._refs)
+        
+        if b._u == 0:
+            return type(b)(x,u,dof=self._ref,utype=self._refs)
+        
+        dua = self._u/u
+        dub = b._u/u
         if not isinf(self._ref.dof) or not isinf(b._ref.dof):
-            r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
-        
+            dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+        else:
+            dof = float('inf')
+            
+        r = type(b)(x,u=u,dof=dof)
+    
         r._combc(self,b,dua,dub,c)
         
         return r
     
     def _radd(self,b):
-        r = type(self)(b + self._x, self._u, dof=self._dof)
-        if r._ref is not None:
-            r._ref = self._ref
-            r._refs = self._refs
-        return r
+        return type(self)(self._x + b,self._u,dof=self._ref,utype=self._refs)
     
     def _sub(self,b):           
         if not isinstance(b,ummy):
-            r = type(self)(self._x - b, self._u, dof=self._dof)
-            if r._ref is not None:
-                r._ref = self._ref
-                r._refs = self._refs
-            return r
+            return type(self)(self._x - b,self._u,dof=self._ref,utype=self._refs)
             
         c = self.correlation(b)
         x = self._x - b._x
         u = _combu(self._u,-b._u,c)
-        
-        r = type(b)(x,u)
-        if r._ref is None:
-            return r
             
-        if self._ref is None:
-            r._ref = b._ref
-            r._refs = -b._refs
-            return r
-        if b._ref is None:
-            r._ref = self._ref
-            r._refs = self._refs
-            return r
+        if u == 0:
+            return type(b)(x)
         
-        dua = self._u/r._u
-        dub = -b._u/r._u
+        if self._u == 0:
+            return type(b)(x,u,dof=b._ref,utype=-b._refs)
         
+        if b._u == 0:
+            return type(b)(x,u,dof=self._ref,utype=self._refs)
+        
+        dua = self._u/u
+        dub = -b._u/u
         if not isinf(self._ref.dof) or not isinf(b._ref.dof):
-            r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
-            
+            dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+        else:
+            dof = float('inf')
+        
+        r = type(b)(x,u=u,dof=dof)
+        
         r._combc(self,b,dua,dub,c)
 
         return r
     
     def _rsub(self,b):
-        r = type(self)(b - self._x, self._u, dof=self._dof)
-        if r._ref is not None:
-            r._ref = self._ref
-            r._refs = -self._refs
+        r = type(self)(b - self._x,self._u,dof=self._ref,utype=-self._refs)
         return r
     
     def _mul(self,b):
         if not isinstance(b,ummy):
-            r = type(self)(self._x*b, abs(self._u*b), dof=self._dof)
-            if r._ref is not None:
-                r._ref = self._ref
-                if b < 0:
-                    r._refs = -self._refs
-                else:
-                    r._refs = self._refs
-            return r
+            refs = -self._refs if b < 0 else self._refs
+            return type(self)(self._x*b,abs(self._u*b),dof=self._ref,utype=refs)
                                         
         c = self.correlation(b)
         x = self._x*b._x
@@ -852,44 +835,33 @@ class ummy(Dfunc):
         dub = self._x*b._u
         u = _combu(dua,dub,c)
             
-        r = type(b)(x,u)
+        if u == 0:
+            return type(b)(x)
         
-        if r._ref is None:
-            return r
-        if self._ref is None:
-            r._ref = b._ref
-            if self._x < 0:
-                r._refs = -b._refs
-            else:
-                r._refs = b._refs
-            return r
-        if b._ref is None:
-            r._ref = self._ref
-            if b._x < 0:
-                r._refs = -self._refs
-            else:
-                r._refs = self._refs
-            return r
+        if self._u == 0:
+            refs = -b._refs if self._x < 0 else b._refs
+            return type(b)(x,u,dof=b._ref,utype=refs)
         
-        dua = dua/r._u
-        dub = dub/r._u
+        if b._u == 0:
+            refs = -self._refs if b._x < 0 else self._refs
+            return type(b)(x,u,dof=self._ref,utype=refs)
         
+        dua = dua/u
+        dub = dub/u
         if not isinf(self._ref.dof) or not isinf(b._ref.dof):
-            r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+            dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+        else:
+            dof = float('inf')
             
+        r = type(b)(x,u=u,dof=dof)
+        
         r._combc(self,b,dua,dub,c)
 
         return r
     
     def _rmul(self,b):
-        r = type(self)(b*self._x, abs(b*self._u), dof=self._dof)
-        if r._ref is not None:
-            r._ref = self._ref
-            if b < 0:
-                r._refs = -self._refs
-            else:
-                r._refs = self._refs
-        return r
+        refs = -self._refs if b < 0 else self._refs
+        return type(self)(self._x*b,abs(self._u*b),dof=self._ref,utype=refs)
     
     def _truediv(self,b):   
         if not isinstance(b,ummy):
@@ -900,14 +872,8 @@ class ummy(Dfunc):
                 x = MFraction(self._x,b)
             else:
                 x = self._x/b
-            r = type(self)(x, abs(self._u/b), dof=self._dof)
-            if r._ref is not None:
-                r._ref = self._ref
-                if b < 0:
-                    r._refs = -self._refs
-                else:
-                    r._refs = self._refs
-            return r
+            refs = -self._refs if b < 0 else self._refs
+            return type(self)(x,abs(self._u/b),dof=self._ref,utype=refs)
                 
         c = self.correlation(b)
         if b._x == 0:
@@ -920,35 +886,30 @@ class ummy(Dfunc):
                 x = self._x/b._x
             
         dua = self._u/b._x
-        dub = -self._x*b._u/b._x**2
+        dub = -(self._x*b._u/b._x)/b._x
         
         u = _combu(dua,dub,c)
-
-        r = type(b)(x,u)
         
-        if r._ref is None:
-            return r
-        if self._ref is None:
-            r._ref = b._ref
-            if self._x < 0:
-                r._refs = b._refs
-            else:
-                r._refs = -b._refs
-            return r
-        if b._ref is None:
-            r._ref = self._ref
-            if b._x < 0:
-                r._refs = -self._refs
-            else:
-                r._refs = self._refs
-            return r
+        if u == 0:
+            return type(b)(x)
         
-        dua = dua/r._u
-        dub = dub/r._u
+        if self._u == 0:
+            refs = b._refs if self._x < 0 else -b._refs
+            return type(b)(x,u,dof=b._ref,utype=refs)
         
+        if b._u == 0:
+            refs = -self._refs if b._x < 0 else self._refs
+            return type(b)(x,u,dof=self._ref,utype=refs)
+        
+        dua = dua/u
+        dub = dub/u
         if not isinf(self._ref.dof) or not isinf(b._ref.dof):
-            r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+            dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+        else:
+            dof = float('inf')
             
+        r = type(b)(x,u=u,dof=dof)
+        
         r._combc(self,b,dua,dub,c)
 
         return r
@@ -963,14 +924,8 @@ class ummy(Dfunc):
             else:
                 x = b/self._x
         u = abs(b*self._u/self._x**2)
-        r = type(self)(x,u,dof=self._dof)
-        if r._ref is not None:
-            r._ref = self._ref
-            if b < 0:
-                r._refs = self._refs
-            else:
-                r._refs = -self._refs
-        return r
+        refs = self._refs if b < 0 else -self._refs
+        return type(self)(x,u,dof=self._ref,utype=refs)
     
     def _pow(self,b):
         if isinstance(b,ummy) and b._u == 0:
@@ -984,18 +939,13 @@ class ummy(Dfunc):
             else:
                 x = self._x**b
             u = abs(b*self._x**(b-1)*self._u)
-            r = type(self)(x,u,dof=self._dof)
-            if r._ref is not None:
-                r._ref = self._ref
-                if self._x < 0:
-                    sgn = int(-((-1)**b))
-                else:
-                    sgn = 1
-                if b < 0:
-                    sgn = -sgn
-                r._refs = sgn*self._refs
-                    
-            return r
+            if self._x < 0:
+                sgn = int(-((-1)**b))
+            else:
+                sgn = 1
+            if b < 0:
+                sgn = -sgn
+            return type(self)(x,u,dof=self._ref,utype=sgn*self._refs)
 
         if self._x <= 0:
             raise ValueError('a negative or zero value cannot raised to a power which has an uncertainty')            
@@ -1015,24 +965,23 @@ class ummy(Dfunc):
         dub = lgx*self._x**b._x*b._u
         u = _combu(dua,dub,c)
         
-        r = type(b)(x,u)
+        if u == 0:
+            return type(b)(x)
         
-        if r._ref is None:
-            return r
-        if self._ref is None:
-            r._ref = b._ref
-            if self._x < 0:
-                r._refs = -b._refs
-            else:
-                r._refs = b._refs
-            return r
+        if self._u == 0:
+            refs = -b._refs if self._x < 0 else b._refs
+            return type(b)(x,u,dof=b._ref,utype=refs)
         
-        dua = dua/r._u
-        dub = dub/r._u
+        dua = dua/u
+        dub = dub/u
         
         if not isinf(self._ref.dof) or not isinf(b._ref.dof):
-            r._dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+            dof = self._get_dof(self._dof,b._dof,dua,dub,c)
+        else:
+            dof = float('inf')
             
+        r = type(b)(x,u=u,dof=dof)
+        
         r._combc(self,b,dua,dub,c)
 
         return r
@@ -1058,14 +1007,8 @@ class ummy(Dfunc):
         except:
             pass
         u = abs(b**self._x*lgb*self._u)
-        r = type(self)(x,u,dof=self.dof)
-        if r._ref is not None:
-            r._ref = self._ref
-            if b < 0:
-                r._refs = -self._refs
-            else:
-                r._refs = self._refs
-        return r
+        refs = -self._refs if b < 0 else self._refs
+        return type(self)(x,u,dof=self._ref,utype=refs)
     
     def _nprnd(self,f):
         return type(self)(f(self._x))

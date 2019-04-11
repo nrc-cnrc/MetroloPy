@@ -153,7 +153,6 @@ class nummy(ummy,metaclass=MetaNummy):
 
     _mcpropagate = True
     _cimethod = 'shortest'
-    _p = 0.68268949213708585 # for k == 1 and dof == inf
     _bayesian = False # see the MetaNummy bayesian property
     
     def __init__(self,x,u=0,dof=float('inf'),utype=None,name=None):
@@ -326,20 +325,22 @@ class nummy(ummy,metaclass=MetaNummy):
     def cisim(self):
         if self._u == 0:
             return (self.x,self.x)
+
         if self._cimethod == 'shortest':
-            return self.distribution.ci(self._p)
+            return self.distribution.ci(self.p)
         else:
-            return self.distribution.cisym(self._p)
+            return self.distribution.cisym(self.p)
               
     @property
     def Usim(self):
         if self._u == 0:
             return (0,0)
         x = self.distribution.mean
+        
         if self._cimethod == 'shortest':
-            ci = self.distribution.ci(self._p)
+            ci = self.distribution.ci(self.p)
         else:
-            ci = self.distribution.cisym(self._p)
+            ci = self.distribution.cisym(self.p)
             
         return (ci[1]-x,x-ci[0])
         
@@ -396,6 +397,13 @@ class nummy(ummy,metaclass=MetaNummy):
         if value not in ['shortest','symmetric']:
             raise ValueError('cimethod ' + str(value) + ' is not recognized')
         self._cimethod = value
+        
+    @property
+    def p(self):
+        return 0.68268949213708585
+    @p.setter
+    def p(self,v):
+        pass
         
     @staticmethod
     def set_seed(seed):
