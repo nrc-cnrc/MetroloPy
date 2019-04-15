@@ -75,7 +75,10 @@ def test_ubreakdown(n=None,prnt=False,budget=False):
         for i,y in enumerate(u):
             ur += y**2*d(i,*x)**2
         ur = np.sqrt(ur)
-        assert abs(gr.u - ur)/ur < 1e-10
+        if ur == 0:
+            assert abs(gr.u) < 1e-10
+        else:
+            assert abs(gr.u - ur)/ur < 1e-10
         
         dofr = 0
         for i,(v,idof) in enumerate(zip(u,dof)):
@@ -101,16 +104,28 @@ def test_ubreakdown(n=None,prnt=False,budget=False):
             else:
                 dr = lambda *x: [d(i,*x) for i in range(k)]
             ga = uc.gummy.apply(f,dr,*g)
-            assert abs(ga.x - xr)/abs(xr) < 1e-10
-            assert abs(ga.u - ur)/ur < 1e-6
+            if xr == 0:
+                assert abs(ga.x) < 1e-10
+            else:
+                assert abs(ga.x - xr)/abs(xr) < 1e-10
+            if ur == 0:
+                assert abs(ga.u) < 1e-6
+            else:
+                assert abs(ga.u - ur)/ur < 1e-6
             if dofr > 100:
                 assert ga.dof > 100
             else:
                 assert abs(ga.dof - dofr)/dofr < 1e-2
                 
             gn = uc.gummy.napply(f,*g)
-            assert abs(gn.x - xr)/abs(xr) < 1e-10
-            assert abs(gn.u - ur)/ur < 1e3
+            if xr == 0:
+                assert abs(gn.x) < 1e-10
+            else:
+                assert abs(gn.x - xr)/abs(xr) < 1e-10
+            if ur == 0:
+                assert abs(gn.u) < 1e-3
+            else:
+                assert abs(gn.u - ur)/ur < 1e-3
             if dofr > 100:
                 assert gn.dof > 100
             else:
@@ -135,97 +150,98 @@ def test_ubreakdown(n=None,prnt=False,budget=False):
         else:
             e = [gl[rand.randint(len(gl))] for i in range(rand.randint(len(gl)))]
             
-        ua = 0
-        ub = 0
-        ud = 0
-        ue = 0
-        dofa = 0
-        dofb = 0
-        dofd = 0
-        dofe = 0
-        for i,(ig,iu,idof) in enumerate(zip(g,u,dof)):
-            if gf.ufrom(ig) == 0:
-                assert iu*d(i,*x)/ur < 1e-3
-            else:
-                if ig.utype == 'A':
-                    ua += iu**2*d(i,*x)**2
-                    dofa += iu**4*d(i,*x)**4/idof
-                elif ig.utype == 'B':
-                    ub += iu**2*d(i,*x)**2
-                    dofb += iu**4*d(i,*x)**4/idof
-                elif ig.utype == 'D':
-                    ud += iu**2*d(i,*x)**2
-                    dofd += iu**4*d(i,*x)**4/idof
-                
-                try:
-                    if e is ig or ig in e:
-                        ue += iu**2*d(i,*x)**2
-                        dofe += iu**4*d(i,*x)**4/idof
-                except TypeError:
-                    pass
-            
-        ua = np.sqrt(ua)
-        ub = np.sqrt(ub)
-        ud = np.sqrt(ud)
-        ue = np.sqrt(ue)
-        
-        if dofa == 0:
-            dofa = float('inf')
-        else:
-            dofa  = ua**4/dofa
-        if dofb == 0:
-            dofb = float('inf')
-        else:
-            dofb  = ub**4/dofb
-        if dofd == 0:
-            dofd = float('inf')
-        else:
-            dofd  = ud**4/dofd
-        if dofe == 0:
-            dofe = float('inf')
-        else:
-            dofe  = ue**4/dofe
+        if ur > 0:
+            ua = 0
+            ub = 0
+            ud = 0
+            ue = 0
+            dofa = 0
+            dofb = 0
+            dofd = 0
+            dofe = 0
+            for i,(ig,iu,idof) in enumerate(zip(g,u,dof)):
+                if gf.ufrom(ig) == 0:
+                    assert iu*d(i,*x)/ur < 1e-3
+                else:
+                    if ig.utype == 'A':
+                        ua += iu**2*d(i,*x)**2
+                        dofa += iu**4*d(i,*x)**4/idof
+                    elif ig.utype == 'B':
+                        ub += iu**2*d(i,*x)**2
+                        dofb += iu**4*d(i,*x)**4/idof
+                    elif ig.utype == 'D':
+                        ud += iu**2*d(i,*x)**2
+                        dofd += iu**4*d(i,*x)**4/idof
                     
-        if ua == 0:
-            assert gf.ufrom('A') == 0
-        else:
-            assert abs(gf.ufrom('A') - ua)/ur < 1e-3
-        if ua/ur > 0.01:
-            if dofa > 100 or gf.ufrom('A') == 0:
-                assert gf.doffrom('A') > 100
-            else:
-                assert abs(gf.doffrom('A') - dofa)/dofa < 1e-2
-            
-        if ub == 0:
-            assert gf.ufrom('B') == 0
-        else:
-            assert abs(gf.ufrom('B') - ub)/ur < 1e-3
-        if ub/ur > 0.01:
-            if dofb > 100 or gf.ufrom('B') == 0:
-                assert gf.doffrom('B') > 100
-            else:
-                assert abs(gf.doffrom('B') - dofb)/dofb < 1e-2
-            
-        if ud == 0:
-            assert gf.ufrom('D') == 0
-        else:
-            assert abs(gf.ufrom('D') - ud)/ur < 1e-3
-        if ud/ur > 0.01:
-            if dofd > 100 or gf.ufrom('D') == 0:
-                assert gf.doffrom('D') > 100
-            else:
-                assert abs(gf.doffrom('D') - dofd)/dofd < 1e-2
-            
-        if ue == 0:
-            assert gf.ufrom(e) == 0
-        else:
-            assert abs(gf.ufrom(e) - ue)/ur < 1e-3
-        #if ue/ur > 0.01:
-            #if dofe > 100 or gf.ufrom(e) == 0:
-                #assert gf.doffrom(e) > 100
-            #else:
-                #assert abs(gf.doffrom(e) - dofe)/dofe < 1e-2
+                    try:
+                        if e is ig or ig in e:
+                            ue += iu**2*d(i,*x)**2
+                            dofe += iu**4*d(i,*x)**4/idof
+                    except TypeError:
+                        pass
                 
+            ua = np.sqrt(ua)
+            ub = np.sqrt(ub)
+            ud = np.sqrt(ud)
+            ue = np.sqrt(ue)
+            
+            if dofa == 0:
+                dofa = float('inf')
+            else:
+                dofa  = ua**4/dofa
+            if dofb == 0:
+                dofb = float('inf')
+            else:
+                dofb  = ub**4/dofb
+            if dofd == 0:
+                dofd = float('inf')
+            else:
+                dofd  = ud**4/dofd
+            if dofe == 0:
+                dofe = float('inf')
+            else:
+                dofe  = ue**4/dofe
+                        
+            if ua == 0:
+                assert gf.ufrom('A') == 0
+            else:
+                assert abs(gf.ufrom('A') - ua)/ur < 1e-3
+            if ua/ur > 0.01:
+                if dofa > 100 or gf.ufrom('A') == 0:
+                    assert gf.doffrom('A') > 100
+                else:
+                    assert abs(gf.doffrom('A') - dofa)/dofa < 1e-2
+                
+            if ub == 0:
+                assert gf.ufrom('B') == 0
+            else:
+                assert abs(gf.ufrom('B') - ub)/ur < 1e-3
+            if ub/ur > 0.01:
+                if dofb > 100 or gf.ufrom('B') == 0:
+                    assert gf.doffrom('B') > 100
+                else:
+                    assert abs(gf.doffrom('B') - dofb)/dofb < 1e-2
+                
+            if ud == 0:
+                assert gf.ufrom('D') == 0
+            else:
+                assert abs(gf.ufrom('D') - ud)/ur < 1e-3
+            if ud/ur > 0.01:
+                if dofd > 100 or gf.ufrom('D') == 0:
+                    assert gf.doffrom('D') > 100
+                else:
+                    assert abs(gf.doffrom('D') - dofd)/dofd < 1e-2
+                
+            if ue == 0:
+                assert gf.ufrom(e) == 0
+            else:
+                assert abs(gf.ufrom(e) - ue)/ur < 1e-3
+            #if ue/ur > 0.01:
+                #if dofe > 100 or gf.ufrom(e) == 0:
+                    #assert gf.doffrom(e) > 100
+                #else:
+                    #assert abs(gf.doffrom(e) - dofe)/dofe < 1e-2
+                    
         if not rand.randint(4):
             gf.uunit = '%'
                 

@@ -230,23 +230,33 @@ def test_addxmul(n=1000):
             assert abs(a.x - b.x) < 1e-14
         else:
             assert abs((a.x - b.x)/b.x) < 1e-14
-        assert (a.u - b.u)/b.u < 1e-3
-        assert a.correlation(b) == 1
-        assert a.correlation(x) == 1
+        if x.u == 0:
+            assert a.u == 0
+            assert b.u == 0
+        else:
+            assert (a.u - b.u)/b.u < 1e-3
+            assert a.correlation(b) == 1
+            assert a.correlation(x) == 1
         
         if b.x == 0:
             assert abs(c.x - b.x) < 1e-14
         else:
             assert abs((c.x - b.x)/b.x) < 1e-14
-        assert (c.u - b.u)/b.u < 1e-3
-        assert c.correlation(b) == 1
+        if x.u == 0:
+            assert c.u == 0
+        else:
+            assert (c.u - b.u)/b.u < 1e-3
+            assert c.correlation(b) == 1
         
         if b.x == 0:
             assert abs(d.x - b.x) < 1e-14
         else:
             assert abs((d.x - b.x)/b.x) < 1e-14
-        assert (d.u - b.u)/b.u < 1e-3
-        assert d.correlation(b) == 1
+        if x.u == 0:
+            assert d.u == 0
+        else:
+            assert abs((d.u - b.u)/b.u) < 1e-3
+            assert d.correlation(b) == 1
         
 def test_mulxpow(n=1000):
     def f(*x):
@@ -268,8 +278,12 @@ def test_mulxpow(n=1000):
             assert abs(a.x - b.x) < 1e-14
         else:
             assert abs((a.x - b.x)/b.x) < 1e-14
-        assert abs((a.u - b.u)/b.u) < 1e-3
-        assert a.correlation(b) == 1
+        if x.u == 0:
+            assert a.u == 0
+            assert b.u == 0
+        else:
+            assert abs((a.u - b.u)/b.u) < 1e-3
+            assert a.correlation(b) == 1
         
         if k%2 == 0 and x.x < 0:
             assert a.correlation(x) == -1
@@ -280,15 +294,22 @@ def test_mulxpow(n=1000):
             assert abs(c.x - b.x) < 1e-14
         else:
             assert abs((c.x - b.x)/b.x) < 1e-14
-        assert abs((c.u - b.u)/b.u) < 1e-3
-        assert c.correlation(b) == 1
+        if x.u == 0:
+            assert c.u == 0
+        else:
+            assert abs((c.u - b.u)/b.u) < 1e-3
+            assert c.correlation(b) == 1
         
         if b.x == 0:
             assert abs(d.x - b.x) < 1e-14
         else:
             assert abs((d.x - b.x)/b.x) < 1e-14
-        assert abs((d.u - b.u)/b.u) < 1e-3
-        assert d.correlation(b) == 1
+        if x.u == 0:
+            assert d.u == 0
+        else:
+            assert abs((d.u - b.u)/b.u) < 1e-3
+            assert d.correlation(b) == 1
+
         
 def test_mulxnpow(n=1000):
     def f(*x):
@@ -308,8 +329,12 @@ def test_mulxnpow(n=1000):
             assert abs(a.x - b.x) < 1e-14
         else:
             assert abs((a.x - b.x)/b.x) < 1e-14
-        assert abs((a.u - b.u)/b.u) < 1e-3
-        assert a.correlation(b) == 1
+        if x.u == 0:
+            assert a.u == 0
+            assert b.u == 0
+        else:
+            assert abs((a.u - b.u)/b.u) < 1e-3
+            assert a.correlation(b) == 1
         
         if k%2 == 0 and x.x < 0:
             assert a.correlation(x) == 1
@@ -320,5 +345,8 @@ def test_mulxnpow(n=1000):
             assert abs(d.x - b.x) < 1e-14
         else:
             assert abs((d.x - b.x)/b.x) < 1e-14
-        assert abs((d.u - b.u)/b.u) < 1e-3
-        assert d.correlation(b) == 1
+        if x.u == 0:
+            assert d.u == 0
+        else:
+            assert abs((d.u - b.u)/b.u) < 1e-3
+            assert d.correlation(b) == 1

@@ -333,7 +333,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         if p is not None:
             p = float(p)
             self._k = self._p_method.fptok(p,dof,gummy.bayesian)
-            self._p = p
             self._pm = p
             self._set_k = False
         else:
@@ -342,8 +341,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             else:
                 k = float(k)
             self._k = k
-            if k != 1 or dof == float('inf'):
-                self._p = self._p_method.fktop(k,dof=dof,bayesian=gummy.bayesian)
             self._pm = None
             self._set_k = True
         
@@ -509,7 +506,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     except ZeroDivisionError:
                         if not Unit.unit(unit).is_dimensionless:
                             raise NoUnitConversionFoundError('no conversion found from unit ' + str(unit) + ' to one')
-                        return float('inf')
+                        return gummy(float('inf'),unit=unit)
             else:
                 return gummy(self._unit.to_uunit(_ku(k,u),unit),unit)
 
@@ -705,7 +702,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             raise ValueError('k <= 0')
         self._k = v
         self._pm = None
-        self._p = self._p_method.fktop(v,dof=self.dof,bayesian=gummy.bayesian)
         self._set_k = True
         self._set_U(self._k,None)
         
@@ -746,20 +742,19 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         2.9999769927034015
         """
         if self._u == 0:
-            return None
+            return 1
         if self._pm is not None:
             if self._pm < 0:
-                return None
+                return 0
             return self._pm
         self._pm = self._p_method.fktop(self._k,self.dof,self.bayesian)
         if self._pm < 0:
-                return None
+                return 0
         return self._pm
     @p.setter
     def p(self,v):
         if v <= 0 or v >= 1:
             raise ValueError('p is not in the interval (0,1)')
-        self._p = v
         self._pm = v
         self._k = self._p_method.fptok(v,self.dof,self.bayesian)
         self._set_k = False
@@ -1028,7 +1023,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         if self._k != 1:
             g._k = self._k
         g._pm = self._pm
-        g._p = self._p
         if self.thousand_spaces != gummy.thousand_spaces:
             g.thousand_spaces = self.thousand_spaces
         if self.mulsep != gummy.mulsep:
@@ -1048,28 +1042,23 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             r._old = s._old
                 
             if formatting:
-                if s._style != gummy._style:
+                if s._style != type(r)._style:
                     r._style = s._style
-                if s.show_p != gummy.show_p:
+                if s.show_p != type(r).show_p:
                     r.show_p = s.show_p
-                if s.show_k != gummy.show_k:
+                if s.show_k != type(r).show_k:
                     r.show_k = s.show_k
-                if s.show_dof != gummy.show_dof:
+                if s.show_dof != type(r).show_dof:
                     r.show_dof = s.show_dof
-                if s.thousand_spaces != gummy.thousand_spaces:
-                    r.thousand_spaces = s.thousand_spaces
-                if s.mulsep != gummy.mulsep:
+                if s.mulsep != type(r).mulsep:
                     r.mulsep = s.mulsep
-                if s.solidus != gummy.solidus:
+                if s.solidus != type(r).solidus:
                     r.solidus = s.solidus
-                if s.nsig != gummy.nsig:
-                    r.nsig = s.nsig
-                if s._k != 1:
-                    r._k = s._k
-                r._p = s._p
+                r._k = s._k
                 r._pm = s._pm
                 r._set_k = s._set_k
                 if tofloat:
+                    r._U = None
                     r._set_U(None,None)
                 else:
                     r._U = s._U
@@ -1727,7 +1716,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                 return g.tostring(fmt=fmt,style=style,show_k=show_k,
                                   show_p=show_p,show_dof=show_dof,
                                   norm=norm,raw=raw,nsig=nsig)
-            if p is not None and p != self._p:
+            if p is not None and p != self.p:
                 g = self.copy(formatting=True)
                 g.p = p
                 return g.tostring(fmt=fmt,style=style,show_k=show_k,
@@ -2068,13 +2057,14 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             
         if self._u == 0 or isnan(self._u) or isinf(self._u):
             if isinstance(x,Rational) and not isinstance(x,Integral):
-                fstr = str(x).split('/')[-1]
+                ffstr = str(x)
+                fstr = ffstr.split('/')[-1]
                 dstr = str(float(x)).split('e')[0].split('E')[0].split('.')[-1]
                 dstr.strip().strip('0')
-                if len(dstr) > 3 and len(dstr) > len(fstr):
+                if len(dstr) > 3 and len(dstr) > len(fstr) and len(ffstr) < (self.max_digits + 10):
                     return ('x',(str(x),'',xsym))
             if xexp is None:
-                return ('x',(str(x),'',xsym))
+                return ('x',(self._format_mantissa(fmt,x,None),'',xsym))
             if xsig is not None:
                 if xabs > 10**(xexp+1) - 10**(xexp-xsig)/2:
                     xexp += 1

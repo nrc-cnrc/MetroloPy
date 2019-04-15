@@ -300,35 +300,39 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
             if uunit is not None and uunit != unit:
                 assert g.uunit is uc.Unit.unit(uunit)
                 
-            if p is None:
-                assert g.k == k
+            if g.p == 0:
+                assert p is None
+                assert k <= 3
             else:
-                assert g.p == p
-            
-            if uc.gummy.p_method in ['loc','level of confidence',None]:
-                if dof == float('inf'):
-                    assert abs(g.k - norm.ppf(0.5 + g.p/2)) < 1e-6
+                if p is None:
+                    assert g.k == k
                 else:
-                    if bayesian:
-                        if g.p is not None:
-                            assert abs(g.k - np.sqrt((dof-2)/dof)*t.ppf(0.5 + g.p/2,dof)) < 1e-6
+                    assert g.p == p
+                
+                if uc.gummy.p_method in ['loc','level of confidence',None]:
+                    if dof == float('inf'):
+                        assert abs(g.k - norm.ppf(0.5 + g.p/2)) < 1e-6
                     else:
-                        assert abs(g.k - t.ppf(0.5 + g.p/2,dof)) < 1e-6
-                        
-            elif uc.gummy.p_method in ['cp','coverage probability','gauss']:
-                if dof == float('inf') or bayesian:
-                    if g.p is not None:
-                        assert abs(g.k - 2/(3*(np.sqrt(1 - g.p)))) < 1e-6
+                        if bayesian:
+                            if g.p is not None:
+                                assert abs(g.k - np.sqrt((dof-2)/dof)*t.ppf(0.5 + g.p/2,dof)) < 1e-6
+                        else:
+                            assert abs(g.k - t.ppf(0.5 + g.p/2,dof)) < 1e-6
+                            
+                elif uc.gummy.p_method in ['cp','coverage probability','gauss']:
+                    if dof == float('inf') or bayesian:
+                        if g.p is not None:
+                            assert abs(g.k - 2/(3*(np.sqrt(1 - g.p)))) < 1e-6
+                    else:
+                        if g.p is not None:
+                            assert abs(g.k - np.sqrt(dof/(dof-2))*(2/(3*(np.sqrt(1 - g.p))))) < 1e-6                 
                 else:
-                    if g.p is not None:
-                        assert abs(g.k - np.sqrt(dof/(dof-2))*(2/(3*(np.sqrt(1 - g.p))))) < 1e-6                 
-            else:
-                if dof == float('inf') or bayesian:
-                    if g.p is not None:
-                        assert abs(g.k - 1/np.sqrt(1 - g.p)) < 10.0**-6
-                else:
-                    if g.p is not None:
-                        assert abs(g.k - np.sqrt(dof/(dof-2))*(1/np.sqrt(1 - g.p))) < 1e-6
+                    if dof == float('inf') or bayesian:
+                        if g.p is not None:
+                            assert abs(g.k - 1/np.sqrt(1 - g.p)) < 10.0**-6
+                    else:
+                        if g.p is not None:
+                            assert abs(g.k - np.sqrt(dof/(dof-2))*(1/np.sqrt(1 - g.p))) < 1e-6
                     
             assert abs((g._u - u)/u) < 1e-10
             
