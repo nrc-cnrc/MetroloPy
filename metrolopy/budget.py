@@ -431,7 +431,7 @@ class Budget(PrettyPrinter):
                 break
             
         b = [y.correlation(z) for z in x]
-        s = np.linalg.lstsq(cm,b)[0]
+        s = np.linalg.lstsq(cm,b,rcond=None)[0]
         tu = 0
         
         if self.sim:
