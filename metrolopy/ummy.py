@@ -1157,7 +1157,7 @@ class ummy(Dfunc):
         v = ummy.correlation_matrix(x)
             
         b = [self.correlation(z) for z in x]
-        s = np.linalg.lstsq(v,b)[0]
+        s = np.linalg.lstsq(v,b,rcond=None)[0]
         u = 0
         
         d = [i*self._u/j._u for i,j in zip(s,x)]
@@ -1198,7 +1198,7 @@ class ummy(Dfunc):
             
         v = ummy.correlation_matrix(x)
         b = [self.correlation(z) for z in x]
-        s = np.linalg.lstsq(v,b)[0]
+        s = np.linalg.lstsq(v,b,rcond=None)[0]
         d = [i*self._u/j._u for i,j in zip(s,x)]
         usq = 0
         dm = 0
