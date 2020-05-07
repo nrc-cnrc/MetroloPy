@@ -958,10 +958,14 @@ class ummy(Dfunc):
             x = self._x**b._x
         dua = b._x*self._x**(b._x-1)*self._u
         lgx = log(self._x)
-        try:
-            lgx = type(self._x)(lgx)
-        except:
-            pass
+        
+        # don't exactly remember why I did this,
+        # but it causes problems if x is int.
+        #try:
+            #lgx = type(self._x)(lgx)
+        #except:
+            #pass
+            
         dub = lgx*self._x**b._x*b._u
         u = _combu(dua,dub,c)
         
@@ -1002,10 +1006,14 @@ class ummy(Dfunc):
             raise ValueError('a negative number cannot raised to a power which has an uncertainty')
             
         lgb = log(b)
-        try:
-            lgb = type(b)(lgb)
-        except:
-            pass
+        
+        # don't exactly remember why I did this,
+        # but it causes problems if x is int.
+        #try:
+            #lgb = type(b)(lgb)
+        #except:
+            #pass
+            
         u = abs(b**self._x*lgb*self._u)
         refs = -self._refs if b < 0 else self._refs
         return type(self)(x,u,dof=self._ref,utype=refs)
