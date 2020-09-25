@@ -22,7 +22,7 @@ MetroloPy is a pure python package and requires Python 3 and the
 `SciPy <https://www.scipy.org/>`_ stack (NumPy, SciPy, Pandas, and IPython).  
 It looks best in a `Jupyter notebook <https://jupyter.org/>`_.
 
-Install MetroloPy with pip::
+Install MetroloPy with conda or pip::
 
     $ pip install metrolopy
 
@@ -126,6 +126,8 @@ version history
   an integer data type.  Fixed several other minor bugs.
 * Version 0.5.3, built 10 April 2019, minor bug fixes.
 * Version 0.5.4, built 15 April 2019, minor bug fixes.
+* Version 0.5.5, built 7 May 2020, minor bug fixes.
+* Version 0.5.6, built 24 September 2020, minor bug fixes.
 
 
 author
