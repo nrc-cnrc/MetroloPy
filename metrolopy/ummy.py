@@ -363,6 +363,12 @@ class ummy(Dfunc):
     @staticmethod
     def _set_covariance_matrix(gummys, matrix):
         n = len(gummys)
+        try:
+            assert len(matrix) == n
+            for r in matrix:
+                assert len(r) == n
+        except:
+            raise ValueError('the covariance matrix must be a square matrix of the same length as gummys')
         
         # Set the u of each gummy using the diagonal of the matrix.
         for i in range(n):
@@ -371,15 +377,13 @@ class ummy(Dfunc):
                 gummys[i]._ref = None
             else:
                 if gummys[i]._ref is None:
-                    gummys[i]._ref = _GummyRef()  
-                e = matrix[i][i]**0.5
-                gummys[i]._u = e
+                    gummys[i]._ref = _GummyRef()
+                gummys[i]._u = matrix[i][i]**0.5
         
         # Set the correlations
-        for i in range(0,n):
-            for j in range(0,n):
-                matrix[i][j] /= gummys[i]._u*gummys[j]._u
-        ummy._set_correlation_matrix(gummys,matrix)
+        m = [[e/(gummys[i]._u*gummys[j]._u) for j,e in enumerate(r)]
+             for i,r in enumerate(matrix)]
+        ummy._set_correlation_matrix(gummys,m)
         
     @classmethod
     def create(cls,x,u=None,dof=None,correlation_matrix=None,

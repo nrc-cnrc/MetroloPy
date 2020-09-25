@@ -3028,16 +3028,25 @@ class jummy(PrettyPrinter,Dfunc):
         i = self._imag.graft(one)
         return gummy._apply(np.arctan2,darctan2,i,r)
     
-    def copy(self,formatting=True):
+    def copy(self,formatting=True,tofloat=False):
         """
         Returns a copy of the jummy.  If the `formatting` parameter is
         `True` the display formatting information will be copied and if
         `False` the display formatting will be set to the default for a
-        new jummy.  The default for `formatting` is `True`.
+        new jummy.  The default for `formatting` is `True`.  If the
+        tofloats parameter is True x and u for both the real and
+        imaginary components will be converted to floats.
         """
-        r = self._real.copy(formatting=formatting)
-        i = self._imag.copy(formatting=formatting)
+        r = self._real.copy(formatting=formatting,tofloat=tofloat)
+        i = self._imag.copy(formatting=formatting,tofloat=tofloat)
         return jummy(real=r,imag=i)
+    
+    def tofloat(self):
+        """
+        Returns a copy of the gummy with x an u (for both the real and
+        imaginary components) converted to floats.
+        """
+        return self.copy(formatting=False,tofloat=True)
     
     @classmethod
     def _apply(cls,function,derivative,*args,fxx=None,rjd=None):
