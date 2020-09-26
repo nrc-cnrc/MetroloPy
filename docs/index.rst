@@ -22,8 +22,8 @@ MetroloPy is a pure python package and requires Python 3 and the
 `SciPy <https://www.scipy.org/>`_ stack (NumPy, SciPy, Pandas, and IPython).  
 It looks best in a `Jupyter notebook <https://jupyter.org/>`_.
 
-Install MetroloPy with `pip install metrolopy`  or 
-`conda install -c hvparks metrolopy`.
+Install MetroloPy with ``pip install metrolopy``  or 
+``conda install -c hvparks metrolopy``.
 
 Physical quantities can then be represented in Python as `gummy`_ objects
 with an uncertainty and (or) a unit:
