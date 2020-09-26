@@ -6,11 +6,8 @@ tools for dealing with physical quantities:  uncertainty propagation and unit co
 
 MetroloPy is a pure python package and requires Python 3 and the SciPy stack (NumPy, SciPy, Pandas, and IPython).  It looks best in a Jupyter Notebook.
 
-Install MetroloPy with conda or pip:
-
-```
-$ pip install metrolopy
-```
+Install MetroloPy with `pip install metrolopy`  or 
+`conda install -c hvparks metrolopy`.
 
 Physical quantities can then be represented in Python as `gummy` objects with an uncertainty and (or) a unit:
 
