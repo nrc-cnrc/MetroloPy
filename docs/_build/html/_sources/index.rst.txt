@@ -128,6 +128,7 @@ version history
 * Version 0.5.4, built 15 April 2019, minor bug fixes.
 * Version 0.5.5, built 7 May 2020, minor bug fixes.
 * Version 0.5.6, built 24 September 2020, minor bug fixes.
+* Version 0.5.7, built 26 September 2020, minor change to setup.py.
 
 
 author
