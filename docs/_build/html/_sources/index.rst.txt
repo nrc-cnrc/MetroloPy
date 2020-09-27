@@ -23,7 +23,7 @@ MetroloPy is a pure python package and requires Python 3 and the
 It looks best in a `Jupyter notebook <https://jupyter.org/>`_.
 
 Install MetroloPy with ``pip install metrolopy``  or 
-``conda install -c hvparks metrolopy``.
+``conda install -c conda-forge metrolopy``.
 
 Physical quantities can then be represented in Python as `gummy`_ objects
 with an uncertainty and (or) a unit:
