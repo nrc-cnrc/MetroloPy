@@ -1462,6 +1462,15 @@ class _CompositeUnit(Unit):
         return self._conversion
     
     @property
+    def aliases(self):
+        """read-only
+        
+        Returns a set of the unshadowed aliases of this unit.  To add aliases
+        to the unit use the `Unit.alias` static method.
+        """
+        return {a for a in self._aliases if (Unit.unit('[' + a + ']',exception=False) is self and a != self.name)}
+    
+    @property
     def shadowed_aliases(self):
         """
         Returns a set of the shadowed aliases of this unit.
