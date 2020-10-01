@@ -26,7 +26,6 @@ the search_units, shadow_units, and convert functions are defined here
 from .gummy import gummy
 from .unit import Unit,one
 from .printing import PrettyPrinter,print_markdown,print_html,ipython_installed
-import numpy as np
 
 
 def _mrtxt(txt,fmt):
@@ -255,6 +254,7 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                         else:
                             txt += ', ' + ctxt
                     except:
+                        raise
                         txt += ', ?? = ??'
                 elif u is not one:
                     if fmt == 'latex':
@@ -283,6 +283,7 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                     else:
                         txt += 'shadowed aliases: ' + _mrtxt(', '.join(sorted(saliases,key=str.lower)),fmt)
         except:
+            raise
             txt += '??'
                 
         if fmt == 'html' or fmt == 'latex':

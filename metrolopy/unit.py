@@ -28,12 +28,12 @@ by the gummy class.
 import numpy as np
 import weakref
 import warnings
-from importlib import import_module
 from .exceptions import (UnitLibError,CircularUnitConversionError,
                          NoUnitConversionFoundError,UnitNotFoundError,
                          IncompatibleUnitsError,UnitLibNotFoundError,
                          UnitWarning)
 from .printing import PrettyPrinter
+from .indexed import Indexed
 from .nummy import nummy
 
 class _UnitParser:
@@ -379,7 +379,7 @@ class Conversion:
         return r
 
 
-class Unit(PrettyPrinter):
+class Unit(PrettyPrinter,Indexed):
     """
     Creating an instance of this class creates a representation of a physical
     unit and adds it to the unit library.  Units already in the unit library or 
@@ -465,14 +465,6 @@ class Unit(PrettyPrinter):
     # reverse order.
     _builtins_to_import = ['..usunits','..siunits','..relunits']
     
-    # _lib and _builtin_lib are dictionarys with string keys that reference
-    # Unit object instances.  _lib is searched first so definitions in _lib
-    # may shadow definitions in _builtin_lib.
-    
-    _lib = {} # Contains Unit instances created or loaded by the user.
-    _builtin_lib = {} # Contains Unit instances created in the gummy module.
-    
-    _open_lib = _lib
     _used_units = {}
         
     @staticmethod
@@ -512,7 +504,7 @@ class Unit(PrettyPrinter):
         try:
             if isinstance(txt,Unit):
                 return txt
-            if txt is None or txt is 1:
+            if txt is None or txt == 1:
                 return one
             try:
                 txt = txt.strip()
@@ -525,11 +517,16 @@ class Unit(PrettyPrinter):
                 return uu 
             ul = _UnitParser(txt).parse()
             if len(ul) == 1 and ul[0][1] == 1:
-                ret = Unit._single_unit(ul[0][0])
-                return ret
+                if ul[0][0] == '1' or ul[0][0] == '' or ul[0][0] == 1:
+                    return one
+                else:
+                    return Unit.get(ul[0][0])
             ull = []
             for u in ul:
-                un = Unit._single_unit(u[0])
+                if u[0] == '1' or u[0] == '' or u[0] == 1:
+                    un = one
+                else:
+                    un = Unit.get(u[0])
                 if hasattr(un,'_getme'):
                     un = un._getme(ul,u[1])
                 if isinstance(un,_CompositeUnit):
@@ -570,7 +567,10 @@ class Unit(PrettyPrinter):
         
         ul = _UnitParser(txt).parse()
         for u in ul:
-            un = Unit._single_unit(u[0])
+            if u[0] == '1' or u[0] == '' or u[0] == 1:
+                un = one
+            else:
+                un = Unit.get(u[0])
             if hasattr(un,'_getme'):
                 u[0] = un._getme(ul,u[1])
             else:
@@ -578,60 +578,10 @@ class Unit(PrettyPrinter):
             if isinstance(un,_CompositeUnit):
                 raise ValueError('aliases for composite units may not be used in Unit.reorder')
         unit._make_symbols(ul)
-                
-    @staticmethod
-    def _single_unit(txt):
-        if txt == '1' or txt == '' or txt is 1:
-            return one
-
-        un = Unit._lib.get(txt)
-        if un is None:
-            un = Unit._builtin_lib.get(txt)
-            if un is None:
-                while len(Unit._builtins_to_import) > 0:
-                    import_module(Unit._builtins_to_import.pop(),Unit.__module__)
-                    un = Unit._builtin_lib.get(txt)
-                    if un is not None:
-                        break    
-
-        if un is None:
-            raise UnitNotFoundError('unit "' + txt + '" was not found')
-        return un
         
-    @staticmethod
-    def alias(alias,unit):
-        """
-        Creates an alias that can be used to reference a Unit.
-        
-        Parameters
-        ----------
-        alias:  `str`
-            a string containing the new alias
-
-        unit:  `str` or `Unit`
-            A string referencing the `Unit` that will be assigned
-            the alias or the `Unit` instance its self.
-        """
-        unit = Unit.unit(unit) # I like this line.
-        Unit._open_lib[alias] = unit
-        unit._add_alias(alias)
-        
-    @staticmethod
-    def load(library_name):
-        import_module(library_name)
-        
-    @staticmethod
-    def format_latex(text):
-        if text == '':
-            return ''
-        text = text.replace(' ','\\,')
-        if text.startswith('\t\t'):
-            return text[2:]
-        if text.startswith('\\'):
-            return text
-        if text.startswith('\t'):
-            return '\t\\mathrm{' + text[1:] + '}'
-        return '\\mathrm{' + text + '}'
+    @classmethod
+    def _raise_not_found(cls,name):
+        raise UnitNotFoundError('unit "' + str(name) + '" was not found')
               
     _gconv = None
     _conversion = None
@@ -642,55 +592,20 @@ class Unit(PrettyPrinter):
                  ascii_symbol=None,description=None,order = -1,**kwds):
         if conversion is not None and not isinstance(conversion,Conversion):
             raise ValueError('conversion is not an instance of the Conversion class')
-        self.name = name
-        self.conversion = conversion
-        self.description=description
-        self.order = order
         
         if symbol.startswith('\t\t'):
             raise ValueError('the symbol may not start with more than one tab character; only the latex_symbol may start with double tabs')
-        self.symbol = symbol
-        if html_symbol is None:
-            self.html_symbol = symbol
-        else:
-            self.html_symbol=html_symbol
-        if latex_symbol is None:
-            self.latex_symbol = Unit.format_latex(symbol)
-        else:
-            self.latex_symbol = Unit.format_latex(latex_symbol)
-        if ascii_symbol is None:
-            self.ascii_symbol=symbol
-        else:
-            self.ascii_symbol=ascii_symbol
-            
-        self._aliases = set()
+        
+        super().__init__(name,symbol,short_name,add_symbol,html_symbol,
+                         latex_symbol,ascii_symbol,description)
+        
+        self.conversion = conversion
+        self.order = order
         
         self.parent = kwds.get('parent')
         
         #reset _used_units incase we are shadowing any unit definitions
         Unit._used_units = {} 
-        
-        Unit._open_lib[name] = self
-        if add_symbol:
-            if symbol.strip() != name:
-                Unit._open_lib[symbol.strip()] = self
-                self._aliases.add(symbol.strip())
-            if (ascii_symbol is not None and ascii_symbol.strip() != name and 
-                   ascii_symbol.strip() != symbol.strip()):
-                Unit._open_lib[ascii_symbol.strip()] = self
-                self._aliases.add(ascii_symbol.strip())
-        if short_name is not None:
-            Unit._open_lib[short_name] = self
-            self.short_name = short_name
-            self._aliases.add(short_name)
-        else:
-            if add_symbol:
-                if ascii_symbol is not None:
-                    self.short_name = ascii_symbol
-                else:
-                    self.short_name = symbol
-            else:
-                self.short_name = name
 
     @property
     def conversion(self):
@@ -706,47 +621,6 @@ class Unit(PrettyPrinter):
         self._conversion = c
         if c is not None:
             c.parent = self
-            
-    @property
-    def aliases(self):
-        """read-only
-        
-        Returns a set of the unshadowed aliases of this unit.  To add aliases
-        to the unit use the `Unit.alias` static method.
-        """
-        return {a for a in self._aliases if (Unit.unit('[' + a + ']',exception=False) is self and a != self.name)}
-    
-    @property
-    def shadowed_aliases(self):
-        """read-only
-        
-        Returns a set of the shadowed aliases of this unit.
-        """
-        sha = {a for a in self._aliases if Unit.unit('[' + a + ']',exception=False) is not self}
-        if Unit.unit('[' + self.name + ']') is not self:
-            sha.add(self.name)
-        return sha
-    
-    def _add_alias(self,alias):
-        self._aliases.add(alias)
-    
-    def tostring(self,fmt=None,**kwds):
-        """
-        Returns a string containing the symbol for the unit the format given by
-        the keyword `fmt` which may be set to a string the values 'html', 'latex',
-        'ascii', or 'unicode'.  
-        """
-        if fmt is None or fmt == 'unicode':
-            return self.symbol
-        if fmt is None:
-            return self.symbol
-        if fmt == 'html':
-            return self.html_symbol
-        if fmt == 'latex':
-            return self.latex_symbol
-        if fmt == 'ascii':
-            return self.ascii_symbol
-        raise ValueError('format ' + str(fmt) + ' is not recognized')
 
     def _convs(self,d,c,h):          
         if c is None:

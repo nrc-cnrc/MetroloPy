@@ -24,7 +24,7 @@ from .version import __version__
 
 from .gummy import gummy,jummy
 from .unit import Unit,Conversion,one
-from .ummy import ummy, MFraction
+from .ummy import ummy,MFraction
 from .budget import Budget
 from .prefixedunit import PrefixedUnit,BinaryPrefixedUnit
 from .nonlinearunit import NonlinearUnit,NonlinearConversion
@@ -37,3 +37,4 @@ from .distributions import *
 from .exceptions import *
 from .printing import set_printer
 from .unitutils import search_units,shadowed_units,convert
+from .constant import GummyConstant

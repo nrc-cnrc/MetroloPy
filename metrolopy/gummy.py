@@ -1690,8 +1690,9 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                             return('??')
         
     def tostring(self,fmt=None,style=None,k=None,p=None,show_k=None,
-                 show_p=None,show_dof=None,show_name=None,norm=None,
-                 raw=False,nsig=None,solidus=None,mulsep=None,**kwds):
+                 show_p=None,show_dof=None,show_name=None,name=None,
+                 norm=None,raw=False,nsig=None,solidus=None,
+                 mulsep=None,**kwds):
         """
         Returns a string displaying the value of the gummy in the desired format.
         The `fmt` parameter is a string with the value in {"unicode","latex",
@@ -1752,14 +1753,21 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                 
             if show_name is None:
                 show_name = self.show_name
-            if show_name and self.name is not None:
-                if isinstance(self.name,str) and len(self.name) > 1 and fmt == 'latex':
-                    name = norm(self.name.strip())
-                elif isinstance(self.name,str) and len(self.name) == 1 and fmt == 'html':
-                    name = '<i>' +self.name.strip() + '</i>'
+            if show_name:
+                if name is None:
+                    if self.name is not None:
+                        if isinstance(self.name,str) and len(self.name) > 1 and fmt == 'latex':
+                            name = norm(name.strip())
+                        elif isinstance(self.name,str) and len(self.name) == 1 and fmt == 'html':
+                            name = '<i>' +self.name.strip() + '</i>'
+                        else:
+                            name = str(self.name).strip()
+                    else:
+                        name = ''
                 else:
-                    name = str(self.name).strip()
-                name += ' = '
+                    name = str(name).strip()
+                if name != '':
+                    name += ' = '
             else:
                 name = ''
                 

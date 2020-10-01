@@ -159,18 +159,22 @@ class ummy(Dfunc):
                 raise TypeError()
         except TypeError:
             raise TypeError('u must be a real number >= 0')
+            
+        if u == 0:
+            dof = float('inf')
+            utype = None
                 
         if self.rounding_u and not isinstance(x,Rational):
             finfo,x = _getfinfo(x)
             if finfo is _iinfo:
                 warn('numpy.finfo cannot get the floating point accuracy for x\nno uncertainty will be included to account for floating point rounding errors',UncertiantyPrecisionWarning)
             else:
-                uc = _combu(u,float(abs(x)*finfo.rel_u),0)
+                u = _combu(u,float(abs(x)*finfo.rel_u),0)
             
-            uinfo = _getfinfo(u)[0]
-            if uc < uinfo.warn_u and u is not 0:
-                warn('a gummy/ummy was defined with an uncertainty too small to be accurately represented by a float\nuncertainty values may contain significant numerical errors',UncertiantyPrecisionWarning)
-            u = uc
+            #uinfo = _getfinfo(u)[0]
+            #if uc < uinfo.warn_u and u is not 0:
+                #warn('a gummy/ummy was defined with an uncertainty too small to be accurately represented by a float\nuncertainty values may contain significant numerical errors',UncertiantyPrecisionWarning)
+            
             self._finfo = finfo
         else:
             self._finfo = None
