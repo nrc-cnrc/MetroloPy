@@ -1489,23 +1489,6 @@ class _CompositeUnit(Unit):
         Unit._convs(self,d,c,h)
 
     
-class _BuiltinLib:
-    """
-    Allows Unit objects to be added to Unit._builtin_lib rather than Unit._lib
-    using a "with" statement.
-    
-    Example
-    -------
-    
-    >>> with _BuiltinLib():
-    ...     one = Unit('1','',add_symbol=False)
-    
-    """
-    def  __enter__(self):
-        Unit._open_lib = Unit._builtin_lib
-    def __exit__(self,type, value, traceback):
-        Unit._open_lib = Unit._lib
-    
 class _One(Unit):
     """
     The only instance of this class should be the unit `one`.
@@ -1526,5 +1509,5 @@ class _One(Unit):
     def is_dimensionless(self):
         return True
     
-with _BuiltinLib():
+with Unit._builtin():
     one = _One('1','',add_symbol=False)

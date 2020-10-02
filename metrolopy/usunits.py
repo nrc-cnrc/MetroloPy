@@ -31,12 +31,12 @@ NIST Special Publication 1038, "The International System of Units (SI) –
 Conversion Factors for General Use", May 2006.
 """
 
-from .unit import _BuiltinLib,Unit,Conversion
+from .unit import Unit,Conversion
 from .offsetunit import OffsetUnit,OffsetConversion
 from .prefixedunit import PrefixedUnit
 from .ummy import MFraction
 
-with _BuiltinLib():
+with Unit._builtin():
     _in = PrefixedUnit('inch','in',Conversion('m',MFraction('0.0254')),prefixes=['micro'],
                        add_symbol=True,description='unit of length')
     Unit('hand','hand',Conversion(_in,4),add_symbol=True,description='unit of length')

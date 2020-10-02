@@ -2825,7 +2825,10 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
 
 class jummy(PrettyPrinter,Dfunc):
     
-    def __init__(self,real=None,imag=None,r=None,phi=None,cov=None,unit=one):
+    show_name = False
+    
+    def __init__(self,real=None,imag=None,r=None,phi=None,cov=None,unit=one,
+                 name=None):
         """
         A jummy object represents a complex valued quantity with `gummy`
         real and imaginary components.
@@ -2849,6 +2852,7 @@ class jummy(PrettyPrinter,Dfunc):
             a conversion between the two units.  Units for `phi` must be
             dimensionless.
         """
+        self.name=name
         if isinstance(real,jummy):
             self._real = gummy(real._real)
             self._imag = gummy(real._imag)
@@ -3141,7 +3145,8 @@ class jummy(PrettyPrinter,Dfunc):
         
         return gummy._napply(func,*args,fxx=(fx,x))
             
-    def tostring(self,fmt='unicode',norm=None,nsig=None,solidus=None,mulsep=None):
+    def tostring(self,fmt='unicode',norm=None,nsig=None,solidus=None,
+                 mulsep=None,show_name=False,name=None):
         r = self._real.tostring(fmt=fmt,style='concisef',k=1,nsig=nsig,norm=norm)
         i = self._imag.tostring(fmt=fmt,style='concisef',k=1,nsig=nsig,norm=norm)
         if i.startswith('-'):

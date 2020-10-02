@@ -30,7 +30,7 @@ by the BIPM.
 
 from .gummy import gummy, _lg10
 from .ummy import MFraction
-from .unit import _BuiltinLib,Conversion,Unit
+from .unit import Conversion,Unit
 from .prefixedunit import PrefixedUnit,BinaryPrefixedUnit
 from .logunit import LogUnit,LogConversion
 from .offsetunit import OffsetUnit,OffsetConversion
@@ -61,7 +61,7 @@ _const_earth_mass = gummy(3.986004418e14,8e5)/_const_G # in kg
 _const_solar_mass = gummy(1.32712442099e20,1e10)/_const_G # in kg
 _const_jupiter_mass = _const_solar_mass/gummy(1.047348644e3,1.7e-5) # in kg
 
-with _BuiltinLib():
+with Unit._builtin():
     #SI Base units
     _m = PrefixedUnit('metre','m',additional_names=('meter',),add_symbol=True,
                       order=1,description='SI unit of length',
