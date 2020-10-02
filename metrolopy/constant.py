@@ -26,6 +26,9 @@ constant
 
 from .indexed import Indexed
 from .gummy import gummy,jummy
+from .unitulis import _mrtxt
+from importlib import import_module
+from .printer import PrettyPrinter,print_markdown,print_html,ipython_installed
 
 class GummyConstant(gummy,Indexed):
     
@@ -71,3 +74,213 @@ class GummyConstant(gummy,Indexed):
     
 class JummyConstant(jummy,Indexed):
     pass
+
+class _search_display:
+    def __init__(self,search,constants):
+        self.search = search
+        self.constants = constants
+        
+    def __repr__(self):
+        if PrettyPrinter.printer == 'ascii':
+            return search_constants(self.search,fmt='ascii',
+                                    constants=self.constants,prnt=False)
+        return search_constants(self.search,fmt='unicode',
+                                constants=self.constants,prnt=False)
+        
+    def _repr_html_(self):
+        if PrettyPrinter.printer == 'any' or PrettyPrinter.printer == 'html':
+            return search_constants(self.search,fmt='html',
+                                    constants=self.constants,prnt=False)
+        return None
+        
+    def _repr_markdown_(self):
+        if PrettyPrinter.printer == 'any' or PrettyPrinter.printer == 'latex':
+            return search_constants(self.search,fmt='latex',
+                                    constants=self.constants,prnt=False)
+        return None
+
+def search_constants(search=None,fmt=None,constants=None,prnt=True):
+    """
+    Prints a list of all loaded constant or all constants that match the search 
+    terms.
+    
+    Parameters
+    ----------
+    search: `str` or `None`, optional
+        A space separated list of search terms to case insentively match.
+        If this is omitted or set equal to `None` then a list of all loaded
+        constants will be printed.  The default is `None`.
+
+    fmt: {'html','latex','unicode','ascii',`None`},optional
+        The output format.  If `None`, then the `gummy.printer` value is used.
+        If latex output is selected, Markdown is actually used with the unit
+        symbols and conversion displayed using inline LaTeX.
+
+    constants: `list` of `str`,optional
+        A list of units to print.  If this parameter is specified the values
+        of the search and `show_all` parameters are ignored.
+
+    prnt: `bool`, optional
+        If this is `True`, the results are printed.  If it is `False` the results
+        are returned as a string.  The default is `True`.
+    """
+
+    
+    if fmt is None and prnt:
+        return _search_display(search,constants)
+
+    fmt = fmt.lower().strip()
+    if fmt == 'utf-8':
+        fmt = 'unicode'
+    
+    if constants is None:
+        while len(GummyConstant._builtins_to_import) > 0:
+            import_module(GummyConstant._builtins_to_import.pop(),
+                          GummyConstant.__module__)
+            
+        constants = set(GummyConstant._builtin_lib.values()).union(set(GummyConstant._lib.values()))
+        
+        if search is None:
+            if len(constants) == 0:
+                if prnt:
+                    print('no constants are loaded')
+                    return
+                return ''
+        else:
+            uf = set()
+            for u in constants:
+                s = set()
+                for a in u.aliases:
+                    s = s.union(set(a.lower().split()))
+                for a in u.shadowed_aliases:
+                    s = s.union(set(a.lower().split()))
+                s = s.union(u.name.lower().split())
+                s = s.union(set(u.symbol.lower().split()))
+                s = s.union(set(u.symbol.lower().split()))
+                if u.ascii_symbol is not None:
+                    s = s.union(set(u.ascii_symbol.lower().split()))
+                if u.description is not None:
+                    s = s.union(set(u.description.lower().split()))
+                        
+                s = {i.strip(',.;:()') for i in s}
+                
+                srch = search.lower().split()
+                ad = True
+                for a in srch:
+                    if a.strip(',.;') not in s:
+                        ad = False
+                        break
+                if ad:
+                    uf.add(u)
+                    
+            constants = uf
+            if len(constants) == 0:
+                if prnt:
+                    print('no constants found matching "' + search + '"')
+                    return
+                return ''
+            
+        uf = []
+        for u in constants:
+            uf.append((u.name,u))
+        constants = uf
+    else:
+        if (isinstance(constants ,str) or isinstance(constants,GummyConstant) 
+            or isinstance(constants,JummyConstant)):
+            constants  = [constants]
+        constants = ([GummyConstant.get(u) for u in constants] +
+                     [JummyConstant.get(u) for u in constants])
+                    
+        constants = [(u.name,u) for u in constants]
+
+    constants = sorted(constants,key=lambda u:u[0].lower())
+        
+    if fmt == 'latex':
+        txt = "<ul style=\"font-family: 'Times New Roman', Times, serif;font-size:1.2em\">\n"
+    elif fmt == 'html':
+        txt = "<ul>\n"
+    else:
+        txt = ''
+    for u in constants:
+        if fmt in ['latex','html']:
+            txt += "<li>"
+        try:
+            if u[0] != u[1].name:
+                txt += u[0] + ', alias for: '
+                txt += _mrtxt(u[1].name,fmt)
+            else:
+                u = u[1]
+                txt += u.name
+                ttxt = ''
+
+                    
+                if ttxt.startswith(', '):
+                    ttxt = ttxt[2:]
+                if ttxt != '':
+                    txt += ' (' + ttxt + ')'
+                    
+                aliases = u.aliases
+                if len(aliases) == 1:
+                    txt += ', alias: ' + _mrtxt(aliases.pop(),fmt)
+                if len(aliases) > 1:
+                    txt += ', aliases: '
+                    if u.short_name in aliases:
+                        txt += _mrtxt(u.short_name,fmt) + ', '
+                        aliases.remove(u.short_name)
+                    txt += _mrtxt(', '.join(sorted(aliases,key=str.lower)),fmt)
+                    
+                saliases = u.shadowed_aliases
+                if len(saliases) > 0:
+                    if len(aliases) > 0:
+                        txt += '; '
+                    else:
+                        txt += ', '
+                    if len(saliases) == 1:
+                        txt += 'shadowed alias: ' + _mrtxt(saliases.pop(),fmt)
+                    else:
+                        txt += 'shadowed aliases: ' + _mrtxt(', '.join(sorted(saliases,key=str.lower)),fmt)
+        except:
+            raise
+            txt += '??'
+                
+        if fmt == 'html' or fmt == 'latex':
+            txt += '</li>\n'
+        else:
+            txt += '\n'
+            
+    txt = txt[:-1]
+    if fmt in ['latex','html']:
+        txt += '</ul>'
+    
+    if not prnt:
+        return txt
+    
+    if fmt == 'latex' and ipython_installed:
+            print_markdown(txt)
+    elif fmt == 'html' and ipython_installed:
+            print_html(txt)
+    else:
+        print(txt)
+        
+        
+def shadowed_constants(fmt=None,prnt=True):
+    """
+    Lists any units which have a shadowed name or alias.  Units may be shadowed
+    if the user has defined a new unit with the same name or alias as an
+    existing unit.
+    
+    Parameters
+    ---------
+    fmt: {'html','latex','unicode','ascii',`None`},optional
+        The output format.  If `None`, then the `gummy.printer` value is used.
+        If latex output is selected, Markdown is actually used with the unit
+        symbols and conversion displayed using inline LaTeX.
+
+    prnt: `bool`, optional
+        If this is `True`, the results are printed.  If it is `False` the results
+        are returned as a string.  The default is `True`.
+    """
+    constants = set(GummyConstant._builtin_lib.values()).union(set(GummyConstant._lib.values()))
+    constants = [u for u in constants if len(u.shadowed_aliases) > 0]
+    return search_constants(fmt=fmt,constants=constants,prnt=prnt)
+
