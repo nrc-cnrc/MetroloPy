@@ -51,6 +51,9 @@ class NoUnitConversionFoundError(UnitError):
 class UnitLibNotFoundError(UnitLibError):
     pass
 
+class ConstantNotFoundError(ValueError):
+    pass
+
 class NoSimulatedDataError(Exception):
     pass
 

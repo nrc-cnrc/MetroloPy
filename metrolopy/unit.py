@@ -464,6 +464,9 @@ class Unit(PrettyPrinter,Indexed):
     # needed.  If a unit cannot be found the modules below are loaded in 
     # reverse order.
     _builtins_to_import = ['..usunits','..siunits','..relunits']
+    _builtin_lib = {}
+    _lib = {}
+    _open_lib = _lib
     
     _used_units = {}
         

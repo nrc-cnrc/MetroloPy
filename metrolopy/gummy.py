@@ -1774,7 +1774,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             if style == 'x' or style == 'xsim':
                 txt = v[1][0] + v[1][1] + v[1][2]
                 txt = txt.strip()
-                return txt
+                return name + txt
             elif style == 'xf' or style == 'xfsim':
                 txt = v[1][0] + v[1][1]
                 txt = txt.strip()

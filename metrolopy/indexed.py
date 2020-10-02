@@ -44,11 +44,12 @@ class Indexed:
     # to speed loading of the module, only wait to create instances until they
     # are needed.  If a instance cannot be found the modules below are loaded in 
     # reverse order.
-    _builtins_to_import = []
+    #_builtins_to_import = []
     
-    _builtin_lib = {}
-    _lib = {}
-    _open_lib = _builtin_lib
+    # define these in a subclass at the class level:
+    # _builtin_lib = {}
+    # _lib = {}
+    # _open_lib = _builtin_lib
     
     @classmethod
     def alias(cls,alias,inst):

@@ -26,11 +26,22 @@ constant
 
 from .indexed import Indexed
 from .gummy import gummy,jummy
-from .unitulis import _mrtxt
+from .unitutils import _mrtxt
 from importlib import import_module
-from .printer import PrettyPrinter,print_markdown,print_html,ipython_installed
+from .printing import PrettyPrinter,print_markdown,print_html,ipython_installed
+from .exceptions import ConstantNotFoundError
 
 class GummyConstant(gummy,Indexed):
+    
+    _builtins_to_import = ['..codata2018']
+    
+    _builtin_lib = {}
+    _lib = {}
+    _open_lib = _lib
+    
+    @classmethod
+    def _raise_not_found(cls,name):
+        raise ConstantNotFoundError('constant "' + str(name) + '" was not found')
     
     def __new__(cls,x,u=0,unit=1,dof=float('inf'),k=1,p=None,uunit=None,
                  utype=None,name=None,symbol=None,short_name=None,
@@ -51,6 +62,10 @@ class GummyConstant(gummy,Indexed):
                  ascii_symbol=None,description=None):
         if name is None:
             name = symbol
+            
+        if html_symbol is None:
+            html_symbol = '<i>' + symbol + '</i>'
+            
         gummy.__init__(self,x,u=u,unit=unit,dof=dof,k=k,p=p,uunit=uunit,
                       utype=utype,name=name)
         Indexed.__init__(self,name,symbol=symbol,short_name=short_name,
@@ -73,7 +88,19 @@ class GummyConstant(gummy,Indexed):
                                 mulsep=mulsep)
     
 class JummyConstant(jummy,Indexed):
-    pass
+    _builtins_to_import = ['..codata2018']
+    
+    _builtin_lib = {}
+    _lib = {}
+    _open_lib = _lib
+
+def constant(name):
+    ret = GummyConstant.get(name,exception=False)
+    if ret is None:
+        ret = JummyConstant.get(name,exception=False)
+    if ret is None:
+        raise ConstantNotFoundError('constant "' + str(name) + '" was not found')
+    return ret
 
 class _search_display:
     def __init__(self,search,constants):
@@ -205,40 +232,31 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
         if fmt in ['latex','html']:
             txt += "<li>"
         try:
-            if u[0] != u[1].name:
-                txt += u[0] + ', alias for: '
-                txt += _mrtxt(u[1].name,fmt)
-            else:
-                u = u[1]
-                txt += u.name
-                ttxt = ''
-
-                    
-                if ttxt.startswith(', '):
-                    ttxt = ttxt[2:]
-                if ttxt != '':
-                    txt += ' (' + ttxt + ')'
-                    
-                aliases = u.aliases
-                if len(aliases) == 1:
-                    txt += ', alias: ' + _mrtxt(aliases.pop(),fmt)
-                if len(aliases) > 1:
-                    txt += ', aliases: '
-                    if u.short_name in aliases:
-                        txt += _mrtxt(u.short_name,fmt) + ', '
-                        aliases.remove(u.short_name)
-                    txt += _mrtxt(', '.join(sorted(aliases,key=str.lower)),fmt)
-                    
-                saliases = u.shadowed_aliases
-                if len(saliases) > 0:
-                    if len(aliases) > 0:
-                        txt += '; '
-                    else:
-                        txt += ', '
-                    if len(saliases) == 1:
-                        txt += 'shadowed alias: ' + _mrtxt(saliases.pop(),fmt)
-                    else:
-                        txt += 'shadowed aliases: ' + _mrtxt(', '.join(sorted(saliases,key=str.lower)),fmt)
+            u = u[1]
+            txt += u.name + ' '
+            
+            txt += u.tostring(fmt=fmt,show_name=True)
+                
+            aliases = u.aliases
+            if len(aliases) == 1:
+                txt += ', alias: ' + _mrtxt(aliases.pop(),fmt)
+            if len(aliases) > 1:
+                txt += ', aliases: '
+                if u.short_name in aliases:
+                    txt += _mrtxt(u.short_name,fmt) + ', '
+                    aliases.remove(u.short_name)
+                txt += _mrtxt(', '.join(sorted(aliases,key=str.lower)),fmt)
+                
+            saliases = u.shadowed_aliases
+            if len(saliases) > 0:
+                if len(aliases) > 0:
+                    txt += '; '
+                else:
+                    txt += ', '
+                if len(saliases) == 1:
+                    txt += 'shadowed alias: ' + _mrtxt(saliases.pop(),fmt)
+                else:
+                    txt += 'shadowed aliases: ' + _mrtxt(', '.join(sorted(saliases,key=str.lower)),fmt)
         except:
             raise
             txt += '??'
@@ -283,4 +301,3 @@ def shadowed_constants(fmt=None,prnt=True):
     constants = set(GummyConstant._builtin_lib.values()).union(set(GummyConstant._lib.values()))
     constants = [u for u in constants if len(u.shadowed_aliases) > 0]
     return search_constants(fmt=fmt,constants=constants,prnt=prnt)
-

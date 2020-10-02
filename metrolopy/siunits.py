@@ -49,7 +49,7 @@ _const_k = MFraction('1.380649e-23') # Boltzmann constant in J/K
 _const_dalton = gummy(1.660539040e-27,0.000000020e-27) # unified atomic mass unit in kg
 
 # constants from CODATA 2014
-_const_G = gummy(6.67408e-11,0.00031e-11) # gravitational constant in m**3/kg s**2
+_const_G = gummy(6.67430e-11,0.00015e-11) # gravitational constant in m**3/kg s**2
 _const_me = gummy(9.10938356e-31,0.00000011e-31) # mass of the electron in kg
 _const_alpha = gummy(7.2973525664e-3,0.0000000017e-3) # fine structure constant
 _const_rydberg = gummy(10973731.568508,0.000065) # in 1/m
