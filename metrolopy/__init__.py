@@ -37,4 +37,5 @@ from .distributions import *
 from .exceptions import *
 from .printing import set_printer
 from .unitutils import search_units,shadowed_units,convert
-from .constant import GummyConstant,constant,search_constants,shadowed_constants
+from .constant import (GummyConstant,JummyConstant,constant,search_constants,
+                       shadowed_constants)

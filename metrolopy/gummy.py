@@ -1759,7 +1759,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                         if isinstance(self.name,str) and len(self.name) > 1 and fmt == 'latex':
                             name = norm(name.strip())
                         elif isinstance(self.name,str) and len(self.name) == 1 and fmt == 'html':
-                            name = '<i>' +self.name.strip() + '</i>'
+                            name = '<i>' + self.name.strip() + '</i>'
                         else:
                             name = str(self.name).strip()
                     else:
@@ -2825,7 +2825,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
 
 class jummy(PrettyPrinter,Dfunc):
     
-    show_name = False
+    show_name = True
     
     def __init__(self,real=None,imag=None,r=None,phi=None,cov=None,unit=one,
                  name=None):
@@ -2860,6 +2860,9 @@ class jummy(PrettyPrinter,Dfunc):
         
         if cov is not None:
             cov = np.asarray(cov)
+        
+        if unit is not one:
+            unit = Unit.unit(unit)
         
         if real is not None:
             if r is not None or phi is not None:
@@ -3146,7 +3149,16 @@ class jummy(PrettyPrinter,Dfunc):
         return gummy._napply(func,*args,fxx=(fx,x))
             
     def tostring(self,fmt='unicode',norm=None,nsig=None,solidus=None,
-                 mulsep=None,show_name=False,name=None):
+                 mulsep=None,show_name=None,name=None):
+        if name is None:
+            name = self.name
+        if name is None:
+            name = ''
+        else:
+            name = str(name).strip()
+        if name != '':
+            name += ' = '
+            
         r = self._real.tostring(fmt=fmt,style='concisef',k=1,nsig=nsig,norm=norm)
         i = self._imag.tostring(fmt=fmt,style='concisef',k=1,nsig=nsig,norm=norm)
         if i.startswith('-'):
@@ -3155,10 +3167,13 @@ class jummy(PrettyPrinter,Dfunc):
         else:
             sign = ' + '
             
-        i = 'j' + i
+        if fmt == 'html':
+            i = '<i>j</i>' + i
+        else:
+            i = 'j' + i
         
         if self._real.unit is one and self._imag.unit is one:
-            return r + sign + i
+            return name + r + sign + i
         
         #if self._real.unit is self._imag.unit:
             #txt = '(' + r + sign + i + ')'
@@ -3166,7 +3181,7 @@ class jummy(PrettyPrinter,Dfunc):
                                        #mulsep=mulsep,norm=norm)
             #return txt
             
-        txt = r
+        txt = name + r
         txt += self._real.tostring(fmt=fmt,style='xunit',solidus=solidus,
                                    mulsep=mulsep,norm=norm)
         txt += sign + i

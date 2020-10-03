@@ -112,16 +112,7 @@ class Indexed:
     
     @staticmethod
     def format_latex(text):
-        if text == '':
-            return ''
-        text = text.replace(' ','\\,')
-        if text.startswith('\t\t'):
-            return text[2:]
-        if text.startswith('\\'):
-            return text
-        if text.startswith('\t'):
-            return '\t\\mathrm{' + text[1:] + '}'
-        return '\\mathrm{' + text + '}'
+        return text
     
     def __init__(self,name,symbol=None,short_name=None,add_symbol=False,
                  html_symbol=None,latex_symbol=None,ascii_symbol=None,

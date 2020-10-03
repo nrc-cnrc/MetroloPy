@@ -585,6 +585,19 @@ class Unit(PrettyPrinter,Indexed):
     @classmethod
     def _raise_not_found(cls,name):
         raise UnitNotFoundError('unit "' + str(name) + '" was not found')
+        
+    @staticmethod
+    def format_latex(text):
+        if text == '':
+            return ''
+        text = text.replace(' ','\\,')
+        if text.startswith('\t\t'):
+            return text[2:]
+        if text.startswith('\\'):
+            return text
+        if text.startswith('\t'):
+            return '\t\\mathrm{' + text[1:] + '}'
+        return '\\mathrm{' + text + '}'
               
     _gconv = None
     _conversion = None

@@ -30,6 +30,7 @@ from .unitutils import _mrtxt
 from importlib import import_module
 from .printing import PrettyPrinter,print_markdown,print_html,ipython_installed
 from .exceptions import ConstantNotFoundError
+from .printing import _latex_math
 
 class GummyConstant(gummy,Indexed):
     
@@ -93,9 +94,56 @@ class JummyConstant(jummy,Indexed):
     _builtin_lib = {}
     _lib = {}
     _open_lib = _lib
+    
+    @classmethod
+    def _raise_not_found(cls,name):
+        raise ConstantNotFoundError('constant "' + str(name) + '" was not found')
+    
+    def __new__(cls,real=None,imag=None,r=None,phi=None,cov=None,unit=1,
+                 name=None,symbol=None,short_name=None,add_symbol=False,
+                 html_symbol=None,latex_symbol=None,ascii_symbol=None,
+                 description=None):
+        if symbol is None:
+            ret = jummy.__new__(jummy,real=real,imag=imag,r=r,phi=phi,cov=cov,
+                                unit=unit,name=name)
+            ret.__init__(real=real,imag=imag,r=r,phi=phi,cov=cov,unit=unit,
+                         name=name)
+            return ret
+        
+        return super().__new__(cls)
+    
+    def __init__(self,real=None,imag=None,r=None,phi=None,cov=None,unit=1,
+                 name=None,symbol=None,short_name=None,add_symbol=False,
+                 html_symbol=None,latex_symbol=None,ascii_symbol=None,
+                 description=None):
+        if name is None:
+            name = symbol
+            
+        if html_symbol is None:
+            html_symbol = '<i>' + symbol + '</i>'
+            
+        jummy.__init__(self,real=real,imag=imag,r=r,phi=phi,cov=cov,unit=1,
+                       name=name)
+        Indexed.__init__(self,name,symbol=symbol,short_name=short_name,
+                         add_symbol=add_symbol,html_symbol=html_symbol,
+                         latex_symbol=latex_symbol,ascii_symbol=ascii_symbol,
+                         description=description)
+    
+    def tostring(self,fmt='unicode',norm=None,nsig=None,solidus=None,
+                 mulsep=None,show_name=False,name=None,**kwds):
+                     
+        if name is None:
+            name = Indexed.tostring(self,fmt)
+        
+        return super().tostring(fmt=fmt,norm=norm,nsig=nsig,solidus=solidus,
+                                mulsep=mulsep,show_name=show_name,name=name)
 
 def constant(name):
-    ret = GummyConstant.get(name,exception=False)
+    if isinstance(name,GummyConstant) or isinstance(name,JummyConstant):
+        return name
+    ret = JummyConstant._lib.get(name)
+    if ret is None:
+        ret = GummyConstant.get(name,exception=False)
     if ret is None:
         ret = JummyConstant.get(name,exception=False)
     if ret is None:
@@ -165,7 +213,11 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
             import_module(GummyConstant._builtins_to_import.pop(),
                           GummyConstant.__module__)
             
-        constants = set(GummyConstant._builtin_lib.values()).union(set(GummyConstant._lib.values()))
+        constants = {id(c):c for c in GummyConstant._builtin_lib.values()}
+        constants.update({id(c):c for c in GummyConstant._lib.values()})
+        constants.update({id(c):c for c in JummyConstant._builtin_lib.values()})
+        constants.update({id(c):c for c in JummyConstant._lib.values()})
+        constants = constants.values()
         
         if search is None:
             if len(constants) == 0:
@@ -212,11 +264,10 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
             uf.append((u.name,u))
         constants = uf
     else:
-        if (isinstance(constants ,str) or isinstance(constants,GummyConstant) 
+        if (isinstance(constants,str) or isinstance(constants,GummyConstant) 
             or isinstance(constants,JummyConstant)):
             constants  = [constants]
-        constants = ([GummyConstant.get(u) for u in constants] +
-                     [JummyConstant.get(u) for u in constants])
+        constants = ([constant(u) for u in constants])
                     
         constants = [(u.name,u) for u in constants]
 
@@ -235,7 +286,10 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
             u = u[1]
             txt += u.name + ' '
             
-            txt += u.tostring(fmt=fmt,show_name=True)
+            if fmt == 'latex':
+                txt += _latex_math(u.tostring(fmt=fmt,show_name=True))
+            else:
+                txt += u.tostring(fmt=fmt,show_name=True)
                 
             aliases = u.aliases
             if len(aliases) == 1:
@@ -298,6 +352,10 @@ def shadowed_constants(fmt=None,prnt=True):
         If this is `True`, the results are printed.  If it is `False` the results
         are returned as a string.  The default is `True`.
     """
-    constants = set(GummyConstant._builtin_lib.values()).union(set(GummyConstant._lib.values()))
+    constants = {id(c):c for c in GummyConstant._builtin_lib.values()}
+    constants.update({id(c):c for c in GummyConstant._lib.values()})
+    constants.update({id(c):c for c in JummyConstant._builtin_lib.values()})
+    constants.update({id(c):c for c in JummyConstant._lib.values()})
+    constants = constants.values()
     constants = [u for u in constants if len(u.shadowed_aliases) > 0]
     return search_constants(fmt=fmt,constants=constants,prnt=prnt)
