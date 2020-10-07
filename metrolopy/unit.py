@@ -1501,6 +1501,11 @@ class Quantity(PrettyPrinter):
         return (self.value,self.unit)
         
     def _bop(self,v,f):
+        if issubclass(type(v),type(self)):
+            make =  v._make
+        else:
+            make =  self._make
+            
         if isinstance(v,Quantity):
             vunit = v._unit
             v = v.value
@@ -1510,23 +1515,12 @@ class Quantity(PrettyPrinter):
             aconv = False
             
         r,runit = f(self.value,vunit,v,aconv)
-        
-        if issubclass(type(v),type(self)):
-            make =  v._make
-        else:
-            make =  self._make
             
         return make(r,unit=runit)
     
     def _rbop(self,v,f):
-        r,runit = f(self.value,one,v,False)
-         
-        if issubclass(type(v),type(self)):
-            make =  v._make
-        else:
-            make =  self._make
-        
-        return make(r,unit=runit)
+        r,runit = f(self.value,one,v,False)        
+        return self._make(r,unit=runit)
         
     def __add__(self, v):
         return self._bop(v,self.unit._add)
