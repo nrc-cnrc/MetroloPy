@@ -52,45 +52,45 @@ def _f_around(x,n=0):
 
 def _f_add(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._add(x2)
+        return x1.__add__(x2)
     else:
-        return x2._radd(x1)
+        return x2.__radd__(x1)
     
 def _f_sub(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._sub(x2)
+        return x1.__sub__(x2)
     else:
-        return x2._rsub(x1)
+        return x2.__rsub__(x1)
 
 def _f_mul(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._mul(x2)
+        return x1.__mul__(x2)
     else:
-        return x2._rmul(x1)
+        return x2.__rmul__(x1)
     
 def _f_div(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._truediv(x2)
+        return x1.__truediv__(x2)
     else:
-        return x2._rtruediv(x1)
+        return x2.__rtruediv__(x1)
     
 def _f_fdiv(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._floordiv(x2)
+        return x1.__floordiv__(x2)
     else:
-        return x2._rfloordiv(x1)
+        return x2.__rfloordiv__(x1)
     
 def _f_pow(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._pow(x2)
+        return x1.__pow__(x2)
     else:
-        return x2._rpow(x1)
+        return x2.__rpow__(x1)
     
 def _f_mod(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._mod(x2)
+        return x1.__mod__(x2)
     else:
-        return x2._rmod(x1)
+        return x2.__rmod__(x1)
 
 
 ddict = {np.sin: np.cos,
@@ -156,7 +156,7 @@ fdict = {np.angle:  lambda x: x.angle(),
         }
 
 
-try_fconvert = True
+try_fconvert = False
 def _call(f,*x):
     if try_fconvert:
         try:
@@ -336,6 +336,7 @@ class Dfunc:
             except KeyError:
                 return None
             
+    """
     def __add__(self,b):
         return _broadcast(self._add,b)
     
@@ -377,3 +378,4 @@ class Dfunc:
             
     def __rpow__(self,b):
         return _broadcast(self._rpow,b)
+    """

@@ -513,59 +513,59 @@ class Unit(PrettyPrinter,Indexed):
     
     def _add(self,s,vunit,v,aconv):
         if self is vunit:
-            return (s + v,self)
+            return (np.add(s,v),self)
         
         if not vunit.linear:
             return vunit._radd(v,self,s,not aconv)
         
         if aconv:
             s = self.convert(s,vunit)
-            return (s + v,vunit)
+            return (np.add(s,v),vunit)
         else:
             v = vunit.convert(v,self)
-            return (s + v,self)
+            return (np.add(s,v),self)
         
     def _radd(self,s,vunit,v,aconv):
         if self is vunit:
-            return (v + s,self)
+            return (np.add(v,s),self)
         
         if not vunit.linear:
             return vunit._add(v,self,s,not aconv)
         
         if aconv:
             s = self.convert(s,vunit)
-            return (v + s,vunit)
+            return (np.add(v,s),vunit)
         else:
             v = vunit.convert(v,self)
-            return (v + s,self)
+            return (np.add(v,s),self)
         
     def _sub(self,s,vunit,v,aconv):
         if self is vunit:
-            return (s - v,self)
+            return (np.subtract(s,v),self)
         
         if not vunit.linear:
             return vunit._rsub(v,self,s,not aconv)
         
         if aconv:
             s = self.convert(s,vunit)
-            return (s - v,vunit)
+            return (np.subtract(s,v),vunit)
         else:
             v = vunit.convert(v,self)
-            return (s - v,self)
+            return (np.subtract(s,v),self)
         
     def _rsub(self,s,vunit,v,aconv):
         if self is vunit:
-            return (v - s,self)
+            return (np.subtract(v,s),self)
         
         if not vunit.linear:
             return vunit._sub(v,self,s,not aconv)
         
         if aconv:
             s = self.convert(s,vunit)
-            return (v - s,vunit)
+            return (np.subtract(v,s),vunit)
         else:
             v = vunit.convert(v,self)
-            return (v - s,self)
+            return (np.subtract(v,s),self)
         
     def _mul_cancel(self,b):
         # self*b canceling units when possible
@@ -586,7 +586,7 @@ class Unit(PrettyPrinter,Indexed):
         else:
             un,c = bunit._mul_cancel(self)
         
-        return ((a*b)*c,un)
+        return ((np.multiply(a,b))*c,un)
     
     def _rmul(self,a,bunit,b,aconv):
         if isinstance(b,Unit):
@@ -601,7 +601,7 @@ class Unit(PrettyPrinter,Indexed):
         else:
             un,c = bunit._mul_cancel(self)
         
-        return ((b*a)*c,un)
+        return ((np.multiply(b,a))*c,un)
         
     def _div_cancel(self,b):
         # self/b canceling units when possible        
@@ -628,7 +628,7 @@ class Unit(PrettyPrinter,Indexed):
         else:
             un,c = bunit._rdiv_cancel(self)
         
-        return ((a/b)*c,un)
+        return ((np.divide(a,b))*c,un)
     
     def _rtruediv(self,a,bunit,b,aconv):
         if isinstance(b,Unit):
@@ -640,7 +640,35 @@ class Unit(PrettyPrinter,Indexed):
         else:
             un,c = bunit._div_cancel(self)
         
-        return ((b/a)*c,un)
+        return ((np.divide(b,a))*c,un)
+    
+            
+    def _floordiv(self,a,bunit,b,aconv):
+        if isinstance(b,Unit):
+            bunit = b
+            b = 1
+            
+        if not bunit.linear:
+            return bunit._rtruediv(b,self,a,not aconv)
+
+        if aconv:
+            un,c = self._div_cancel(bunit)
+        else:
+            un,c = bunit._rdiv_cancel(self)
+        
+        return ((np.floor_divide(a,b))*c,un)
+    
+    def _rfloordiv(self,a,bunit,b,aconv):
+        if isinstance(b,Unit):
+            bunit = b
+            b = 1
+            
+        if aconv:
+            un,c = self._rdiv_cancel(bunit)
+        else:
+            un,c = bunit._div_cancel(self)
+        
+        return ((np.floor_divide(b,a))*c,un)
         
     def _mod(self,a,bunit,b,aconv):
         if isinstance(b,Unit):
@@ -648,13 +676,13 @@ class Unit(PrettyPrinter,Indexed):
             b = 1
             
         if self is bunit:
-            return (a % b,self)
+            return (np.mod(a,b),self)
         if not bunit.linear:
             return bunit._rmod(b,self,a,not aconv)
         try:
             if aconv:
                 return (self.convert(a,bunit) % b,bunit)
-            return (a % bunit.convert(b,self),self)
+            return (np.mod(a,bunit.convert(b,self)),self)
         except NoUnitConversionFoundError:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be added to a quantity with unit ' + bunit.tostring())
 
@@ -667,8 +695,8 @@ class Unit(PrettyPrinter,Indexed):
             return (self._nummy_rmod(a,b),self)
         try:
             if aconv:
-                return (b % self.convert(a,bunit),bunit)
-            return (bunit.convert(b,self) % a,self)
+                return (np.mod(b,self.convert(a,bunit)),bunit)
+            return (np.mod(bunit.convert(b,self),a),self)
         except NoUnitConversionFoundError:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be added to a quantity with unit ' + bunit.tostring())
 
@@ -689,7 +717,7 @@ class Unit(PrettyPrinter,Indexed):
             except NoUnitConversionFoundError:
                 raise IncompatibleUnitsError('the exponent is not dimensionless')
                 
-        return (a**b,self**b)
+        return (np.power(a,b),self**b)
         #bb = float(b)
         #if bb != b:
             #try:
@@ -720,7 +748,7 @@ class Unit(PrettyPrinter,Indexed):
             except NoUnitConversionFoundError:
                 raise IncompatibleUnitsError('the exponent is not dimensionless')
                 
-        return (b**a,bunit**a)
+        return (np.power(b,a),bunit**a)
         #aa = float(a)
         #if aa != a:
             #try:
@@ -1512,7 +1540,7 @@ class Quantity(PrettyPrinter):
     def __rsub__(self, v):
         return self._rbop(v,self.unit._rsub)
     
-    def __nul__(self, v):
+    def __mul__(self, v):
         return self._bop(v,self.unit._mul)
                 
     def __rmul__(self, v):
@@ -1523,6 +1551,12 @@ class Quantity(PrettyPrinter):
                 
     def __rtruediv__(self, v):
         return self._rbop(v,self.unit._rtruediv)
+    
+    def __floordiv__(self, v):
+        return self._bop(v,self.unit._floordiv)
+                
+    def __rfloordiv__(self, v):
+        return self._rbop(v,self.unit._rfloordiv)
     
     def __pow__(self, v):
         return self._bop(v,self.unit._pow)

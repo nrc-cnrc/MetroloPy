@@ -547,6 +547,10 @@ class gummy(Quantity,metaclass=MetaGummy):
         and returns a float.
         """
         return self._value._u
+    
+    @property
+    def dof(self):
+        return self.value.dof
         
     @property
     def U(self):
@@ -725,6 +729,15 @@ class gummy(Quantity,metaclass=MetaGummy):
         value.
         """
         return self._value.cisim
+    
+            
+            
+    @property
+    def name(self):
+        return self.value.name
+    @name.setter
+    def name(self,v):
+        self.value.name = str(v)
             
     @property
     def uunit(self):
@@ -1009,6 +1022,48 @@ class gummy(Quantity,metaclass=MetaGummy):
         if text in ['usim','ufsim','xsim','xfsim','xf','uf','xunit','uunit']:
             return text
         raise ValueError('style ' + str(text) + ' is not recognized')
+        
+    @property
+    def nsig(self):
+        return self.value.nsig
+    @nsig.setter
+    def nsig(self,v):
+        self.value.nsig = v
+        
+    @property
+    def thousand_spaces(self):
+        return self.value.thousand_spaces
+    @thousand_spaces.setter
+    def thousand_spaces(self,v):
+        self.value.thousand_spaces = bool(v)
+        
+    @property
+    def sci_notation(self):
+        return self.value.sci_notation
+    @sci_notation.setter
+    def sci_notation(self,v):
+        self.value.sci_notation = v
+        
+    @property
+    def sci_notation_high(self):
+        return self.value.sci_notation_high
+    @sci_notation_high.setter
+    def sci_notation_high(self,v):
+        self.value.sci_notation_high = v
+        
+    @property
+    def sci_notation_low(self):
+        return self.value.sci_notation_low
+    @sci_notation_low.setter
+    def sci_notation_low(self,v):
+        self.value.sci_notation_low = v
+        
+    @property
+    def max_digits(self):
+        return self.value.max_digits
+    @max_digits.setter
+    def max_digits(self,v):
+        self.value.max_digits = v
         
             
     def copy(self,formatting=True,tofloat=False):
@@ -2040,7 +2095,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                 if len(dstr) > 3 and len(dstr) > len(fstr) and len(ffstr) < (self.max_digits + 10):
                     return ('x',(str(x),'',xsym))
             if xexp is None:
-                return ('x',(self._format_mantissa(fmt,x,None),'',xsym))
+                return ('x',(self.value._format_mantissa(fmt,x,None),'',xsym))
             if xsig is not None:
                 if xabs > 10**(xexp+1) - 10**(xexp-xsig)/2:
                     xexp += 1
@@ -2053,13 +2108,13 @@ class gummy(Quantity,metaclass=MetaGummy):
                     x = x*10**(-xexp)
                 if xsig is not None:
                     xsig = xsig - 1
-                return ('x',(self._format_mantissa(fmt,x,xsig),
+                return ('x',(self.value._format_mantissa(fmt,x,xsig),
                          gummy._format_exp(fmt,xexp),
                          xsym))
             else:
                 if xsig is not None:
                     xsig = -xexp + xsig - 1
-                return ('x',(self._format_mantissa(fmt,x,xsig),'',xsym))
+                return ('x',(self.value._format_mantissa(fmt,x,xsig),'',xsym))
         else:
             # lgadd makes sure the sig figs are displayed correctly if a leading
             # 9 is rounded to a 10.
@@ -2109,12 +2164,12 @@ class gummy(Quantity,metaclass=MetaGummy):
                         (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation)):
                     x = x*10**(-xexp)
-                    xret = (self._format_mantissa(fmt,x,xexp-uuexp),
+                    xret = (self.value._format_mantissa(fmt,x,xexp-uuexp),
                             gummy._format_exp(fmt,xexp),
                             xsym)
                     return tuple([style,xret] + uret)
                 else:
-                    xret = (self._format_mantissa(fmt,x,-uuexp),'',xsym)
+                    xret = (self.value._format_mantissa(fmt,x,-uuexp),'',xsym)
                     return tuple([style,xret] + uret)
             elif ugummy and style in ['pmsim','pmsimi']:
                 usm = self.Usim
@@ -2127,12 +2182,12 @@ class gummy(Quantity,metaclass=MetaGummy):
                         (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation)):
                     x = x*10**(-xexp)
-                    xret = (self._format_mantissa(fmt,x,xexp-uuexp),
+                    xret = (self.value._format_mantissa(fmt,x,xexp-uuexp),
                             gummy._format_exp(fmt,xexp),
                             xsym)
                     return (style,xret,uret0,uret1)
                 else:
-                    xret = (self._format_mantissa(fmt,x,-uuexp),'',xsym)
+                    xret = (self.value._format_mantissa(fmt,x,-uuexp),'',xsym)
                     return (style,xret,uret0,uret1)
             else:
                 if sim:
@@ -2168,24 +2223,24 @@ class gummy(Quantity,metaclass=MetaGummy):
                 if (((self.sci_notation is None and 
                         (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation) or psn):
-                    xtxt = self._format_mantissa(fmt,x*10**(-xexp),xexp-uuexp)
+                    xtxt = self.value._format_mantissa(fmt,x*10**(-xexp),xexp-uuexp)
                     xetxt = gummy._format_exp(fmt,xexp)
                     xret = (xtxt,xetxt,xsym)
                 else:
-                    xtxt = self._format_mantissa(fmt,x,-uuexp)
+                    xtxt = self.value._format_mantissa(fmt,x,-uuexp)
                     xret = (xtxt,'',xsym)
                     
                 uret = []
                 if style == 'concise':
                     for ue in ub:
-                        utxt = self._format_mantissa(fmt,ue*10**(-uexp),nsig-1,parenth=True)
+                        utxt = self.value._format_mantissa(fmt,ue*10**(-uexp),nsig-1,parenth=True)
                         uret.append((utxt,'',xsym))
                 elif style in ['pmsim','pmsimi']:
                     if (((self.sci_notation is None and 
                             (uexp > self.sci_notation_high or uexp < self.sci_notation_low)) 
                             or self.sci_notation)):
-                        utxt0 = self._format_mantissa(fmt,self.Usim[0]*10**(-uexp),uexp-uuexp)
-                        utxt1 = self._format_mantissa(fmt,self.Usim[1]*10**(-uexp),uexp-uuexp)
+                        utxt0 = self.value._format_mantissa(fmt,self.Usim[0]*10**(-uexp),uexp-uuexp)
+                        utxt1 = self.value._format_mantissa(fmt,self.Usim[1]*10**(-uexp),uexp-uuexp)
                         uetxt = gummy._format_exp(fmt,uexp)
                         if utxt0 == utxt1:
                             if style == 'pmsim':
@@ -2197,8 +2252,8 @@ class gummy(Quantity,metaclass=MetaGummy):
                             uret.append((utxt0,uetxt,xsym))
                             uret.append((utxt1,uetxt,xsym))
                     else:
-                        utxt0 = self._format_mantissa(fmt,self.Usim[0],-uuexp)
-                        utxt1 = self._format_mantissa(fmt,self.Usim[1],-uuexp)
+                        utxt0 = self.value._format_mantissa(fmt,self.Usim[0],-uuexp)
+                        utxt1 = self.value._format_mantissa(fmt,self.Usim[1],-uuexp)
                         if utxt0 == utxt1:
                             if style == 'pmsim':
                                 style = 'pm'
@@ -2216,11 +2271,11 @@ class gummy(Quantity,metaclass=MetaGummy):
                     if (((self.sci_notation is None and 
                             (x0exp > self.sci_notation_high or x0exp < self.sci_notation_low)) 
                             or self.sci_notation)):
-                        ci0 = self._format_mantissa(fmt,self.cisim[0]*10**(-x0exp),x0exp-uuexp)
+                        ci0 = self.value._format_mantissa(fmt,self.cisim[0]*10**(-x0exp),x0exp-uuexp)
                         xe0txt = gummy._format_exp(fmt,x0exp)
                         uret.append((ci0,xe0txt,xsym))                 
                     else:
-                        uret.append((self._format_mantissa(fmt,self.cisim[0],-uuexp),'',xsym))
+                        uret.append((self.value._format_mantissa(fmt,self.cisim[0],-uuexp),'',xsym))
                     
                     if self.cisim[1] != 0 and not isinf(self.cisim[1]) and not isnan(self.cisim[1]):
                         x1exp = _floor(_lg10(abs(self.cisim[1])))
@@ -2229,11 +2284,11 @@ class gummy(Quantity,metaclass=MetaGummy):
                     if (((self.sci_notation is None and 
                             (x1exp > self.sci_notation_high or x1exp < self.sci_notation_low)) 
                             or self.sci_notation)):
-                        ci1 = self._format_mantissa(fmt,self.cisim[1]*10**(-x1exp),x1exp-uuexp)
+                        ci1 = self.value._format_mantissa(fmt,self.cisim[1]*10**(-x1exp),x1exp-uuexp)
                         xe1txt = gummy._format_exp(fmt,x1exp)
                         uret.append((ci1,xe1txt,xsym))
                     else:
-                        uret.append((self._format_mantissa(fmt,self.cisim[1],-uuexp),'',xsym))
+                        uret.append((self.value._format_mantissa(fmt,self.cisim[1],-uuexp),'',xsym))
                 else:
                     if style == 'ueq':
                         uxp = uexp - nsig + 1
@@ -2243,12 +2298,12 @@ class gummy(Quantity,metaclass=MetaGummy):
                             (uexp > self.sci_notation_high or uexp < self.sci_notation_low)) 
                             or self.sci_notation)):
                         for ue in ub:
-                            utxt = self._format_mantissa(fmt,ue*10**(-uexp),uexp-uxp)
+                            utxt = self.value._format_mantissa(fmt,ue*10**(-uexp),uexp-uxp)
                             uetxt = gummy._format_exp(fmt,uexp)
                             uret.append((utxt,uetxt,xsym))
                     else:
                         for ue in ub:
-                            utxt = self._format_mantissa(fmt,ue,-uxp)
+                            utxt = self.value._format_mantissa(fmt,ue,-uxp)
                             uret.append((utxt,'',xsym))
                     
                 return tuple([style,xret]+uret)

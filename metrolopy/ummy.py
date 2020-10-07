@@ -766,7 +766,7 @@ class ummy(Dfunc):
             if self._ref is not b._ref:
                 self._check_cor()   
                 
-    def _add(self,b):
+    def __add__(self,b):
         if not isinstance(b,ummy):
             return type(self)(self._x + b,self._u,dof=self._ref,utype=self._refs)
     
@@ -796,10 +796,10 @@ class ummy(Dfunc):
         
         return r
     
-    def _radd(self,b):
+    def __radd__(self,b):
         return type(self)(self._x + b,self._u,dof=self._ref,utype=self._refs)
     
-    def _sub(self,b):           
+    def __sub__(self,b):           
         if not isinstance(b,ummy):
             return type(self)(self._x - b,self._u,dof=self._ref,utype=self._refs)
             
@@ -829,11 +829,11 @@ class ummy(Dfunc):
 
         return r
     
-    def _rsub(self,b):
+    def __rsub__(self,b):
         r = type(self)(b - self._x,self._u,dof=self._ref,utype=-self._refs)
         return r
     
-    def _mul(self,b):
+    def __mul__(self,b):
         if not isinstance(b,ummy):
             refs = -self._refs if b < 0 else self._refs
             return type(self)(self._x*b,abs(self._u*b),dof=self._ref,utype=refs)
@@ -868,11 +868,11 @@ class ummy(Dfunc):
 
         return r
     
-    def _rmul(self,b):
+    def __rmul__(self,b):
         refs = -self._refs if b < 0 else self._refs
         return type(self)(self._x*b,abs(self._u*b),dof=self._ref,utype=refs)
     
-    def _truediv(self,b):   
+    def __truediv__(self,b):   
         if not isinstance(b,ummy):
             if b == 0:
                 raise ZeroDivisionError('division by zero')
@@ -923,7 +923,7 @@ class ummy(Dfunc):
 
         return r
     
-    def _rtruediv(self,b):
+    def __rtruediv__(self,b):
         if self._x == 0:
             raise ZeroDivisionError('division by zero')
         else:
@@ -936,7 +936,7 @@ class ummy(Dfunc):
         refs = self._refs if b < 0 else -self._refs
         return type(self)(x,u,dof=self._ref,utype=refs)
     
-    def _pow(self,b):
+    def __pow__(self,b):
         if isinstance(b,ummy) and b._u == 0:
             b = b._x
         if not isinstance(b,ummy):
@@ -999,7 +999,7 @@ class ummy(Dfunc):
 
         return r
     
-    def _rpow(self,b):
+    def __rpow__(self,b):
         if b == 0:
             return type(self)(0)
         if (isinstance(self._x,Integral) and 
@@ -1030,18 +1030,18 @@ class ummy(Dfunc):
     def _nprnd(self,f):
         return type(self)(f(self._x))
         
-    def _floordiv(self,b):
+    def __floordiv__(self,b):
         return self._truediv(b)._nprnd(_floor)
         
-    def _rfloordiv(self,b):
+    def __rfloordiv__(self,b):
         return self._rtruediv(b)._nprnd(_floor)
         
-    def _mod(self,b):
+    def __mod__(self,b):
         ret = ummy._apply(lambda x1,x2: x1%x2,
                           lambda x1,x2: (1, _sign(x2)*abs(x1//x2)),self,b)
         return type(self)(ret)
         
-    def _rmod(self,b):
+    def __rmod__(self,b):
         ret = ummy._apply(lambda x1,x2: x1%x2,
                           lambda x1,x2: (1, _sign(x2)*abs(x1//x2)),b,self)
         return type(self)(ret)

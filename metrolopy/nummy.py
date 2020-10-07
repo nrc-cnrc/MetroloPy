@@ -577,17 +577,17 @@ class nummy(ummy):
                 
         return sqrt(u)
         
-    def _add(self,b):
-        return _bop(super()._add(b),np.add,self,b)
+    def __add__(self,b):
+        return _bop(super().__add__(b),np.add,self,b)
         
-    def _radd(self,b):
-        return _rbop(super()._radd(b),np.add,self,b)
+    def __radd__(self,b):
+        return _rbop(super().__radd__(b),np.add,self,b)
         
-    def _sub(self,b):
-        return _bop(super()._sub(b),np.subtract,self,b)
+    def __sub__(self,b):
+        return _bop(super().__sub__(b),np.subtract,self,b)
         
-    def _rsub(self,b):
-        return _rbop(super()._rsub(b),np.subtract,self,b)
+    def __rsub__(self,b):
+        return _rbop(super().__rsub__(b),np.subtract,self,b)
         
     def _mul(self,b):
         return _bop(super()._mul(b),np.multiply,self,b)
