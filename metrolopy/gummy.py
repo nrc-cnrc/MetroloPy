@@ -31,14 +31,13 @@ module.  The gummy object, in turn, inherits from the nummy object.
 """
 
 import numpy as np
-from .ummy import ummy, _isscalar, _floor
+from .ummy import ummy,immy,_isscalar,_floor,_format_exp
 from .nummy import nummy
 from .exceptions import IncompatibleUnitsError,NoUnitConversionFoundError
 from .unit import Unit,one,Quantity
 from .distributions import Distribution,MultivariateDistribution
 from .pmethod import _Pmthd
-from .printing import PrettyPrinter,MetaPrettyPrinter
-from .dfunc import Dfunc
+from .printing import MetaPrettyPrinter
 from .dfunc import _f_darctan2 as darctan2
 from math import isnan, isinf,log10
 from fractions import Fraction
@@ -2109,7 +2108,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                 if xsig is not None:
                     xsig = xsig - 1
                 return ('x',(self.value._format_mantissa(fmt,x,xsig),
-                         gummy._format_exp(fmt,xexp),
+                         _format_exp(fmt,xexp),
                          xsym))
             else:
                 if xsig is not None:
@@ -2165,7 +2164,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                         or self.sci_notation)):
                     x = x*10**(-xexp)
                     xret = (self.value._format_mantissa(fmt,x,xexp-uuexp),
-                            gummy._format_exp(fmt,xexp),
+                            _format_exp(fmt,xexp),
                             xsym)
                     return tuple([style,xret] + uret)
                 else:
@@ -2183,7 +2182,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                         or self.sci_notation)):
                     x = x*10**(-xexp)
                     xret = (self.value._format_mantissa(fmt,x,xexp-uuexp),
-                            gummy._format_exp(fmt,xexp),
+                            _format_exp(fmt,xexp),
                             xsym)
                     return (style,xret,uret0,uret1)
                 else:
@@ -2224,7 +2223,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                         (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation) or psn):
                     xtxt = self.value._format_mantissa(fmt,x*10**(-xexp),xexp-uuexp)
-                    xetxt = gummy._format_exp(fmt,xexp)
+                    xetxt = _format_exp(fmt,xexp)
                     xret = (xtxt,xetxt,xsym)
                 else:
                     xtxt = self.value._format_mantissa(fmt,x,-uuexp)
@@ -2241,7 +2240,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                             or self.sci_notation)):
                         utxt0 = self.value._format_mantissa(fmt,self.Usim[0]*10**(-uexp),uexp-uuexp)
                         utxt1 = self.value._format_mantissa(fmt,self.Usim[1]*10**(-uexp),uexp-uuexp)
-                        uetxt = gummy._format_exp(fmt,uexp)
+                        uetxt = _format_exp(fmt,uexp)
                         if utxt0 == utxt1:
                             if style == 'pmsim':
                                 style = 'pm'
@@ -2272,7 +2271,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                             (x0exp > self.sci_notation_high or x0exp < self.sci_notation_low)) 
                             or self.sci_notation)):
                         ci0 = self.value._format_mantissa(fmt,self.cisim[0]*10**(-x0exp),x0exp-uuexp)
-                        xe0txt = gummy._format_exp(fmt,x0exp)
+                        xe0txt = _format_exp(fmt,x0exp)
                         uret.append((ci0,xe0txt,xsym))                 
                     else:
                         uret.append((self.value._format_mantissa(fmt,self.cisim[0],-uuexp),'',xsym))
@@ -2285,7 +2284,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                             (x1exp > self.sci_notation_high or x1exp < self.sci_notation_low)) 
                             or self.sci_notation)):
                         ci1 = self.value._format_mantissa(fmt,self.cisim[1]*10**(-x1exp),x1exp-uuexp)
-                        xe1txt = gummy._format_exp(fmt,x1exp)
+                        xe1txt = _format_exp(fmt,x1exp)
                         uret.append((ci1,xe1txt,xsym))
                     else:
                         uret.append((self.value._format_mantissa(fmt,self.cisim[1],-uuexp),'',xsym))
@@ -2299,7 +2298,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                             or self.sci_notation)):
                         for ue in ub:
                             utxt = self.value._format_mantissa(fmt,ue*10**(-uexp),uexp-uxp)
-                            uetxt = gummy._format_exp(fmt,uexp)
+                            uetxt = _format_exp(fmt,uexp)
                             uret.append((utxt,uetxt,xsym))
                     else:
                         for ue in ub:
@@ -2307,19 +2306,6 @@ class gummy(Quantity,metaclass=MetaGummy):
                             uret.append((utxt,'',xsym))
                     
                 return tuple([style,xret]+uret)
-        
-    @staticmethod       
-    def _format_exp(fmt,xp):
-        if fmt == 'html':
-            ex = ' &times; 10<sup>' + str(xp) + '</sup>'
-        elif fmt == 'latex':
-            ex = r' \times\,10^{' + str(xp) + '}'
-        else:
-            ex = 'e'
-            if xp > 0:
-                ex += '+'
-            ex += str(xp)
-        return ex
         
     @staticmethod
     def _add_unit_sp(fmt,unit):
@@ -2383,9 +2369,15 @@ class gummy(Quantity,metaclass=MetaGummy):
         
     @staticmethod
     def _set_covariance_matrix(gummys, matrix):
-        nummy._set_covariance_matrix(gummys, matrix)
+        nummys = [g.value for g in gummys]
+        nummy._set_covariance_matrix(nummys, matrix)
         for g in gummys:
             g._set_U(None,None)
+            
+    @staticmethod
+    def _set_correlation_matrix(gummys, matrix):
+        nummys = [g.value for g in gummys]
+        nummy._set_correlation_matrix(nummys, matrix)
         
     @classmethod
     def create(cls,x,u=0,unit=one,dof=float('inf'),k=1,p=None,uunit=None,
@@ -2436,9 +2428,10 @@ class gummy(Quantity,metaclass=MetaGummy):
         """
         
         if isinstance(x,MultivariateDistribution):
-            ret = super(gummy,cls).create(x,u=u,dof=dof,name=name,
+            ret = nummy.create(x,u=u,dof=dof,name=name,
                        correlation_matrix=correlation_matrix,
                        covariance_matrix=covariance_matrix)
+            ret = [gummy(r) for r in ret]
                 
             if unit is not one:
                 if isinstance(unit,str) or isinstance(unit,Unit):
@@ -2659,7 +2652,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         return type(self)(self._unit.zero(),unit=self._unit)     
     
 
-class jummy(PrettyPrinter,Dfunc):
+class jummy(immy):
     
     show_name = True
     
@@ -2807,21 +2800,6 @@ class jummy(PrettyPrinter,Dfunc):
                         raise ValueError('cov must be a 2 x 2 matrix')
             self._real = r*gummy.apply(np.cos,lambda x: -np.sin(x),phi)
             self._imag = r*gummy.apply(np.sin,np.cos,phi)
-            
-    @property
-    def x(self):
-        """
-        Returns ``complex(jummy.real.x,jummy.imag.x)``, read-only
-        """
-        return complex(self._real.x,self._imag.x)
-    
-    @property
-    def cov(self):
-        """
-        Returns the variance-covariance matrix between `jummy.real` and
-        `jummy.imag`, read-only.
-        """
-        return gummy.covariance_matrix([self._real,self._imag])
     
     @property
     def unit(self):
@@ -2847,29 +2825,6 @@ class jummy(PrettyPrinter,Dfunc):
         except:
             self._real.unit = u
             self._imag.unit = u
-    
-    @property
-    def real(self):
-        """
-        read-only
-        Returns a `gummy` representing the real part of the value.
-        """
-        return self._real
-    
-    @property
-    def imag(self):
-        """
-        Returns a `gummy` representing the imaginary part of the value.
-        """
-        return self._imag
-    
-    def conjugate(self):
-        """
-        Returns the (`jummy` valued) complex conjugate.
-        """
-        r = self.copy(formatting=False)
-        r._imag = -r._imag
-        return r
     
     def angle(self):
         """
@@ -3024,99 +2979,7 @@ class jummy(PrettyPrinter,Dfunc):
         txt += self._imag.tostring(fmt=fmt,style='xunit',solidus=solidus,
                                    mulsep=mulsep,norm=norm)
         return txt
-            
-    def _add(self,v):
-        r = self._real + v.real
-        i = self._imag + v.imag
-        return jummy(real=r,imag=i)
-    
-    def _radd(self,v):
-        return self._add(v)
-    
-    def _sub(self,v):
-        r = self._real - v.real
-        i = self._imag - v.imag
-        return jummy(real=r,imag=i)
-    
-    def _rsub(self,v):
-        r = v.real - self._real
-        i = v.imag - self._imag
-        return jummy(real=r,imag=i)
-    
-    def _mul(self,v):
-        r = self._real*v.real - self._imag*v.imag
-        i = self._imag*v.real + self._real*v.imag
-        return jummy(real=r,imag=i)
-    
-    def _rmul(self,v):
-        return self._mul(v)
-    
-    def _truediv(self,v):
-        h2 = v.real*v.real + v.imag*v.real
-        r = (self._real*v.real + self._imag*v.imag)/h2
-        i = (self._imag*v.real - self._real*v.imag)/h2
-        return jummy(real=r,imag=i)
-    
-    def _rtruediv(self,v):
-        h2 = self._real*self._real + self._imag*self._imag
-        r = (v.real*self._real + v.imag*self._imag)/h2
-        i = (v.imag*self._real - v.real*self._imag)/h2
-        return jummy(real=r,imag=i)
-        
-    def _pow(self,v):
-        h2 = self._real*self._real + self._imag*self._imag
-        a = gummy.apply(np.arctan2,darctan2,self.imag,self.real)
-        c = (h2**v.real/2)
-        t = v.real*a
-        if v.imag != 0:
-            t += 0.5*v.imag*gummy.apply(np.log,lambda x: 1/x,h2)
-            c *= gummy.apply(np.exp,np.exp,-v.imag*a)
-        r = c*gummy.apply(np.sin,lambda x: -np.sin(x),t)
-        i = c*gummy.apply(np.sin,np.cos,t)
-        return jummy(real=r,imag=i)
-    
-    def _rpow(self,v):
-        h2 = v.real*v.real + v.imag*v.imag
-        a = gummy.apply(np.arctan2,darctan2,v.imag,v.real)
-        c = (h2**self.real/2)*gummy.apply(np.exp,np.exp,-self.imag*a)
-        t = self.real*a + 0.5*self.imag*gummy.apply(np.log,lambda x: 1/x,h2)
-        r = c*gummy.apply(np.sin,lambda x: -np.sin(x),t)
-        i = c*gummy.apply(np.sin,np.cos,t)
-        return jummy(real=r,imag=i)
-    
-    def _nprnd(self,f):
-        self._real = self._real._nprnd(f)
-        self._imag = self._imag._nprnd(f)
-        
-    def _floordiv(self,v):
-        h2 = v.real*v.real + v.imag*v.real
-        r = (self._real*v.real + self._imag*v.imag)//h2
-        i = (self._imag*v.real - self._real*v.imag)//h2
-        return jummy(real=r,imag=i)
-        
-    def _rfloordiv(self,v):
-        h2 = self._real*self._real + self._imag*self._imag
-        r = (v.real*self._real + v.imag*self._imag)//h2
-        i = (v.imag*self._real - v.real*self._imag)//h2
-        return jummy(real=r,imag=i)
-        
-    def _mod(self,v):
-        raise TypeError("can't mod jummy")
-    
-    def _rmod(self,v):
-        raise TypeError("can't mod jummy")
-    
-    def __abs__(self):
-        return (self._real**2 + self._imag**2)**0.5
-    
-    def __complex__(self):
-        return complex(self._real.x,self._imag.x)
-    
-    def __float__(self):
-        raise TypeError("can't convert jummy to float")
-        
-    def __int__(self):
-        raise TypeError("can't convert jummy to int")
+
 
 def _applyc(*args):
     # used by gummy and jummy in _apply and _napply

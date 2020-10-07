@@ -38,6 +38,7 @@ from numbers import Rational,Integral,Real,Complex
 from .printing import PrettyPrinter
 from .dfunc import Dfunc
 from .exceptions import UncertiantyPrecisionWarning
+from .unit import Unit,Quantity
 
 try:
     from mpmath import mp,mpf,rational
@@ -124,8 +125,20 @@ def _sign(x):
         return -1
     return 1
 
+def _format_exp(fmt,xp):
+    if fmt == 'html':
+        ex = ' &times; 10<sup>' + str(xp) + '</sup>'
+    elif fmt == 'latex':
+        ex = r' \times\,10^{' + str(xp) + '}'
+    else:
+        ex = 'e'
+        if xp > 0:
+            ex += '+'
+        ex += str(xp)
+    return ex
 
-class ummy(Dfunc):
+
+class ummy(Dfunc,PrettyPrinter):
     max_dof = 10000 # any larger dof will be rounded to float('inf')
     nsig = 2 # The number of digits to quote the uncertainty to
     thousand_spaces = True # If true spaces will be placed between groups of three digits.
@@ -261,7 +274,7 @@ class ummy(Dfunc):
     @property
     def finfo(self):
         if self._finfo is None:
-            self._finfo = _getfinfo(self._x)
+            self._finfo = _getfinfo(self._x)[0]
         return self._finfo
         
     @staticmethod
@@ -450,7 +463,7 @@ class ummy(Dfunc):
             
         return ret
         
-    def __str__(self):
+    def tostring(self,fmt='unicode',**kwds):
         x = float(self._x)
         try:
             xabs = abs(x)
@@ -468,15 +481,12 @@ class ummy(Dfunc):
                 else:
                     if (((self.sci_notation is None and (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation) ):
-                        xtxt = self._format_mantissa('unicode',x*10**(-xexp),
+                        xtxt = self._format_mantissa(fmt,x*10**(-xexp),
                                                      self.finfo.precision)
-                        etxt = 'e'
-                        if xexp >= 0:
-                            etxt += '+'
-                        etxt += str(xexp)
+                        etxt = _format_exp(fmt,xexp)
                         return xtxt + etxt
                     else:
-                        return self._format_mantissa('unicode',x,
+                        return self._format_mantissa(fmt,x,
                                                      self.finfo.precision)
                     
             uabs = abs(u)
@@ -492,21 +502,19 @@ class ummy(Dfunc):
             
             if (((self.sci_notation is None and (xp > self.sci_notation_high or xp < self.sci_notation_low)) 
                         or self.sci_notation) or psn or (xexp is not None and (uexp > xexp and xexp == 0))):
-                xtxt = self._format_mantissa('unicode',x*10**(-xp),-uexp+xp+self.nsig-1)
-                etxt = 'e'
-                if xp >= 0:
-                    etxt += '+'
-                etxt += str(xp)
+                xtxt = self._format_mantissa(fmt,x*10**(-xp),-uexp+xp+self.nsig-1)
+                etxt = _format_exp(fmt,xp)
             else:
-                xtxt = self._format_mantissa('unicode',x,-uexp+self.nsig-1)
+                xtxt = self._format_mantissa(fmt,x,-uexp+self.nsig-1)
                 etxt = ''
                 
             if self.nsig <= 0:
                 return xtxt + etxt
     
-            utxt = self._format_mantissa('unicode',u*10**(-uexp),self.nsig-1,parenth=True)
+            utxt = self._format_mantissa(fmt,u*10**(-uexp),self.nsig-1,parenth=True)
             return xtxt + '(' + utxt + ')' + etxt
         except:
+            raise
             try:
                 return(str(self.x) + '{' + str(self.u) + '}' + '??')
             except:
@@ -514,9 +522,6 @@ class ummy(Dfunc):
                     return(str(self.x) + '{??}')
                 except:
                     return('??')
-                
-    def __repr__(self):
-        return self.__str__()
           
     def _format_mantissa(self,fmt,x,sig,parenth=False):            
         try:
@@ -767,6 +772,12 @@ class ummy(Dfunc):
                 self._check_cor()   
                 
     def __add__(self,b):
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__radd__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self) + b
+        
         if not isinstance(b,ummy):
             return type(self)(self._x + b,self._u,dof=self._ref,utype=self._refs)
     
@@ -797,9 +808,18 @@ class ummy(Dfunc):
         return r
     
     def __radd__(self,b):
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b + immy(self)
+        
         return type(self)(self._x + b,self._u,dof=self._ref,utype=self._refs)
     
-    def __sub__(self,b):           
+    def __sub__(self,b):          
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rsub__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self) - b
+        
         if not isinstance(b,ummy):
             return type(self)(self._x - b,self._u,dof=self._ref,utype=self._refs)
             
@@ -830,10 +850,19 @@ class ummy(Dfunc):
         return r
     
     def __rsub__(self,b):
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b - immy(self)
+        
         r = type(self)(b - self._x,self._u,dof=self._ref,utype=-self._refs)
         return r
     
     def __mul__(self,b):
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rmul__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self)*b
+        
         if not isinstance(b,ummy):
             refs = -self._refs if b < 0 else self._refs
             return type(self)(self._x*b,abs(self._u*b),dof=self._ref,utype=refs)
@@ -869,10 +898,19 @@ class ummy(Dfunc):
         return r
     
     def __rmul__(self,b):
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b*immy(self)
+        
         refs = -self._refs if b < 0 else self._refs
         return type(self)(self._x*b,abs(self._u*b),dof=self._ref,utype=refs)
     
-    def __truediv__(self,b):   
+    def __truediv__(self,b):  
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rtruediv__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self)/b
+        
         if not isinstance(b,ummy):
             if b == 0:
                 raise ZeroDivisionError('division by zero')
@@ -924,6 +962,9 @@ class ummy(Dfunc):
         return r
     
     def __rtruediv__(self,b):
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b/immy(self)
+        
         if self._x == 0:
             raise ZeroDivisionError('division by zero')
         else:
@@ -937,6 +978,12 @@ class ummy(Dfunc):
         return type(self)(x,u,dof=self._ref,utype=refs)
     
     def __pow__(self,b):
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rpow__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self)**b
+        
         if isinstance(b,ummy) and b._u == 0:
             b = b._x
         if not isinstance(b,ummy):
@@ -1000,6 +1047,9 @@ class ummy(Dfunc):
         return r
     
     def __rpow__(self,b):
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b**immy(self)
+        
         if b == 0:
             return type(self)(0)
         if (isinstance(self._x,Integral) and 
@@ -1031,12 +1081,27 @@ class ummy(Dfunc):
         return type(self)(f(self._x))
         
     def __floordiv__(self,b):
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rmfloordiv__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self) // b
+        
         return self._truediv(b)._nprnd(_floor)
         
     def __rfloordiv__(self,b):
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b // immy(self)
+        
         return self._rtruediv(b)._nprnd(_floor)
         
     def __mod__(self,b):
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rmod__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self) % b
+        
         ret = ummy._apply(lambda x1,x2: x1%x2,
                           lambda x1,x2: (1, _sign(x2)*abs(x1//x2)),self,b)
         return type(self)(ret)
@@ -1708,45 +1773,45 @@ class immy(PrettyPrinter,Dfunc):
 
         return r + sign + i
             
-    def _add(self,v):
-        r = self._eal + v.real
+    def __add__(self,v):
+        r = self.real + v.real
         i = self.imag + v.imag
         return type(self)(real=r,imag=i)
     
-    def _radd(self,v):
+    def __radd__(self,v):
         return self._add(v)
     
-    def _sub(self,v):
+    def __sub__(self,v):
         r = self.real - v.real
         i = self.imag - v.imag
         return type(self)(real=r,imag=i)
     
-    def _rsub(self,v):
+    def __rsub__(self,v):
         r = v.real - self.real
         i = v.imag - self.imag
         return type(self)(real=r,imag=i)
     
-    def _mul(self,v):
+    def __mul__(self,v):
         r = self.real*v.real - self.imag*v.imag
         i = self.imag*v.real + self.real*v.imag
         return type(self)(real=r,imag=i)
     
-    def _rmul(self,v):
+    def __rmul__(self,v):
         return self._mul(v)
     
-    def _truediv(self,v):
+    def __truediv__(self,v):
         h2 = v.real*v.real + v.imag*v.real
         r = (self.real*v.real + self.imag*v.imag)/h2
         i = (self.imag*v.real - self.real*v.imag)/h2
         return type(self)(real=r,imag=i)
     
-    def _rtruediv(self,v):
+    def __rtruediv__(self,v):
         h2 = self._real*self.real + self._imag*self.imag
         r = (v.real*self.real + v.imag*self.imag)/h2
         i = (v.imag*self.real - v.real*self.imag)/h2
         return type(self)(real=r,imag=i)
         
-    def _pow(self,v):
+    def __pow__(self,v):
         h2 = self.real*self.real + self.imag*self.imag
         a = np.arctan2(self.imag,self.real)
         c = h2**v.real/2
@@ -1758,7 +1823,7 @@ class immy(PrettyPrinter,Dfunc):
         i = c*np.sin(t)
         return type(self)(real=r,imag=i)
     
-    def _rpow(self,v):
+    def __rpow__(self,v):
         h2 = v.real*v.real + v.imag*v.imag
         a = np.arctan(v.imag,v.real)
         c = (h2**self.real/2)*np.exp(-self.imag*a)
@@ -1771,22 +1836,22 @@ class immy(PrettyPrinter,Dfunc):
         self._real = self.real._nprnd(f)
         self._imag = self.imag._nprnd(f)
         
-    def _floordiv(self,v):
+    def __floordiv__(self,v):
         h2 = v.real*v.real + v.imag*v.real
         r = (self.real*v.real + self.imag*v.imag)//h2
         i = (self.imag*v.real - self.real*v.imag)//h2
         return type(self)(real=r,imag=i)
         
-    def _rfloordiv(self,v):
+    def __rfloordiv__(self,v):
         h2 = self._real*self._real + self._imag*self._imag
         r = (v.real*self.real + v.imag*self.imag)//h2
         i = (v.imag*self.real - v.real*self._mag)//h2
         return type(self)(real=r,imag=i)
         
-    def _mod(self,v):
+    def __mod__(self,v):
         raise TypeError("can't mod immy")
     
-    def _rmod(self,v):
+    def __rmod__(self,v):
         raise TypeError("can't mod immy")
     
     def __abs__(self):

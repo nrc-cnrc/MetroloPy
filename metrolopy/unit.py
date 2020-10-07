@@ -204,6 +204,7 @@ class Unit(PrettyPrinter,Indexed):
                    np.subtract: lambda x,y: _f_bop(Unit._sub,Unit._rsub,x,y),
                    np.multiply: lambda x,y: _f_bop(Unit._mul,Unit._rmul,x,y),
                    np.divide: lambda x,y: _f_bop(Unit._truediv,Unit._rtruediv,x,y),
+                   np.floor_divide: lambda x,y: _f_bop(Unit._floordiv,Unit._rfloordiv,x,y),
                    np.mod: lambda x,y: _f_bop(Unit._mod,Unit._rmod,x,y),
                    np.power: lambda x,y: _f_bop(Unit._pow,Unit._rpow,x,y)}
         
