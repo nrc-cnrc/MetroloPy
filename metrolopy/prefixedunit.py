@@ -83,7 +83,7 @@ class PrefixedUnit(Unit):
                  add_symbol=False,html_symbol=None,latex_symbol=None,
                  ascii_symbol=None,linear=True,description=None,order=-1,
                  prefixes=None,base_prefix=None,base_description=None,**kwds):
-        self.linear=linear
+        self._linear=linear
         if base_description is not None:
             self.description=base_description
         else:

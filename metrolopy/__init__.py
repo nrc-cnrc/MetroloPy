@@ -23,7 +23,7 @@
 from .version import __version__
 
 from .gummy import gummy,jummy
-from .unit import Unit,Conversion,one
+from .unit import Unit,Conversion,one,Quantity,QuantityArray,unit
 from .ummy import ummy,MFraction
 from .budget import Budget
 from .prefixedunit import PrefixedUnit,BinaryPrefixedUnit

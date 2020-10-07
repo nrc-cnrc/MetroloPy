@@ -31,10 +31,7 @@ from .distributions import (Distribution,TDist,NormalDist,MultivariateElement,
                             MultivariateDistribution,MultiNormalDist,MultiTDist)
 from math import isinf,isfinite,isnan,sqrt
 
-def _bop(f,npf,s,b):
-    if not nummy._mcpropagate:
-        return f
-        
+def _bop(f,npf,s,b):    
     if isinstance(b,nummy):
         f._dist = Distribution.apply(npf,s._dist,b._dist)
     else:
@@ -42,116 +39,18 @@ def _bop(f,npf,s,b):
     return f
 
 def _rbop(f,npf,s,b):
-    if not nummy._mcpropagate:
-        return f
-    
     f._dist = Distribution.apply(npf,b,s._dist)
     return f
 
-def _uop(f,npf,s):
-    if not nummy._mcpropagate:
-        return f
-        
+def _uop(f,npf,s):        
     f._dist = Distribution.apply(npf,s._dist)
     return f
 
-
-class MetaNummy(type):
-    # Use a metaclass to define some "classproperties" for nummy   
-    @property
-    def mcpropagate(cls):
-        """
-        Setting this property to `False` turns of the code for Monte-Carlo
-        uncertainty propagation.  This property should only be set once, before
-        any gummy instances are created.  Turning `mcpropagate` off then on again
-        may have unpredictable results.
-        """
-        return nummy._mcpropagate
-    @mcpropagate.setter
-    def mcpropagate(cls,value):
-        nummy._mcpropagate = bool(value)
-        
-    @property
-    def cimethod(cls):
-        """
-        str in {'shortest', 'symmetric'}
-        
-        Get or set the method for calculating the confidence interval from 
-        Monte-Carlo data.  If this property is set at the class level, it will
-        change the default `cimethod` value for new gummys but will not affect
-        gummys that have already been created.
-        
-        Can be set either to the string 'shortest' or the string 'symmetric'.
-        This property gets or sets the method for calculating confidence
-        intervals from Monte-Carlo data.  
-        
-        If it is set to 'shortest', the confidence interval will be taken to be 
-        the shortest interval that includes the desired fraction of the probability 
-        distribution.  
-        
-        If it is set to 'symmetric', then the confidence interval will be set so 
-        that, for n Monte-Carlo samples and a coverage probability of `p`, then
-        `n`*(1-`p`)/2 samples lie below the lower limit of the confidence interval
-        and the same number of samples lie above the upper limit of the confidence 
-        interval.
-        """
-        return nummy._cimethod
-    @cimethod.setter
-    def cimethod(cls,value):
-        value = value.lower().strip()
-        if value not in ['shortest','symmetric']:
-            raise ValueError('cimethod ' + str(value) + ' is not recognized')
-        nummy._cimethod = value
-        
-    @property
-    def bayesian(cls):
-        """
-        `bool`
-        
-        Read/write at the class level, but read-only at the instance level.
-        The default value is `False`; this should only be changed once at the
-        beginning of the session.  This property affects how the level of 
-        confidence `p` (sometimes called coverage probability) of an expanded
-        uncertainty is related to the coverage factor `k` for a gummy based on
-        data with finite degrees of freedom.
-
-        Standard uncertainties are often based on the standard deviation of a set
-        of measurements (and the assumption that these measurements are drawn
-        from a normally distributed population).  Traditionally (e.g. the GUM
-        2008 edition) the standard uncertainty is taken to be the standard
-        deviation of the mean (s/sqrt(n), where s is the sample standard deviation
-        and n is the number of measurements).  However there is some "extra
-        uncertainty" because the sample standard devation not exactly equal to
-        the population standard deviation.  This is taken into account by using
-        a Student's t distribution to calculate the expanded uncertainty.  However
-        it has been pointed out, by those who advocate a Bayesian point of view,
-        that the probability distribution for the measurand here is best described
-        by a shifted and scaled Student's t distribution.  So the standard
-        uncertainty should be the standard deviation of this distribution which
-        is s*sqrt{(n-1)/[n*(n-3)]}.  Thus
-
-        u(bayesian) = [dof/(dof - 2)]*u(traditional)
-
-        where dof = n - 1 and the "extra uncertainty" is incorporated directly
-        into the standard uncertainty.
-        
-        Example
-        -------
-        >>> gummy.bayesian = True
-        >>> g = gummy(1,0.03,dof=5)
-        >>> g.bayesian
-        True
-        """
-        return nummy._bayesian
-    @bayesian.setter
-    def bayesian(cls,v):
-        nummy._bayesian = bool(v)
     
-class nummy(ummy,metaclass=MetaNummy):
+class nummy(ummy):
     #  This class is not intended to be used directly and was created to contain
     #  the code that the gummy object uses for Monte-Carlo uncertainty propagation.
 
-    _mcpropagate = True
     _cimethod = 'shortest'
     _bayesian = False # see the MetaNummy bayesian property
     
@@ -443,9 +342,7 @@ class nummy(ummy,metaclass=MetaNummy):
     @classmethod
     def _apply(cls,function,derivative,*args,fxdx=None):
         # called from ummpy.apply()
-        if not nummy._mcpropagate:
-            return super(nummy,cls)._apply(function,derivative,*args,fxdx=fxdx)
-            
+
         a = list(args)
         for i,e in enumerate(args):
             if isinstance(e,nummy):
@@ -460,8 +357,6 @@ class nummy(ummy,metaclass=MetaNummy):
     @classmethod
     def _napply(cls,function,*args,fxx=None):
         # called from ummpy.napply()
-        if not nummy._mcpropagate:
-            return super(nummy,cls)._napply(function,*args,fxx=fxx)
             
         a = list(args)
         for i,e in enumerate(args):
@@ -714,8 +609,7 @@ class nummy(ummy,metaclass=MetaNummy):
     
     def _nprnd(self,f):
         ret = super()._nprnd(f)
-        if nummy._mcpropagate:
-            ret._dist = Distribution.apply(f,self._dist)
+        ret._dist = Distribution.apply(f,self._dist)
         return ret
         
     def _mod(self,b):

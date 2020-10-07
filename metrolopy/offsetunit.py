@@ -36,10 +36,10 @@ class OffsetConversion(NonlinearConversion):
         self._unit = unit
         self.offset = offset
         
-    def _to(self,g):
+    def to(self,g):
         return g + self.offset
     
-    def _frm(self,g):
+    def frm(self,g):
         return g - self.offset
         
     def copy(self):
@@ -88,23 +88,23 @@ class OffsetUnit(NonlinearUnit):
     def _add(self,a,bunit,b,aconv):
         if bunit is not self.interval_unit:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may only be added to its interval unit counterpart')
-        return (self._nummy_add(a,b),self)
+        return (a + b,self)
     
     def _radd(self,a,bunit,b,aconv):
         if bunit is not self.interval_unit:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may only be added to its interval unit counterpart')
-        return (self._nummy_radd(a,b),self)
+        return (b + a,self)
     
     def _sub(self,a,bunit,b,aconv):
         if bunit is self:
-            return (self._nummy_sub(a,b),self.interval_unit)
+            return (a - b,self.interval_unit)
         if bunit is self.interval_unit:
-            return (self._nummy_sub(a,b),self)
+            return (a - b,self)
         raise IncompatibleUnitsError('a quantity with unit ' + bunit.tostring() + ' may not be subtracted from a quantity with unit ' + self.tostring() + '; automatic conversion is disabled with offset unit instances')
     
     def _rsub(self,a,bunit,b,aconv):
         if bunit is self:
-            return (self._nummy_rsub(a,b),self.interval_unit)
+            return (b - a,self.interval_unit)
         raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be subtracted from a quantity with unit ' + bunit.tostring() + '; automatic conversion is disabled with offset unit instances')
 
         

@@ -31,11 +31,10 @@ module.  The gummy object, in turn, inherits from the nummy object.
 """
 
 import numpy as np
-
 from .ummy import ummy, _isscalar, _floor
-from .nummy import nummy,MetaNummy
+from .nummy import nummy
 from .exceptions import IncompatibleUnitsError,NoUnitConversionFoundError
-from .unit import Unit,one
+from .unit import Unit,one,Quantity
 from .distributions import Distribution,MultivariateDistribution
 from .pmethod import _Pmthd
 from .printing import PrettyPrinter,MetaPrettyPrinter
@@ -68,8 +67,84 @@ def _lg10(x):
             return log10(float(x)) # in case x is a fraction.Fraction
     
     
-class MetaGummy(MetaPrettyPrinter,MetaNummy):
+class MetaGummy(MetaPrettyPrinter):
     # A metaclass to define some "classproperties" for gummy
+    
+    @property
+    def cimethod(cls):
+        """
+        str in {'shortest', 'symmetric'}
+        
+        Get or set the method for calculating the confidence interval from 
+        Monte-Carlo data.  If this property is set at the class level, it will
+        change the default `cimethod` value for new gummys but will not affect
+        gummys that have already been created.
+        
+        Can be set either to the string 'shortest' or the string 'symmetric'.
+        This property gets or sets the method for calculating confidence
+        intervals from Monte-Carlo data.  
+        
+        If it is set to 'shortest', the confidence interval will be taken to be 
+        the shortest interval that includes the desired fraction of the probability 
+        distribution.  
+        
+        If it is set to 'symmetric', then the confidence interval will be set so 
+        that, for n Monte-Carlo samples and a coverage probability of `p`, then
+        `n`*(1-`p`)/2 samples lie below the lower limit of the confidence interval
+        and the same number of samples lie above the upper limit of the confidence 
+        interval.
+        """
+        return nummy._cimethod
+    @cimethod.setter
+    def cimethod(cls,value):
+        value = value.lower().strip()
+        if value not in ['shortest','symmetric']:
+            raise ValueError('cimethod ' + str(value) + ' is not recognized')
+        nummy._cimethod = value
+        
+    @property
+    def bayesian(cls):
+        """
+        `bool`
+        
+        Read/write at the class level, but read-only at the instance level.
+        The default value is `False`; this should only be changed once at the
+        beginning of the session.  This property affects how the level of 
+        confidence `p` (sometimes called coverage probability) of an expanded
+        uncertainty is related to the coverage factor `k` for a gummy based on
+        data with finite degrees of freedom.
+
+        Standard uncertainties are often based on the standard deviation of a set
+        of measurements (and the assumption that these measurements are drawn
+        from a normally distributed population).  Traditionally (e.g. the GUM
+        2008 edition) the standard uncertainty is taken to be the standard
+        deviation of the mean (s/sqrt(n), where s is the sample standard deviation
+        and n is the number of measurements).  However there is some "extra
+        uncertainty" because the sample standard devation not exactly equal to
+        the population standard deviation.  This is taken into account by using
+        a Student's t distribution to calculate the expanded uncertainty.  However
+        it has been pointed out, by those who advocate a Bayesian point of view,
+        that the probability distribution for the measurand here is best described
+        by a shifted and scaled Student's t distribution.  So the standard
+        uncertainty should be the standard deviation of this distribution which
+        is s*sqrt{(n-1)/[n*(n-3)]}.  Thus
+
+        u(bayesian) = [dof/(dof - 2)]*u(traditional)
+
+        where dof = n - 1 and the "extra uncertainty" is incorporated directly
+        into the standard uncertainty.
+        
+        Example
+        -------
+        >>> gummy.bayesian = True
+        >>> g = gummy(1,0.03,dof=5)
+        >>> g.bayesian
+        True
+        """
+        return nummy._bayesian
+    @bayesian.setter
+    def bayesian(cls,v):
+        nummy._bayesian = bool(v)
         
     @property
     def style(cls):
@@ -194,8 +269,64 @@ class MetaGummy(MetaPrettyPrinter,MetaNummy):
             v = 'loc'
         gummy._p_method = _Pmthd(v)
         
+    @property
+    def max_dof(cls):
+        return ummy.max_dof
+    @max_dof.setter
+    def max_dof(cls,v):
+        ummy.max_dof = v
+        
+    @property
+    def nsig(cls):
+        return ummy.nsig
+    @nsig.setter
+    def nsig(cls,v):
+        ummy.nsig = v
+        
+    @property
+    def thousand_spaces(cls):
+        return ummy.thousand_spaces
+    @thousand_spaces.setter
+    def thousand_spaces(cls,v):
+        ummy.thousand_spaces = bool(v)
+        
+    @property
+    def sci_notation(cls):
+        return ummy.sci_notation
+    @sci_notation.setter
+    def sci_notation(cls,v):
+        ummy.sci_notation = v
+        
+    @property
+    def sci_notation_high(cls):
+        return ummy.sci_notation_high
+    @sci_notation_high.setter
+    def sci_notation_high(cls,v):
+        ummy.sci_notation_high = v
+        
+    @property
+    def sci_notation_low(cls):
+        return ummy.sci_notation_low
+    @sci_notation_low.setter
+    def sci_notation_low(cls,v):
+        ummy.sci_notation_low = v
     
-class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
+    @property
+    def rounding_u(cls):
+        return ummy.rounding_u
+    @rounding_u.setter
+    def rounding_u(cls,v):
+        ummy.rounding_u = bool(v)
+        
+    @property
+    def max_digits(cls):
+        return ummy.max_digits
+    @max_digits.setter
+    def max_digits(cls,v):
+        ummy.max_digits = v
+        
+    
+class gummy(Quantity,metaclass=MetaGummy):
     """
     A gummy object represents a numerical value with an uncertainty and (or) a
     unit.  They can be used in place of float values in Python expressions and 
@@ -300,8 +431,6 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
     _p_method = _Pmthd('loc')
     _Ubr = None
     
-    autoconvert = False # See the c property.
-    
     _style = 'concise' # see the MeteGummy style property
     
     exception_on_fmt_error = False  # if False, an exception while trying to 
@@ -310,17 +439,36 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
     
     def __init__(self,x,u=0,unit=one,dof=float('inf'),k=1,p=None,uunit=None,
                  utype=None,name=None):
+        self._old = None
+        self.autoconvert = False
+        
+        if isinstance(x,gummy):
+            self._value = x._value.copy()
+            self._unit = x._unit
+            self._U = self._value._u
+            self._k = 1
+            self._pm = None
+            self._set_k = True
+            return
+        
+        if unit is not one:
+            unit = Unit.unit(unit)
+        self._unit = unit
+        
         if isinstance(x,ummy):
-            self._copy(x,self,formatting=False)
+            self._value = nummy(x)
+            self._U = self._value._u
+            self._k = 1
+            self._pm = None
+            self._set_k = True
             return
         
         if isinstance(u,gummy):
             uunit = u.unit
             u = u.x
-        
-        if unit is not one:
-            unit = Unit.unit(unit)
-        self._unit = unit
+        elif isinstance(u,Quantity):
+            uunit = u.unit
+            u = u.value
         
         if uunit is not None:
             if u != 0:
@@ -343,14 +491,12 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             self._k = k
             self._pm = None
             self._set_k = True
-        
-        self._old = None
                 
         if isinstance(x,Distribution):
-            super().__init__(x,utype=utype,name=name)
+            self._value = nummy(x,utype=utype,name=name)
         else:
             if uunit is not None and u != 0:
-                U = gummy(u,unit=uunit)
+                U = Quantity(u,unit=uunit)
                 # Now try to find the uncertainty in the x units
                 if not unit.linear:
                     u = unit.from_uunit(u,uunit)
@@ -358,17 +504,17 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     if not uunit.is_dimensionless:
                         raise NoUnitConversionFoundError('no conversion found for unit ' + str(uunit) + ' to one')
                     if uunit is one:
-                        u = U.convert(unit)._x
+                        u = U.convert(unit).value
                     else:
-                        u = abs(x)*U.convert(one)._x
+                        u = abs(x)*U.convert(one).value
                 else:
                     try:
-                        u = U.convert(unit)._x
+                        u = U.convert(unit).value
                     except NoUnitConversionFoundError:
                         # If no conversion was found for uunit to unit, see
                         # if unit can be converted to one.  In this case the u
                         # passed to the intializer was a relative uncertainty.
-                        u = abs(x)*U.convert(one)._x
+                        u = abs(x)*U.convert(one).value
                         
             if self._k != 1:
                 try:
@@ -376,10 +522,13 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                 except:
                     u = u/type(u)(self._k)
                     
-            super().__init__(x,u=u,dof=dof,utype=utype,name=name)
+            self._value = nummy(x,u=u,dof=dof,utype=utype,name=name)
             
-        self._U = None
-        self._set_U(self._k,uunit)
+        if k == 1 and uunit is None:
+            self._U = u
+        else:
+            self._U = None
+            self._set_U(self._k,uunit)
                         
     @property
     def x(self):
@@ -387,7 +536,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         Gets the gummy's value.  Usually this is the mean of the probability
         distribution.  This property is read-only and returns a float.
         """
-        return self._x
+        return self._value._x
         
     @property
     def u(self):
@@ -397,7 +546,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         sometimes called the "1-sigma" uncertainty.  The This property is read-only
         and returns a float.
         """
-        return self._u
+        return self._value._u
         
     @property
     def U(self):
@@ -445,13 +594,13 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         2.0000 m +/- 0.050%
         """
         if self._Ubr is not None:
-            if isinstance(self._Ubr[0],gummy):
-                return [i.x for i in self._Ubr]
+            if isinstance(self._Ubr[0],Quantity):
+                return [i._value for i in self._Ubr]
             else:
                 return self._Ubr
             
-        if isinstance(self._U,gummy):
-            return self._U.x
+        if isinstance(self._U,Quantity):
+            return self._U._value
         return self._U
     
     def _set_U(self,k=None,unit=None):
@@ -468,23 +617,23 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         # value of _U
         
         if u is None:
-            u = self._u
+            u = self._value._u
             
         if unit is None:
-            if isinstance(self._U,gummy):
+            if isinstance(self._U,Quantity):
                 unit = self._U._unit
             
         if u == 0:
             if unit is None:
                 return 0
             else:
-                return gummy(0,unit=unit)
+                return Quantity(0,unit=unit)
         
         if isinf(u) or isnan(u):
             if unit is None:
                 return u
             else:
-                return gummy(u,unit=unit)
+                return Quantity(u,unit=unit)
                 
         if k is None:
             k = self._k
@@ -497,18 +646,18 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                 try:
                     if self._unit.is_dimensionless:
                         raise NoUnitConversionFoundError()
-                    return gummy(_ku(k,u),unit=self.unit).convert(unit)
+                    return Quantity(_ku(k,u),unit=self.unit).convert(unit)
                     
                 except NoUnitConversionFoundError:
                     try:
-                        r = abs(_ku(k,u)/self._x)
-                        return gummy(r).convert(unit)
+                        r = abs(_ku(k,u)/self.x)
+                        return Quantity(r).convert(unit)
                     except ZeroDivisionError:
                         if not Unit.unit(unit).is_dimensionless:
                             raise NoUnitConversionFoundError('no conversion found from unit ' + str(unit) + ' to one')
-                        return gummy(float('inf'),unit=unit)
+                        return Quantity(float('inf'),unit=unit)
             else:
-                return gummy(self._unit.to_uunit(_ku(k,u),unit),unit)
+                return Quantity(self._unit.to_uunit(_ku(k,u),unit),unit)
 
                     
     @property
@@ -522,8 +671,8 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         sim and simulate methods.  `Usym` is ready-only, but changing the `p` or
         `k` properties will affect `Usym`.
         """
-        if not isinstance(self._U,gummy):
-            return super().Usim
+        if not isinstance(self._U,Quantity):
+            return self._value.Usim
             
         if self.uunit_is_rel:
             x = self.xsim
@@ -549,7 +698,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         available a `NoSimulatedDataError` will be raised when this property is
         called; see the sim and simulate methods.  This property is read-only.
         """
-        return super().xsim
+        return self._value.xsim
         
     @property
     def usim(self):
@@ -558,7 +707,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         data is available a `NoSimulatedDataError` will be raised when this property
         is called; see the sim and simulate methods.  This property is read-only.
         """
-        return super().usim
+        return self._value.usim
         
     @property
     def cisim(self):
@@ -575,7 +724,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         but changing the `p`, `k`, or `cimethod` properties will affect the return
         value.
         """
-        return super().cisim
+        return self._value.cisim
             
     @property
     def uunit(self):
@@ -626,13 +775,13 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         >>> g
         (1000.0 +/- 1.2) uV
         """
-        if isinstance(self._U,gummy):
+        if isinstance(self._U,Quantity):
             return self._U._unit
         else:
             return None
     @uunit.setter
     def uunit(self,unit):
-        if self._u == 0:
+        if self.u == 0:
             return
         if unit is None:
             unit = self._unit
@@ -647,7 +796,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         Returns True if gummy.U is a relative uncertainty and False otherwise.
         This property is read-only.
         """
-        if not isinstance(self._U,gummy):
+        if not isinstance(self._U,Quantity):
             return False
         try:
             if self._U.unit is one:
@@ -693,7 +842,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         >>> g.k
         2.9999769927034015
         """
-        if self._u == 0:
+        if self.u == 0:
             return None
         return self._k
     @k.setter
@@ -741,7 +890,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         >>> g.k
         2.9999769927034015
         """
-        if self._u == 0:
+        if self.u == 0:
             return 1
         if self._pm is not None:
             if self._pm < 0:
@@ -861,125 +1010,37 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             return text
         raise ValueError('style ' + str(text) + ' is not recognized')
         
-    @property
-    def c(self):
-        """
-        This read-only property is used as a conversion flag during calculations.
-        When an arithmetic operation is carried out between two gummys with
-        different units, a unit conversion on one of the input quantities may be
-        required to complete the calculation.  Attach this flag to the unit that
-        you prefer be converted.
-
-        Examples
-        --------
-        
-        >>> a = gummy(1,u=0.01,unit='cm')
-        >>> b = gummy(2,u=0.2,unit='mm')
-        >>> a + b
-        (1.200 +/- 0.022) cm
-        >>> a.c + b
-        (12.00 +/- 0.22) mm
-        >>> a + b.c
-        (1.200 +/- 0.022) cm
-        >>> a*b
-        (0.200 +/- 0.020) cm**2
-        >>>a.c*b
-        (20.0 +/- 2.0) mm**2
-        """
-        c = self.copy()
-        c.autoconvert = True
-        return c
-        
-    #@staticmethod
-    #def _get_mixed_values(x,units):
-        #g = gummy(x,unit=units[-1])
-        #gi = g.convert(units[0])
-        #xs = [int(gi.x)]
-        #for i in range(1,len(units)):
-            #if not units[i].linear:
-                #raise ValueError('non-linear units cannot be used in mixed units')
-            #gi = gi - gummy(xs[i-1],unit=units[i-1])
-            #gi = gi.convert(units[i])
-            #if i == len(units):
-                #xs.append(gi.x)
-            #else:
-                #xs.append(int(gi.x))
-        #return xs
-                    
-    @property
-    def unit(self):
-        """
-        Gets or sets the unit for `x `and, if the `uunit` attribute is
-        `None`, the units for the uncertainty.
-        
-        If this property is set, a unit conversion will be performed.  The value 
-        it is set to may be a string, `None`, a `Unit` object, or the integer 1.
-        Both 1 and `None` will be interpreted as the Unit instance `one`.
-        
-        Examples
-        --------
             
-        >>> g = gummy(0.001,0.0000012,unit='V')
-        >>> g
-        (0.001 000 0 +/- 0.000 001 2) V
-        >>> g.unit = 'uV'
-        >>> g
-        (1000.0 +/- 1.2) uV
-        >>> g.uunit = '%'
-        >>> g.unit = 'mV'
-        >>> g
-        1.0000 mV +/- 0.12%
-        >>> g.unit = 'uV'
-        >>> g
-        1000.0 uV +/- 0.12%
-        >>> g.uunit = None
-        >>> g
-        (1000.0 +/- 1.2) uV
-        """
-        return self._unit
-    @unit.setter
-    def unit(self,unit):     
-        #Always convert back to the original units so we don't accumulate
-        #rounding errors.
-        if self._old is None:
-            self._old = (self._x,self._u,self._unit,self._dist)
+    def copy(self,formatting=True,tofloat=False):
+        r = type(self)(self._value.copy(formatting=formatting,tofloat=tofloat),
+                       unit = self._unit)
+        r._old = self._old
+                
+        if formatting:
+            if self._style != type(r)._style:
+                r._style = self._style
+            if self.show_p != type(r).show_p:
+                r.show_p = self.show_p
+            if self.show_k != type(r).show_k:
+                r.show_k = self.show_k
+            if self.show_dof != type(r).show_dof:
+                r.show_dof = self.show_dof
+            if self.mulsep != type(r).mulsep:
+                r.mulsep = self.mulsep
+            if self.solidus != type(r).solidus:
+                r.solidus = self.solidus
+            r._k = self._k
+            r._pm = self._pm
+            r._set_k = self._set_k
+            if tofloat:
+                r._set_U(unit=self.uunit)
+            else:
+                r._U = self._U
         else:
-            self._x,self._u,self._unit,self._dist = self._old
-            
-        g = self._unit.convert(self,unit)
-        
-        self._x = g._x
-        self._u = g._u
-        self._unit = g._unit
-        self._ref = g._ref
-        self._refs = g._refs
-        self._dist = g._dist
-        self._set_U(None,None)
-        return
-        
-    def convert(self,unit,uunit=None):
-        """
-        Returns a copy of the gummy with converted units.  This is equivalent
-        to calling the copy method and then setting the unit and uunit properties
-        on the copied gummy.
-        
-        Parameters
-        ----------
-        unit:  `str` or `Unit`
-            The unit for the `x` value and if `uunit` is `None`, the
-            uncertainty.  It must be string, None, a `Unit` object, or the
-            integer 1.  Both 1 and `None` will be interpreted as the Unit
-            instance `one`.
-
-        uunit `str`, `Unit` or None, optional
-            The unit for the uncertainty `U`.  If this is `None` then `U`
-            will have the same units as `x`.  The default is `None`.
-        """
-        ret = self.copy(formatting=False)
-        ret.unit = unit
-        if uunit is not None:
-            ret.uunit = uunit
-        return ret
+            r._U = self.u
+            r._k = 1
+            r._pm = None
+            r._set_k = True
         
     def graft(self,unit,uunit=None):
         """
@@ -996,104 +1057,11 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             uncertainty.  It must be string, None, a `Unit` object, or the
             integer 1.  Both 1 and `None` will be interpreted as the Unit
             instance `one`.
-             
-        uunit `str`, `Unit` or None, optional
-            The unit for the uncertainty `U`.  If this is `None` then `U`
-            will have the same units as `x`.  The default is `None`.
         """     
-        g = type(self)(self.x,self.U,unit=unit,dof=self.dof,k=self._k,
-                        uunit=uunit,name=self.name)
-        g._dist = self._dist
-        if g._u == 0:
-            g._ref = None
-            g._refs = 1
-        elif self._ref is not None:
-            self._ref.copyto(g)
-            
-        if self._style != gummy._style:
-            g._style = self._style
-        if self.show_p != gummy.show_p:
-            g.show_p = self.show_p
-        if self.show_k != gummy.show_k:
-            g.show_k = self.show_k
-        if self.show_dof != gummy.show_dof:
-            g.show_dof = self.show_dof
-        if self.nsig != gummy.nsig:
-            g.nsig = self.nsig
-        if self._k != 1:
-            g._k = self._k
-        g._pm = self._pm
-        if self.thousand_spaces != gummy.thousand_spaces:
-            g.thousand_spaces = self.thousand_spaces
-        if self.mulsep != gummy.mulsep:
-            g.mulsep = self.mulsep
-        if self.solidus != gummy.solidus:
-            g.solidus = self.solidus
-        g._set_k = self._set_k
-            
+        g = self.copy()
+        g._unit = Unit.unit(unit)
         return g
-        
-    @staticmethod
-    def _copy(s,r,formatting=True,tofloat=False):
-        # copies attributes of s to r, called from ummy.copy()
-        super(gummy,gummy)._copy(s,r,formatting=formatting,tofloat=tofloat)
-        if isinstance(s,gummy):
-            r._unit = s._unit
-            r._old = s._old
-                
-            if formatting:
-                if s._style != type(r)._style:
-                    r._style = s._style
-                if s.show_p != type(r).show_p:
-                    r.show_p = s.show_p
-                if s.show_k != type(r).show_k:
-                    r.show_k = s.show_k
-                if s.show_dof != type(r).show_dof:
-                    r.show_dof = s.show_dof
-                if s.mulsep != type(r).mulsep:
-                    r.mulsep = s.mulsep
-                if s.solidus != type(r).solidus:
-                    r.solidus = s.solidus
-                r._k = s._k
-                r._pm = s._pm
-                r._set_k = s._set_k
-                if tofloat:
-                    r._U = None
-                    r._set_U(None,None)
-                else:
-                    r._U = s._U
-            else:
-                r._U = None
-                r._k = 1
-                r._pm = None
-                r._set_k = True
-                r._set_U(None,None)
-        else:
-            r._unit = one
-            r._old = None
-            r._tag = None
-            r._U = None
-            r._k = 1
-            r._pm = None
-            r._set_k = True
-            r._set_U(None,None)
-    
-    def reduce_unit(self):
-        """
-        Cancels factors in a gummy's unit when possible.  This modifies the
-        calling gummy and returns `None`.
-        
-        Example
-        -------
-        
-        >>> g = gummy(5,unit='mm/m')
-        >>> g.reduce_unit()
-        >>> g
-        0.005
-        """
-        un = self._unit.mulr(one)[0]
-        self.unit = un
-    
+
     @staticmethod
     def simulate(gummys,n=100000,ufrom=None):
         """
@@ -1115,7 +1083,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         if ufrom is not None:
             ufrom = gummy._toummylist(ufrom)
         gummys = gummy._toummylist(gummys)
-        return super(gummy,gummy).simulate(gummys,n,ufrom)
+        return nummy.simulate(gummys,n,ufrom)
     
     def sim(self,n=100000,ufrom=None):
         """
@@ -1307,7 +1275,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             title1 = math(title1)
             title = title0 + '\n' + title1
         
-        super().hist(xlabel=xlabel,title=title,hold=True,**plot_options)
+        self._value.hist(xlabel=xlabel,title=title,hold=True,**plot_options)
         
         if mean_marker:
             if 'linewidth' not in mean_marker_options and 'lw' not in mean_marker_options:
@@ -1335,8 +1303,8 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         if not hold:
             plt.show()
         
-    @classmethod
-    def covplot(cls,x,y,title=None,xlabel=None,ylabel=None,mean_marker=False,
+    @staticmethod
+    def covplot(x,y,title=None,xlabel=None,ylabel=None,mean_marker=False,
                 mean_marker_options={},hold=False,math=None,**plot_options):
         """
         Creates scatter plot showing the covariance between two gummys.
@@ -1383,13 +1351,13 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         import matplotlib.pyplot as plt
         
         if math is None:
-            math = cls.latex_math_plot
+            math = nummy.latex_math_plot
         if xlabel is None:
             xlabel =  gummy._plotlabel(x,math=math)
         if ylabel is None:
             ylabel =  gummy._plotlabel(y,math=math)
             
-        super(gummy,gummy).covplot(x,y,title=title,xlabel=xlabel,ylabel=ylabel,
+        nummy.covplot(x,y,title=title,xlabel=xlabel,ylabel=ylabel,
                                    hold=True,**plot_options)
         
         if mean_marker:
@@ -2036,7 +2004,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         else:
             sim = False
                 
-        if self._u == 0 and style in ['u','uf','usim','ufsim']:
+        if self.u == 0 and style in ['u','uf','usim','ufsim']:
             return (style,('','',''),('0','',''))
         
         if xsig is None and nsig <= 0:
@@ -2063,7 +2031,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
             xexp = None
             oexp = 0
             
-        if self._u == 0 or isnan(self._u) or isinf(self._u):
+        if self.u == 0 or isnan(self.u) or isinf(self.u):
             if isinstance(x,Rational) and not isinstance(x,Integral):
                 ffstr = str(x)
                 fstr = ffstr.split('/')[-1]
@@ -2105,9 +2073,9 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     xcnt = _floor(_lg10(abs(self._U))+type(self._U)(lgadd))
             else:
                 try:
-                    xcnt = _floor(_lg10(abs(_ku(self._k,self._u)))+lgadd)
+                    xcnt = _floor(_lg10(abs(_ku(self._k,self.u)))+lgadd)
                 except:
-                    xcnt = _floor(_lg10(abs(_ku(self._k,self._u)))+type(self._u)(lgadd))
+                    xcnt = _floor(_lg10(abs(_ku(self._k,self.u)))+type(self.u)(lgadd))
             uuexp = xcnt - nsig + 1
                     
             if xexp is not None and xexp - uuexp > self.max_digits and style in ['pm','concise']:
@@ -2360,7 +2328,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         
     @staticmethod
     def _set_covariance_matrix(gummys, matrix):
-        super(gummy,gummy)._set_covariance_matrix(gummys, matrix)
+        nummy._set_covariance_matrix(gummys, matrix)
         for g in gummys:
             g._set_U(None,None)
         
@@ -2529,199 +2497,12 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
                     for i in range(len(fx))]
         r = super(gummy,cls)._napply(function,*args,fxx=fxx)
         return r
-        
-    def _add(self, v):
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._radd(self)
-        if isinstance(v,jummy):
-            return v._radd(self)
-        
-        if not isinstance(v,gummy):
-            if self._unit is one:
-                return super()._add(v)
-            vunit = one
-        else:
-            if self.unit is one and v._unit is one:
-                return super()._add(v)
-            vunit = v._unit
-            
-        r,r._unit = self._unit._add(self,vunit,v,self.autoconvert)
-        return r
-                
-    def _radd(self, v):
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._add(self)
-        if isinstance(v,jummy) or isinstance(v,ummy):
-            return v._add(self)
-        if self._unit is one:
-            return super()._radd(v)
-        
-        r,r._unit = self._unit._radd(self,one,v,self.autoconvert)
-        return r
-    
-    def _sub(self, v):
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._rsub(self)
-        if isinstance(v,jummy):
-            return v._rsub(self)
-        
-        if not isinstance(v,gummy):
-            if self._unit is one:
-                return super()._sub(v)
-            vunit = one
-        else:
-            if self.unit is one and v._unit is one:
-                return super()._sub(v)
-            vunit = v._unit
-            
-        r,r._unit = self._unit._sub(self,vunit,v,self.autoconvert)
-        return r
-                
-    def _rsub(self, v):
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._sub(self)
-        if isinstance(v,jummy) or isinstance(v,ummy):
-            return v._sub(self)
-        if self._unit is one:
-            return super()._rsub(v)
-        
-        r,r._unit = self._unit._rsub(self,one,v,self.autoconvert)
-        return r
-        
-    def _mul(self, v):
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._rmul(self)
-        if isinstance(v,jummy):
-            return v._rmul(self)
-        
-        if not isinstance(v,gummy):
-            if self._unit is one:
-                return super()._mul(v)
-            vunit = one
-        else:
-            if self.unit is one and v._unit is one:
-                return super()._mul(v)
-            vunit = v._unit
-            
-        r,r._unit = self._unit._mul(self,vunit,v,self.autoconvert)
-        return r
-    
-    def _rmul(self, v):
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._mul(self)
-        if isinstance(v,jummy) or isinstance(v,ummy):
-            return v._mul(self)
-        if self._unit is one:
-            return super()._rmul(v)
-        
-        r,r._unit = self._unit._rmul(self,one,v,self.autoconvert)
-        return r
-    
-    def _truediv(self, v):
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._rtruediv(self)
-        if isinstance(v,jummy):
-            return v._rtruediv(self)
-        
-        if not isinstance(v,gummy):
-            if self._unit is one:
-                return super()._truediv(v)
-            vunit = one
-        else:
-            if self.unit is one and v._unit is one:
-                return super()._truediv(v)
-            vunit = v._unit
-            
-        r,r._unit = self._unit._truediv(self,vunit,v,self.autoconvert)
-        return r
-    
-    def _rtruediv(self, v):
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._truediv(self)
-        if isinstance(v,jummy) or isinstance(v,ummy):
-            return v._truediv(self)
-        if self._unit is one:
-            return super()._rtruediv(v)
-        
-        r,r._unit = self._unit._rtruediv(self,one,v,self.autoconvert)
-        return r
-    
-    def _pow(self, v):
-        if v == 0:
-            return gummy(1)
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._rpow(self)
-        if isinstance(v,jummy):
-            return v._rpow(self)
-        
-        if not isinstance(v,gummy):
-            if self._unit is one:
-                return super()._pow(v)
-            vunit = one
-        else:
-            if self.unit is one and v._unit is one:
-                return super()._pow(v)
-            vunit = v._unit
-            
-        r,r._unit = self._unit._pow(self,vunit,v,self.autoconvert)
-        return r
-    
-    def _rpow(self, v):
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._pow(self)
-        if isinstance(v,jummy) or isinstance(v,ummy):
-            return v._pow(self)
-        if self._unit is one:
-            return super()._rpow(v)
-        
-        r,r._unit = self._unit._rpow(self,one,v,self.autoconvert)
-        return r
                 
     def _nprnd(self,f):
-        ret = super()._nprnd(f)
+        ret = self._value._nprnd(f)
         ret._unit = self._unit
         return ret
-    
-    def _mod(self, v):
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._rmod(self)
-        if isinstance(v,jummy):
-            return v._rmod(self)
-        
-        if not isinstance(v,gummy):
-            if self._unit is one:
-                return super()._mod(v)
-            vunit = one
-        else:
-            if self.unit is one and v._unit is one:
-                return super()._mod(v)
-            vunit = v._unit
-            
-        r,r._unit = self._unit._mod(self,vunit,v,self.autoconvert)
-        return r
-    
-    def _rmod(self, v):
-        if not isinstance(v,Real) and isinstance(v,Complex):
-            return jummy(v)._mod(self)
-        if isinstance(v,jummy) or isinstance(v,ummy):
-            return v._mod(self)
-        if self._unit is one:
-            return super()._rmod(v)
-        
-        r,r._unit = self._unit._rmod(self,one,v,self.autoconvert)
-        return r
-        
-    def __neg__(self):
-        r,r._unit = self._unit._neg(self)
-        return r
-        
-    def __pos__(self):
-        r,r._unit = self._unit._pos(self)
-        return r
-        
-    def __abs__(self):
-        r,r._unit = self._unit._abs(self)
-        return r
+   
         
     def __eq__(self, v):
         if isinstance(v,gummy):
@@ -2780,7 +2561,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         else:
             k = self._cmp_k
             
-        return (df._x < -k*df._u)
+        return (df.x < -k*df.u)
         
     def __le__(self, v):
         if self.__eq__(v):
@@ -2808,7 +2589,7 @@ class gummy(PrettyPrinter,nummy,metaclass=MetaGummy):
         else:
             k = self._cmp_k
             
-        return (df._x > k*df._u)
+        return (df.x > k*df.u)
         
     def __ge__(self, v):
         if self.__eq__(v):

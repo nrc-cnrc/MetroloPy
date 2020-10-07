@@ -26,18 +26,15 @@ units.
 """
 
 import numpy as np
-from .gummy import gummy
-from .unit import one,_CompositeUnit
+from .unit import one,_CompositeUnit,Quantity
 from .nonlinearunit import NonlinearConversion,NonlinearUnit
 from .exceptions import IncompatibleUnitsError
 
 class LogConversion(NonlinearConversion):   
     def __init__(self,reference,multiplier,log_base,log_func,offset=0):
-        if isinstance(reference,gummy):
-            self._unit = reference._unit
-            self._rf = gummy(reference.x,reference.u)
-            self._rf._ref = reference._ref
-            self._rf._refs = reference._refs
+        if isinstance(reference,Quantity):
+            self._unit = reference.unit
+            self._rf = reference.value
         else:
             self._unit = one
             self._rf = reference
@@ -50,7 +47,7 @@ class LogConversion(NonlinearConversion):
         self._lnbase = np.log(float(log_base))
         self.offset = offset
         
-    def _to(self,g):
+    def to(self,g):
         g = (g - self.offset)/self.multiplier
         def f(x):
             if x == -float('inf'):
@@ -59,40 +56,24 @@ class LogConversion(NonlinearConversion):
                 return self.log_base**x
             except OverflowError:
                 return float('inf')
-        def d(x):
-            try:
-                return self._lnbase*self.log_base**x
-            except OverflowError:
-                return 1
-        ret = self._rf*gummy.apply(f,d,g)
-        return ret
+        return self._rf*f(g)
         
-        
-    def _frm(self,g):
-        g = g/self._rf
-        def f(x):
-            return self.log_func(x)
-        def d(x):
-            if x != 0:
-                return 1/(x*self._lnbase)
-            return 1
-        ret = self.multiplier*gummy.apply(f,d,g) + self.offset
-        return ret
-        
+    def frm(self,g):
+        return self.multiplier*self.log_func(g/self._rf) + self.offset
+
     def copy(self):
         r = LogConversion(self.reference,self.multiplier,self.log_base,self.log_func)
         r.parent = self.parent
         return r
     
     
-class LogUnit(NonlinearUnit):   
+class LogUnit(NonlinearUnit):
+    
+    _ufunc_dict = {}
+    
     def __init__(self,*p,**kwds):
         super().__init__(*p,**kwds)
         self.reference = self.conversion.reference
-        if isinstance(self.reference,gummy):
-            self.referencef = self.reference.x
-        else:
-            self.referencef = self.reference
         self.multiplier = self.conversion.multiplier
         self.log_base = self.conversion.log_base
         
@@ -112,22 +93,22 @@ class LogUnit(NonlinearUnit):
     def _add(self,a,bunit,b,aconv):
         if bunit is not self:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be added to a quantity with unit ' + bunit.tostring() + '; automatic conversion is disabled with LogUnit instances')
-        return (self._nummy_add(a,b),self)
+        return (a + b,self)
     
     def _radd(self,a,bunit,b,aconv):
         if bunit is not self:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be added to a quantity with unit ' + bunit.tostring() + '; automatic conversion is disabled with LogUnit instances')
-        return (self._nummy_radd(a,b),self)
+        return (b + a,self)
     
     def _sub(self,a,bunit,b,aconv):
         if bunit is not self:
             raise IncompatibleUnitsError('a quantity with unit ' + bunit.tostring() + ' may not be subtracted from a quantity with unit ' + self.tostring() + '; automatic conversion is disabled with LogUnit instances')
-        return (self._nummy_sub(a,b),self)
+        return (a - b,self)
     
     def _rsub(self,a,bunit,b,aconv):
         if bunit is not self:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be subtracted from a quantity with unit ' + bunit.tostring() + '; automatic conversion is disabled with LogUnit instances')
-        return (self._nummy_rsub(a,b),self)
+        return (a + b,self)
     
     def _mul(self,a,bunit,b,aconv):
         if not bunit.linear:
@@ -138,7 +119,7 @@ class LogUnit(NonlinearUnit):
         else:
             un,c = bunit._mul_cancel(self)
         
-        return (self._nummy_mul(self._nummy_mul(a,b),c),un)
+        return ((a*b)*c,un)
     
     def _rmul(self,a,bunit,b,aconv):
         if not bunit.linear:
@@ -149,7 +130,7 @@ class LogUnit(NonlinearUnit):
         else:
             un,c = bunit._mul_cancel(self)
         
-        return (self._nummy_mul(self._nummy_rmul(a,b),c),un)
+        return ((b*a)*c,un)
     
     def _truediv(self,a,bunit,b,aconv):
         if not bunit.linear:
@@ -160,16 +141,16 @@ class LogUnit(NonlinearUnit):
         else:
             un,c = bunit._rdiv_cancel(self)
         
-        return (self._nummy_mul(self._nummy_truediv(a,b),c),un)
+        return ((a/b)*c,un)
     
     def _neg(self,a):
-        return (self._nummy_neg(a),self)
+        return (-a,self)
     
     def _pos(self,a):
-        return (self._nummy_pos(a),self)
+        return (+a,self)
     
     def _abs(self,a):
-        return (self._nummy_abs(a),self)
+        return (abs(a),self)
         
     def __mul__(self,a):
         if not a.linear:
