@@ -328,6 +328,8 @@ class Dfunc:
         if method != '__call__':
             return None
         
+        if any(isinstance(a,np.ndarray) for a in args):
+            args = [np.array(a) if isinstance(a,Dfunc) else a for a in args]
         try:
             return _call(lambda *x: self._apply(ufunc,ddict[ufunc],*x), *args)
         except KeyError:
@@ -335,47 +337,3 @@ class Dfunc:
                 return _call(fdict[ufunc],*args)
             except KeyError:
                 return None
-            
-    """
-    def __add__(self,b):
-        return _broadcast(self._add,b)
-    
-    def __radd__(self,b):
-        return _broadcast(self._radd,b)
-    
-    def __sub__(self,b):
-        return _broadcast(self._sub,b)
-    
-    def __rsub__(self,b):
-        return _broadcast(self._rsub,b)
-    
-    def __mul__(self,b):
-        return _broadcast(self._mul,b)
-        
-    def __rmul__(self,b):
-        return _broadcast(self._rmul,b)
-        
-    def __truediv__(self,b):
-        return _broadcast(self._truediv,b)
-    
-    def __rtruediv__(self,b):
-        return _broadcast(self._rtruediv,b)
-    
-    def __floordiv__(self,b):
-        return _broadcast(self._floordiv,b)
-    
-    def __rfloordiv__(self,b):
-        return _broadcast(self._rfloordiv,b)
-    
-    def __mod__(self,b):
-        return _broadcast(self._mod,b)
-    
-    def __rmod__(self,b):
-        return _broadcast(self._rmod,b)
-    
-    def __pow__(self,b):
-        return _broadcast(self._pow,b)
-            
-    def __rpow__(self,b):
-        return _broadcast(self._rpow,b)
-    """

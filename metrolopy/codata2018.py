@@ -25,13 +25,14 @@ constants
 """
 
 from .constant import GummyConstant
+from .unit import unit
 from .siunits import _const_c,_const_G
 
 with GummyConstant._builtin():
-    GummyConstant(_const_c,unit='m s**-1',name='speed of light in vacuum',
+    GummyConstant(_const_c,unit='m/s',name='speed of light in vacuum',
                   symbol='c',add_symbol=True,
-                  description='SI defining constant, exact, CODATA 2018')
+                  description='SI defining constant')
     
-    _const_G = _const_G.copy().graft('m**3 kg**-1 s**-2')
-    GummyConstant(_const_G,name='Newtonian constant of gravitation',symbol='G',
+    GummyConstant(_const_G*unit('m**3 kg**-1 s**-2'),
+                  name='Newtonian constant of gravitation',symbol='G',
                   add_symbol=True,description='CODATA 2018')

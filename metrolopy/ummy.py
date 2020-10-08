@@ -772,6 +772,8 @@ class ummy(Dfunc,PrettyPrinter):
                 self._check_cor()   
                 
     def __add__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self) + b
         if isinstance(b,(immy,Unit,Quantity)):
             return b.__radd__(self)
         
@@ -808,12 +810,18 @@ class ummy(Dfunc,PrettyPrinter):
         return r
     
     def __radd__(self,b):
+        if isinstance(b,np.ndarray):
+            return b + np.array(self)
+        
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b + immy(self)
         
         return type(self)(self._x + b,self._u,dof=self._ref,utype=self._refs)
     
-    def __sub__(self,b):          
+    def __sub__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self) - b
+          
         if isinstance(b,(immy,Unit,Quantity)):
             return b.__rsub__(self)
         
@@ -850,6 +858,8 @@ class ummy(Dfunc,PrettyPrinter):
         return r
     
     def __rsub__(self,b):
+        if isinstance(b,np.ndarray):
+            return b - np.array(self)
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b - immy(self)
         
@@ -857,6 +867,9 @@ class ummy(Dfunc,PrettyPrinter):
         return r
     
     def __mul__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self)*b
+        
         if isinstance(b,(immy,Unit,Quantity)):
             return b.__rmul__(self)
         
@@ -898,13 +911,18 @@ class ummy(Dfunc,PrettyPrinter):
         return r
     
     def __rmul__(self,b):
+        if isinstance(b,np.ndarray):
+            return b*np.array(self)
+        
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b*immy(self)
         
         refs = -self._refs if b < 0 else self._refs
         return type(self)(self._x*b,abs(self._u*b),dof=self._ref,utype=refs)
     
-    def __truediv__(self,b):  
+    def __truediv__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self)/b
         if isinstance(b,(immy,Unit,Quantity)):
             return b.__rtruediv__(self)
         
@@ -962,6 +980,9 @@ class ummy(Dfunc,PrettyPrinter):
         return r
     
     def __rtruediv__(self,b):
+        if isinstance(b,np.ndarray):
+            return b/np.array(self)
+        
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b/immy(self)
         
@@ -978,6 +999,9 @@ class ummy(Dfunc,PrettyPrinter):
         return type(self)(x,u,dof=self._ref,utype=refs)
     
     def __pow__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self)**b
+        
         if isinstance(b,(immy,Unit,Quantity)):
             return b.__rpow__(self)
         
@@ -1047,6 +1071,9 @@ class ummy(Dfunc,PrettyPrinter):
         return r
     
     def __rpow__(self,b):
+        if isinstance(b,np.ndarray):
+            return b**np.array(self)
+        
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b**immy(self)
         
@@ -1081,6 +1108,9 @@ class ummy(Dfunc,PrettyPrinter):
         return type(self)(f(self._x))
         
     def __floordiv__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self) // b
+        
         if isinstance(b,(immy,Unit,Quantity)):
             return b.__rmfloordiv__(self)
         
@@ -1090,12 +1120,18 @@ class ummy(Dfunc,PrettyPrinter):
         return self._truediv(b)._nprnd(_floor)
         
     def __rfloordiv__(self,b):
+        if isinstance(b,np.ndarray):
+            return b // np.array(self)
+        
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b // immy(self)
         
         return self._rtruediv(b)._nprnd(_floor)
         
     def __mod__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self) % b
+        
         if isinstance(b,(immy,Unit,Quantity)):
             return b.__rmod__(self)
         
@@ -1107,6 +1143,9 @@ class ummy(Dfunc,PrettyPrinter):
         return type(self)(ret)
         
     def __rmod__(self,b):
+        if isinstance(b,np.ndarray):
+            return b % np.array(self)
+        
         ret = ummy._apply(lambda x1,x2: x1%x2,
                           lambda x1,x2: (1, _sign(x2)*abs(x1//x2)),b,self)
         return type(self)(ret)
@@ -1774,44 +1813,73 @@ class immy(PrettyPrinter,Dfunc):
         return r + sign + i
             
     def __add__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self) + v
+        
         r = self.real + v.real
         i = self.imag + v.imag
         return type(self)(real=r,imag=i)
     
     def __radd__(self,v):
+        if isinstance(v,np.ndarray):
+            return v + np.array(self)
+        
         return self._add(v)
     
     def __sub__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self) - v
+        
         r = self.real - v.real
         i = self.imag - v.imag
         return type(self)(real=r,imag=i)
     
     def __rsub__(self,v):
+        if isinstance(v,np.ndarray):
+            return v - np.array(self)
+        
         r = v.real - self.real
         i = v.imag - self.imag
         return type(self)(real=r,imag=i)
     
     def __mul__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self)*v
+        
         r = self.real*v.real - self.imag*v.imag
         i = self.imag*v.real + self.real*v.imag
         return type(self)(real=r,imag=i)
     
     def __rmul__(self,v):
-        return self._mul(v)
+        if isinstance(v,np.ndarray):
+            return v*np.array(self)
+        
+        r = v.real*self.real - v.imag*self.imag
+        i = v.imag*self.real + v.real*self.imag
+        return type(self)(real=r,imag=i)
     
     def __truediv__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self)/v
+        
         h2 = v.real*v.real + v.imag*v.real
         r = (self.real*v.real + self.imag*v.imag)/h2
         i = (self.imag*v.real - self.real*v.imag)/h2
         return type(self)(real=r,imag=i)
     
     def __rtruediv__(self,v):
+        if isinstance(v,np.ndarray):
+            return v/np.array(self)
+        
         h2 = self._real*self.real + self._imag*self.imag
         r = (v.real*self.real + v.imag*self.imag)/h2
         i = (v.imag*self.real - v.real*self.imag)/h2
         return type(self)(real=r,imag=i)
         
     def __pow__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self)**v
+        
         h2 = self.real*self.real + self.imag*self.imag
         a = np.arctan2(self.imag,self.real)
         c = h2**v.real/2
@@ -1824,6 +1892,9 @@ class immy(PrettyPrinter,Dfunc):
         return type(self)(real=r,imag=i)
     
     def __rpow__(self,v):
+        if isinstance(v,np.ndarray):
+            return v**np.array(self)
+        
         h2 = v.real*v.real + v.imag*v.imag
         a = np.arctan(v.imag,v.real)
         c = (h2**self.real/2)*np.exp(-self.imag*a)
@@ -1837,12 +1908,18 @@ class immy(PrettyPrinter,Dfunc):
         self._imag = self.imag._nprnd(f)
         
     def __floordiv__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self) // v
+        
         h2 = v.real*v.real + v.imag*v.real
         r = (self.real*v.real + self.imag*v.imag)//h2
         i = (self.imag*v.real - self.real*v.imag)//h2
         return type(self)(real=r,imag=i)
         
     def __rfloordiv__(self,v):
+        if isinstance(v,np.ndarray):
+            return v // np.array(self)
+        
         h2 = self._real*self._real + self._imag*self._imag
         r = (v.real*self.real + v.imag*self.imag)//h2
         i = (v.imag*self.real - v.real*self._mag)//h2
@@ -1870,5 +1947,12 @@ class MFraction(Fraction):
     """
     A fraction.Fraction sub-class that works with mpmath.mpf objects
     """
+    
+    def __new__(cls, *args, **kwargs):
+        ret = super(MFraction, cls).__new__(cls, *args, **kwargs)
+        if ret.denominator == 1:
+            return ret.numerator
+        return ret
+    
     def _mpmath_(self,p,r):
         return rational.mpq(self.numerator,self.denominator)

@@ -897,7 +897,7 @@ class Fit(_Fit,PrettyPrinter):
                         jac = np.array([self.jac(*(list(x)+list(self.pf)))[self.xdim:] for x in self.x.T],dtype=float)
                 sc = np.sqrt((jac*jac).sum(axis=0))
                 jac /= sc
-                y = [g.graft(one) for g in self.y]
+                y = [g/g.unit for g in self.y]
                 if ic is not None:
                     jac = ic@jac
                     y = [np.sum(y*c) for c in ic]
@@ -947,7 +947,7 @@ class Fit(_Fit,PrettyPrinter):
                 self.p = [gummy(v,unit=self.punits[i]) for i,v in enumerate(self.pf)]
                 warn('unable get a covariance matrix of full rank; uncertainties cannot be calculated',FitWarning)
         else:
-            self.p = [g.graft(u) for g,u in zip(self.p,self.punits)]
+            self.p = [g*u/g.unit for g,u in zip(self.p,self.punits)]
             
     @staticmethod
     def _getw(x,u,cov,w,dim,gummies):
@@ -1201,12 +1201,12 @@ class Fit(_Fit,PrettyPrinter):
     def _ypred(self,*x):
         p = list(self.p)
         for i,e in enumerate(p):
-            p[i] = p[i].graft(one)
+            p[i] = p[i]/p[i].unit
         if self.xdim == 1:
             x = x[0]
             if isinstance(x,Quantity):
                 x = x.convert(self._xunit)
-                x = x.graft(one)
+                x = x/x.unit
             a = [x] + p
         else:
             if len(x) != self.xdim:
@@ -1215,7 +1215,7 @@ class Fit(_Fit,PrettyPrinter):
             for i,v in enumerate(x):
                 if isinstance(v,Quantity):
                     x[i] = v.convert(self._xunit[i])
-                    x[i] = x.graft(one)
+                    x[i] = x[i]/x[i].unit
             a = x + p
             
         if self.ydim == 1:
@@ -1223,7 +1223,7 @@ class Fit(_Fit,PrettyPrinter):
                 r = gummy.apply(self.f,self.jac,*a)
             except NotImplementedError:
                 r = gummy.napply(self.f,*a)
-            r = r.graft(self._yunit)
+            r = r*self._yunit
             return r
         else:
             r = np.zeros(self.ydim,dtype=np.object)
@@ -1232,13 +1232,13 @@ class Fit(_Fit,PrettyPrinter):
                     def f(*v):
                         return self.f(*v)[i]
                     r[i] = gummy.apply(f,self.jac,*a)
-                    r[i] = r[i].graft(self._yunit)
+                    r[i] = r[i]*self._yunit
             except NotImplementedError:
                 for i in self.ydim:
                     def f(*v):
                         return self.f(*v)[i]
                     r[i] = gummy.napply(f,*a)
-                    r[i] = r[i].graft(self._yunit)
+                    r[i] = r[i]*self._yunit
             return r
                 
     def ptostring(self,fmt='unicode'):
@@ -1751,7 +1751,7 @@ class PolyFit(Fit):
                 self.p = gummy.create(pf,unit=self.punits)
                 warn('the covariance matrix is not positive semidefinate; uncertainties cannot be calculated',FitWarning)
         else:
-            self.p = [g.graft(units[i]) for i,g in enumerate(p)]
+            self.p = [g*units[i]/g.unit for i,g in enumerate(p)]
             if pf is None:
                 pf = [g.x for g in p]
             

@@ -200,6 +200,17 @@ class Unit(PrettyPrinter,Indexed):
     _used_units = {}
     
     _ufunc_dict = {np.square: lambda x: (np.square(x[0].value),x[0].unit**2),
+                   np.sqrt: lambda x: (np.sqrt(x[0].value),x[0].unit**0.5),
+                   np.cbrt: lambda x: (np.cbrt(x[0].value),x[0].unit**(1/3)),
+                   np.reciprocal: lambda x: (np.reciprocal(x[0].value),x[0].unit**-1),
+                   np.absolute: lambda x: (np.absolute(x[0].value),x[0].unit),
+                   np.negative: lambda x: (np.negative(x[0].value),x[0].unit),
+                   np.positive: lambda x: (np.positive(x[0].value),x[0].unit),
+                   np.conjugate: lambda x: (np.conjugate(x[0].value),x[0].unit),
+                   np.rint: lambda x: (np.rint(x[0].value),x[0].unit),
+                   np.floor: lambda x: (np.floor(x[0].value),x[0].unit),
+                   np.ceil: lambda x: (np.ceil(x[0].value),x[0].unit),
+                   np.trunc: lambda x: (np.trunc(x[0].value),x[0].unit),
                    np.add: lambda x,y: _f_bop(Unit._add,Unit._radd,x,y),
                    np.subtract: lambda x,y: _f_bop(Unit._sub,Unit._rsub,x,y),
                    np.multiply: lambda x,y: _f_bop(Unit._mul,Unit._rmul,x,y),
@@ -514,59 +525,59 @@ class Unit(PrettyPrinter,Indexed):
     
     def _add(self,s,vunit,v,aconv):
         if self is vunit:
-            return (np.add(s,v),self)
+            return (s + v,self)
         
         if not vunit.linear:
             return vunit._radd(v,self,s,not aconv)
         
         if aconv:
             s = self.convert(s,vunit)
-            return (np.add(s,v),vunit)
+            return (s + v,vunit)
         else:
             v = vunit.convert(v,self)
-            return (np.add(s,v),self)
+            return (s + v,self)
         
     def _radd(self,s,vunit,v,aconv):
         if self is vunit:
-            return (np.add(v,s),self)
+            return (v + s,self)
         
         if not vunit.linear:
             return vunit._add(v,self,s,not aconv)
         
         if aconv:
             s = self.convert(s,vunit)
-            return (np.add(v,s),vunit)
+            return (v + s,vunit)
         else:
             v = vunit.convert(v,self)
-            return (np.add(v,s),self)
+            return (v + s,self)
         
     def _sub(self,s,vunit,v,aconv):
         if self is vunit:
-            return (np.subtract(s,v),self)
+            return (s - v,self)
         
         if not vunit.linear:
             return vunit._rsub(v,self,s,not aconv)
         
         if aconv:
             s = self.convert(s,vunit)
-            return (np.subtract(s,v),vunit)
+            return (s - v,vunit)
         else:
             v = vunit.convert(v,self)
-            return (np.subtract(s,v),self)
+            return (s - v,self)
         
     def _rsub(self,s,vunit,v,aconv):
         if self is vunit:
-            return (np.subtract(v,s),self)
+            return (v - s,self)
         
         if not vunit.linear:
             return vunit._sub(v,self,s,not aconv)
         
         if aconv:
             s = self.convert(s,vunit)
-            return (np.subtract(v,s),vunit)
+            return (v - s,vunit)
         else:
             v = vunit.convert(v,self)
-            return (np.subtract(v,s),self)
+            return (v - s,self)
         
     def _mul_cancel(self,b):
         # self*b canceling units when possible
@@ -587,7 +598,7 @@ class Unit(PrettyPrinter,Indexed):
         else:
             un,c = bunit._mul_cancel(self)
         
-        return ((np.multiply(a,b))*c,un)
+        return ((a*b)*c,un)
     
     def _rmul(self,a,bunit,b,aconv):
         if isinstance(b,Unit):
@@ -602,7 +613,7 @@ class Unit(PrettyPrinter,Indexed):
         else:
             un,c = bunit._mul_cancel(self)
         
-        return ((np.multiply(b,a))*c,un)
+        return ((b*a)*c,un)
         
     def _div_cancel(self,b):
         # self/b canceling units when possible        
@@ -629,7 +640,7 @@ class Unit(PrettyPrinter,Indexed):
         else:
             un,c = bunit._rdiv_cancel(self)
         
-        return ((np.divide(a,b))*c,un)
+        return ((a/b)*c,un)
     
     def _rtruediv(self,a,bunit,b,aconv):
         if isinstance(b,Unit):
@@ -641,7 +652,7 @@ class Unit(PrettyPrinter,Indexed):
         else:
             un,c = bunit._div_cancel(self)
         
-        return ((np.divide(b,a))*c,un)
+        return ((b/a)*c,un)
     
             
     def _floordiv(self,a,bunit,b,aconv):
@@ -657,7 +668,7 @@ class Unit(PrettyPrinter,Indexed):
         else:
             un,c = bunit._rdiv_cancel(self)
         
-        return ((np.floor_divide(a,b))*c,un)
+        return ((a // b)*c,un)
     
     def _rfloordiv(self,a,bunit,b,aconv):
         if isinstance(b,Unit):
@@ -669,7 +680,7 @@ class Unit(PrettyPrinter,Indexed):
         else:
             un,c = bunit._div_cancel(self)
         
-        return ((np.floor_divide(b,a))*c,un)
+        return ((b // a)*c,un)
         
     def _mod(self,a,bunit,b,aconv):
         if isinstance(b,Unit):
@@ -677,13 +688,13 @@ class Unit(PrettyPrinter,Indexed):
             b = 1
             
         if self is bunit:
-            return (np.mod(a,b),self)
+            return (a % b,self)
         if not bunit.linear:
             return bunit._rmod(b,self,a,not aconv)
         try:
             if aconv:
                 return (self.convert(a,bunit) % b,bunit)
-            return (np.mod(a,bunit.convert(b,self)),self)
+            return (a % bunit.convert(b,self),self)
         except NoUnitConversionFoundError:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be added to a quantity with unit ' + bunit.tostring())
 
@@ -696,8 +707,8 @@ class Unit(PrettyPrinter,Indexed):
             return (self._nummy_rmod(a,b),self)
         try:
             if aconv:
-                return (np.mod(b,self.convert(a,bunit)),bunit)
-            return (np.mod(bunit.convert(b,self),a),self)
+                return (b % self.convert(a,bunit),bunit)
+            return (bunit.convert(b,self) % a,self)
         except NoUnitConversionFoundError:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be added to a quantity with unit ' + bunit.tostring())
 
@@ -718,7 +729,7 @@ class Unit(PrettyPrinter,Indexed):
             except NoUnitConversionFoundError:
                 raise IncompatibleUnitsError('the exponent is not dimensionless')
                 
-        return (np.power(a,b),self**b)
+        return (a**b,self**b)
         #bb = float(b)
         #if bb != b:
             #try:
@@ -749,7 +760,7 @@ class Unit(PrettyPrinter,Indexed):
             except NoUnitConversionFoundError:
                 raise IncompatibleUnitsError('the exponent is not dimensionless')
                 
-        return (np.power(b,a),bunit**a)
+        return (b**a,bunit**a)
         #aa = float(a)
         #if aa != a:
             #try:
@@ -1473,26 +1484,6 @@ class Quantity(PrettyPrinter):
         c = Quantity(self.value,self.unit)
         c.autoconvert = True
         return c
-    
-    def graft(self,unit):
-        """
-        Returns a copy of the gummy with different units but the same `x` and
-        `u` values.  This is different from ``gummy.convert(unit)`` in that
-        ``gummy.convert(unit)`` changes the `x` and `u `values to express the
-        same quantity  in different units while `gummy.graft(unit)` simply
-        tacks on a different unit to the same numerical values.
-        
-        Parameters
-        ----------
-        unit:  `str` or `Unit`
-            The unit for the `x` value and if `uunit` is `None`, the
-            uncertainty.  It must be string, None, a `Unit` object, or the
-            integer 1.  Both 1 and `None` will be interpreted as the Unit
-            instance `one`.
-        """     
-        g = self.copy()
-        g._unit = Unit.unit(unit)
-        return g
  
     def tostring(self,fmt=None,**kwds):
         unit = self._unit.tostring(fmt=fmt,**kwds)

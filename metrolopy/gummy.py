@@ -436,6 +436,8 @@ class gummy(Quantity,metaclass=MetaGummy):
     exception_on_fmt_error = False  # if False, an exception while trying to 
                                     # print the will cause _ret_something() to 
                                     # be called.  Can be set to True for debugging
+                                    
+    _arraytype = None
     
     def __init__(self,x,u=0,unit=one,dof=float('inf'),k=1,p=None,uunit=None,
                  utype=None,name=None):
@@ -1195,6 +1197,24 @@ class gummy(Quantity,metaclass=MetaGummy):
             r._set_k = True
         
         return r
+        
+    def graft(self,unit):
+        """
+        Returns a copy of the gummy with different units but the same `x` and
+        `u` values.  This is different from ``gummy.convert(unit)`` in that
+        ``gummy.convert(unit)`` changes the `x` and `u `values to express the
+        same quantity  in different units while `gummy.graft(unit)` simply
+        tacks on a different unit to the same numerical values.
+        
+        Parameters
+        ----------
+        unit:  `str` or `Unit`
+            The unit for the `x` value and if `uunit` is `None`, the
+            uncertainty.  It must be string, None, a `Unit` object, or the
+            integer 1.  Both 1 and `None` will be interpreted as the Unit
+            instance `one`.
+        """     
+        return self*Unit.unit(unit)/self.unit
 
     @staticmethod
     def simulate(gummys,n=100000,ufrom=None):
@@ -2625,12 +2645,105 @@ class gummy(Quantity,metaclass=MetaGummy):
             return [cls.napply(lambda *y: function(*y)[i],*args,fxx=(fx[i],x)) 
                     for i in range(len(fx))]
         return cls(nummy._napply(function,*args,fxx=fxx))
+    
+    def __array_ufunc__(self,ufunc,method,*args,**kwds):
+        if method != '__call__':
+            return None
+        
+        if any(isinstance(a,np.ndarray) for a in args):
+            args = [np.array(a) if isinstance(a,gummy) else a for a in args]
+            return ufunc(*args)
+        
+        return super().__array_ufunc__(ufunc,method,*args,**kwds)
                 
     def _nprnd(self,f):
         ret = self._value._nprnd(f)
         ret._unit = self._unit
         return ret
-   
+    
+    def __add__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self) + v
+        
+        return super().__add__(v)
+    
+    def __radd__(self,v):
+        if isinstance(v,np.ndarray):
+            return v + np.array(self)
+        
+        return super().__radd__(v)
+    
+    def __sub__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self) - v
+        
+        return super().__sub__(v)
+    
+    def __rsub__(self,v):
+        if isinstance(v,np.ndarray):
+            return v - np.array(self)
+        
+        return super().__rsub__(v)
+    
+    def __mul__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self)*v
+        
+        return super().__mul__(v)
+    
+    def __rmul__(self,v):
+        if isinstance(v,np.ndarray):
+            return v*np.array(self)
+        
+        return super().__rmul__(v)
+    
+    def __truediv__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self)/v
+        
+        return super().__truediv__(v)
+    
+    def __rtruediv__(self,v):
+        if isinstance(v,np.ndarray):
+            return v/np.array(self)
+        
+        return super().__rtruediv__(v)
+        
+    def __pow__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self)**v
+        
+        return super().__pow__(v)
+    
+    def __rpow__(self,v):
+        if isinstance(v,np.ndarray):
+            return v**np.array(self)
+        
+        return super().__rpow__(v)
+        
+    def __floordiv__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self) // v
+        
+        return super().__floordiv__(v)
+        
+    def __rfloordiv__(self,v):
+        if isinstance(v,np.ndarray):
+            return v // np.array(self)
+        
+        return super().__rfloordiv__(v)
+        
+    def __mod__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self) % v
+        
+        return super().__mod__(v)
+    
+    def __rmod__(self,v):
+        if isinstance(v,np.ndarray):
+            return v % np.array(self)
+        
+        return super().__rmod__(v)
         
     def __eq__(self, v):
         if isinstance(v,gummy):
