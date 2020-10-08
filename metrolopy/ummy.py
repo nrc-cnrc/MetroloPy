@@ -76,7 +76,7 @@ def _getfinfo(x):
             _finfodict[t] = f
         except:
             _finfodict[t] = _iinfo
-            return _iinfo
+            return (_iinfo,x)
         return (f,x)
 
 def _combu(a,b,c):

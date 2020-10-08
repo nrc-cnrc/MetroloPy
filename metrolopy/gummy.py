@@ -42,6 +42,7 @@ from .dfunc import _f_darctan2 as darctan2
 from math import isnan, isinf,log10
 from fractions import Fraction
 from numbers import Number,Real,Complex,Integral,Rational
+from math import pi
 
 try:
     import mpmath as mp
@@ -442,7 +443,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         self.autoconvert = False
         
         if isinstance(x,gummy):
-            self._value = x._value.copy()
+            self._value = nummy(x.value)
             self._unit = x._unit
             self._U = self._value._u
             self._k = 1
@@ -450,6 +451,10 @@ class gummy(Quantity,metaclass=MetaGummy):
             self._set_k = True
             return
         
+        if isinstance(x,Quantity):
+            unit = x.unit
+            x = x.value
+
         if unit is not one:
             unit = Unit.unit(unit)
         self._unit = unit
@@ -524,7 +529,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             self._value = nummy(x,u=u,dof=dof,utype=utype,name=name)
             
         if k == 1 and uunit is None:
-            self._U = u
+            self._U = self.u
         else:
             self._U = None
             self._set_U(self._k,uunit)
@@ -603,7 +608,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                 return self._Ubr
             
         if isinstance(self._U,Quantity):
-            return self._U._value
+            return self._U.value
         return self._U
     
     def _set_U(self,k=None,unit=None):
@@ -624,7 +629,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             
         if unit is None:
             if isinstance(self._U,Quantity):
-                unit = self._U._unit
+                unit = self._U.unit
             
         if u == 0:
             if unit is None:
@@ -729,7 +734,38 @@ class gummy(Quantity,metaclass=MetaGummy):
         """
         return self._value.cisim
     
-            
+    @property
+    def cimethod(self):
+        """
+        `str` in {'shortest', 'symmetric'}), default is 'shortest'
+        
+        Get or set the method for calculating the confidence interval from 
+        Monte-Carlo data.  If this property is set at the class level, it will
+        change the default `cimethod` value for new gummys but will no affect
+        gummys that have already been created.
+        
+        Can be set either to the string 'shortest' or the string 'symmetric'.
+        This property gets or sets the method for calculating confidence
+        intervals from Monte-Carlo data.  
+        
+        If it is set to 'shortest', the confidence interval will be taken to be 
+        the shortest interval that includes the desired fraction of the probability 
+        distribution.  
+        
+        If it is set to 'symmetric', then the confidence interval will be set so 
+        that, for n Monte-Carlo samples and a coverage probability of `p`, then
+        `n`*(1-`p`)/2 samples lie below the lower limit of the confidence interval
+        and the same number of samples lie above the upper limit of the confidence 
+        interval.
+        """
+        
+        return self.value._cimethod
+    @cimethod.setter
+    def cimethod(self,value):
+        value = value.lower().strip()
+        if value not in ['shortest','symmetric']:
+            raise ValueError('cimethod ' + str(value) + ' is not recognized')
+        self.value._cimethod = value
             
     @property
     def name(self):
@@ -788,7 +824,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         (1000.0 +/- 1.2) uV
         """
         if isinstance(self._U,Quantity):
-            return self._U._unit
+            return self._U.unit
         else:
             return None
     @uunit.setter
@@ -921,6 +957,64 @@ class gummy(Quantity,metaclass=MetaGummy):
         self._set_k = False
         self._set_U(self._k,None)
         
+    def correlation(self,gummy):
+        if isinstance(gummy,Quantity):
+            gummy = gummy.value
+        return self.value.correlation(gummy)
+    
+    def covariance(self,gummy):
+        if isinstance(gummy,Quantity):
+            gummy = gummy.value
+        return self.value.covariance(gummy)
+    
+    @staticmethod
+    def correlation_matrix(gummys):
+        """
+        Returns the correlation matrix of a list or array of gummys.
+        """
+        m = [g.value if isinstance(g,Quantity) else g for g in gummys]
+        return [[b.correlation(a) if isinstance(b,ummy) else 0 
+                for b in m] for a in m]
+        
+    @staticmethod
+    def covariance_matrix(gummys):
+        """
+        Returns the variance-covariance matrix of a list or array of gummys.
+        """
+        m = [g.value if isinstance(g,Quantity) else g for g in gummys]
+        return [[b.covariance(a) if isinstance(b,ummy) else 0 
+                for b in m] for a in m]
+    
+        
+    @property
+    def finfo(self):
+        return self.value.finfo
+    
+    @property
+    def real(self):
+        return self.copy(formatting=False)
+    
+    def conjugate(self):
+        return self.copy(formatting=False)
+    
+    def angle(self):
+        if self.x >= 0:
+            return type(self)(0)
+        else:
+            return type(self)(pi)
+    
+    @property
+    def utype(self):
+        return self.value.utype
+        
+    def ufrom(self,x,sim=False):
+        x = [i.value if isinstance(i,Quantity) else i for i in x]
+        return self.value.ufrom(x,sim)
+    
+    def doffrom(self,x):
+        x = [i.value if isinstance(i,Quantity) else i for i in x]
+        return self.value.ufrom(x)
+        
     @property
     def style(self):
         """
@@ -1023,6 +1117,10 @@ class gummy(Quantity,metaclass=MetaGummy):
         raise ValueError('style ' + str(text) + ' is not recognized')
         
     @property
+    def bayesian(self):
+        return self.value._bayesian
+        
+    @property
     def nsig(self):
         return self.value.nsig
     @nsig.setter
@@ -1096,25 +1194,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             r._pm = None
             r._set_k = True
         
-    def graft(self,unit,uunit=None):
-        """
-        Returns a copy of the gummy with different units but the same `x` and
-        `u` values.  This is different from ``gummy.convert(unit)`` in that
-        ``gummy.convert(unit)`` changes the `x` and `u `values to express the
-        same quantity  in different units while `gummy.graft(unit)` simply
-        tacks on a different unit to the same numerical values.
-        
-        Parameters
-        ----------
-        unit:  `str` or `Unit`
-            The unit for the `x` value and if `uunit` is `None`, the
-            uncertainty.  It must be string, None, a `Unit` object, or the
-            integer 1.  Both 1 and `None` will be interpreted as the Unit
-            instance `one`.
-        """     
-        g = self.copy()
-        g._unit = Unit.unit(unit)
-        return g
+        return r
 
     @staticmethod
     def simulate(gummys,n=100000,ufrom=None):
@@ -1135,8 +1215,9 @@ class gummy(Quantity,metaclass=MetaGummy):
             a list containing  gummys and strings.  The default value is `None`.
         """
         if ufrom is not None:
-            ufrom = gummy._toummylist(ufrom)
-        gummys = gummy._toummylist(gummys)
+            ufrom = ummy._toummylist(ufrom)
+        gummys = [g.value if isinstance(g,Quantity) else g for g in gummys]
+        gummys = ummy._toummylist(gummys)
         return nummy.simulate(gummys,n,ufrom)
     
     def sim(self,n=100000,ufrom=None):
@@ -1158,7 +1239,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             a list containing  gummys and strings.  The default value is `None`.
         """
         if ufrom is not None:
-            ufrom = gummy._toummylist(ufrom)
+            ufrom = ummy._toummylist(ufrom)
         return gummy.simulate([self],n,ufrom)
         
     @classmethod
@@ -1294,7 +1375,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         """
         import matplotlib.pyplot as plt
                     
-        g = self.copy(True)
+        g = self.copy(formatting=True)
         if p is not None and p != self.p:
             g.p = p
             
@@ -2085,7 +2166,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             xexp = None
             oexp = 0
             
-        if self.u == 0 or isnan(self.u) or isinf(self.u):
+        if self.u == 0 or isnan(self.u) or isinf(self.u) or (style=='x' and xsig is not None):
             if isinstance(x,Rational) and not isinstance(x,Integral):
                 ffstr = str(x)
                 fstr = ffstr.split('/')[-1]
@@ -2120,7 +2201,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             lgadd = _lg10(1/(1-10**-nsig/2))+10**-16
             if sim and abs(self.cisim[1]-self.cisim[0]) != 0 and not isinf(self.cisim[0]) and not isinf(self.cisim[1]) and not isnan(self.cisim[0]) and not isnan(self.cisim[1]):
                 xcnt = _floor(_lg10(abs((self.cisim[1]-self.cisim[0])/2))+lgadd)
-            if style != 'ueq' and not isinstance(self._U,gummy) and not isinf(self._U):
+            if style != 'ueq' and not isinstance(self._U,Quantity) and not isinf(self._U):
                 try:
                     xcnt = _floor(_lg10(abs(self._U))+lgadd)
                 except:
@@ -2150,12 +2231,12 @@ class gummy(Quantity,metaclass=MetaGummy):
                 # If a leading 9 will be rounded to a 10, increment xexp by 1
                 xexp += 1
                         
-            ugummy = isinstance(self._U,gummy) or (self._Ubr is not None and isinstance(self._Ubr[0],gummy))
+            ugummy = isinstance(self._U,Quantity) or (self._Ubr is not None and isinstance(self._Ubr[0],Quantity))
             if ugummy and not sim:
                 if self._Ubr is None:
-                    uret = [self._U._format_xu(fmt,'x',norm,nsig,xsig=nsig)[1]]
+                    uret = [gummy(self._U)._format_xu(fmt,'x',norm,nsig,xsig=nsig)[1]]
                 else:
-                    uret = [i._format_xu(fmt,'x',norm,nsig,xsig=nsig)[1] for i in self._Ubr]
+                    uret = [gummy(i)._format_xu(fmt,'x',norm,nsig,xsig=nsig)[1] for i in self._Ubr]
                 if style == 'pm' or style == 'concise':
                     style = 'pmi'
         
@@ -2516,7 +2597,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         return ret
     
     @classmethod
-    def _apply(cls,function,derivative,*args,fxdx=None):
+    def apply(cls,function,derivative,*args,fxdx=None):
         if fxdx is None:
             args,x = _applyc(*args)
             fx = function(*x)
@@ -2525,15 +2606,15 @@ class gummy(Quantity,metaclass=MetaGummy):
             fx,d,x = fxdx
         
         if not _isscalar(fx):
-            return [cls._apply(lambda *y: function(*y)[i],
+            return [cls.apply(lambda *y: function(*y)[i],
                                lambda *y: derivative(*y)[i],
                                *args,fxdx=(fx[i],d[i],x)) 
                     for i in range(len(fx))]
-        r = super(gummy,cls)._apply(function,derivative,*args,fxdx=(fx,d,x))
-        return r
+        r = nummy._apply(function,derivative,*args,fxdx=(fx,d,x))
+        return cls(r)
         
     @classmethod
-    def _napply(cls,function,*args,fxx=None):
+    def napply(cls,function,*args,fxx=None):
         if fxx is None:
             args,x = _applyc(*list(args))
             fx = function(*x)
@@ -2541,10 +2622,9 @@ class gummy(Quantity,metaclass=MetaGummy):
             fx,x = fxx
             
         if not _isscalar(fx):
-            return [cls._napply(lambda *y: function(*y)[i],*args,fxx=(fx[i],x)) 
+            return [cls.napply(lambda *y: function(*y)[i],*args,fxx=(fx[i],x)) 
                     for i in range(len(fx))]
-        r = super(gummy,cls)._napply(function,*args,fxx=fxx)
-        return r
+        return cls(nummy._napply(function,*args,fxx=fxx))
                 
     def _nprnd(self,f):
         ret = self._value._nprnd(f)
@@ -2988,27 +3068,37 @@ def _applyc(*args):
     for i,a in enumerate(args):
         # try to convert all gummys in args to unit one and replace any
         # gummys or jummys in x with mean values
-        if isinstance(a,gummy):
+        if isinstance(a,Quantity):
             if a._unit is not one:
                 if a.autoconvert:
-                    a = a.convert(one)
+                    a = a.convert(one).value
                     args[i] = a
                 else:
                     raise ValueError('a function argument is not dimensionless')
-            x[i] = a.x
-        elif isinstance(a,jummy):
-            if a._real._unit is not one or a._imag._unit is not one:
-                if a._real._unit is not one:
-                    if a._real.autoconvert:
-                            r = a._real.convert(one)
-                    else:
-                        raise ValueError('a function argument is not dimensionless')
-                if a._imag._unit is not one:
-                    if a._imag.autoconvert:
-                            j = a._imag.convert(one)
-                    else:
-                        raise ValueError('a function argument is not dimensionless')
-                a = jummy(r,j)
+            else:
+                a = a.value
+                args[i] = a
+            if isinstance(a,ummy):
+                x[i] = a.x
+            else:
+                x[i] = a
+        elif isinstance(a,immy):
+            if isinstance(a,jummy):
+                if a.real.unit is not one or a.imag.unit is not one:
+                    if a.real.unit is not one:
+                        if a.real.autoconvert:
+                                r = a.real.convert(one).value
+                        else:
+                            raise ValueError('a function argument is not dimensionless')
+                    if a.imag.unit is not one:
+                        if a.imag.autoconvert:
+                                j = a.imag.convert(one).value
+                        else:
+                            raise ValueError('a function argument is not dimensionless')
+                else:
+                    r = a.real.value
+                    j = a.imag.value
+                a = immy(r,j)
                 args[i] = a
             x[i] = complex(a)
         elif isinstance(a,ummy):

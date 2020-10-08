@@ -1473,6 +1473,26 @@ class Quantity(PrettyPrinter):
         c = Quantity(self.value,self.unit)
         c.autoconvert = True
         return c
+    
+    def graft(self,unit):
+        """
+        Returns a copy of the gummy with different units but the same `x` and
+        `u` values.  This is different from ``gummy.convert(unit)`` in that
+        ``gummy.convert(unit)`` changes the `x` and `u `values to express the
+        same quantity  in different units while `gummy.graft(unit)` simply
+        tacks on a different unit to the same numerical values.
+        
+        Parameters
+        ----------
+        unit:  `str` or `Unit`
+            The unit for the `x` value and if `uunit` is `None`, the
+            uncertainty.  It must be string, None, a `Unit` object, or the
+            integer 1.  Both 1 and `None` will be interpreted as the Unit
+            instance `one`.
+        """     
+        g = self.copy()
+        g._unit = Unit.unit(unit)
+        return g
  
     def tostring(self,fmt=None,**kwds):
         unit = self._unit.tostring(fmt=fmt,**kwds)
