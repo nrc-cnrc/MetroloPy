@@ -1453,25 +1453,15 @@ class Quantity(PrettyPrinter):
         it is set to may be a string, `None`, a `Unit` object, or the integer 1.
         Both 1 and `None` will be interpreted as the Unit instance `one`.
         
-        Examples
-        --------
+        Example
+        -------
             
-        >>> g = gummy(0.001,0.0000012,unit='V')
-        >>> g
-        (0.001 000 0 +/- 0.000 001 2) V
-        >>> g.unit = 'uV'
-        >>> g
-        (1000.0 +/- 1.2) uV
-        >>> g.uunit = '%'
-        >>> g.unit = 'mV'
-        >>> g
-        1.0000 mV +/- 0.12%
-        >>> g.unit = 'uV'
-        >>> g
-        1000.0 uV +/- 0.12%
-        >>> g.uunit = None
-        >>> g
-        (1000.0 +/- 1.2) uV
+        >>> x = Quantity(0.001,unit='V')
+        >>> x
+        (0.001 V
+        >>> x.unit = 'uV'
+        >>> x
+        1000.0 uV
         """
         return self._unit
     @unit.setter
@@ -1492,9 +1482,10 @@ class Quantity(PrettyPrinter):
         
     def convert(self,unit):
         """
-        Returns a copy of the gummy with converted units.  This is equivalent
-        to calling the copy method and then setting the unit and uunit properties
-        on the copied gummy.
+        Returns a copy of the Quantity with converted units.  A 
+        `NoUnitConversionFoundError` will be raised if the unit conversion is
+        not possible.
+        
         
         Parameters
         ----------
@@ -1514,15 +1505,15 @@ class Quantity(PrettyPrinter):
         
     def reduce_unit(self):
         """
-        Cancels factors in a gummy's unit when possible.  This modifies the
+        Cancels factors in a Quantity's unit when possible.  This modifies the
         calling gummy and returns `None`.
         
         Example
         -------
         
-        >>> g = gummy(5,unit='mm/m')
-        >>> g.reduce_unit()
-        >>> g
+        >>> x = Quantity(5,unit='mm/m')
+        >>> x.reduce_unit()
+        >>> x
         0.005
         """
         un = self._unit.mulr(one)[0]
@@ -1540,18 +1531,18 @@ class Quantity(PrettyPrinter):
         Examples
         --------
         
-        >>> a = gummy(1,u=0.01,unit='cm')
-        >>> b = gummy(2,u=0.2,unit='mm')
+        >>> a = Quantity(1,unit='cm')
+        >>> b = Quantity(2,unit='mm')
         >>> a + b
-        (1.200 +/- 0.022) cm
+        1.2 cm
         >>> a.c + b
-        (12.00 +/- 0.22) mm
+        12 mm
         >>> a + b.c
-        (1.200 +/- 0.022) cm
+        1.2 cm
         >>> a*b
-        (0.200 +/- 0.020) cm**2
+        0.2 cm**2
         >>>a.c*b
-        (20.0 +/- 2.0) mm**2
+        20 mm**2
         """
         c = Quantity(self.value,self.unit)
         c.autoconvert = True
