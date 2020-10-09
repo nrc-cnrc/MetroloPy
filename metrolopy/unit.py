@@ -21,8 +21,8 @@
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
 """
-This module contains the procedures for defining units and unit algebera used
-by the gummy class.
+Classes that for handling units are defined here:  Conversion, Unit,
+_CompositeUnit, one, Quantity and QuantityArray
 """
 
 import numpy as np
@@ -37,6 +37,41 @@ from .indexed import Indexed
 from .unitparser import _UnitParser
 
 def unit(name,exception=True):
+    """
+        Finds an returns a Unit object from the Unit library.  The `unit`
+        function is an alias for the `Unit.unit` static method.
+        
+        Parameters
+        ----------
+            txt: `str`, `Unit` or 1
+                This may be a string representing the unit.  The string can
+                contain the name, short name or (if the unit was created
+                with `add_symbol` set to `True`) the symbol of the unit or a
+                combination of names and/or symbols of several different
+                units.  Spaces or the character '*' represent multiplication,
+                the character '/' represents division and the string '**'
+                represents the power operator. For example txt can be:
+                    
+                'kg m**2/s'
+                
+                or equivalently:
+                    
+                'kilogram*metre*metre*second**-1' or '(kg/s)*m**2'.
+                
+                If a unit name contains a space, '*' or '/' character then the
+                name must be enclosed in square brackets, e.g:
+                    
+                [light year]
+                
+                If txt is a Unit instance that instance is returned.
+                
+            exception: `bool`, optional
+                If this is `True` then a `UnitNotFoundError` or UnitLibError
+                is raised if a unit is not found that matches `txt`.  If it is
+                `False` and a unit is not found, then `Unit.unit` returns
+                `None` without raising an exception.  The default is `True`.
+        """
+
     return Unit.unit(name,exception=exception)
 
 class Conversion:
@@ -52,8 +87,9 @@ class Conversion:
         
     factor:  `float`, optional
         The conversion factor between the parent Unit and the new Unit:
-        [value with new Unit] = factor * [value with parent Unit]
-        The default value is 1
+        [value with new Unit] = factor * [value with parent Unit].  The
+        conversion factor may not have a unit, but may be an ummy of gummy
+        with not unit one.  The default value is 1.
     """
     linear = True
     
@@ -111,10 +147,11 @@ def _f_bop(f,rf,x,y):
 class Unit(PrettyPrinter,Indexed):
     """
     Creating an instance of this class creates a representation of a physical
-    unit and adds it to the unit library.  Units already in the unit library or 
-    derived units made up of other units in the unit library can be accessed 
-    by passing a text string with the unit name or symbol to the static method
-    `Unit.unit`.
+    unit and adds it to the unit library.  Once created the unit intance may
+    be retrived by passing a string with the unit name or alias to the `unit`
+    or `Unit.unit` functions.  Units can be multiplied and divided by other 
+    units and raised to numerical powers.  Multiplying or dividing a numerical
+    value by a unit will create a Qunatity instance.
     
     Parameters
     ----------
@@ -415,6 +452,15 @@ class Unit(PrettyPrinter,Indexed):
         
     @property
     def linear(self):
+        """
+        Gets a `bool` value indicating whether the Unit is linear.  If the
+        unit is linear then any associated values will follow the standard 
+        rules of arithmatic  for Quantaties and the unit's Conversion is 
+        defined by multiplying or dividing by a single conversion factor.
+        Nonlinear units may have a more complicated conversion and may
+        override the unusal operator methods.
+        """
+
         return self._linear
                 
     def _convtree(self):
@@ -1327,6 +1373,32 @@ with Unit._builtin():
     
 
 class Quantity(PrettyPrinter):
+    """
+    Instances of this class represent a quantity with a value and a unit.
+    The behavior of Quantity instances under mathematical operations with
+    other Qunaitity object or numerical values depends on the unit. E.g. 
+    an interger of float may be added to `Quantity(1,unit='%')` but not to 
+    `Quantity(1,unit='m/s')`.  For operations involving only linear units, the
+    units will be automatically converted to facilitate the operation, e.g.
+    `Quantity(1,unit='psi')` may be added to `Quantity(1,unit='psi')` but not
+    `Quantity(1,unit='db(uPa)'.  Manual unit conversions can be realized by
+    calling the `Quantity.convert` method, or in place by setting the 
+    `Quantity.unit` property.
+    
+    Quantity instances may be created directly or by multiplying or dividing 
+    a number by a `Unit` instance: `Quantity(2.2,unit='cm')` is equivalent to
+    `2.2 * unit('cm')`.
+
+    Parameters
+    ----------
+
+    value: number like including `ummy`
+        the value of the Quantity
+
+    unit:  `str` or `Unit`
+        The `Unit` instance representing the unit of the Quantity or a string
+        that references the `Unit` instance.
+    """
     
     _arraytype = None
     
@@ -1653,6 +1725,23 @@ class Quantity(PrettyPrinter):
     
     
 class QuantityArray(Quantity):
+    """
+    A subclass of Quantity.  Instance of this class represent a list, tuple, 
+    or numpy array of values all with the same unit.  Elements of the array 
+    are returned as `Quantity` instances.  Instances of this class can be
+    created directly or by multiplying a list, tuple, or numpy array by a
+    `Unit` instance.
+    
+    Parameters
+    ----------
+
+    value: `list`, `tuple` or `ndarray`
+        the value of the Quantity
+
+    unit:  `str` or `Unit`
+        The `Unit` instance representing the unit of the Quantity or a string
+        that references the `Unit` instance.
+    """
     
     _elementtype = Quantity
     
