@@ -313,6 +313,22 @@ class nummy(ummy):
         
         Distribution.set_seed(seed)
         
+    def toummy(self):
+        """
+        returns an ummy representaion of the nummy
+        """
+        r = ummy(self.x,u=self.u,dof=self.dof)
+        r._ref = self._ref
+        r._refs = self._refs
+        return r
+    
+    def splonk(self):
+        """
+        splonks the nummy
+        """
+        return self.toummy().splonk()
+    
+        
     @staticmethod
     def _copy(s,r,formatting=True,tofloat=False):
         # copies attributes of s to r, called from ummy.copy()

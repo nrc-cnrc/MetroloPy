@@ -34,6 +34,9 @@ from .printing import _latex_math
 
 class GummyConstant(gummy,Indexed):
     
+    toummy = False
+    splonk = False
+    
     _builtins_to_import = ['..codata2018']
     
     _builtin_lib = {}
@@ -61,6 +64,36 @@ class GummyConstant(gummy,Indexed):
                  utype=None,name=None,symbol=None,short_name=None,
                  add_symbol=False, html_symbol=None,latex_symbol=None,
                  ascii_symbol=None,description=None):
+        """
+        A subclass of `gummy` that can be retrieved by name or alias from the
+        constant library with the `constant` function.
+        
+        `GummyConstant` takes all the parameters that `gummy` takes, though 
+        the `name` parameter is now required.  In addition it takes a required
+        `symobol` parameter and several other optional parameters:
+            
+        Parameters
+        ----------
+        symbol:  `str`, required
+            A unicode symbol.  If the `add_symbol` parameter is set to `True`, 
+            then this symbol can also be used to access the unit with the 
+            `constant` function.
+            
+        short_name: `str` or `None`
+            a short name which can be used as an additional alias for the 
+            constant in the constant library
+        
+        add_symbol: `bool`, optional
+            If this is `True`, then the symbol can be used to look up the constant
+            in the constant library.  The default is `False`
+            
+        html_symbol, latex_symbol, ascii_symbol:  `str` or `Mone`, optional
+            html, latex, and ascii versions of the symbol if they are different
+            from the unicode representation of the symbol.
+            
+        description:  `str` or `None`, optional
+            a description of the unit
+        """
         if name is None:
             name = symbol
             
@@ -138,7 +171,23 @@ class JummyConstant(jummy,Indexed):
         return super().tostring(fmt=fmt,norm=norm,nsig=nsig,solidus=solidus,
                                 mulsep=mulsep,show_name=show_name,name=name)
 
-def constant(name):
+def constant(name,toummy=None,splonk=None):
+    """
+    Finds an returns a constants from the constant library.
+    
+    Parameter
+    ----------
+        name: `str`, `Unit` or 1
+            The name or alias of the constant.  
+            
+    Returns
+    -------
+    A `GummyConstant` or `JummyConstant` instance 
+    
+    ummy/immy Quantity instances can bre retrieved by setting `toummy` to True
+    or GummyConstant.toummy to True.  splonk the returned value by setting
+    `splonk` to True or GummyConstant.splonk to True
+    """
     if isinstance(name,GummyConstant) or isinstance(name,JummyConstant):
         return name
     ret = JummyConstant._lib.get(name)
@@ -148,6 +197,15 @@ def constant(name):
         ret = JummyConstant.get(name,exception=False)
     if ret is None:
         raise ConstantNotFoundError('constant "' + str(name) + '" was not found')
+        
+    if splonk is None:
+        splonk = GummyConstant.splonk
+    if splonk:
+        ret = ret.splonk()
+    else:
+        if toummy is None:
+            ret = ret.toummy()
+        
     return ret
 
 class _search_display:
@@ -192,14 +250,13 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
         symbols and conversion displayed using inline LaTeX.
 
     constants: `list` of `str`,optional
-        A list of units to print.  If this parameter is specified the values
+        A list of constants to print.  If this parameter is specified the values
         of the search and `show_all` parameters are ignored.
 
     prnt: `bool`, optional
         If this is `True`, the results are printed.  If it is `False` the results
         are returned as a string.  The default is `True`.
     """
-
     
     if fmt is None and prnt:
         return _search_display(search,constants)
@@ -337,9 +394,9 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
         
 def shadowed_constants(fmt=None,prnt=True):
     """
-    Lists any units which have a shadowed name or alias.  Units may be shadowed
-    if the user has defined a new unit with the same name or alias as an
-    existing unit.
+    Lists any constants which have a shadowed name or alias.  Constants may be 
+    shadowed if the user has defined a new unit with the same name or alias as 
+    an existing unit.
     
     Parameters
     ---------

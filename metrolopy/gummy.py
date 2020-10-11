@@ -500,41 +500,45 @@ class gummy(Quantity,metaclass=MetaGummy):
                 
         if isinstance(x,Distribution):
             self._value = nummy(x,utype=utype,name=name)
-        else:
-            if uunit is not None and u != 0:
-                U = Quantity(u,unit=uunit)
-                # Now try to find the uncertainty in the x units
-                if not unit.linear:
-                    u = unit.from_uunit(u,uunit)
-                elif unit.is_dimensionless:
-                    if not uunit.is_dimensionless:
-                        raise NoUnitConversionFoundError('no conversion found for unit ' + str(uunit) + ' to one')
-                    if uunit is one:
-                        u = U.convert(unit).value
-                    else:
-                        u = abs(x)*U.convert(one).value
+            if uunit is None:
+                self._U = _ku(self._k,self._value.u)
+            else:
+                self._U = None
+                self._set_U(self._k,uunit)
+            return
+
+        if uunit is not None and u != 0:
+            U = Quantity(u,unit=uunit)
+            # Now try to find the uncertainty in the x units
+            if not unit.linear:
+                u = unit.from_uunit(u,uunit)
+            elif unit.is_dimensionless:
+                if not uunit.is_dimensionless:
+                    raise NoUnitConversionFoundError('no conversion found for unit ' + str(uunit) + ' to one')
+                if uunit is one:
+                    u = U.convert(unit).value
                 else:
-                    try:
-                        u = U.convert(unit).value
-                    except NoUnitConversionFoundError:
-                        # If no conversion was found for uunit to unit, see
-                        # if unit can be converted to one.  In this case the u
-                        # passed to the intializer was a relative uncertainty.
-                        u = abs(x)*U.convert(one).value
-                        
-            if self._k != 1:
+                    u = abs(x)*U.convert(one).value
+            else:
                 try:
-                    u = u/self._k
-                except:
-                    u = u/type(u)(self._k)
-                    
-            self._value = nummy(x,u=u,dof=dof,utype=utype,name=name)
-            
-        if k == 1 and uunit is None:
-            self._U = self.u
+                    u = U.convert(unit).value
+                except NoUnitConversionFoundError:
+                    # If no conversion was found for uunit to unit, see
+                    # if unit can be converted to one.  In this case the u
+                    # passed to the intializer was a relative uncertainty.
+                    u = abs(x)*U.convert(one).value
         else:
-            self._U = None
-            self._set_U(self._k,uunit)
+            U = u
+                    
+        if self._k != 1:
+            try:
+                u = u/self._k
+            except:
+                u = u/type(u)(self._k)
+
+        self._value = nummy(x,u=u,dof=dof,utype=utype,name=name)
+        
+        self._U = U
                         
     @property
     def x(self):
@@ -627,7 +631,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         # value of _U
         
         if u is None:
-            u = self._value._u
+            u = self.u
             
         if unit is None:
             if isinstance(self._U,Quantity):
@@ -646,15 +650,15 @@ class gummy(Quantity,metaclass=MetaGummy):
                 return Quantity(u,unit=unit)
                 
         if k is None:
-            k = self._k
+            k = self.k
         
-        if unit is None or unit is self._unit:
+        if unit is None or unit is self.unit:
             return _ku(k,u)
                 
         else:
             if self._unit.linear:
                 try:
-                    if self._unit.is_dimensionless:
+                    if self.unit.is_dimensionless:
                         raise NoUnitConversionFoundError()
                     return Quantity(_ku(k,u),unit=self.unit).convert(unit)
                     
@@ -667,7 +671,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                             raise NoUnitConversionFoundError('no conversion found from unit ' + str(unit) + ' to one')
                         return Quantity(float('inf'),unit=unit)
             else:
-                return Quantity(self._unit.to_uunit(_ku(k,u),unit),unit)
+                return Quantity(self.unit.to_uunit(_ku(k,u),unit),unit)
 
                     
     @property
@@ -1527,6 +1531,18 @@ class gummy(Quantity,metaclass=MetaGummy):
             
         if not hold:
             plt.show()
+            
+    def toummy(self):
+        """
+        returns a `Quantity` with an `ummy` value.
+        """
+        return Quantity(self.value.toummy(),unit=self.unit)
+    
+    def splonk(self):
+        """
+        splonks the gummy
+        """
+        return Quantity(self.value.toummy().splonk(),unit=self.unit).splonk()
         
     @property
     def ubreakdown(self):
@@ -3173,6 +3189,17 @@ class jummy(immy):
                                    mulsep=mulsep,norm=norm)
         return txt
 
+    def toummy(self):
+        """
+        returns an immy representation of the jummy
+        """
+        return immy(real=self.real.toummy(),imag=self.imag.toummy())
+    
+    def splonk(self):
+        """
+        splonks the jummy
+        """
+        return self.toummy().splonk()
 
 def _applyc(*args):
     # used by gummy and jummy in _apply and _napply

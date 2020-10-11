@@ -315,6 +315,14 @@ class ummy(Dfunc,PrettyPrinter):
         """
         return self.copy(formatting=False,tofloat=True)
     
+    def splonk(self):
+        """
+        returns self.x if u == 0 else returns self
+        """
+        if self.u == 0:
+            return self.x
+        return self
+    
     def correlation(self, g):
         """
         Returns the correlation coefficient between `self` and `g`."""
@@ -1709,6 +1717,11 @@ class immy(PrettyPrinter,Dfunc):
         imaginary components) converted to floats.
         """
         return self.copy(formatting=False,tofloat=True)
+    
+    def splonk(self):
+        if self.real.u == 0 and self.imag.u == 0:
+            return self.x
+        return self
     
     @classmethod
     def _apply(cls,function,derivative,*args,fxx=None,rjd=None):

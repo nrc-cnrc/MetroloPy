@@ -38,47 +38,58 @@ from .unitparser import _UnitParser
 
 def unit(name,exception=True):
     """
-        Finds an returns a Unit object from the Unit library.  The `unit`
-        function is an alias for the `Unit.unit` static method.
-        
-        Parameters
-        ----------
-            txt: `str`, `Unit` or 1
-                This may be a string representing the unit.  The string can
-                contain the name, short name or (if the unit was created
-                with `add_symbol` set to `True`) the symbol of the unit or a
-                combination of names and/or symbols of several different
-                units.  Spaces or the character '*' represent multiplication,
-                the character '/' represents division and the string '**'
-                represents the power operator. For example txt can be:
-                    
-                'kg m**2/s'
+    Finds an returns a `Unit` from the unit library.  This function is an 
+    alias for the `Unit.unit` static method.
+    
+    Parameters
+    ----------
+        txt: `str`, `Unit` or 1
+            This may be a string representing the unit.  The string can
+            contain the name, short name or (if the unit was created
+            with `add_symbol` set to `True`) the symbol of the unit or a
+            combination of names and/or symbols of several different
+            units.  Spaces or the character '*' represent multiplication,
+            the character '/' represents division and the string '**'
+            represents the power operator. For example txt can be:
                 
-                or equivalently:
-                    
-                'kilogram*metre*metre*second**-1' or '(kg/s)*m**2'.
+            'kg m**2/s'
+            
+            or equivalently:
                 
-                If a unit name contains a space, '*' or '/' character then the
-                name must be enclosed in square brackets, e.g:
-                    
-                [light year]
+            'kilogram*metre*metre*second**-1' or '(kg/s)*m**2'.
+            
+            If a unit name contains a space, '*' or '/' character then the
+            name must be enclosed in square brackets, e.g:
                 
-                If txt is a Unit instance that instance is returned.
-                
-            exception: `bool`, optional
-                If this is `True` then a `UnitNotFoundError` or UnitLibError
-                is raised if a unit is not found that matches `txt`.  If it is
-                `False` and a unit is not found, then `Unit.unit` returns
-                `None` without raising an exception.  The default is `True`.
-        """
+            [light year]
+            
+            If txt is a Unit instance that instance is returned.
+            
+        exception: `bool`, optional
+            If this is `True` then a `UnitNotFoundError` or UnitLibError
+            is raised if a unit is not found that matches `txt`.  If it is
+            `False` and a unit is not found, then `Unit.unit` returns
+            `None` without raising an exception.  The default is `True`.
+            
+    Returns
+    -------
+    A `Unit` instance or possibly None if the `exception` parameter is
+    set to `True`.
+    """
 
     return Unit.unit(name,exception=exception)
 
 class Conversion:
     """
     Represents a unit conversion.  This class should only be used as arguments
-    to `Unit` object initializers.  Each conversion should be associated with one
-    and only one parent Unit.
+    to `Unit` object initializers.  Each conversion should be associated with
+    one and only one parent Unit; do not re-use conversion instances with more
+    than one `Unit` instance.  
+    
+    The base `Conversion` class is defined by a single conversion factor.  
+    More comlicated conversions overriding the `to` and `frm` methods should 
+    inherit from the `NonlinearConversion` subclass and be used with units 
+    that inherit from the `NonlinearUnit` subclass.
     
     Parameters
     ----------
@@ -150,22 +161,22 @@ class Unit(PrettyPrinter,Indexed):
     unit and adds it to the unit library.  Once created the unit intance may
     be retrived by passing a string with the unit name or alias to the `unit`
     or `Unit.unit` functions.  Units can be multiplied and divided by other 
-    units and raised to numerical powers.  Multiplying or dividing a numerical
-    value by a unit will create a Qunatity instance.
+    Units or Quantities and raised to numerical powers.  Multiplying or 
+    dividing a numerical value by a Unit will create a Qunatity instance.
     
     Parameters
     ----------
         
     name:  `str`
         The name of the unit.  The name can be used access the unit with the
-        `Unit.unit` method, but note that if you define a Unit with an
+        `unit` function, but note that if you define a Unit with an
         identical name to a previously defined unit then the older name will
         be shadowed.
     
     symbol:  `str`
         A unicode symbol used when displaying the unit.  If the `add_symbol`
         parameter is set to `True`, then this symbol can also be used
-        to access the unit with the `Unit.unit` method.
+        to access the unit with the `unit` function.
     
     conversion: `Conversion` or `None`, optional
         A conversion to another unit.  When creating units be careful to avoid
@@ -196,7 +207,8 @@ class Unit(PrettyPrinter,Indexed):
         (The inch is actually defined this way in the builtin unit library.)
     
     short_name: `str` or `None`
-        a short name
+        a short name which can be used as an additional alias for the unit in
+        the unit library
     
     add_symbol: `bool`, optional
         If this is `True`, then the symbol can be used to look up the unit
@@ -236,18 +248,18 @@ class Unit(PrettyPrinter,Indexed):
     
     _used_units = {}
     
-    _ufunc_dict = {np.square: lambda x: (np.square(x[0].value),x[0].unit**2),
-                   np.sqrt: lambda x: (np.sqrt(x[0].value),x[0].unit**0.5),
-                   np.cbrt: lambda x: (np.cbrt(x[0].value),x[0].unit**(1/3)),
-                   np.reciprocal: lambda x: (np.reciprocal(x[0].value),x[0].unit**-1),
-                   np.absolute: lambda x: (np.absolute(x[0].value),x[0].unit),
-                   np.negative: lambda x: (np.negative(x[0].value),x[0].unit),
-                   np.positive: lambda x: (np.positive(x[0].value),x[0].unit),
-                   np.conjugate: lambda x: (np.conjugate(x[0].value),x[0].unit),
-                   np.rint: lambda x: (np.rint(x[0].value),x[0].unit),
-                   np.floor: lambda x: (np.floor(x[0].value),x[0].unit),
-                   np.ceil: lambda x: (np.ceil(x[0].value),x[0].unit),
-                   np.trunc: lambda x: (np.trunc(x[0].value),x[0].unit),
+    _ufunc_dict = {np.square: lambda x: (np.square(x.value),x.unit**2),
+                   np.sqrt: lambda x: (np.sqrt(x.value),x.unit**0.5),
+                   np.cbrt: lambda x: (np.cbrt(x.value),x.unit**(1/3)),
+                   np.reciprocal: lambda x: (np.reciprocal(x.value),x.unit**-1),
+                   np.absolute: lambda x: (np.absolute(x.value),x.unit),
+                   np.negative: lambda x: (np.negative(x.value),x.unit),
+                   np.positive: lambda x: (np.positive(x.value),x.unit),
+                   np.conjugate: lambda x: (np.conjugate(x.value),x.unit),
+                   np.rint: lambda x: (np.rint(x.value),x.unit),
+                   np.floor: lambda x: (np.floor(x.value),x.unit),
+                   np.ceil: lambda x: (np.ceil(x.value),x.unit),
+                   np.trunc: lambda x: (np.trunc(x.value),x.unit),
                    np.add: lambda x,y: _f_bop(Unit._add,Unit._radd,x,y),
                    np.subtract: lambda x,y: _f_bop(Unit._sub,Unit._rsub,x,y),
                    np.multiply: lambda x,y: _f_bop(Unit._mul,Unit._rmul,x,y),
@@ -259,9 +271,10 @@ class Unit(PrettyPrinter,Indexed):
     @staticmethod
     def unit(txt,exception=True):
         """
-        Finds an returns a Unit object from the Unit library.
+        Finds an returns a `Unit` from the unit library.
         
-        Parameters:
+        Parameters
+        ----------
             txt: `str`, `Unit` or 1
                 This may be a string representing the unit.  The string can
                 contain the name, short name or (if the unit was created
@@ -289,6 +302,11 @@ class Unit(PrettyPrinter,Indexed):
                 is raised if a unit is not found that matches `txt`.  If it is
                 `False` and a unit is not found, then `Unit.unit` returns
                 `None` without raising an exception.  The default is `True`.
+                
+        Returns
+        -------
+        A `Unit` instance or possibly None if the `exception` parameter is
+        set to `True`.
         """
         try:
             if isinstance(txt,Unit):
@@ -455,7 +473,7 @@ class Unit(PrettyPrinter,Indexed):
         """
         Gets a `bool` value indicating whether the Unit is linear.  If the
         unit is linear then any associated values will follow the standard 
-        rules of arithmatic  for Quantaties and the unit's Conversion is 
+        rules of arithmatic for Quantaties and the unit's Conversion is 
         defined by multiplying or dividing by a single conversion factor.
         Nonlinear units may have a more complicated conversion and may
         override the unusal operator methods.
@@ -489,10 +507,7 @@ class Unit(PrettyPrinter,Indexed):
         
     def convert(self,g,unit):
         """
-        Converts a number or gummy from a quantity with the units self to unit.
-        
-        This is not intended be used directly, instead use the `gummy.convert`
-        method.
+        Converts a number from a quantity with the units `self` to `unit`.
         """
         unit = Unit.unit(unit)
         if unit is self:
@@ -515,8 +530,8 @@ class Unit(PrettyPrinter,Indexed):
         """
         `bool`, read-only
         
-        Returns `True` if a conversion exists between `self` and `one`, and `False`
-        if not.
+        Returns `True` if a conversion exists between `self` and `one`, and
+        `False` if not.
         """
         if self.conversion is not None and self.conversion.unit is one:
             return True
@@ -750,7 +765,7 @@ class Unit(PrettyPrinter,Indexed):
             b = 1
             
         if self is bunit:
-            return (self._nummy_rmod(a,b),self)
+            return (b % a,self)
         try:
             if aconv:
                 return (b % self.convert(a,bunit),bunit)
@@ -775,7 +790,9 @@ class Unit(PrettyPrinter,Indexed):
             except NoUnitConversionFoundError:
                 raise IncompatibleUnitsError('the exponent is not dimensionless')
                 
-        return (a**b,self**b)
+        un,c = self._cpow(b)
+        un = _CompositeUnit(un)
+        return ((a**b)*c,un)
         #bb = float(b)
         #if bb != b:
             #try:
@@ -805,8 +822,9 @@ class Unit(PrettyPrinter,Indexed):
                 a = self.convert(a,one)
             except NoUnitConversionFoundError:
                 raise IncompatibleUnitsError('the exponent is not dimensionless')
-                
-        return (b**a,bunit**a)
+        un,c = bunit._cpow(a)
+        un = _CompositeUnit(un)
+        return ((b**a)*c,un)
         #aa = float(a)
         #if aa != a:
             #try:
@@ -847,7 +865,7 @@ class Unit(PrettyPrinter,Indexed):
         return (+a,self)
     
     def _abs(self,a):
-        return (abs(self),self)
+        return (abs(a),self)
     
     def __mul__(self,v):
         if not isinstance(v,Unit):
@@ -1451,7 +1469,9 @@ class Quantity(PrettyPrinter):
         
         If this property is set, a unit conversion will be performed.  The value 
         it is set to may be a string, `None`, a `Unit` object, or the integer 1.
-        Both 1 and `None` will be interpreted as the Unit instance `one`.
+        Both 1 and `None` will be interpreted as the Unit instance `one`. A
+        `NoUnitConversionFoundError` will be raised if the unit conversion is
+        not possible.
         
         Example
         -------
@@ -1574,6 +1594,17 @@ class Quantity(PrettyPrinter):
     
     def totuple(self):
         return (self.value,self.unit)
+    
+    def splonk(self):
+        """
+        returns self.value if self.unit is one else returns self
+        """
+        if self.unit is one:
+            try:
+                return self.value.splonk()
+            except:
+                return self.value
+        return self
         
     def _bop(self,v,f):
         if issubclass(type(v),type(self)):
@@ -1640,16 +1671,16 @@ class Quantity(PrettyPrinter):
         return self._rbop(v,self.unit._rmod)                
         
     def __neg__(self):
-        r,r._unit = self.unit._neg(self)
-        return r
+        r,runit = self.unit._neg(self.value)
+        return self._make(r,unit=runit)
         
     def __pos__(self):
-        r,r._unit = self.unit._pos(self)
-        return r
+        r,runit = self.unit._pos(self.value)
+        return self._make(r,unit=runit)
         
     def __abs__(self):
-        r,r._unit = self.unit._abs(self)
-        return r
+        r,runit = self.unit._abs(self.value)
+        return self._make(r,unit=runit)
     
     def _cmp(self,v,f):
         if isinstance(v,Quantity):

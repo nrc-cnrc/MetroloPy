@@ -323,11 +323,8 @@ class Dfunc:
         ret = np.array([_call(lambda *x: cls._napply(function,*x), *a) for a in bargs])
         ret = ret.reshape(bargs.shape)
         return ret
-       
-    def __array_ufunc__(self,ufunc,method,*args,**kwds):
-        if method != '__call__':
-            return None
-        
+    
+    def _ufunc(self,ufunc,*args,**kwds):
         if any(isinstance(a,np.ndarray) for a in args):
             args = [np.array(a) if isinstance(a,Dfunc) else a for a in args]
         try:
@@ -336,4 +333,13 @@ class Dfunc:
             try:
                 return _call(fdict[ufunc],*args)
             except KeyError:
-                return None
+                return self.napply(ufunc,*args)
+       
+    def __array_ufunc__(self,ufunc,method,*args,**kwds):
+        if method != '__call__':
+            return None
+        
+        return self._ufunc(ufunc,*args,**kwds)
+            
+    def __array_function__(self,func,method,*args,**kwds):        
+        return self._ufunc(func,*args,**kwds)

@@ -255,10 +255,10 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
             else:
                 assert abs(g.x - x) < 1e-10
                 
-            if x != 0 and g._x != 0:
-                assert abs(g._x - x)/abs(x) < 1e-10
+            if x != 0 and g.x != 0:
+                assert abs(g.x - x)/abs(x) < 1e-10
             else:
-                assert abs(g._x - x) < 1e-10
+                assert abs(g.x - x) < 1e-10
                             
             if unit is 'degF':
                 assert g.unit in [uc.Unit.unit('degF'),uc.Unit.unit('degF-i')]
@@ -267,8 +267,7 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
             assert g.name == name
             
             if const:
-                assert g.const
-                assert g._u == 0
+                assert g.u == 0
                 if unit is uc.one:
                     if x == 0:
                         assert abs(g - x) < 1e-10
@@ -288,9 +287,7 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
             else:
                 assert not g.uunit_is_rel
                 
-            assert (g._x - x)/u < 1e-6
-            
-            assert not g.const
+            assert (g.x - x)/u < 1e-6
             
             if dof == float('inf'):
                 assert g.dof == float('inf')
@@ -334,12 +331,12 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
                         if g.p is not None:
                             assert abs(g.k - np.sqrt(dof/(dof-2))*(1/np.sqrt(1 - g.p))) < 1e-6
                     
-            assert abs((g._u - u)/u) < 1e-10
+            assert abs((g.u - u)/u) < 1e-10
             
             if not reinit:
                 assert abs(g.U - U)/U < 1e-10
             
-            assert abs((g._u - u)/u) < 1e-10
+            assert abs((g.u - u)/u) < 1e-10
             
             assert '?' not in g.tostring()
             

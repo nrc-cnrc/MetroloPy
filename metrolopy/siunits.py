@@ -97,7 +97,7 @@ with Unit._builtin():
     
     _ipk = Unit('international prototype kilogram','m(K)',
                 Conversion(_kg,gummy(1,1.2e-8)),add_symbol=True,
-                html_symbol='<i>m</i>(&#x1d4a6;)',latex_symbol='m({\mathcal {K}})',
+                html_symbol='<i>m</i>(&#x1d4a6;)',latex_symbol='m({\\mathcal {K}})',
                 description='IPK, le grand k')
     Unit.alias('IPK',_ipk)
     
@@ -136,7 +136,7 @@ with Unit._builtin():
                  description='SI derived unit of electrical inductance')
     
     _degC = OffsetUnit('degree Celsius','\u00B0C',OffsetConversion(_K,273.15),
-               latex_symbol='^{\circ}C',ascii_symbol = 'degC',add_symbol=True,order=0,
+               latex_symbol='^{\\circ}C',ascii_symbol = 'degC',add_symbol=True,order=0,
                description='unit of temperature')
     Unit.alias('degree C',_degC)
     Unit.alias('deg C',_degC)
@@ -195,7 +195,7 @@ with Unit._builtin():
               description='unit of time')
     Unit.alias('D',_d)
     _deg = Unit('degree','\t\u00B0',Conversion(_rad,pi/180),add_symbol=True,order=0,
-                 latex_symbol='^{\circ}',ascii_symbol='deg',
+                 latex_symbol='^{\\circ}',ascii_symbol='deg',
                  description='unit of angle, angular unit')
     _arcmin = Unit('arcminute',"\t'",Conversion(_deg,MFraction(1,60)),add_symbol=True,order=0,
                    short_name='arcmin',description='unit of angle, angular unit')
@@ -421,15 +421,15 @@ with Unit._builtin():
          order=0,description='astronomical unit of length')
     _M_solar = Unit('solar mass','M\u2609',Conversion(_kg,_const_solar_mass),
                     add_symbol=True,order=0,html_symbol='<i>M</i><sub>&#x2609;</sub>',
-                    latex_symbol='\t\tM_{\odot}',ascii_symbol='M(solar)',
+                    latex_symbol='\t\tM_{\\odot}',ascii_symbol='M(solar)',
                     description='astronomical unit of mass, mass of sun')
     Unit.alias('M(Sun)',_M_solar)
     _M_J = Unit('Jupiter mass','M(J)',Conversion(_kg,_const_jupiter_mass),add_symbol=True,
-         order=0,html_symbol='<i>M</i><sub>J</sub>',latex_symbol='\t\tM_{\mathrm{J}}',
+         order=0,html_symbol='<i>M</i><sub>J</sub>',latex_symbol='\t\tM_{\\mathrm{J}}',
          description='astronomical unit of mass') #check
     Unit.alias('M(Jup)',_M_J)
     Unit('Earth mass','M\u2295',Conversion(_kg,_const_earth_mass),add_symbol=True,
-         order=0,html_symbol='<i>M</i><sub>&#x2295;</sub>',latex_symbol='\t\tM_{\oplus}',
+         order=0,html_symbol='<i>M</i><sub>&#x2295;</sub>',latex_symbol='\t\tM_{\\oplus}',
          ascii_symbol='M(E)',description='astronomical unit of mass')
     _Jy = Unit('jansky','Jy',Conversion(_W*_m**-2*_Hz**-1,MFraction('1e-26')),add_symbol=True,
          decription='astronomical unit, spectral flux density, spectral irradiance')

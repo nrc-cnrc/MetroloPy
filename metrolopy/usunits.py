@@ -145,13 +145,13 @@ with Unit._builtin():
     Unit('slug','slug',Conversion('lbf s**2 ft**-1',1),add_symbol=True,description='unit of force')
     
     _degR = Unit('degree Rankine','\u00B0R',Conversion('K',MFraction(5,9)),
-                 latex_symbol='^{\circ}R',ascii_symbol='degR',add_symbol=True,
+                 latex_symbol='^{\\circ}R',ascii_symbol='degR',add_symbol=True,
                  description='unit of temperature')
     Unit.alias('degree R',_degR)
     Unit.alias('deg R',_degR)
     
     _degF = OffsetUnit('degree Fahrenheit','\u00B0F',OffsetConversion('degR',MFraction('459.67')),
-                latex_symbol='^{\circ}F',ascii_symbol='degF',add_symbol=True,
+                latex_symbol='^{\\circ}F',ascii_symbol='degF',add_symbol=True,
                 description='unit of temperature')
     Unit.alias('degree F',_degF)
     Unit.alias('deg F',_degF)
