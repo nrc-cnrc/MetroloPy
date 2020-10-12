@@ -156,13 +156,13 @@ fdict = {np.angle:  lambda x: x.angle(),
         }
 
 
-try_fconvert = False
+try_fconvert = True
 def _call(f,*x):
     if try_fconvert:
         try:
             return f(*x)
         except:
-            x = [a.tofloat() if isinstance(a,Dfunc) else float(a) for a in x]
+            x = [a.tofloat() if hasattr(a,'tofloat') else float(a) for a in x]
             return f(*x)
 
     return f(*x)

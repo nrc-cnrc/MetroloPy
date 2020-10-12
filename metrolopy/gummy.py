@@ -772,9 +772,60 @@ class gummy(Quantity,metaclass=MetaGummy):
         if value not in ['shortest','symmetric']:
             raise ValueError('cimethod ' + str(value) + ' is not recognized')
         self.value._cimethod = value
+        
+    @property
+    def simdata(self):
+        """
+        `numpy.ndarray`, read-only
+
+        Returns an array containing the Monte-Carlo simulation data.  A 
+        `NoSimulatedDataError` is raised if no Monte-Carlo data is available.
+        """
+        return self.value.simdata
+    
+    @property
+    def simsorted(self):
+        """
+        `numpy.ndarray`, read-only
+
+        Returns a sorted array containing the Monte-Carlo simulation data.  A 
+        `NoSimulatedDataError` is raised if no Monte-Carlo data is available.
+        """
+        return self.value.simsorted
+    
+    @property
+    def distribution(self):
+        """
+        read-only
+
+        Returns ths `Distribution` instance associated with the gummy.
+        """
+        return self.value.distribution
+    
+    @property
+    def ksim(self):
+        """
+        read-only
+
+        Returns ``0.5*(gummy.Usim[0] + gummy.Usim[1])/gummy.usim``
+        """
+        return self.value.ksim
+    
+    @property
+    def independant(self):
+        """
+        `bool`, read-only
+
+        Returns `False` if the owning gummy was created from a operation involving
+        other gummys and `True` otherwise.
+        """
+        return self.value.independant
             
     @property
     def name(self):
+        """
+        gets or sets an optional name for the gummy, may be `str` or `None`
+        """
         return self.value.name
     @name.setter
     def name(self,v):
@@ -1014,12 +1065,26 @@ class gummy(Quantity,metaclass=MetaGummy):
         return self.value.utype
         
     def ufrom(self,x,sim=False):
-        x = [i.value if isinstance(i,Quantity) else i for i in x]
+        try:
+            x = [i.value if isinstance(i,Quantity) else i for i in x]
+        except TypeError:
+            # x is probably a gummy and not iterable
+            if isinstance(x,Quantity):
+                x = [x.value]
+            else:
+                raise
         return self.value.ufrom(x,sim)
     
     def doffrom(self,x):
-        x = [i.value if isinstance(i,Quantity) else i for i in x]
-        return self.value.ufrom(x)
+        try:
+            x = [i.value if isinstance(i,Quantity) else i for i in x]
+        except TypeError:
+            # x is probably a gummy not iterable
+            if isinstance(x,Quantity):
+                x = [x.value]
+            else:
+                raise
+        return self.value.doffrom(x)
         
     @property
     def style(self):
@@ -1896,7 +1961,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                 if name is None:
                     if self.name is not None:
                         if isinstance(self.name,str) and len(self.name) > 1 and fmt == 'latex':
-                            name = norm(name.strip())
+                            name = norm(self.name.strip())
                         elif isinstance(self.name,str) and len(self.name) == 1 and fmt == 'html':
                             name = '<i>' + self.name.strip() + '</i>'
                         else:

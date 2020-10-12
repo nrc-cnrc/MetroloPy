@@ -67,8 +67,8 @@ class _ChainedConversion(NonlinearConversion):
             frmlst = c1._frmlst
             tolst = c1._tolst
         elif not c1.linear:
-            frmlst = [c1._frm]
-            tolst = [c1._to]
+            frmlst = [c1.frm]
+            tolst = [c1.to]
         else:
             frmlst = []
             tolst = []
@@ -77,8 +77,8 @@ class _ChainedConversion(NonlinearConversion):
             frmlst = c2._frmlst + frmlst
             tolst += c2._tolst
         elif not c2.linear:
-            frmlst = [c1._frm] + frmlst
-            tolst += [c1._to]
+            frmlst = [c1.frm] + frmlst
+            tolst += [c1.to]
             
         self._frmlst = frmlst
         self._tolst = tolst

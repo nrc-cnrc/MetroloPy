@@ -177,6 +177,11 @@ class ummy(Dfunc,PrettyPrinter):
         if u == 0:
             dof = float('inf')
             utype = None
+            
+        if isinstance(x,Fraction):
+            x = MFraction(x)
+        if isinstance(u,Fraction):
+            u = MFraction(u)
                 
         if self.rounding_u and not isinstance(x,Rational):
             finfo,x = _getfinfo(x)
@@ -192,11 +197,7 @@ class ummy(Dfunc,PrettyPrinter):
             self._finfo = finfo
         else:
             self._finfo = None
-            
-        if isinstance(x,Fraction):
-            x = MFraction(x)
-        if isinstance(u,Fraction):
-            u = MFraction(u)
+
             
         self._x = x
         self._u = u
@@ -1289,10 +1290,10 @@ class ummy(Dfunc,PrettyPrinter):
         s = np.linalg.lstsq(v,b,rcond=None)[0]
         u = 0
         
-        d = [i*self._u/j._u for i,j in zip(s,x)]
+        d = [i*self.u/j.u for i,j in zip(s,x)]
         for i in range(len(x)):
             for j in range(len(x)):
-                u += d[i]*d[j]*x[i].correlation(x[j])*x[i]._u*x[j]._u
+                u += d[i]*d[j]*x[i].correlation(x[j])*x[i].u*x[j].u
                 
         return u**0.5
         
@@ -1328,12 +1329,12 @@ class ummy(Dfunc,PrettyPrinter):
         v = ummy.correlation_matrix(x)
         b = [self.correlation(z) for z in x]
         s = np.linalg.lstsq(v,b,rcond=None)[0]
-        d = [i*self._u/j._u for i,j in zip(s,x)]
+        d = [i*self.u/j.u for i,j in zip(s,x)]
         usq = 0
         dm = 0
         for i in range(len(x)):
             for j in range(len(x)):
-                usqi = d[i]*d[j]*x[i].correlation(x[j])*x[i]._u*x[j]._u
+                usqi = d[i]*d[j]*x[i].correlation(x[j])*x[i].u*x[j].u
                 usq += usqi
                 dm += usqi**2/x[i].dof
                 
@@ -1962,6 +1963,9 @@ class MFraction(Fraction):
     """
     
     def __new__(cls, *args, **kwargs):
+        if len(args) == 1 and not (isinstance(args[0],str) 
+                                   or isinstance(args[0],Fraction)):
+            return args[0]
         ret = super(MFraction, cls).__new__(cls, *args, **kwargs)
         if ret.denominator == 1:
             return ret.numerator
@@ -1969,3 +1973,56 @@ class MFraction(Fraction):
     
     def _mpmath_(self,p,r):
         return rational.mpq(self.numerator,self.denominator)
+    
+    def __add__(self,v):
+        return MFraction(super().__add__(v))
+    
+    def __radd__(self,v):
+        return MFraction(super().__radd__(v))
+    
+    def __sub__(self,v):
+        return MFraction(super().__sub__(v))
+    
+    def __rsub__(self,v):
+        return MFraction(super().__rsub__(v))
+    
+    def __mul__(self,v):
+        return MFraction(super().__mul__(v))
+    
+    def __rmul__(self,v):
+        return MFraction(super().__rmul__(v))
+    
+    def __truediv__(self,v):
+        return MFraction(super().__truediv__(v))
+    
+    def __rtruediv__(self,v):
+        return MFraction(super().__rtruediv__(v))
+        
+    def __pow__(self,v):
+        return MFraction(super().__pow__(v))
+    
+    def __rpow__(self,v):
+        if isinstance(v,Fraction):
+            return MFraction(v).__pow__(self)
+        return MFraction(super().__rpow__(v))
+        
+    def __floordiv__(self,v):
+        return MFraction(super().__floordiv__(v))
+        
+    def __rfloordiv__(self,v):
+        return MFraction(super().__rfloordiv__(v))
+        
+    def __mod__(self,v):
+        return MFraction(super().__mod__(v))
+    
+    def __rmod__(self,v):
+        return MFraction(super().__rmod__(v))
+    
+    def __abs__(self):
+        return MFraction(super().__abs__())
+    
+    def __neg__(self):
+        return MFraction(super().__neg__())
+    
+    def __pos__(self):
+        return MFraction(super().__pos__())

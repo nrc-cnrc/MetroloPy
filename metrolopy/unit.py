@@ -1382,6 +1382,21 @@ class _One(Unit):
     def __pow__(self,v):
         return self
     
+    def _cpow(self,v):
+        return ([[self,1]],1)
+    
+    def _repr_html_(self):
+        return 'one'
+            
+    def _repr_latex_(self):
+        return 'one'
+    
+    def __str__(self):
+        return 'one'
+            
+    def __repr__(self):
+        return 'one'
+    
     @property
     def is_dimensionless(self):
         return True
@@ -1745,7 +1760,16 @@ class Quantity(PrettyPrinter):
     def __array_function__(self,func,method,*args,**kwds):        
         return self._ufunc(func,*args,**kwds)
     
+    def __float__(self):
+        return float(self.value)
     
+    def __int__(self):
+        return int(self.value)
+
+    def __complex__(self):
+        return complex(self.value)
+
+
 class QuantityArray(Quantity):
     """
     A subclass of Quantity.  Instance of this class represent a list, tuple, 

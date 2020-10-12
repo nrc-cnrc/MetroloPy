@@ -17,12 +17,16 @@ def display(g):
     if w == 0:
         print(g)
     elif w == 1:
+        assert '?' not in g.tolatex()
         g.latex()
     elif w == 2:
+        assert '?' not in g.tohtml()
         g.html()
     elif w == 3:
+        assert '?' not in g.tounicode()
         g.unicode()
     else:
+        assert '?' not in g.toascii()
         g.ascii()
 
 def make_gummy(sign=None,exp=None,uexp=-6,sometimes_small=True,dof=None,
