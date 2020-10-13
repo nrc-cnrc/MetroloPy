@@ -1180,17 +1180,18 @@ class ummy(Dfunc,PrettyPrinter):
     def __eq__(self,v):
         if self is v:
             return True
+        
         if isinstance(v,ummy):
-            if self._u == 0 and v._u == 0:
+            if self.u == 0 and v.u == 0:
                 return self._x == v._x
             if self._ref is v._ref and self._refs == v._refs:
-                if self._x == v._x and self._u == v._u:
-                    return True
+                return self.x == v.x and self.u == v.u
             return False
-        elif self._u == 0:
-            return self._x == v
-        else:
-            return False
+        
+        if self.u == 0:
+            return self.x == v
+        
+        return False
         
     def __float__(self):
         return float(self.x)
@@ -1578,126 +1579,163 @@ def _der(function,*args):
 
 class immy(PrettyPrinter,Dfunc):
     
+    _element_type = ummy # in the jummy subclass this is set to gummy
+    
     def __init__(self,real=None,imag=None,r=None,phi=None,cov=None):
         """
-        A jummy object represents a complex valued quantity with `gummy`
+        An immy object represents a complex valued quantity with `ummy`
         real and imaginary components.
         
         Parameters
         ----------
-        real, imag, r, phi:  `float` or `gummy`
+        real, imag, r, phi:  `float` or `ummy`
             The value may be specified in  either cartesian coordinates
             using `real` and `imag` or polar coordinates with `r` and `phi`.
-            The pair `real`, `imag` or `r`, `phi` may both be `gummy` or
-            both be `float`.  If they are `float` then `cov` and `unit` may
+            The pair `real`, `imag` or `r`, `phi` may both be `ummy` or
+            both be `float`.  If they are `float` then `cov` may
             also be specified.
                 
         cov:  2 x 2 array_like of `float`, optional
             The variance-covariance matrix for either the pair `real`,
             `imag` or the pair `r`, `phi`.
-                
-        unit:  `str` or `Unit` or array_like and length 2 of `str' or `Unit`, optional
-            Units for `real`, `imag` or `r`, `phi`.  In the case that `real`
-            and `imag` are specified with different units, there must exist
-            a conversion between the two units.  Units for `phi` must be
-            dimensionless.
         """
         if isinstance(real,immy):
-            self._real = ummy(real._real)
-            self._imag = ummy(real._imag)
-            return
+            if real._ridef:
+                self._real = self._element_type(real._real)
+                self._imag = self._element_type(real._imag)
+                self._r = None
+                self._phi = None
+                self._ridef = True
+                return
+            else:
+                self._r = self._element_type(real._r)
+                self._phi = self._element_type(real._phi)
+                self._real = None
+                self._imag = None
+                self._ridef = False
+                return
         
         if cov is not None:
             cov = np.asarray(cov)
         
         if real is not None:
+            self._ridef = True
             if r is not None or phi is not None:
                 raise ValueError('r and phi may not be specified if real is specified')
             
             if imag is None:
-                if not isinstance(real,Real) and isinstance(real,Complex):
-                    imag = real.imag
-                    real = real.real
-                else:
-                    imag = None
+                imag = real.imag
+                real = real.real
                     
-            if cov is not None and (isinstance(real,ummy) or 
-                                    isinstance(imag,ummy)):
-                raise ValueError('cov may not be specified if real or imag is ummy')
+            if cov is not None and (isinstance(real,(ummy,self._element_type)) or 
+                                    isinstance(imag,(ummy,self._element_type))):
+                raise ValueError('cov may not be specified if real or imag has an uncertainty')
     
             if cov is None:
-                self._real = ummy(real)
-                self._imag = ummy(imag)
+                self._real = self._element_type(real)
+                self._imag = self._element_type(imag)
             else:
-                if isinstance(real,ummy) or isinstance(imag,ummy):
-                    raise ValueError('cov may not be specified if real or imag is ummy')
+                if (isinstance(real,(ummy,self._element_type)) or 
+                    isinstance(imag,(ummy,self._element_type))):
+                    raise ValueError('cov may not be specified if real or imag ihas an uncertainty')
             
             try:
-                self._real,self._imag = ummy.create([real,imag],
-                                                    covariance_matrix=cov)
+                self._real,self._imag = self._element_type.create([real,imag],
+                                                                  covariance_matrix=cov)
             except ValueError as e:
                 if str(e).startswith('matrix must have shape'):
                     raise ValueError('cov must be a 2 x 2 matrix')
                 raise
+            self._r = None
+            self._phi = None
         else:
+            self._ridef = False
             if phi is None or r is None:
                 raise ValueError('if real is not specified then both r and phi must be specified')
             
-            if isinstance(r,ummy) or isinstance(phi,ummy):
+            if (isinstance(r,(ummy,self._element_type)) or 
+                isinstance(phi,(ummy,self._element_type))):
                 if cov is not None:
                     raise ValueError('cov may not be specified if r or phi is a gummy')
-                r = ummy(r)
-                phi = ummy(phi)
+                self._r = self._element_type(r)
+                self._phi = self._element_type(phi)
             else: 
                 try:
-                    r,phi = ummy.create([r,phi],covariance_matrix=cov)
+                    self._r,self._phi = self._element_type.create([r,phi],
+                                                                  covariance_matrix=cov)
                 except ValueError as e:
                     if e[0].startswith('matrix must have shape'):
                         raise ValueError('cov must be a 2 x 2 matrix')
-            self._real = r*np.cos(phi)
-            self._imag = r*np.sin(phi)
+                    raise
+            self._real = None 
+            self._imag = None 
             
     @property
     def x(self):
         """
-        Returns ``complex(jummy.real.x,jummy.imag.x)``, read-only
+        Returns `complex(self.real.x,self.imag.x)`, read-only
         """
-        return complex(self._real.x,self._imag.x)
+        return complex(self.real.x,self.imag.x)
     
     @property
     def cov(self):
         """
-        Returns the variance-covariance matrix between `jummy.real` and
-        `jummy.imag`, read-only.
+        Returns the variance-covariance matrix between the real and imaginary
+        parts of the value, read-only.
         """
-        return ummy.covariance_matrix([self._real,self._imag])
+        return ummy.covariance_matrix([self.real,self.imag])
     
     @property
     def real(self):
         """
         read-only
-        Returns an `ummy` representing the real part of the value.
+        Returns real part of the value.
         """
+        if self._real is None: 
+            self._real = self._r*np.cos(self._phi)
         return self._real
     
     @property
     def imag(self):
         """
-        Returns an `ummy` representing the imaginary part of the value.
+        read-only
+        Returns the imaginary part of the value.
         """
+        if self._imag is None:
+            self._imag = self._r*np.sin(self._phi)
         return self._imag
+    
+    @property
+    def r(self):
+        """
+        read-only
+        Returns the magnitude of the value.
+        """
+        if self._r is None:
+            self._r = abs(self)
+        return self._r
+    
+    @property
+    def phi(self):
+        """
+        read-only
+        Returns the polar angle of the value.
+        """
+        if self._phi is None:
+            self._phi = self.angle()
+        return self._phi
     
     def conjugate(self):
         """
-        Returns the (`jummy` valued) complex conjugate.
+        Returns the complex conjugate.
         """
         return type(self)(real=self.real,imag=-self.imag)
     
     def angle(self):
         """
-        Returns a gummy representing ``Arg(jummy)``.
+        Returns the polar angle in radians.
         """
-        return np.arctan2(self.real,self.imag)
+        return np.arctan2(self.imag,self.real)
     
     def copy(self,formatting=True,tofloat=False):
         """
@@ -1708,9 +1746,14 @@ class immy(PrettyPrinter,Dfunc):
         tofloats parameter is True x and u for both the real and
         imaginary components will be converted to floats.
         """
-        r = self.real.copy(formatting=formatting,tofloat=tofloat)
-        i = self.imag.copy(formatting=formatting,tofloat=tofloat)
-        return type(self)(real=r,imag=i)
+        if self._ridef:
+            r = self.real.copy(formatting=formatting,tofloat=tofloat)
+            i = self.imag.copy(formatting=formatting,tofloat=tofloat)
+            return type(self)(real=r,imag=i)
+        else:
+            r = self.r.copy(formatting=formatting,tofloat=tofloat)
+            phi = self.phi.copy(formatting=formatting,tofloat=tofloat)
+            return type(self)(r=r,phi=phi)
     
     def tofloat(self):
         """
@@ -1725,15 +1768,20 @@ class immy(PrettyPrinter,Dfunc):
         return self
     
     @classmethod
+    def _applyc(cls,*args):
+        x = [a.x if isinstance(a,(ummy,cls._element_type)) else a for a in args]
+        return (args,x)
+    
+    @classmethod
     def _apply(cls,function,derivative,*args,fxx=None,rjd=None):
         n = len(args)
         if fxx is None:
-            rargs = [a._real if isinstance(a,immy) else a for a in args]
-            jargs = [a._imag if isinstance(a,immy) else None for a in args]
+            rargs = [a.real for a in args]
+            jargs = [a.imag for a in args]
             args = rargs + jargs
-            func = lambda *a: function(*[complex(r,j) if j is not None else r for r,j in zip(a[:n],a[n:])])
-            der = lambda *a: derivative(*[complex(r,j) if j is not None else r for r,j in zip(a[:n],a[n:])])
-            x = [a.x if isinstance(a,ummy) else a for a in args]
+            func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
+            der = lambda *a: derivative(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
+            args,x = cls._applyc(*args)
             fx = func(*x)
             
         if not _isscalar(fx):
@@ -1773,27 +1821,30 @@ class immy(PrettyPrinter,Dfunc):
             jd = jd[0]
             
         if not isinstance(fx,Real) and isinstance(fx,Complex):
-            r = ummy._apply(lambda *a: func(*a).real,None,*args,fxdx=(fx.real,rd,x))
-            j = ummy._apply(lambda *a: func(*a).imag,None,*args,fxdx=(fx.imag,jd,x))
-            if isinstance(r,ummy) or isinstance(j,ummy):
+            r = cls._element_type._apply(lambda *a: func(*a).real,None,*args,
+                                         fxdx=(fx.real,rd,x))
+            j = cls._element_type._apply(lambda *a: func(*a).imag,None,*args,
+                                         fxdx=(fx.imag,jd,x))
+            if (isinstance(r,(ummy,cls._element_type)) or 
+                isinstance(j,(ummy,cls._element_type))):
                 return cls(real=r,imag=j)
             return complex(r,j)
         
-        return ummy._apply(function,der,*args,fxdx=(fx,rd,x))
+        return cls._element_type._apply(function,der,*args,fxdx=(fx,rd,x))
     
     @classmethod
     def _napply(cls,function,*args,fxx=None):
         if fxx is None:
             if any([isinstance(a,immy) for a in args]):
                 n = len(args)
-                rargs = [a._real if isinstance(a,immy) else a for a in args]
-                jargs = [a._imag if isinstance(a,immy) else None for a in args]
+                rargs = [a.real for a in args]
+                jargs = [a.imag for a in args]
                 args = rargs + jargs
-                func = lambda *a: function(*[complex(r,j) if j is not None else r for r,j in zip(a[:n],a[n:])])
+                func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
             else:
                 func = function
                 
-            x = [a.x if isinstance(a,ummy) else a for a in args]
+            args,x = cls._applyc(*args)
             fx = func(*x)
         else:
             fx,x = fxx
@@ -1803,11 +1854,13 @@ class immy(PrettyPrinter,Dfunc):
                     for i in range(len(fx))]
             
         if not isinstance(fx,Real) and isinstance(fx,Complex):
-            r = ummy._napply(lambda *a: func(*a).real,*args,fxx=(fx.real,x))
-            j = ummy._napply(lambda *a: func(*a).imag,*args,fxx=(fx.imag,x))
+            r = cls._element_type._napply(lambda *a: func(*a).real,*args,
+                                          fxx=(fx.real,x))
+            j = cls._element_type._napply(lambda *a: func(*a).imag,*args,
+                                          fxx=(fx.imag,x))
             return cls(real=r,imag=j)
         
-        return ummy._napply(func,*args,fxx=(fx,x))
+        return cls._element_type._napply(func,*args,fxx=(fx,x))
             
     def tostring(self,fmt='unicode',norm=None,nsig=None,solidus=None,
                  mulsep=None):
@@ -1836,9 +1889,11 @@ class immy(PrettyPrinter,Dfunc):
     
     def __radd__(self,v):
         if isinstance(v,np.ndarray):
-            return v + np.array(self)
+            return np.array(self) + v
         
-        return self._add(v)
+        r = v.real + self.real
+        i = v.imag + self.imag
+        return type(self)(real=r,imag=i)
     
     def __sub__(self,v):
         if isinstance(v,np.ndarray):
@@ -1876,7 +1931,7 @@ class immy(PrettyPrinter,Dfunc):
         if isinstance(v,np.ndarray):
             return np.array(self)/v
         
-        h2 = v.real*v.real + v.imag*v.real
+        h2 = v.real*v.real + v.imag*v.imag
         r = (self.real*v.real + self.imag*v.imag)/h2
         i = (self.imag*v.real - self.real*v.imag)/h2
         return type(self)(real=r,imag=i)
@@ -1885,7 +1940,7 @@ class immy(PrettyPrinter,Dfunc):
         if isinstance(v,np.ndarray):
             return v/np.array(self)
         
-        h2 = self._real*self.real + self._imag*self.imag
+        h2 = self.real*self.real + self.imag*self.imag
         r = (v.real*self.real + v.imag*self.imag)/h2
         i = (v.imag*self.real - v.real*self.imag)/h2
         return type(self)(real=r,imag=i)
@@ -1894,13 +1949,16 @@ class immy(PrettyPrinter,Dfunc):
         if isinstance(v,np.ndarray):
             return np.array(self)**v
         
+        if self.real == 0 and self.imag == 0:
+            return self.copy(formatting=False)
+        
         h2 = self.real*self.real + self.imag*self.imag
         a = np.arctan2(self.imag,self.real)
-        c = h2**v.real/2
+        c = h2**(v.real/2)
         t = v.real*a
         if v.imag != 0:
             t += 0.5*v.imag*np.log(h2)
-            c *= np.exp(self.imag*a)
+            c *= np.exp(-v.imag*a)
         r = c*np.cos(t)
         i = c*np.sin(t)
         return type(self)(real=r,imag=i)
@@ -1909,10 +1967,16 @@ class immy(PrettyPrinter,Dfunc):
         if isinstance(v,np.ndarray):
             return v**np.array(self)
         
+        if v.real == 0 and v.imag == 0:
+            return type(self)(real=0,imag=0)
+        
         h2 = v.real*v.real + v.imag*v.imag
-        a = np.arctan(v.imag,v.real)
-        c = (h2**self.real/2)*np.exp(-self.imag*a)
-        t = self.real*a + 0.5*self.imag*np.log(h2)
+        a = np.arctan2(v.imag,v.real)
+        c = h2**(self.real/2)
+        t = self.real*a
+        if self.imag != 0:
+            t += 0.5*self.imag*np.log(h2)
+            c *= np.exp(-self.imag*a)
         r = c*np.cos(t)
         i = c*np.sin(t)
         return type(self)(real=r,imag=i)
@@ -1934,9 +1998,9 @@ class immy(PrettyPrinter,Dfunc):
         if isinstance(v,np.ndarray):
             return v // np.array(self)
         
-        h2 = self._real*self._real + self._imag*self._imag
+        h2 = self.real*self.real + self.imag*self.imag
         r = (v.real*self.real + v.imag*self.imag)//h2
-        i = (v.imag*self.real - v.real*self._mag)//h2
+        i = (v.imag*self.real - v.real*self.imag)//h2
         return type(self)(real=r,imag=i)
         
     def __mod__(self,v):
@@ -1948,6 +2012,14 @@ class immy(PrettyPrinter,Dfunc):
     def __abs__(self):
         return (self.real**2 + self.imag**2)**0.5
     
+    def __neg__(self):
+        return type(self)(real=-self.real.copy(formatting=False),
+                          imag=-self.imag.copy(formatting=False))
+    
+    def __pos__(self):
+        return type(self)(real=self.real.copy(formatting=False),
+                          imag=self.imag.copy(formatting=False))
+    
     def __complex__(self):
         return complex(self.real.x,self.imag.x)
     
@@ -1956,6 +2028,10 @@ class immy(PrettyPrinter,Dfunc):
         
     def __int__(self):
         raise TypeError("can't convert immy to int")
+        
+    def __eq__(self,v):
+        return self.real == v.real and self.imag == v.imag
+
         
 class MFraction(Fraction):
     """

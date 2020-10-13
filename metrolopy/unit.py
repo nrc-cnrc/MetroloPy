@@ -154,6 +154,16 @@ def _f_bop(f,rf,x,y):
         else:
             xunit = one
         return rf(y.unit,y.value,xunit,x,y.autoconvert)
+    
+def _f_ratio(f,x,y):
+    if not isinstance(y,Quantity):
+        x = x.convert(one).value
+    elif not isinstance(x,Quantity):
+        y = y.convert(one).value
+    else:
+        y = y.convert(x.unit).value
+        x = x.value
+    return (f(x,y),one)
 
 class Unit(PrettyPrinter,Indexed):
     """
@@ -162,7 +172,7 @@ class Unit(PrettyPrinter,Indexed):
     be retrived by passing a string with the unit name or alias to the `unit`
     or `Unit.unit` functions.  Units can be multiplied and divided by other 
     Units or Quantities and raised to numerical powers.  Multiplying or 
-    dividing a numerical value by a Unit will create a Qunatity instance.
+    dividing a numerical value by a Unit will create a Quantity instance.
     
     Parameters
     ----------
@@ -266,7 +276,9 @@ class Unit(PrettyPrinter,Indexed):
                    np.divide: lambda x,y: _f_bop(Unit._truediv,Unit._rtruediv,x,y),
                    np.floor_divide: lambda x,y: _f_bop(Unit._floordiv,Unit._rfloordiv,x,y),
                    np.mod: lambda x,y: _f_bop(Unit._mod,Unit._rmod,x,y),
-                   np.power: lambda x,y: _f_bop(Unit._pow,Unit._rpow,x,y)}
+                   np.power: lambda x,y: _f_bop(Unit._pow,Unit._rpow,x,y),
+                   np.arctan: lambda x,y: _f_ratio(np.arctan,x,y),
+                   np.arctan2: lambda x,y: _f_ratio(np.arctan2,x,y)}
         
     @staticmethod
     def unit(txt,exception=True):
@@ -1409,7 +1421,7 @@ class Quantity(PrettyPrinter):
     """
     Instances of this class represent a quantity with a value and a unit.
     The behavior of Quantity instances under mathematical operations with
-    other Qunaitity object or numerical values depends on the unit. E.g. 
+    other Quanitity object or numerical values depends on the unit. E.g. 
     an interger of float may be added to `Quantity(1,unit='%')` but not to 
     `Quantity(1,unit='m/s')`.  For operations involving only linear units, the
     units will be automatically converted to facilitate the operation, e.g.
@@ -1768,6 +1780,14 @@ class Quantity(PrettyPrinter):
 
     def __complex__(self):
         return complex(self.value)
+    
+    @property
+    def real(self):
+        return self.copy()
+    
+    @property
+    def imag(self):
+        return type(self)(0,unit=self.unit)
 
 
 class QuantityArray(Quantity):

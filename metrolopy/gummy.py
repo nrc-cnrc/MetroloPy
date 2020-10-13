@@ -271,6 +271,12 @@ class MetaGummy(MetaPrettyPrinter):
         
     @property
     def max_dof(cls):
+        """
+        `int`
+        
+        Gets or sets the maximum finite value for dof.  Any dof larger than
+        max_dof will be rounded to float('inf').
+        """
         return ummy.max_dof
     @max_dof.setter
     def max_dof(cls,v):
@@ -278,6 +284,12 @@ class MetaGummy(MetaPrettyPrinter):
         
     @property
     def nsig(cls):
+        """
+        `int`
+        
+        Gets or sets the number of significant digits in the uncertainty to 
+        display.
+        """
         return ummy.nsig
     @nsig.setter
     def nsig(cls,v):
@@ -285,6 +297,12 @@ class MetaGummy(MetaPrettyPrinter):
         
     @property
     def thousand_spaces(cls):
+        """
+        `bool`
+        
+        Gets or sets a bool value that determines whether to insert a space to
+        group digits in x.
+        """
         return ummy.thousand_spaces
     @thousand_spaces.setter
     def thousand_spaces(cls,v):
@@ -320,6 +338,11 @@ class MetaGummy(MetaPrettyPrinter):
         
     @property
     def max_digits(cls):
+        """
+        `int`
+        
+        Gets or sets the maximum number of digits in x to display.
+        """
         return ummy.max_digits
     @max_digits.setter
     def max_digits(cls,v):
@@ -1189,10 +1212,53 @@ class gummy(Quantity,metaclass=MetaGummy):
         
     @property
     def bayesian(self):
+        """
+        `bool`
+
+        Read/write at the class level, but read-only at the instance level.
+        The default value is `False`; this should only be changed once at the
+        beginning of the session.  This property affects how the level of
+        confidence `p` (sometimes called coverage probability) of an expanded
+        uncertainty is related to the coverage factor `k` for a gummy based on
+        data with finite degrees of freedom.
+
+        Standard uncertainties are often based on the standard deviation of a set
+        of measurements (and the assumption that these measurements are drawn
+        from a normally distributed population).  Traditionally (e.g. the GUM
+        2008 edition) the standard uncertainty is taken to be the standard
+        deviation of the mean (s/sqrt(n), where s is the sample standard deviation
+        and n is the number of measurements).  However there is some "extra
+        uncertainty" because the sample standard devation not exactly equal to
+        the population standard deviation.  This is taken into account by using
+        a Student's t distribution to calculate the expanded uncertainty.  However
+        it has been pointed out, by those who advocate a Bayesian point of view,
+        that the probability distribution for the measurand here is best described
+        by a shifted and scaled Student's t distribution.  So the standard
+        uncertainty should be the standard deviation of this distribution which
+        is s*sqrt{(n-1)/[n*(n-3)]}.  Thus
+
+        u(bayesian) = [dof/(dof - 2)]*u(traditional)
+
+        where dof = n - 1 and the "extra uncertainty" is incorporated directly
+        into the standard uncertainty.
+
+        Example
+        -------
+        >>> gummy.bayesian = True
+        >>> g = gummy(1,0.03,dof=5)
+        >>> g.bayesian
+        True
+        """
         return self.value._bayesian
         
     @property
     def nsig(self):
+        """
+        `int`
+        
+        Gets or sets the number of significant digits in the uncertainty to 
+        display.
+        """
         return self.value.nsig
     @nsig.setter
     def nsig(self,v):
@@ -1200,6 +1266,12 @@ class gummy(Quantity,metaclass=MetaGummy):
         
     @property
     def thousand_spaces(self):
+        """
+        `bool`
+        
+        Gets or sets a bool value that determines whether to insert a space to
+        group digits in x.
+        """
         return self.value.thousand_spaces
     @thousand_spaces.setter
     def thousand_spaces(self,v):
@@ -1207,6 +1279,9 @@ class gummy(Quantity,metaclass=MetaGummy):
         
     @property
     def sci_notation(self):
+        """
+        `bool` or `None`
+        """
         return self.value.sci_notation
     @sci_notation.setter
     def sci_notation(self,v):
@@ -1228,6 +1303,11 @@ class gummy(Quantity,metaclass=MetaGummy):
         
     @property
     def max_digits(self):
+        """
+        `int`
+        
+        Gets or sets the maximum number of digits in x to display.
+        """
         return self.value.max_digits
     @max_digits.setter
     def max_digits(self,v):
@@ -1499,7 +1579,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             title1 = math(title1)
             title = title0 + '\n' + title1
         
-        self._value.hist(xlabel=xlabel,title=title,hold=True,**plot_options)
+        self.value.hist(xlabel=xlabel,title=title,hold=True,**plot_options)
         
         if mean_marker:
             if 'linewidth' not in mean_marker_options and 'lw' not in mean_marker_options:
@@ -2930,8 +3010,9 @@ class jummy(immy):
     
     show_name = True
     
-    def __init__(self,real=None,imag=None,r=None,phi=None,cov=None,unit=one,
-                 name=None):
+    _element_type = gummy
+    
+    def __init__(self,real=None,imag=None,r=None,phi=None,cov=None,name=None):
         """
         A jummy object represents a complex valued quantity with `gummy`
         real and imaginary components.
@@ -2942,276 +3023,32 @@ class jummy(immy):
             The value may be specified in  either cartesian coordinates
             using `real` and `imag` or polar coordinates with `r` and `phi`.
             The pair `real`, `imag` or `r`, `phi` may both be `gummy` or
-            both be `float`.  If they are `float` then `cov` and `unit` may
+            both be `float`.  If they are `float` then `cov` may
             also be specified.
                 
         cov:  2 x 2 array_like of `float`, optional
             The variance-covariance matrix for either the pair `real`,
             `imag` or the pair `r`, `phi`.
-                
-        unit:  `str` or `Unit` or array_like and length 2 of `str' or `Unit`, optional
-            Units for `real`, `imag` or `r`, `phi`.  In the case that `real`
-            and `imag` are specified with different units, there must exist
-            a conversion between the two units.  Units for `phi` must be
-            dimensionless.
-        """
-        self.name=name
-        if isinstance(real,jummy):
-            self._real = gummy(real._real)
-            self._imag = gummy(real._imag)
-            return
-        
-        if cov is not None:
-            cov = np.asarray(cov)
-        
-        if unit is not one:
-            unit = Unit.unit(unit)
-        
-        if real is not None:
-            if r is not None or phi is not None:
-                raise ValueError('r and phi may not be specified if real is specified')
             
-            if imag is None:
-                if isinstance(real,gummy):
-                    if cov is not None or unit is not one:
-                        raise ValueError('cov or unit may not be specified if real or imag is a gummy')
-                    self._real = real
-                    if real.unit.linear:
-                        self._imag = gummy(0,unit=real.unit)
-                    else:
-                        self._imag = gummy(real.unit.zero(),unit=real.unit)
-                        self._imag.unit = real.unit
-                else:
-                    if not isinstance(real,Real) and isinstance(real,Complex):
-                        self._real = gummy(real.real,unit=unit)
-                        self._imag = gummy(real.imag,unit=unit)
-                    else:
-                        self._real = gummy(real,unit=unit)
-                        if unit.linear:
-                            self._imag = gummy(0,unit=unit)
-                        else:
-                            self._imag = gummy(unit.zero(),unit=unit)
-            elif isinstance(real,gummy) or isinstance(imag,gummy):
-                if cov is not None or unit is not one:
-                    raise ValueError('cov or unit may not be specified if real or imag is a gummy')
-    
-                if (isinstance(real,Number) and not isinstance(real,Real)) or isinstance(real,jummy) or (isinstance(imag,Number) and not isinstance(imag,Real)) or isinstance(imag,jummy):
-                    raise ValueError('real and imag must be real numbers or gummys')
-    
-                self._real = gummy(real)
-                self._imag = gummy(imag)
-                
-                if self._real.unit is not self._imag.unit:
-                    try:
-                        self._imag.convert(self._real.unit)
-                    except NoUnitConversionFoundError:
-                        raise ValueError('the units on real and imag must be the compatible')
-            else:
-                if unit is not None:
-                    try:
-                        if isinstance(unit,str):
-                            raise TypeError()
-                        if len(unit) == 2:
-                            runit = unit[0]
-                            junit = unit[1] 
-                        else:
-                            raise ValueError()
-                    except:
-                        runit = unit
-                        junit = unit
-                if runit is not junit:
-                    try:
-                        Unit.unit(junit).convert(imag,runit)
-                    except NoUnitConversionFoundError:
-                        raise ValueError('the units on real and imag must be the compatible')
-                        
-                try:
-                    self._real,self._imag = gummy.create([real,imag],
-                                                          covariance_matrix=cov,
-                                                          unit=[runit,junit])
-                except ValueError as e:
-                    if str(e) == 'matrix must have shape len(gummys) x len(gummys)':
-                        raise ValueError('cov must be a 2 x 2 matrix')
-                    raise
-        
-        else:
-            if phi is None or r is None:
-                raise ValueError('if real is not specified then both r and phi must be specified')
-            
-            if isinstance(r,gummy) or isinstance(phi,gummy):
-                if cov is not None or unit is not one:
-                    raise ValueError('cov or unit may not be specified if r or phi is a gummy')
-                r = gummy(r)
-                phi = gummy(phi)
-            else:
-                if unit is not None:
-                    try:
-                        if isinstance(unit,str):
-                            raise TypeError()
-                        if len(unit) == 2:
-                            runit = unit[0]
-                            punit = unit[1]
-                        else:
-                            raise ValueError()
-                    except:
-                        runit = unit
-                        punit = one
-                else:
-                    runit = one
-                    punit = one
-                    
-                try:
-                    Unit.unit(punit).convert(phi,one)
-                except NoUnitConversionFoundError:
-                    raise ValueError('punit must be dimensionless')
-                        
-                try:
-                    r,phi = gummy.create([r,phi],
-                                          covariance_matrix=cov,
-                                          unit=[runit,punit])
-                except ValueError as e:
-                    if e[0] == 'matrix must have shape len(gummys) x len(gummys)':
-                        raise ValueError('cov must be a 2 x 2 matrix')
-            self._real = r*gummy.apply(np.cos,lambda x: -np.sin(x),phi)
-            self._imag = r*gummy.apply(np.sin,np.cos,phi)
-    
-    @property
-    def unit(self):
+        name:  `str`
+            An optional name for the jummy.
         """
-        Gets or sets the units of `jummy.real` and `jummy.imag`.  If the
-        units of `jummy.real` are different from `jummy.imag` then a
-        `tuple` of `Unit` with length 2 is returned.  Otherwise a `Unit`
-        instance is returned.
-        """
-        if self._real.unit is not self._imag.unit:
-            return (self._real.unit,self._imag.unit)
-        return self._real.unit
-    @unit.setter
-    def unit(self,u):
-        try:
-            if isinstance(u,str):
-                raise ValueError()
-            if len(u) == 2:
-                self._real.unit = u[0]
-                self._imag.unit = u[1]
-            else:
-                raise ValueError()
-        except:
-            self._real.unit = u
-            self._imag.unit = u
-    
-    def angle(self):
-        """
-        Returns a gummy representing ``Arg(jummy)``.
-        """
-        r = self._real.convert(self._imag.unit).graft(one)
-        i = self._imag.graft(one)
-        return gummy._apply(np.arctan2,darctan2,i,r)
-    
-    def copy(self,formatting=True,tofloat=False):
-        """
-        Returns a copy of the jummy.  If the `formatting` parameter is
-        `True` the display formatting information will be copied and if
-        `False` the display formatting will be set to the default for a
-        new jummy.  The default for `formatting` is `True`.  If the
-        tofloats parameter is True x and u for both the real and
-        imaginary components will be converted to floats.
-        """
-        r = self._real.copy(formatting=formatting,tofloat=tofloat)
-        i = self._imag.copy(formatting=formatting,tofloat=tofloat)
-        return jummy(real=r,imag=i)
-    
-    def tofloat(self):
-        """
-        Returns a copy of the gummy with x an u (for both the real and
-        imaginary components) converted to floats.
-        """
-        return self.copy(formatting=False,tofloat=True)
-    
-    @classmethod
-    def _apply(cls,function,derivative,*args,fxx=None,rjd=None):
-        n = len(args)
-        if fxx is None:
-            rargs = [a._real if isinstance(a,jummy) else a for a in args]
-            jargs = [a._imag if isinstance(a,jummy) else None for a in args]
-            args = rargs + jargs
-            func = lambda *a: function(*[complex(r,j) if j is not None else r for r,j in zip(a[:n],a[n:])])
-            der = lambda *a: derivative(*[complex(r,j) if j is not None else r for r,j in zip(a[:n],a[n:])])
-            args,x = _applyc(*args)
-            fx = func(*x)
-            
-        if not _isscalar(fx):
-            return [cls._apply(lambda *y: func(*y)[i],
-                               lambda *y: der(*y)[i],
-                               *args,fxx=(fx[i],x)) 
-                    for i in range(len(fx))]
-        
-        d = der(*x)
-        
-        if n == 1:
-            d = [d]
-
-        rda = []
-        rdb = []
-        jda = []
-        jdb = []
-        for i,p in enumerate(d):
+        self.name=str(name)
+        super().__init__(real=real,imag=imag,r=r,phi=phi,cov=cov)
+        if self._ridef:
             try:
-                if len(p) == 2 and len(p[0]) == 2 and len(p[1]) == 2:
-                    rda.append(p[0][0])
-                    rdb.append(p[0][1])
-                    jda.append(p[1][0])
-                    jdb.append(p[1][1])
+                if self._real.unit is not self._imag.unit:
+                    # check that the units are compatible
+                    self._real.convert(self._imag.unit)
             except:
-                if p is None:
-                     p = 0
-                rda.append(p.real)
-                jdb.append(p.real)
-                jda.append(-p.imag)
-                rdb.append(p.imag)
-        rd = rda + rdb
-        jd = jda + jdb
-
-        if len(rd) == 1:
-            rd = rd[0]
-            jd = jd[0]
-            
-        if not isinstance(fx,Real) and isinstance(fx,Complex):
-            r = gummy._apply(lambda *a: func(*a).real,None,*args,fxdx=(fx.real,rd,x))
-            j = gummy._apply(lambda *a: func(*a).imag,None,*args,fxdx=(fx.imag,jd,x))
-            if isinstance(r,ummy) or isinstance(j,ummy):
-                return jummy(real=r,imag=j)
-            return complex(r,j)
-        
-        return gummy._apply(function,der,*args,fxdx=(fx,rd,x))
-    
-    @classmethod
-    def _napply(cls,function,*args,fxx=None):
-        if fxx is None:
-            if any([isinstance(a,jummy) for a in args]):
-                n = len(args)
-                rargs = [a._real if isinstance(a,jummy) else a for a in args]
-                jargs = [a._imag if isinstance(a,jummy) else None for a in args]
-                args = rargs + jargs
-                func = lambda *a: function(*[complex(r,j) if j is not None else r for r,j in zip(a[:n],a[n:])])
-            else:
-                func = function
-                
-            args,x = _applyc(*args)
-            fx = func(*x)
+                raise IncompatibleUnitsError('the real an imaginary parts must have compatible units')
         else:
-            fx,x = fxx
+            if not self._phi.unit.is_dimensionless:
+                raise IncompatibleUnitsError('phi must have dimensonless units')
         
-        if not _isscalar(fx):
-            return [cls._napply(lambda *y: func(*y)[i],*args,fxx=(fx[i],x)) 
-                    for i in range(len(fx))]
-            
-        if not isinstance(fx,Real) and isinstance(fx,Complex):
-            r = gummy._napply(lambda *a: func(*a).real,*args,fxx=(fx.real,x))
-            j = gummy._napply(lambda *a: func(*a).imag,*args,fxx=(fx.imag,x))
-            return jummy(real=r,imag=j)
-        
-        return gummy._napply(func,*args,fxx=(fx,x))
+    @classmethod
+    def _applyc(*args):
+        return _applyc(*args)
             
     def tostring(self,fmt='unicode',norm=None,nsig=None,solidus=None,
                  mulsep=None,show_name=None,name=None):
@@ -3224,8 +3061,8 @@ class jummy(immy):
         if name != '':
             name += ' = '
             
-        r = self._real.tostring(fmt=fmt,style='concisef',k=1,nsig=nsig,norm=norm)
-        i = self._imag.tostring(fmt=fmt,style='concisef',k=1,nsig=nsig,norm=norm)
+        r = self.real.tostring(fmt=fmt,style='concisef',k=1,nsig=nsig,norm=norm)
+        i = self.imag.tostring(fmt=fmt,style='concisef',k=1,nsig=nsig,norm=norm)
         if i.startswith('-'):
             i = i[1:]
             sign = ' - '
@@ -3237,7 +3074,7 @@ class jummy(immy):
         else:
             i = 'j' + i
         
-        if self._real.unit is one and self._imag.unit is one:
+        if self.real.unit is one and self.imag.unit is one:
             return name + r + sign + i
         
         #if self._real.unit is self._imag.unit:
@@ -3247,10 +3084,10 @@ class jummy(immy):
             #return txt
             
         txt = name + r
-        txt += self._real.tostring(fmt=fmt,style='xunit',solidus=solidus,
+        txt += self.real.tostring(fmt=fmt,style='xunit',solidus=solidus,
                                    mulsep=mulsep,norm=norm)
         txt += sign + i
-        txt += self._imag.tostring(fmt=fmt,style='xunit',solidus=solidus,
+        txt += self.imag.tostring(fmt=fmt,style='xunit',solidus=solidus,
                                    mulsep=mulsep,norm=norm)
         return txt
 
