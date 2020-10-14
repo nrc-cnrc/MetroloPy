@@ -3127,18 +3127,21 @@ class gummy(Quantity,metaclass=MetaGummy):
             try:
                 s = self.convert(v._unit)
             except NoUnitConversionFoundError:
-                raise IncompatibleUnitsError('values with incompatible units cannot be compared')
+                return False
             return self.value == v.value
         
         try:
             s = self.convert(one).value
         except NoUnitConversionFoundError:
-            raise IncompatibleUnitsError('values with incompatible units cannot be compared')
+            return False
 
         return s == v
     
     def __ne__(self, v):
-        return self < v or self > v
+        try:
+            return self < v or self > v
+        except IncompatibleUnitsError:
+            return True
         
     def __lt__(self, v):
         if isinstance(v,gummy):

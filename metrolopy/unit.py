@@ -277,7 +277,6 @@ class Unit(PrettyPrinter,Indexed):
                    np.floor_divide: lambda x,y: _f_bop(Unit._floordiv,Unit._rfloordiv,x,y),
                    np.mod: lambda x,y: _f_bop(Unit._mod,Unit._rmod,x,y),
                    np.power: lambda x,y: _f_bop(Unit._pow,Unit._rpow,x,y),
-                   np.arctan: lambda x,y: _f_ratio(np.arctan,x,y),
                    np.arctan2: lambda x,y: _f_ratio(np.arctan2,x,y)}
         
     @staticmethod
@@ -1445,6 +1444,8 @@ class Quantity(PrettyPrinter):
         that references the `Unit` instance.
     """
     
+    splonk_func_ret = False
+    
     _arraytype = None
     
     @classmethod
@@ -1629,7 +1630,7 @@ class Quantity(PrettyPrinter):
         if self.unit is one:
             try:
                 return self.value.splonk()
-            except:
+            except AttributeError:
                 return self.value
         return self
         
@@ -1754,6 +1755,8 @@ class Quantity(PrettyPrinter):
             try:
                 x = [a if not isinstance(a,Quantity) else a.convert(one).value 
                      for a in args]
+                if self.splonk_func_ret:
+                    return func(*x,**kwds)
                 return make(func(*x,**kwds))
             except NoUnitConversionFoundError:
                 raise NotImplementedError()
