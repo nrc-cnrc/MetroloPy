@@ -874,7 +874,10 @@ class gummy(Quantity,metaclass=MetaGummy):
         return self.value.name
     @name.setter
     def name(self,v):
-        self.value.name = str(v)
+        self.value.name = v
+        
+    def get_name(self,fmt='unicode',norm=None):
+        return self.value.get_name(fmt,norm)
             
     @property
     def uunit(self):
@@ -2134,18 +2137,10 @@ class gummy(Quantity,metaclass=MetaGummy):
                 show_name = self.show_name
             if show_name:
                 if name is None:
-                    if self.name is not None:
-                        if isinstance(self.name,str) and len(self.name) > 1 and fmt == 'latex':
-                            name = norm(self.name.strip())
-                        elif isinstance(self.name,str) and len(self.name) == 1 and fmt == 'html':
-                            name = '<i>' + self.name.strip() + '</i>'
-                        else:
-                            name = str(self.name).strip()
-                    else:
-                        name = ''
+                    name = self.get_name(fmt=fmt,norm=norm)
+                if name is None:
+                    name = ''
                 else:
-                    name = str(name).strip()
-                if name != '':
                     name += ' = '
             else:
                 name = ''
@@ -3243,40 +3238,73 @@ class jummy(immy):
             if not self._phi.unit.is_dimensionless:
                 raise IncompatibleUnitsError('phi must have dimensonless units')
             
-    def tostring(self,fmt='unicode',norm=None,nsig=None,solidus=None,
-                 mulsep=None,show_name=None,name=None):
-        if name is None:
-            name = self.name
-        if name is None:
+    def tostring(self,fmt='unicode',norm=None,show_name=None,name=None,
+                 polar=None,**kwds):
+        if show_name is None:
+            show_name = self.show_name
+        if show_name:
+            if name is None:
+                name = self.get_name(fmt)
+            if name is None:
+                name = ''
+            else:
+                name += ' = '
+        else:
             name = ''
-        else:
-            name = str(name).strip()
-        if name != '':
-            name += ' = '
             
-        r = self.real.tostring(fmt=fmt,style='concisef',k=1,nsig=nsig,norm=norm)
-        i = self.imag.tostring(fmt=fmt,style='concisef',k=1,nsig=nsig,norm=norm)
-        if i.startswith('-'):
-            i = i[1:]
-            sign = ' - '
+        if polar is None:
+            polar = self.polar
+        if polar:
+            r = self.r.tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
+            
+            if self.phi.unit.linear:
+                if self.phi.x < 0:
+                    i = abs(self.phi).tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
+                    sign = '-'
+                else:
+                    i = self.phi.tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
+                    sign = ''
+            else:
+                i = self.phi.tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
+                if i.startswith('-'):
+                    i = i[1:]
+                    sign = '-'
+                else:
+                    sign = ''
+                    
+            if fmt == 'html':
+                ret = name + r + '&thinsp;&middot;&thinsp;<i>e</i><sup>'
+                ret += sign + self.imag_symbol + '&thinsp;' + i + '</sup>'
+            if fmt == 'latex':
+                ret = name + r + '\\,\\cdot\\,e^{' + sign + self.imag_symbol + i + '}'
+            else:
+                ret = name + r + ' exp(' + sign + self.imag_symbol + i + ')'
+            return ret
+                
+        r = self.real.tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
+        if self.imag.unit.linear:
+            if self.imag.x < 0:
+                i = abs(self.imag).tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
+                sign = ' - '
+            else:
+                i = self.imag.tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
+                sign = ' + '
         else:
-            sign = ' + '
+            i = self.imag.tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
+            if i.startswith('-'):
+                i = i[1:]
+                sign = ' - '
+            else:
+                sign = ' + '
             
         if fmt == 'html':
-            i = '<i>j</i>' + i
+            i = '<i>j</i>&thinsp;' + i
+        elif fmt == 'latex':
+            i = 'j\\,' + i
         else:
             i = 'j' + i
         
-        if self.real.unit is one and self.imag.unit is one:
-            return name + r + sign + i
-            
-        txt = name + r
-        txt += self.real.tostring(fmt=fmt,style='xunit',solidus=solidus,
-                                   mulsep=mulsep,norm=norm)
-        txt += sign + i
-        txt += self.imag.tostring(fmt=fmt,style='xunit',solidus=solidus,
-                                   mulsep=mulsep,norm=norm)
-        return txt
+        return name + r + sign + i
 
     def toimmy(self):
         """
@@ -3289,4 +3317,57 @@ class jummy(immy):
         splonks the jummy
         """
         return self.toummy().splonk()
+    
+    @property
+    def name(self):
+        if self._name is None:
+            return None
+        if isinstance(self._name,str):
+            return self.name
+        return self._name[0]
+    @name.setter
+    def name(self,v):
+        if v is None:
+            self._name = None
+            return
+        elif isinstance(v,str):
+            self._name = v.strip()
+            return
+        
+        try:
+            if len(v) != 4:
+                raise ValueError('the name must be a string or a length 4 tuple or str')
+        except TypeError:
+            raise ValueError('the name must be a string or a length 4 tuple of str')
+            
+        try:
+            n = v[0].strip()
+            self._name = tuple([n if e is None else e.strip() for e in v])
+        except AttributeError:
+            raise ValueError('the name must be a string or a length 4 tuple of str')
+            
+    def get_name(self,fmt='unicode',norm=None):
+        if self._name is None:
+            return None
+        
+        if isinstance(self._name,str):
+            name = str(self._name).strip()
+            if fmt == 'html' and len(name) == 1:
+                return '<i>' + name + '</i>'
+            if fmt == 'latex' and len(name) > 1:
+                if norm is None:
+                    norm = type(self).latex_norm
+                return norm(self.name)
+            return self._name
+        
+        fmt = fmt.strip().lower()
+        if fmt == 'unicode':
+            return self._name[0]
+        if fmt == 'html':
+            return self._name[1]
+        if fmt == 'latex':
+            return self._name[2]
+        if fmt == 'ascii':
+            return self._name[0]
+        raise ValueError('fmt "' + str(fmt) + '" is not recognized')
     

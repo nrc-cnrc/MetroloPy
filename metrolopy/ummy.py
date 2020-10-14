@@ -35,7 +35,7 @@ from warnings import warn
 from math import isnan,isinf,log,log10,pi
 from fractions import Fraction
 from numbers import Rational,Integral,Real,Complex
-from .printing import PrettyPrinter
+from .printing import PrettyPrinter,MetaPrettyPrinter
 from .dfunc import Dfunc
 from .exceptions import UncertiantyPrecisionWarning
 from .unit import Unit,one,Quantity
@@ -472,7 +472,10 @@ class ummy(Dfunc,PrettyPrinter):
             
         return ret
         
-    def tostring(self,fmt='unicode',**kwds):
+    def tostring(self,fmt='unicode',nsig=None,**kwds):
+        if nsig is None:
+            nsig = self.nsig
+            
         x = float(self._x)
         try:
             xabs = abs(x)
@@ -507,23 +510,22 @@ class ummy(Dfunc,PrettyPrinter):
             else:
                 xp = max(xexp,uexp)
                 
-            psn = (uexp - self.nsig + 1 > 0)
+            psn = (uexp - nsig + 1 > 0)
             
             if (((self.sci_notation is None and (xp > self.sci_notation_high or xp < self.sci_notation_low)) 
                         or self.sci_notation) or psn or (xexp is not None and (uexp > xexp and xexp == 0))):
-                xtxt = self._format_mantissa(fmt,x*10**(-xp),-uexp+xp+self.nsig-1)
+                xtxt = self._format_mantissa(fmt,x*10**(-xp),-uexp+xp+nsig-1)
                 etxt = _format_exp(fmt,xp)
             else:
-                xtxt = self._format_mantissa(fmt,x,-uexp+self.nsig-1)
+                xtxt = self._format_mantissa(fmt,x,-uexp+nsig-1)
                 etxt = ''
                 
-            if self.nsig <= 0:
+            if nsig <= 0:
                 return xtxt + etxt
     
-            utxt = self._format_mantissa(fmt,u*10**(-uexp),self.nsig-1,parenth=True)
+            utxt = self._format_mantissa(fmt,u*10**(-uexp),nsig-1,parenth=True)
             return xtxt + '(' + utxt + ')' + etxt
         except:
-            raise
             try:
                 return(str(self.x) + '{' + str(self.u) + '}' + '??')
             except:
@@ -1600,7 +1602,26 @@ def _der(function,*args):
             
     return d
 
+
+class MetaImmy(MetaPrettyPrinter):
+    @property
+    def polar(cls):
+        """
+        `bool`
+        
+        Set property this to `True` to display a polar representation of the 
+        valu when printing or set to `False` for a cartesian representation.  
+        The default is `False`.
+        """
+        return immy._polar
+    @polar.setter
+    def polar(cls,value):
+        immy._polar = bool(value)
+    
 class immy(PrettyPrinter,Dfunc):
+    
+    _polar = False
+    imag_symbol = 'j'
     
     _element_type = ummy # in the jummy subclass this is set to gummy
     
@@ -1883,20 +1904,57 @@ class immy(PrettyPrinter,Dfunc):
         
         return cls._element_type._napply(func,*args,fxx=(fx,x))
             
-    def tostring(self,fmt='unicode',norm=None,nsig=None,solidus=None,
-                 mulsep=None):
-        r = self._real.tostring(fmt=fmt)
-        i = self._imag.tostring(fmt=fmt)
-        if i.startswith('-'):
-            i = i[1:]
+    @property
+    def polar(self):
+        """
+        `bool`
+        
+        Set property this to `True` to display a polar representation of the 
+        valu when printing or set to `False` for a cartesian representation.  
+        The default is `False`.
+        """
+        return self._polar
+    @polar.setter
+    def polar(self,v):
+        self._polar = bool(v)
+    
+    def tostring(self,fmt='unicode',norm=None,nsig=None,polar=None):
+        if polar is None:
+            polar = self.polar
+        
+        if polar:
+            r = self.r.tostring(fmt=fmt,nsig=nsig)
+            
+            if self.phi.x < 0:
+                i = abs(self.phi).tostring(fmt=fmt,nsig=nsig)
+                sign = '-'
+            else:
+                i = self.phi.tostring(fmt=fmt,nsig=nsig)
+                sign = ''
+            
+            if fmt == 'html':
+                ret = r + '&thinsp;&middot;&thinsp;<i>e</i><sup>'
+                ret += sign + self.imag_symbol + '&thinsp;' + i + '</sup>'
+            if fmt == 'latex':
+                ret = r + '\\,\\cdot\\,e^{' + sign + self.imag_symbol + i + '}'
+            else:
+                ret = r + ' exp(' + sign + self.imag_symbol + i + ')'
+            return ret
+            
+        r = self.real.tostring(fmt=fmt,nsig=nsig)
+        if self.imag.x < 0:
+            i = abs(self.imag).tostring(fmt=fmt,nsig=nsig)
             sign = ' - '
         else:
+            i = self.imag.tostring(fmt=fmt,nsig=nsig)
             sign = ' + '
             
         if fmt == 'html':
-            i = '<i>j</i>' + i
+            i = '<i>' + self.imag_symbol + '</i>&thinsp;' + i
+        elif fmt == 'latex':
+            i = self.imag_symbol + '\\,' + i
         else:
-            i = 'j' + i
+            i = self.imag_symbol + i
 
         return r + sign + i
             

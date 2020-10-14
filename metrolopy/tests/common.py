@@ -13,7 +13,13 @@ rand = np.random.RandomState()
 
 def display(g):
     w = rand.randint(5)
+    
+    if isinstance(g,uc.immy):
+        if rand.randint(2):
+            g.polar = True
+            
     assert '?' not in g.tostring()
+            
     if w == 0:
         print(g)
     elif w == 1:

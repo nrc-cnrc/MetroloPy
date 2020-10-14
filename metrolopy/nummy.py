@@ -55,7 +55,7 @@ class nummy(ummy):
     #  the code that the gummy object uses for Monte-Carlo uncertainty propagation.
 
     _cimethod = 'shortest'
-    _bayesian = False # see the MetaNummy bayesian property
+    _bayesian = False # see the gummy bayesian property
     
     def __init__(self,x,u=0,dof=float('inf'),utype=None,name=None):
         self._bayesian = nummy._bayesian
@@ -137,6 +137,59 @@ class nummy(ummy):
             # see the ummy._get_dof method.
             return 1
         return dof
+    
+    @property
+    def name(self):
+        if self._name is None:
+            return None
+        if isinstance(self._name,str):
+            return self.name
+        return self._name[0]
+    @name.setter
+    def name(self,v):
+        if v is None:
+            self._name = None
+            return
+        elif isinstance(v,str):
+            self._name = v.strip()
+            return
+        
+        try:
+            if len(v) != 4:
+                raise ValueError('the name must be a string or a length 4 tuple or str')
+        except TypeError:
+            raise ValueError('the name must be a string or a length 4 tuple of str')
+            
+        try:
+            n = v[0].strip()
+            self._name = tuple([n if e is None else e.strip() for e in v])
+        except AttributeError:
+            raise ValueError('the name must be a string or a length 4 tuple of str')
+            
+    def get_name(self,fmt='unicode',norm=None):
+        if self._name is None:
+            return None
+        
+        if isinstance(self._name,str):
+            name = str(self._name).strip()
+            if fmt == 'html' and len(name) == 1:
+                return '<i>' + name + '</i>'
+            if fmt == 'latex' and len(name) > 1:
+                if norm is None:
+                    norm = type(self).latex_norm
+                return norm(self.name)
+            return self._name
+        
+        fmt = fmt.strip().lower()
+        if fmt == 'unicode':
+            return self._name[0]
+        if fmt == 'html':
+            return self._name[1]
+        if fmt == 'latex':
+            return self._name[2]
+        if fmt == 'ascii':
+            return self._name[0]
+        raise ValueError('fmt "' + str(fmt) + '" is not recognized')
     
     @property
     def bayesian(self):
