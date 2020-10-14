@@ -1650,52 +1650,48 @@ class Quantity(PrettyPrinter):
         r,runit = f(self.value,vunit,v,aconv)
             
         return make(r,unit=runit)
-    
-    def _rbop(self,v,f):
-        r,runit = f(self.value,one,v,False)        
-        return self._make(r,unit=runit)
         
     def __add__(self, v):
         return self._bop(v,self.unit._add)
                 
     def __radd__(self, v):
-        return self._rbop(v,self.unit._radd)
+        return self._bop(v,self.unit._radd)
     
     def __sub__(self, v):
         return self._bop(v,self.unit._sub)
                 
     def __rsub__(self, v):
-        return self._rbop(v,self.unit._rsub)
+        return self._bop(v,self.unit._rsub)
     
     def __mul__(self, v):
         return self._bop(v,self.unit._mul)
                 
     def __rmul__(self, v):
-        return self._rbop(v,self.unit._rmul)
+        return self._bop(v,self.unit._rmul)
     
     def __truediv__(self, v):
         return self._bop(v,self.unit._truediv)
                 
     def __rtruediv__(self, v):
-        return self._rbop(v,self.unit._rtruediv)
+        return self._bop(v,self.unit._rtruediv)
     
     def __floordiv__(self, v):
         return self._bop(v,self.unit._floordiv)
                 
     def __rfloordiv__(self, v):
-        return self._rbop(v,self.unit._rfloordiv)
+        return self._bop(v,self.unit._rfloordiv)
     
     def __pow__(self, v):
         return self._bop(v,self.unit._pow)
                 
     def __rpow__(self, v):
-        return self._rbop(v,self.unit._rpow)
+        return self._bop(v,self.unit._rpow)
     
     def __mod__(self, v):
         return self._bop(v,self.unit._mod)
                 
     def __rmod__(self, v):
-        return self._rbop(v,self.unit._rmod)                
+        return self._bop(v,self.unit._rmod)                
         
     def __neg__(self):
         r,runit = self.unit._neg(self.value)

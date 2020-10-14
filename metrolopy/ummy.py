@@ -38,7 +38,7 @@ from numbers import Rational,Integral,Real,Complex
 from .printing import PrettyPrinter
 from .dfunc import Dfunc
 from .exceptions import UncertiantyPrecisionWarning
-from .unit import Unit,Quantity
+from .unit import Unit,one,Quantity
 
 try:
     from mpmath import mp,mpf,rational
@@ -158,6 +158,9 @@ class ummy(Dfunc,PrettyPrinter):
     max_digits = 15
     
     def __init__(self,x,u=0,dof=float('inf'),utype=None):
+        if isinstance(x,Quantity):
+            x = x.convert(one).value
+            
         if isinstance(x,ummy):
              self._copy(x,self,formatting=False)
              return
@@ -240,11 +243,15 @@ class ummy(Dfunc,PrettyPrinter):
         `float`, read-only
 
         Returns the number or degrees of freedom that the uncertainty of the 
-        gummy is based on.  If the gummy was created as the result of an 
+        ummy is based on.  If the ummy was created as the result of an 
         operation between two or more other gummys, then the dof is the effective
-        number of degrees of freedom calculated using a version of the Welch-
-        Satterthwaite approximation that takes into account correlations, see
-        [R. Willink, Metrologia, 44, 340 (2007)].
+        number of degrees of freedom calculated using the Welch-Satterthwaite 
+        approximation.  Caution:  A variation of the the  Welch-Satterthwaite
+        approximation is used that takes into account correlations, see
+        [R. Willink, Metrologia, 44, 340 (2007)].  However correlations are
+        not handled perfectly.  So if accurate dof calculations are need, care
+        should be taken to ensure that correlations are not generated in
+        intermediate calculations.
         """
         if self._ref is None:
             return float('inf')
@@ -263,14 +270,6 @@ class ummy(Dfunc,PrettyPrinter):
     def _dof(self,v):
         if self._ref is not None:
             self._ref.dof = v
-        
-    @property
-    def const(self):
-        """`bool`, read-only
-        
-        Returns `True` if the gummy represents an exact value with no uncertainty.
-        """
-        return (self._u == 0)
     
     @property
     def finfo(self):
@@ -299,7 +298,7 @@ class ummy(Dfunc,PrettyPrinter):
     
     def copy(self,formatting=True,tofloat=False):
         """
-        Returns a copy of the gummy.  If the `formatting` parameter is
+        Returns a copy of the ummy.  If the `formatting` parameter is
         `True` the display formatting information will be copied and if
         `False` the display formatting will be set to the default for a
         new gummy.  The default for `formatting` is `True`.  If tofloat
@@ -326,7 +325,8 @@ class ummy(Dfunc,PrettyPrinter):
     
     def correlation(self, g):
         """
-        Returns the correlation coefficient between `self` and `g`."""
+        Returns the correlation coefficient between `self` and `g`.
+        """
         if not isinstance(g,ummy):
             return 0
         if self._ref is None or g._ref is None:
@@ -346,7 +346,7 @@ class ummy(Dfunc,PrettyPrinter):
     @staticmethod
     def correlation_matrix(gummys):
         """
-        Returns the correlation matrix of a list or array of gummys.
+        Returns the correlation matrix of a list or array of ummys.
         """
         return [[b.correlation(a) if isinstance(b,ummy) else 0 
                 for b in gummys] for a in gummys]
@@ -354,7 +354,7 @@ class ummy(Dfunc,PrettyPrinter):
     @staticmethod
     def covariance_matrix(gummys):
         """
-        Returns the variance-covariance matrix of a list or array of gummys.
+        Returns the variance-covariance matrix of a list or array of ummys.
         """
         return [[b.covariance(a) if isinstance(b,ummy) else 0 for b in gummys] 
                 for a in gummys]
@@ -735,7 +735,7 @@ class ummy(Dfunc,PrettyPrinter):
         return r
         
     @classmethod
-    def _napply(cls,function,*args,fxx=None):
+    def _napply(cls,function,*args,fxx=None):      
         n = len(args)
         if n == 0:
             return cls(function(),0)
@@ -825,6 +825,9 @@ class ummy(Dfunc,PrettyPrinter):
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b + immy(self)
         
+        if isinstance(b,ummy):
+            return b.__add__(self)
+        
         return type(self)(self._x + b,self._u,dof=self._ref,utype=self._refs)
     
     def __sub__(self,b):
@@ -869,8 +872,12 @@ class ummy(Dfunc,PrettyPrinter):
     def __rsub__(self,b):
         if isinstance(b,np.ndarray):
             return b - np.array(self)
+        
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b - immy(self)
+        
+        if isinstance(b,ummy):
+            return b.__sub__(self)
         
         r = type(self)(b - self._x,self._u,dof=self._ref,utype=-self._refs)
         return r
@@ -925,6 +932,9 @@ class ummy(Dfunc,PrettyPrinter):
         
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b*immy(self)
+        
+        if isinstance(b,ummy):
+            return b.__mul__(self)
         
         refs = -self._refs if b < 0 else self._refs
         return type(self)(self._x*b,abs(self._u*b),dof=self._ref,utype=refs)
@@ -994,6 +1004,9 @@ class ummy(Dfunc,PrettyPrinter):
         
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b/immy(self)
+        
+        if isinstance(b,ummy):
+            return b.__div__(self)
         
         if self._x == 0:
             raise ZeroDivisionError('division by zero')
@@ -1086,6 +1099,9 @@ class ummy(Dfunc,PrettyPrinter):
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b**immy(self)
         
+        if isinstance(b,ummy):
+            return b.__pow__(self)
+        
         if b == 0:
             return type(self)(0)
         if (isinstance(self._x,Integral) and 
@@ -1135,6 +1151,9 @@ class ummy(Dfunc,PrettyPrinter):
         if isinstance(b,Complex) and not isinstance(b,Real):
             return b // immy(self)
         
+        if isinstance(b,ummy):
+            return b.__floordiv__(self)
+        
         return self._rtruediv(b)._nprnd(_floor)
         
     def __mod__(self,b):
@@ -1154,6 +1173,9 @@ class ummy(Dfunc,PrettyPrinter):
     def __rmod__(self,b):
         if isinstance(b,np.ndarray):
             return b % np.array(self)
+        
+        if isinstance(b,ummy):
+            return b.__mod__(self)
         
         ret = ummy._apply(lambda x1,x2: x1%x2,
                           lambda x1,x2: (1, _sign(x2)*abs(x1//x2)),b,self)
@@ -1258,14 +1280,14 @@ class ummy(Dfunc,PrettyPrinter):
         
     def ufrom(self,x):
         """
-        Gets the standard uncertainty contributed from particular gummys
+        Gets the standard uncertainty contributed from particular ummys
         or utypes if all other free variables are held fixed.
         
         Parameters
         ----------
-        x:  `gummy`, `str`, or array_like
-            A gummy, a string referencing a utype or a list containing
-            gummys and strings.
+        x:  `ummy`, `str`, or array_like
+            A ummy, a string referencing a utype or a list containing
+            ummys and strings.
             
         Returns
         -------
@@ -1273,9 +1295,9 @@ class ummy(Dfunc,PrettyPrinter):
         
         Example
         -------
-        >>>  a = gummy(1.2,0.2,utype='A')
-        >>>  b = gummy(3.2,0.5,utype='A')
-        >>>  c = gummy(0.9,0.2,utype='B')
+        >>>  a = ummy(1.2,0.2,utype='A')
+        >>>  b = ummy(3.2,0.5,utype='A')
+        >>>  c = ummy(0.9,0.2,utype='B')
         >>>  d = a + b + c
         >>>  d.ufrom('A')
         0.53851648071345048
@@ -1300,14 +1322,15 @@ class ummy(Dfunc,PrettyPrinter):
         
     def doffrom(self,x):
         """
-        Gets the degrees of freedom contributed from particular gummys or
-        utypes if all other free variables are held fixed.
+        Gets the degrees of freedom contributed from particular ummys or
+        utypes if all other free variables are held fixed.  Caution:  any
+        correlations in the calculations can cause errors in dof calculations.
         
         Parameters
         ----------
-        x:  `gummy`, `str`, or array_like
-            A gummy, a string referencing a utype or a list containing
-            gummys and strings.
+        x:  `ummy`, `str`, or array_like
+            A ummy, a string referencing a utype or a list containing
+            ummys and strings.
 
         Returns
         -------
@@ -1315,9 +1338,9 @@ class ummy(Dfunc,PrettyPrinter):
 
         Example
         -------
-        >>>  a = gummy(1.2,0.2,dof=5,utype='A')
-        >>>  b = gummy(3.2,0.5,dof=7,utype='A')
-        >>>  c = gummy(0.9,0.2,utype='B')
+        >>>  a = ummy(1.2,0.2,dof=5,utype='A')
+        >>>  b = ummy(3.2,0.5,dof=7,utype='A')
+        >>>  c = ummy(0.9,0.2,utype='B')
         >>>  d = a + b + c
         >>>  d.doffrom('A')
         9.0932962619709627
@@ -1766,23 +1789,23 @@ class immy(PrettyPrinter,Dfunc):
         if self.real.u == 0 and self.imag.u == 0:
             return self.x
         return self
-    
-    @classmethod
-    def _applyc(cls,*args):
-        x = [a.x if isinstance(a,(ummy,cls._element_type)) else a for a in args]
-        return (args,x)
-    
+            
     @classmethod
     def _apply(cls,function,derivative,*args,fxx=None,rjd=None):
+        
         n = len(args)
         if fxx is None:
             rargs = [a.real for a in args]
             jargs = [a.imag for a in args]
             args = rargs + jargs
+            args = [a.convert(one).value if isinstance(a,Quantity) else a for 
+                    a in args]
+            x = [a.x if isinstance(a,ummy) else a for a in args]
             func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
             der = lambda *a: derivative(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
-            args,x = cls._applyc(*args)
             fx = func(*x)
+        else:
+            fx,x = fxx
             
         if not _isscalar(fx):
             return [cls._apply(lambda *y: func(*y)[i],
@@ -1834,17 +1857,15 @@ class immy(PrettyPrinter,Dfunc):
     
     @classmethod
     def _napply(cls,function,*args,fxx=None):
+        n = len(args)
         if fxx is None:
-            if any([isinstance(a,immy) for a in args]):
-                n = len(args)
-                rargs = [a.real for a in args]
-                jargs = [a.imag for a in args]
-                args = rargs + jargs
-                func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
-            else:
-                func = function
-                
-            args,x = cls._applyc(*args)
+            rargs = [a.real for a in args]
+            jargs = [a.imag for a in args]
+            args = rargs + jargs
+            args = [a.convert(one).value if isinstance(a,Quantity) else a for 
+                    a in args]
+            x = [a.x if isinstance(a,ummy) else a for a in args]
+            func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
             fx = func(*x)
         else:
             fx,x = fxx

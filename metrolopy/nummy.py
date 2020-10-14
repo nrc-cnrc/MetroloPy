@@ -21,9 +21,10 @@
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
 """
-The nummy object defined here was created as a super-class for gummy,
-integrating the Monte-Carlo uncertainty propagation code in the distributions
-module with the ummy object.  
+The nummy object defined here integrates the Monte-Carlo uncertainty 
+propagation code in the distributions module with the ummy object.  The nummy 
+class is not intended to be used directly; rather it is utilized by the gummy
+class.
 """
 import numpy as np
 from .ummy import ummy
@@ -34,6 +35,8 @@ from math import isinf,isfinite,isnan,sqrt
 def _bop(f,npf,s,b):    
     if isinstance(b,nummy):
         f._dist = Distribution.apply(npf,s._dist,b._dist)
+    elif isinstance(b,ummy):
+        f._dist = Distribution.apply(npf,s._dist,nummy(b)._dist)
     else:
         f._dist = Distribution.apply(npf,s._dist,b)
     return f
@@ -364,7 +367,7 @@ class nummy(ummy):
             if isinstance(e,nummy):
                 a[i] = e._dist
             elif isinstance(e,ummy):
-                return super(nummy,cls)._apply(function,derivative,*args,fxdx=fxdx)
+                a[i] = nummy(e)._dist
         r = super(nummy,cls)._apply(function,derivative,*args,fxdx=fxdx)
         if isinstance(r,nummy):
             r._dist = Distribution.apply(function,*a)
@@ -379,7 +382,7 @@ class nummy(ummy):
             if isinstance(e,nummy):
                 a[i] = e._dist
             elif isinstance(e,ummy):
-                return super(nummy,cls)._napply(function,*args,fxx=fxx)
+                a[i] = nummy(e)._dist
         r = super(nummy,cls)._napply(function,*args,fxx=fxx)
         if isinstance(r,nummy):
             r._dist = Distribution.apply(function,*a)
@@ -605,34 +608,40 @@ class nummy(ummy):
     def __rsub__(self,b):
         return _rbop(super().__rsub__(b),np.subtract,self,b)
         
-    def _mul(self,b):
-        return _bop(super()._mul(b),np.multiply,self,b)
+    def __mul__(self,b):
+        return _bop(super().__mul__(b),np.multiply,self,b)
         
-    def _rmul(self,b):
-        return _rbop(super()._rmul(b),np.multiply,self,b)
+    def __rmul__(self,b):
+        return _rbop(super().__rmul__(b),np.multiply,self,b)
         
-    def _truediv(self,b):
-        return _bop(super()._truediv(b),np.divide,self,b)
+    def __truediv__(self,b):
+        return _bop(super().__truediv__(b),np.divide,self,b)
         
-    def _rtruediv(self,b):
-        return _rbop(super()._rtruediv(b),np.divide,self,b)
+    def __rtruediv__(self,b):
+        return _rbop(super().__rtruediv__(b),np.divide,self,b)
+    
+    def __floordiv__(self,b):
+        return _bop(super().__floordiv__(b),np.floor_divide,self,b)
         
-    def _pow(self,b):
-        return _bop(super()._pow(b),np.power,self,b)
+    def __rfloordiv__(self,b):
+        return _rbop(super().__rfloordiv__(b),np.floor_divide,self,b)
         
-    def _rpow(self,b):
-        return _rbop(super()._rpow(b),np.power,self,b)
+    def __pow__(self,b):
+        return _bop(super().__pow__(b),np.power,self,b)
+        
+    def __rpow__(self,b):
+        return _rbop(super().__rpow__(b),np.power,self,b)
     
     def _nprnd(self,f):
         ret = super()._nprnd(f)
         ret._dist = Distribution.apply(f,self._dist)
         return ret
         
-    def _mod(self,b):
-        return _bop(super()._mod(b),np.mod,self,b)
+    def __mod__(self,b):
+        return _bop(super().__mod__(b),np.mod,self,b)
     
-    def _rmod(self,b):
-        return _rbop(super()._rmod(b),np.mod,self,b)
+    def __rmod__(self,b):
+        return _rbop(super().__rmod__(b),np.mod,self,b)
         
     def __neg__(self):
         return _uop(super().__neg__(),np.negative,self)

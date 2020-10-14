@@ -21,8 +21,8 @@
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
 """
-Class Dfunc is an abstract base class inherited by gummy and jummy to provides 
-some support for numpy broadcasting for functions and operators.
+Class Dfunc is an abstract base class inherited by ummy and immy to provide 
+support for numpy ufunc functions.
 """
 
 import numpy as np

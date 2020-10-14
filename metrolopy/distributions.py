@@ -509,6 +509,12 @@ class Distribution:
         
     def __rtruediv__(self,v):
         return Convolution(np.divide,v,self)
+    
+    def __floordiv__(self,v):
+        return Convolution(np.floor_divide,self,v)
+        
+    def __rfloordiv__(self,v):
+        return Convolution(np.floor_divide,v,self)
         
     def __pow__(self,v):
         return Convolution(np.power,self,v)

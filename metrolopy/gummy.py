@@ -38,10 +38,9 @@ from .unit import Unit,one,Quantity
 from .distributions import Distribution,MultivariateDistribution
 from .pmethod import _Pmthd
 from .printing import MetaPrettyPrinter
-from .dfunc import _f_darctan2 as darctan2
 from math import isnan, isinf,log10
 from fractions import Fraction
-from numbers import Number,Real,Complex,Integral,Rational
+from numbers import Integral,Rational
 from math import pi
 
 try:
@@ -310,6 +309,14 @@ class MetaGummy(MetaPrettyPrinter):
         
     @property
     def sci_notation(cls):
+        """
+        `bool` or `None`
+        
+        Setting this to True or False forces or prevents scientific notation
+        in the display of the value.  If this is set to `None` thr scientific
+        notation will be used if the x value is below `10**sci_notation_low` or
+        above `10**sci_notation_high`.
+        """
         return ummy.sci_notation
     @sci_notation.setter
     def sci_notation(cls,v):
@@ -583,6 +590,21 @@ class gummy(Quantity,metaclass=MetaGummy):
     
     @property
     def dof(self):
+        """
+        `float`, read-only
+
+        Returns the number or degrees of freedom that the uncertainty of the 
+        gummy is based on.  If the gummy was created as the result of an 
+        operation between two or more other gummys, then the dof is the effective
+        number of degrees of freedom calculated using the Welch-Satterthwaite 
+        approximation.  Caution:  A variation of the the  Welch-Satterthwaite
+        approximation is used that takes into account correlations, see
+        [R. Willink, Metrologia, 44, 340 (2007)].  However correlations are
+        not handled perfectly.  So if accurate dof calculations are need, care
+        should be taken to ensure that correlations are not generated in
+        intermediate calculations.
+        """
+
         return self.value.dof
         
     @property
@@ -1038,11 +1060,17 @@ class gummy(Quantity,metaclass=MetaGummy):
         self._set_U(self._k,None)
         
     def correlation(self,gummy):
+        """
+        Returns the correlation coefficient between `self` and `g`.
+        """
         if isinstance(gummy,Quantity):
             gummy = gummy.value
         return self.value.correlation(gummy)
     
     def covariance(self,gummy):
+        """
+        Returns the covariance between `self` and `g`.
+        """
         if isinstance(gummy,Quantity):
             gummy = gummy.value
         return self.value.covariance(gummy)
@@ -1085,9 +1113,38 @@ class gummy(Quantity,metaclass=MetaGummy):
     
     @property
     def utype(self):
+        """
+        `str` or `None`
+
+        An arbitrary string value labeling the uncertainty type.
+        """
         return self.value.utype
         
     def ufrom(self,x,sim=False):
+        """
+        Gets the standard uncertainty contributed from particular gummys
+        or utypes if all other free variables are held fixed.
+        
+        Parameters
+        ----------
+        x:  `gummy`, `str`, or array_like
+            A gummy, a string referencing a utype or a list containing
+            gummys and strings.
+            
+        Returns
+        -------
+        `float`
+        
+        Example
+        -------
+        >>>  a = gummy(1.2,0.2,utype='A')
+        >>>  b = gummy(3.2,0.5,utype='A')
+        >>>  c = gummy(0.9,0.2,utype='B')
+        >>>  d = a + b + c
+        >>>  d.ufrom('A')
+        0.53851648071345048
+        """
+
         try:
             x = [i.value if isinstance(i,Quantity) else i for i in x]
         except TypeError:
@@ -1099,6 +1156,30 @@ class gummy(Quantity,metaclass=MetaGummy):
         return self.value.ufrom(x,sim)
     
     def doffrom(self,x):
+        """
+        Gets the degrees of freedom contributed from particular gummys or
+        utypes if all other free variables are held fixed.  Caution:  any
+        correlations in the calculations can cause errors in dof calculations.
+        
+        Parameters
+        ----------
+        x:  `gummy`, `str`, or array_like
+            A gummy, a string referencing a utype or a list containing
+            gummys and strings.
+
+        Returns
+        -------
+        `float`
+
+        Example
+        -------
+        >>>  a = gummy(1.2,0.2,dof=5,utype='A')
+        >>>  b = gummy(3.2,0.5,dof=7,utype='A')
+        >>>  c = gummy(0.9,0.2,utype='B')
+        >>>  d = a + b + c
+        >>>  d.doffrom('A')
+        9.0932962619709627
+        """
         try:
             x = [i.value if isinstance(i,Quantity) else i for i in x]
         except TypeError:
@@ -1281,6 +1362,11 @@ class gummy(Quantity,metaclass=MetaGummy):
     def sci_notation(self):
         """
         `bool` or `None`
+        
+        Setting this to True or False forces or prevents scientific notation
+        in the display of the value.  If this is set to `None` thr scientific
+        notation will be used if the x value is below `10**sci_notation_low` or
+        above `10**sci_notation_high`.
         """
         return self.value.sci_notation
     @sci_notation.setter
@@ -1315,6 +1401,15 @@ class gummy(Quantity,metaclass=MetaGummy):
         
             
     def copy(self,formatting=True,tofloat=False):
+        """
+        Returns a copy of the gummy.  If the `formatting` parameter is
+        `True` the display formatting information will be copied and if
+        `False` the display formatting will be set to the default for a
+        new gummy.  The default for `formatting` is `True`.  If tofloat
+        is true the x and u properties will be converted to float values
+        before copying.
+        """
+        
         r = type(self)(self._value.copy(formatting=formatting,tofloat=tofloat),
                        unit = self._unit)
         r._old = self._old
@@ -2778,9 +2873,77 @@ class gummy(Quantity,metaclass=MetaGummy):
         return ret
     
     @classmethod
-    def apply(cls,function,derivative,*args,fxdx=None):
+    def apply(cls,function,derivative,*args):
+        """
+        A classmethod that applies a function to one or more gummy or jummy 
+        objects propagating the uncertainty.
+        
+        Parameters
+        ----------
+        function: `function`
+              The the function to be applied. For `gummy.apply`, 'function'
+              should take one or more float arguments and return a float value 
+              or float array.  For `jummy.apply`, 'function' may also take and
+              return complex values.
+
+        derivative:  `function`
+              The name of a second function that gives the derivatives
+              with respect to the arguments of `function`.  `derivative` should
+              take an equal number of arguments as `function`.  If `function`
+              takes one argument `derivative` should return a float and if
+              `function` takes more than one argument then `derivative` should
+              return a tuple, list or array of floats that contains the derivatives
+              with respect to each argument.  In the case of `jummy.apply`, the
+              derivatives with respect to each argument may be real or complex
+              values, in which case `function` is assumed to be holomorphic.  Or
+              the derivative may be a 2 x 2 matrix of the form:
+
+                              [[ du/dx, du/dy ],
+                               [ dv/dx, dv/dy ]]
+
+             where function(x + j*y) = u + j*v.
+
+        *args:  `gummy`, `jummy`, or `float`
+              One or more arguments to which `function` will be applied.  These
+              arguments need not all be `Dfunc` objects; arguments  such as
+              floats will be taken to be constants with no uncertainty.
+              They may also be numpy ndarrays in which case the usual numpy
+              broadcasting rules apply.
+              
+        Returns
+        -------
+        `gummy`, `jummy`:
+            If none of the arguments are `gummy` or `jummy`
+            then the return value is the same type as the return value of `function`.
+            Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
+            `gummy` or a `jummy` depending on whether `function` has a float or
+            a complex return value.
+            
+        
+        Examples
+        --------
+            
+        >>> import numpy as np
+        >>> x = gummy(0.678,u=0.077)
+        >>> gummy.apply(np.sin,np.cos,x)
+        0.627 +/- 0.060
+        
+        >>> x = gummy(1.22,u=0.44)
+        >>> y = gummy(3.44,u=0.67)
+        >>> def dhypot(x,y):
+        ...     return (x1/sqrt(x1**2 + x2**2),x2/np.sqrt(x1**2 + x2**2))
+        >>> gummy.apply(np.hypot,dhypot,x,y)
+        3.65 +/- 0.65
+        """
+        
+        return cls._apply(function,derivative,*args)
+    
+    @classmethod
+    def _apply(cls,function,derivative,*args,fxdx=None):
+        
         if fxdx is None:
-            args,x = _applyc(*args)
+            args = [a.convert(one).value if isinstance(a,Quantity) else a for a in args]
+            x = [a.x if isinstance(a,ummy) else a for a in args]
             fx = function(*x)
             d = derivative(*x)
         else:
@@ -2796,8 +2959,61 @@ class gummy(Quantity,metaclass=MetaGummy):
         
     @classmethod
     def napply(cls,function,*args,fxx=None):
+        """
+        gummy.napply(function, arg1, arg2, ...) and
+        jummy.napply(function, arg1, arg2, ...)
+        
+        A classmethod that applies a function to one or more gummy or jummy 
+        objects propagating the uncertainty.  This method is similar to apply 
+        except that the derivatives are computed numerically so a derivative 
+        function does not need to be supplied.
+        
+        Parameters
+        ----------
+        function: `function`
+            The the function to be applied. For `gummy.apply`, 'function'
+            should take one or more float arguments and return a float value
+            r float array.  For `jummy.apply`, 'function' may also take and
+            return complex values.
+
+        *args:  `gummy`, `jummy`, or `float`
+              One or more arguments to which `function` will be applied.  These
+              arguments need not all be `Dfunc` objects; arguments  such as
+              floats will be taken to be constants with no uncertainty.
+              They may also be numpy ndarrays in which case the usual numpy
+              broadcasting rules apply.
+
+        Returns
+        -------
+        `gummy`, `jummy`:
+            If none of the arguments are `gummy` or `jummy`
+            then the return value is the same type as the return value of `function`.
+            Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
+            `gummy` or a `jummy` depending on whether `function` has a float or
+            a complex return value.
+            
+        
+        Examples
+        --------
+            
+        >>> import numpy as np
+        >>> x = gummy(0.678,u=0.077)
+        >>> gummy.napply(np.sin,x)
+        0.627 +/- 0.060
+        
+        >>> x = gummy(1.22,u=0.44)
+        >>> y = gummy(3.44,u=0.67)
+        >>> gummy.napply(np.hypot,x,y)
+        3.65 +/- 0.65
+        """
+        
+        return cls._napply(function,*args)
+        
+    @classmethod
+    def _napply(cls,function,*args,fxx=None):
         if fxx is None:
-            args,x = _applyc(*list(args))
+            args = [a.convert(one).value if isinstance(a,Quantity) else a for a in args]
+            x = [a.x if isinstance(a,ummy) else a for a in args]
             fx = function(*x)
         else:
             fx,x = fxx
@@ -2911,49 +3127,31 @@ class gummy(Quantity,metaclass=MetaGummy):
             try:
                 s = self.convert(v._unit)
             except NoUnitConversionFoundError:
-                return False
-        else:
-            if self._unit is not one:
-                try:
-                    s = self.convert(one)
-                except NoUnitConversionFoundError:
-                    return False
-            else:
-                s = self
+                raise IncompatibleUnitsError('values with incompatible units cannot be compared')
+            return self.value == v.value
+        
+        try:
+            s = self.convert(one).value
+        except NoUnitConversionFoundError:
+            raise IncompatibleUnitsError('values with incompatible units cannot be compared')
 
-        return super(gummy,s).__eq__(v)
+        return s == v
     
     def __ne__(self, v):
-        if isinstance(v,gummy):
-            try:
-                s = self.convert(v._unit)
-            except NoUnitConversionFoundError:
-                return True
-        else:
-            if self._unit is not one:
-                try:
-                    s = self.convert(one)
-                except NoUnitConversionFoundError:
-                    return True
-            else:
-                s = self
-            
-        if s.__eq__(v):
-            return False
-        return s.__lt__(v) or s.__gt__(v)
+        return self < v or self > v
         
     def __lt__(self, v):
         if isinstance(v,gummy):
             try:
-                s = self.convert(v._unit)
+                s = self.convert(v.unit)
             except NoUnitConversionFoundError:
-                raise IncompatibleUnitsError('values with incompatible units cannot be compared with > or <')
+                raise IncompatibleUnitsError('values with incompatible units cannot be compared')
         else:
-            if self._unit is not one:
+            if self.unit is not one:
                 try:
                     s = self.convert(one)
                 except NoUnitConversionFoundError:
-                    raise IncompatibleUnitsError('values with incompatible units cannot be compared with > or <')
+                    raise IncompatibleUnitsError('values with incompatible units cannot be compared ')
             else:
                 s = self
             
@@ -2966,22 +3164,20 @@ class gummy(Quantity,metaclass=MetaGummy):
         return (df.x < -k*df.u)
         
     def __le__(self, v):
-        if self.__eq__(v):
-            return True
-        return self.__lt__(v)
+        return self == v or self < v
         
     def __gt__(self, v):
         if isinstance(v,gummy):
             try:
                 s = self.convert(v._unit)
             except NoUnitConversionFoundError:
-                raise IncompatibleUnitsError('values with incompatible units cannot be compared with > or <')
+                raise IncompatibleUnitsError('values with incompatible units cannot be compared')
         else:
             if self._unit is not one:
                 try:
                     s = self.convert(one)
                 except NoUnitConversionFoundError:
-                    raise IncompatibleUnitsError('values with incompatible units cannot be compared with > or <')
+                    raise IncompatibleUnitsError('values with incompatible units cannot be compared')
             else:
                 s = self
             
@@ -2994,9 +3190,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         return (df.x > k*df.u)
         
     def __ge__(self, v):
-        if self.__eq__(v):
-            return True
-        return self.__gt__(v)
+        return self == v or self > v
     
     @property
     def imag(self):
@@ -3033,7 +3227,7 @@ class jummy(immy):
         name:  `str`
             An optional name for the jummy.
         """
-        self.name=str(name)
+        self.name = name
         super().__init__(real=real,imag=imag,r=r,phi=phi,cov=cov)
         if self._ridef:
             try:
@@ -3045,10 +3239,6 @@ class jummy(immy):
         else:
             if not self._phi.unit.is_dimensionless:
                 raise IncompatibleUnitsError('phi must have dimensonless units')
-        
-    @classmethod
-    def _applyc(*args):
-        return _applyc(*args)
             
     def tostring(self,fmt='unicode',norm=None,nsig=None,solidus=None,
                  mulsep=None,show_name=None,name=None):
@@ -3076,12 +3266,6 @@ class jummy(immy):
         
         if self.real.unit is one and self.imag.unit is one:
             return name + r + sign + i
-        
-        #if self._real.unit is self._imag.unit:
-            #txt = '(' + r + sign + i + ')'
-            #txt += self._real.tostring(fmt=fmt,style='xunit',solidus=solidus,
-                                       #mulsep=mulsep,norm=norm)
-            #return txt
             
         txt = name + r
         txt += self.real.tostring(fmt=fmt,style='xunit',solidus=solidus,
@@ -3091,7 +3275,7 @@ class jummy(immy):
                                    mulsep=mulsep,norm=norm)
         return txt
 
-    def toummy(self):
+    def toimmy(self):
         """
         returns an immy representation of the jummy
         """
@@ -3102,48 +3286,4 @@ class jummy(immy):
         splonks the jummy
         """
         return self.toummy().splonk()
-
-def _applyc(*args):
-    # used by gummy and jummy in _apply and _napply
-    args = list(args)
-    x = list(args)
-    for i,a in enumerate(args):
-        # try to convert all gummys in args to unit one and replace any
-        # gummys or jummys in x with mean values
-        if isinstance(a,Quantity):
-            if a._unit is not one:
-                if a.autoconvert:
-                    a = a.convert(one).value
-                    args[i] = a
-                else:
-                    raise ValueError('a function argument is not dimensionless')
-            else:
-                a = a.value
-                args[i] = a
-            if isinstance(a,ummy):
-                x[i] = a.x
-            else:
-                x[i] = a
-        elif isinstance(a,immy):
-            if isinstance(a,jummy):
-                if a.real.unit is not one or a.imag.unit is not one:
-                    if a.real.unit is not one:
-                        if a.real.autoconvert:
-                                r = a.real.convert(one).value
-                        else:
-                            raise ValueError('a function argument is not dimensionless')
-                    if a.imag.unit is not one:
-                        if a.imag.autoconvert:
-                                j = a.imag.convert(one).value
-                        else:
-                            raise ValueError('a function argument is not dimensionless')
-                else:
-                    r = a.real.value
-                    j = a.imag.value
-                a = immy(r,j)
-                args[i] = a
-            x[i] = complex(a)
-        elif isinstance(a,ummy):
-            x[i] = a.x
     
-    return args,x
