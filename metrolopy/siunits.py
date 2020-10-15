@@ -46,14 +46,25 @@ _const_h = MFraction('6.62607015e-34') # planck constant in J s
 _const_hbar = _const_h/(2*pi)
 _const_e = MFraction('1.602176634e-19') # electron charge in C
 _const_k = MFraction('1.380649e-23') # Boltzmann constant in J/K
-_const_dalton = gummy(1.66053906660e-27,00000000050e-27) # unified atomic mass unit in kg
+ = gummy(1.66053906660e-27,00000000050e-27) 
 
-# constants from CODATA 2014
+# constants from CODATA 2019
+
 _const_G = gummy(6.67430e-11,0.00015e-11) # gravitational constant in m**3/kg s**2
-_const_me = gummy(9.10938356e-31,0.00000011e-31) # mass of the electron in kg
-_const_alpha = gummy(7.2973525664e-3,0.0000000017e-3) # fine structure constant
-_const_rydberg = gummy(10973731.568508,0.000065) # in 1/m
+
+# fine structure constant, Rydberg constant in unit 1/m,and the electron relative mass
+_const_alpha,_const_rydberg,_const_are = gummy.create([7.2973525664e-3,10973731.568160,5.48579909065e-4],
+                                                      u=[0.0000000017e-3,0.000021,0.00000000016e-4],
+                                                      correlation_matrix=[[1,0.00207,-0.05927],
+                                                                          [0.00207,1,0.00704],
+                                                                          [-0.05927,0.00704,1]])
+
+_const_me = 2*_const_h*_const_rydberg/(_const_c*_const_alpha**2) #electron mass in kg
 _const_a0 = _const_alpha/(4*pi*_const_rydberg) # bohr radius in m
+
+# atomic mass constant in kg
+_const_dalton = 2*_const_rydberg*_const_h/(_const_are*_const_c*_const_alpha**2)
+
 _const_proton_mass = gummy(1.672621898e-27,0.000000021e-27) # in kg
 
 # constants from IAU 2009
