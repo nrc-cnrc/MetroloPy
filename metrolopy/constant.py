@@ -34,8 +34,8 @@ from .printing import _latex_math
 
 class GummyConstant(gummy,Indexed):
     
-    toummy = False
-    splonk = False
+    return_toummy = False
+    return_splonk = False
     
     _builtins_to_import = ['..codata2018']
     
@@ -199,11 +199,13 @@ def constant(name,toummy=None,splonk=None):
         raise ConstantNotFoundError('constant "' + str(name) + '" was not found')
         
     if splonk is None:
-        splonk = GummyConstant.splonk
+        splonk = GummyConstant.return_splonk
     if splonk:
         ret = ret.splonk()
     else:
         if toummy is None:
+            toummy = GummyConstant.return_toummy
+        if toummy:
             ret = ret.toummy()
         
     return ret

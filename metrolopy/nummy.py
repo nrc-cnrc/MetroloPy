@@ -143,7 +143,7 @@ class nummy(ummy):
         if self._name is None:
             return None
         if isinstance(self._name,str):
-            return self.name
+            return self._name
         return self._name[0]
     @name.setter
     def name(self,v):

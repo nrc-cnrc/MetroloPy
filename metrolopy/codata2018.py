@@ -23,11 +23,13 @@
 """
 constants
 """
-
+import numpy as np
 from .constant import GummyConstant
 from .unit import unit
+from .ummy import MFraction
 from .siunits import _const_c,_const_G,_const_h,_const_e,_const_k
-import numpy as np
+
+norm = GummyConstant.latex_norm
 
 with GummyConstant._builtin():
     
@@ -35,8 +37,8 @@ with GummyConstant._builtin():
                   name='hyperfine transition frequency of Cs',
                   symbol='\u0394\u03bd(Cs)',
                   html_symbol='&Delta;<i>&nu;</i><sub>Cs</sub>',
-                  latex_symbol='\\Delta\\nu_{Cs}',
-                  ascii_symbol='Delta-nu(Cs)',
+                  latex_symbol='\\Delta\\nu_{' + norm('Cs') + '}',
+                  ascii_symbol='hf(Cs)',
                   add_symbol='True',
                   description='SI defining constant, SI Brochure 9th ed.,Caesium, Cesium')
     
@@ -52,10 +54,11 @@ with GummyConstant._builtin():
                   add_symbol='True',
                   description='SI defining constant, SI Brochure 9th ed., electron charge')
     
-    GummyConstant(6.02214076e23,unit='mol**-1',name='Avogadro constant',
+    GummyConstant(MFraction('6.02214076e23'),unit='mol**-1',
+                  name='Avogadro constant',
                   symbol='N(A)',
                   html_symbol='<i>N</i><sub>A</sub>',
-                  latex_symbol='N_{A}',
+                  latex_symbol='N_{' + norm('A') + '}',
                   add_symbol=True,
                   description='SI defining constant, SI Brochure 9th ed., mole')
     
@@ -66,13 +69,15 @@ with GummyConstant._builtin():
     GummyConstant(683,unit='lm/W',
                   name='luminous efficacy of monochromatic radiation of frequency 540e12 Hz',
                   symbol='K(cd)',html_symbol='<i>K</i><sub>cd</sub>',
-                  latex_symbol='K_{cd}',add_symbol=True,
+                  latex_symbol='K_{' + norm('cd') + '}',add_symbol=True,
                   description='SI defining constant, SI Brochure 9th ed., candela')
 
 
-    GummyConstant(_h/(2*np.pi),unit='J s',name='reduced Plank constant',
-                  symbol='h-bar',html_symbol='&hbar;',latex_symbol='\\bar',
-                  description='Plank constant over 2 pi')
+    _hbar = GummyConstant(_h/(2*np.pi),unit='J s',name='reduced Plank constant',
+                          symbol='h-bar',html_symbol='&hbar;',latex_symbol='\\hbar',
+                          add_symbol=True,
+                          description='Plank constant over 2 pi')
+    GummyConstant.alias('hbar',_hbar)
     
     
     _G =  GummyConstant(_const_G*unit('m**3 kg**-1 s**-2'),
