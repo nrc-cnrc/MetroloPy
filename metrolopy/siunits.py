@@ -46,7 +46,6 @@ _const_h = MFraction('6.62607015e-34') # planck constant in J s
 _const_hbar = _const_h/(2*pi)
 _const_e = MFraction('1.602176634e-19') # electron charge in C
 _const_k = MFraction('1.380649e-23') # Boltzmann constant in J/K
- = gummy(1.66053906660e-27,00000000050e-27) 
 
 # constants from CODATA 2019
 
