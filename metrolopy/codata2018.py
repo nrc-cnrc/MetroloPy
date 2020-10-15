@@ -26,13 +26,57 @@ constants
 
 from .constant import GummyConstant
 from .unit import unit
-from .siunits import _const_c,_const_G
+from .siunits import _const_c,_const_G,_const_h,_const_e,_const_k
+import numpy as np
 
 with GummyConstant._builtin():
+    
+    GummyConstant(9192631770,unit='Hz', 
+                  name='hyperfine transition frequency of Cs',
+                  symbol='\u0394\u03bd(Cs)',
+                  html_symbol='&Delta;<i>&nu;</i><sub>Cs</sub>',
+                  latex_symbol='\\Delta\\nu_{Cs}',
+                  ascii_symbol='Delta-nu(Cs)',
+                  add_symbol='True',
+                  description='SI defining constant, SI Brochure 9th ed.,Caesium, Cesium')
+    
+    _h = GummyConstant(_const_h,unit='J s',symbol='h',name='Plank constant',
+                       add_symbol=True,
+                       description='SI defining constant, SI Brochure 9th ed.')
+    
     GummyConstant(_const_c,unit='m/s',name='speed of light in vacuum',
                   symbol='c',add_symbol=True,
-                  description='SI defining constant')
+                  description='SI defining constant, SI Brochure 9th ed.')
     
-    GummyConstant(_const_G*unit('m**3 kg**-1 s**-2'),
-                  name='Newtonian constant of gravitation',symbol='G',
-                  add_symbol=True,description='CODATA 2018')
+    GummyConstant(_const_e,unit='C',symbol='e',name='elementary charge',
+                  add_symbol='True',
+                  description='SI defining constant, SI Brochure 9th ed., electron charge')
+    
+    GummyConstant(6.02214076e23,unit='mol**-1',name='Avogadro constant',
+                  symbol='N(A)',
+                  html_symbol='<i>N</i><sub>A</sub>',
+                  latex_symbol='N_{A}',
+                  add_symbol=True,
+                  description='SI defining constant, SI Brochure 9th ed., mole')
+    
+    GummyConstant(_const_k,unit='J/K',symbol='k',name='Boltzmann constant',
+                  add_symbol=True,
+                  description='SI defining constant, SI Brochure 9th ed., Kelvin')
+    
+    GummyConstant(683,unit='lm/W',
+                  name='luminous efficacy of monochromatic radiation of frequency 540e12 Hz',
+                  symbol='K(cd)',html_symbol='<i>K</i><sub>cd</sub>',
+                  latex_symbol='K_{cd}',add_symbol=True,
+                  description='SI defining constant, SI Brochure 9th ed., candela')
+
+
+    GummyConstant(_h/(2*np.pi),unit='J s',name='reduced Plank constant',
+                  symbol='h-bar',html_symbol='&hbar;',latex_symbol='\\bar',
+                  description='Plank constant over 2 pi')
+    
+    
+    _G =  GummyConstant(_const_G*unit('m**3 kg**-1 s**-2'),
+                        name='Newtonian constant of gravitation',symbol='G',
+                        add_symbol=True,short_name='constant of gravitation',
+                        description='CODATA 2018, gravity')
+    

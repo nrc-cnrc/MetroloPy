@@ -324,6 +324,9 @@ class MetaGummy(MetaPrettyPrinter):
         
     @property
     def sci_notation_high(cls):
+        """
+        see the sci_notation property
+        """
         return ummy.sci_notation_high
     @sci_notation_high.setter
     def sci_notation_high(cls,v):
@@ -331,6 +334,9 @@ class MetaGummy(MetaPrettyPrinter):
         
     @property
     def sci_notation_low(cls):
+        """
+        see the sci_notation property
+        """
         return ummy.sci_notation_low
     @sci_notation_low.setter
     def sci_notation_low(cls,v):
@@ -338,6 +344,13 @@ class MetaGummy(MetaPrettyPrinter):
     
     @property
     def rounding_u(cls):
+        """
+        `bool`
+        
+        If this is set to `True` then the uncertainty of the ummy or gummy 
+        includes a contribution to account for the finite resolution of the
+        x-value.
+        """
         return ummy.rounding_u
     @rounding_u.setter
     def rounding_u(cls,v):
@@ -1103,9 +1116,15 @@ class gummy(Quantity,metaclass=MetaGummy):
     
     @property
     def real(self):
+        """
+        returns a copy of the gummy
+        """
         return self.copy(formatting=False)
     
     def conjugate(self):
+        """
+        returns a copy of the gummy
+        """
         return self.copy(formatting=False)
     
     def angle(self):
@@ -1378,6 +1397,9 @@ class gummy(Quantity,metaclass=MetaGummy):
         
     @property
     def sci_notation_high(self):
+        """
+        see the sci_notation property
+        """
         return self.value.sci_notation_high
     @sci_notation_high.setter
     def sci_notation_high(self,v):
@@ -1385,6 +1407,9 @@ class gummy(Quantity,metaclass=MetaGummy):
         
     @property
     def sci_notation_low(self):
+        """
+        see the sci_notation property
+        """
         return self.value.sci_notation_low
     @sci_notation_low.setter
     def sci_notation_low(self,v):
@@ -3239,7 +3264,7 @@ class jummy(immy):
                 raise IncompatibleUnitsError('phi must have dimensonless units')
             
     def tostring(self,fmt='unicode',norm=None,show_name=None,name=None,
-                 polar=None,**kwds):
+                 style=None,**kwds):
         if show_name is None:
             show_name = self.show_name
         if show_name:
@@ -3252,9 +3277,9 @@ class jummy(immy):
         else:
             name = ''
             
-        if polar is None:
-            polar = self.polar
-        if polar:
+        if style is None:
+            style = self.style
+        if style == 'polar':
             r = self.r.tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
             
             if self.phi.unit.linear:
@@ -3273,36 +3298,56 @@ class jummy(immy):
                     sign = ''
                     
             if fmt == 'html':
+                if sign == '':
+                    sign ='&thinsp;'
                 ret = name + r + '&thinsp;&middot;&thinsp;<i>e</i><sup>'
-                ret += sign + self.imag_symbol + '&thinsp;' + i + '</sup>'
-            if fmt == 'latex':
-                ret = name + r + '\\,\\cdot\\,e^{' + sign + self.imag_symbol + i + '}'
+                ret += sign + '<i>' + self._imag_symbol + '</i>&thinsp;'
+                ret += i + '</sup>'
+            elif fmt == 'latex':
+                ret = name + r + '\\,\\cdot\\,e^{' + sign + self._imag_symbol + i + '}'
             else:
-                ret = name + r + ' exp(' + sign + self.imag_symbol + i + ')'
+                ret = name + r + ' exp(' + sign + self._imag_symbol + i + ')'
             return ret
                 
         r = self.real.tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
+        if self.imag.unit.linear and self.imag.value == 0:
+            return r
+        if self.real.unit.linear and self.real.value == 0:
+            r = ''
+        
         if self.imag.unit.linear:
             if self.imag.x < 0:
                 i = abs(self.imag).tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
-                sign = ' - '
+                if r == '':
+                    sign = '-'
+                else:
+                    sign = ' - '
             else:
                 i = self.imag.tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
-                sign = ' + '
+                if r == '':
+                    sign = ''
+                else:
+                    sign = ' + '
         else:
             i = self.imag.tostring(fmt=fmt,style='concise',k=1,norm=norm,**kwds)
             if i.startswith('-'):
                 i = i[1:]
-                sign = ' - '
+                if r == '':
+                    sign = ' - '
+                else:
+                    sign = '-'
             else:
-                sign = ' + '
+                if r == '':
+                    sign = ''
+                else:
+                    sign = ' + '
             
         if fmt == 'html':
-            i = '<i>j</i>&thinsp;' + i
+            i = '<i>' + self._imag_symbol + '</i>&thinsp;' + i
         elif fmt == 'latex':
-            i = 'j\\,' + i
+            i = self._imag_symbol + '\\,' + i
         else:
-            i = 'j' + i
+            i = self._imag_symbol + i
         
         return name + r + sign + i
 

@@ -1605,24 +1605,41 @@ def _der(function,*args):
 
 class MetaImmy(MetaPrettyPrinter):
     @property
-    def polar(cls):
+    def style(cls):
         """
-        `bool`
+        `str` in {'polar','cartesian'}
         
-        Set property this to `True` to display a polar representation of the 
-        valu when printing or set to `False` for a cartesian representation.  
-        The default is `False`.
+        Sets whether to print the value using a cartesian or polar 
+        representaion.  This property can be set at the class or instance
+        level.  The default is 'cartesian'.
         """
-        return immy._polar
-    @polar.setter
-    def polar(cls,value):
-        immy._polar = bool(value)
+        return cls._style
+    @style.setter
+    def style(cls,value):
+        value = value.lower().strip()
+        if value in ['cartesian','ri','real-imag']:
+            cls._style = 'cartesian'
+        elif value in ['polar','r-phi']:
+            cls._style = 'polar'
+        else:
+            raise ValueError('the style must be either "cartesian" or "polar"')
+        
+    @property
+    def imag_symbol(cls):
+        """
+        `str`
+        
+        The symbol for the unit imaginary number.  The default is 'j'.
+        """
+        return immy._imag_symbol
+    @imag_symbol.setter
+    def imag_symbol(cls,value):
+        immy._imag_symbol = str(value)
     
-class immy(PrettyPrinter,Dfunc):
+class immy(PrettyPrinter,Dfunc,metaclass=MetaImmy):
     
-    _polar = False
-    imag_symbol = 'j'
-    
+    _style = 'cartesian'
+    _imag_symbol = 'j'
     _element_type = ummy # in the jummy subclass this is set to gummy
     
     def __init__(self,real=None,imag=None,r=None,phi=None,cov=None):
@@ -1809,6 +1826,8 @@ class immy(PrettyPrinter,Dfunc):
     def splonk(self):
         if self.real.u == 0 and self.imag.u == 0:
             return self.x
+        if self.imag == 0:
+            return self.real
         return self
             
     @classmethod
@@ -1905,24 +1924,33 @@ class immy(PrettyPrinter,Dfunc):
         return cls._element_type._napply(func,*args,fxx=(fx,x))
             
     @property
-    def polar(self):
+    def style(self):
         """
-        `bool`
+        `str` in {'polar','cartesian'}
         
-        Set property this to `True` to display a polar representation of the 
-        valu when printing or set to `False` for a cartesian representation.  
-        The default is `False`.
+        Sets whether to print the value using a cartesian or polar 
+        representaion.  This property can be set at the class or instance
+        level.  The default is 'cartesian'.
         """
-        return self._polar
-    @polar.setter
-    def polar(self,v):
-        self._polar = bool(v)
+        return self._style
+    @style.setter
+    def style(self,value):
+        value = value.lower().strip()
+        if value in ['cartesian','ri','real-imag']:
+            self._style = 'cartesian'
+        elif value in ['polar','r-phi']:
+            self._style = 'polar'
+        else:
+            raise ValueError('the style must be either "cartesian" or "polar"')
     
-    def tostring(self,fmt='unicode',norm=None,nsig=None,polar=None):
-        if polar is None:
-            polar = self.polar
+    def tostring(self,fmt='unicode',norm=None,nsig=None,style=None):
+        if self.imag == 0 and self.real == 0:
+            return '0'
         
-        if polar:
+        if style is None:
+            style = self.style
+        
+        if style == 'polar':
             r = self.r.tostring(fmt=fmt,nsig=nsig)
             
             if self.phi.x < 0:
@@ -1933,28 +1961,42 @@ class immy(PrettyPrinter,Dfunc):
                 sign = ''
             
             if fmt == 'html':
-                ret = r + '&thinsp;&middot;&thinsp;<i>e</i><sup>'
-                ret += sign + self.imag_symbol + '&thinsp;' + i + '</sup>'
-            if fmt == 'latex':
-                ret = r + '\\,\\cdot\\,e^{' + sign + self.imag_symbol + i + '}'
+                if sign == '':
+                    sign ='&thinsp;'
+                ret = r + '&thinsp;&middot;&thinsp;<i>e</i><sup>' + sign
+                ret += '<i>' + self._imag_symbol + '</i>&thinsp;'
+                ret += i + '</sup>'
+            elif fmt == 'latex':
+                ret = r + '\\,\\cdot\\,e^{' + sign + self._imag_symbol + i + '}'
             else:
-                ret = r + ' exp(' + sign + self.imag_symbol + i + ')'
+                ret = r + ' exp(' + sign + self._imag_symbol + i + ')'
             return ret
-            
-        r = self.real.tostring(fmt=fmt,nsig=nsig)
+        
+        if self.real == 0:
+            r = ''
+        else:
+            r = self.real.tostring(fmt=fmt,nsig=nsig)
+        if self.imag == 0:
+            return r
         if self.imag.x < 0:
             i = abs(self.imag).tostring(fmt=fmt,nsig=nsig)
-            sign = ' - '
+            if self.real == 0:
+                sign = '-'
+            else:
+                sign = ' - '
         else:
             i = self.imag.tostring(fmt=fmt,nsig=nsig)
-            sign = ' + '
+            if self.real == 0:
+                sign = ''
+            else:
+                sign = ' + '
             
         if fmt == 'html':
-            i = '<i>' + self.imag_symbol + '</i>&thinsp;' + i
+            i = '<i>' + self._imag_symbol + '</i>&thinsp;' + i
         elif fmt == 'latex':
-            i = self.imag_symbol + '\\,' + i
+            i = self._imag_symbol + '\\,' + i
         else:
-            i = self.imag_symbol + i
+            i = self._imag_symbol + i
 
         return r + sign + i
             

@@ -40,13 +40,13 @@ import numpy as np
 pi = np.pi
 e = np.e
 
-# constants from draft of the 9 edition of the SI brochure dated 18 Dec. 2018
+# constants from the 9 edition of the SI brochure
 _const_c = 299792458 # speed of light in m/s
 _const_h = MFraction('6.62607015e-34') # planck constant in J s
 _const_hbar = _const_h/(2*pi)
 _const_e = MFraction('1.602176634e-19') # electron charge in C
 _const_k = MFraction('1.380649e-23') # Boltzmann constant in J/K
-_const_dalton = gummy(1.660539040e-27,0.000000020e-27) # unified atomic mass unit in kg
+_const_dalton = gummy(1.66053906660e-27,00000000050e-27) # unified atomic mass unit in kg
 
 # constants from CODATA 2014
 _const_G = gummy(6.67430e-11,0.00015e-11) # gravitational constant in m**3/kg s**2

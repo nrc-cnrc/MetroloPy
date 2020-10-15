@@ -16,7 +16,7 @@ def display(g):
     
     if isinstance(g,uc.immy):
         if rand.randint(2):
-            g.polar = True
+            g.style = 'polar'
             
     assert '?' not in g.tostring()
             

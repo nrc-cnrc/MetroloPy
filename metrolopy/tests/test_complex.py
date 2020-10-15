@@ -106,6 +106,13 @@ def test_immy_init(n=1000,prnt=False):
         assert_immy_close(x.conjugate(),immy(real=xr,imag=-xi))
         assert_immy_close(-x,immy(real=-xr,imag=-xi))
         assert_immy_close(+x,immy(real=xr,imag=xi))
+        
+        if prnt:
+            if rand.randint(2):
+                y =1e12*x
+            else:
+                y = x/1e12
+            display(y)
 
 def _test_immy_bop(f,nf,n=1000,prnt=False):
     for m in range(n):
