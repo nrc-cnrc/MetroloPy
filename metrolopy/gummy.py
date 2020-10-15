@@ -891,6 +891,36 @@ class gummy(Quantity,metaclass=MetaGummy):
         
     def get_name(self,fmt='unicode',norm=None):
         return self.value.get_name(fmt,norm)
+    
+    @property
+    def unit(self):
+        """
+        Gets or sets the unit for `x `and, if the `uunit` attribute is
+        `None`, the units for the uncertainty.
+        
+        If this property is set, a unit conversion will be performed.  The value 
+        it is set to may be a string, `None`, a `Unit` object, or the integer 1.
+        Both 1 and `None` will be interpreted as the Unit instance `one`. A
+        `NoUnitConversionFoundError` will be raised if the unit conversion is
+        not possible.
+        
+        Example
+        -------
+            
+        >>> x = gummy(0.001,unit='V')
+        >>> x
+        0.001 V
+        >>> x.unit = 'uV'
+        >>> x
+        1000.0 uV
+        """
+
+        return self._unit
+    @unit.setter
+    def unit(self,u):
+        Quantity.unit.fset(self,u)
+        self._U = None
+        self._set_U()
             
     @property
     def uunit(self):

@@ -1492,8 +1492,7 @@ class Quantity(PrettyPrinter):
     @property
     def unit(self):
         """
-        Gets or sets the unit for `x `and, if the `uunit` attribute is
-        `None`, the units for the uncertainty.
+        Gets or sets the unit for the Quantity.
         
         If this property is set, a unit conversion will be performed.  The value 
         it is set to may be a string, `None`, a `Unit` object, or the integer 1.
@@ -1506,7 +1505,7 @@ class Quantity(PrettyPrinter):
             
         >>> x = Quantity(0.001,unit='V')
         >>> x
-        (0.001 V
+        0.001 V
         >>> x.unit = 'uV'
         >>> x
         1000.0 uV
