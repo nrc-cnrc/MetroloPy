@@ -157,6 +157,9 @@ class PrettyPrinter(metaclass=MetaPrettyPrinter):
             return txt
         return type(self).latex_math(txt)
     
+    def _repr_markdown_(self):
+        return self._repr_latex_()
+    
     def __str__(self):
         return self.tostring(fmt='unicode')
             

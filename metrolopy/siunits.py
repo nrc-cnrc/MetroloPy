@@ -28,17 +28,17 @@ The most of the units here are from the SI Brochure, draft 9th edition published
 by the BIPM.
 """
 
-from .gummy import gummy, _lg10
+from .gummy import gummy,_lg10,pi,e
 from .ummy import MFraction
 from .unit import Conversion,Unit
 from .prefixedunit import PrefixedUnit,BinaryPrefixedUnit
 from .logunit import LogUnit,LogConversion
 from .offsetunit import OffsetUnit,OffsetConversion
 from .functions import sqrt
+from .alpha_cor import alpha,rinf,Are,pemr
+
 import numpy as np
 
-pi = np.pi
-e = np.e
 
 # constants from the 9 edition of the SI brochure
 _const_c = 299792458 # speed of light in m/s
@@ -48,33 +48,14 @@ _const_e = MFraction('1.602176634e-19') # electron charge in C
 _const_k = MFraction('1.380649e-23') # Boltzmann constant in J/K
 
 # constants from CODATA 2018
-
 _const_G = gummy(6.67430e-11,0.00015e-11) # gravitational constant in m**3/kg s**2
 
-(
- _const_alpha,  # fine structure constant
- _const_rydberg, # Rydberg constant in units 1/m
- _const_are, # electron relative mass
- _const_pemr # proton electron mass ratio
- ) = gummy.create([7.2973525664e-3,
-                   10973731.568160,
-                   5.48579909065e-4,
-                   5.44617021487e-4],
-                  [0.0000000017e-3,
-                   0.000021,
-                   0.00000000016e-4,
-                   0.00000000033e-4],
-     correlation_matrix=[[1,0.00207,-0.05927,-0.03103],
-                         [0.00207,1,0.00704,0.01206],
-                         [-0.05927,0.00704,1,0.48443],
-                         [ -0.03103,0.01206,0.48443,1]])
+_const_dalton = 2*rinf*_const_h/(Are*_const_c*alpha**2)
+_const_me = _const_dalton*Are #electron mass in kg
 
-_const_dalton = 2*_const_rydberg*_const_h/(_const_are*_const_c*_const_alpha**2)
-_const_me = _const_dalton*_const_are #electron mass in kg
+_const_a0 = alpha/(4*pi*rinf) # bohr radius in m
 
-_const_a0 = _const_alpha/(4*pi*_const_rydberg) # bohr radius in m
-
-_const_proton_mass = _const_pemr*_const_me # in kg
+_const_proton_mass = pemr*_const_me # in kg
 
 # constants from IAU 2009
 _const_earth_mass = gummy(3.986004418e14,8e5)/_const_G # in kg
@@ -145,6 +126,7 @@ with Unit._builtin():
     _ohm = PrefixedUnit('ohm','\u03A9',Conversion(_V*_A**-1,1),add_symbol=True,order=0,
                  html_symbol='&Omega;',latex_symbol=r'\Omega',ascii_symbol='ohm',
                  description='SI derived unit of electrical resistance')
+    Unit.alias('Ohm',_ohm)
     _siemens = PrefixedUnit('siemens','S',Conversion(_A*_V**-1,1),add_symbol=True,order=0,
                  description='SI derived unit of electrical conductance, susceptance and admittance')
     Unit.alias('mho',_siemens)
@@ -494,7 +476,7 @@ with Unit._builtin():
     Unit('Planck time','t(P)',Conversion(_s,sqrt(_const_hbar*_const_G*_const_c**-5)),order=0,
          add_symbol=True,html_symbol='<i>t</i><sub>P</sub>',
          latex_symbol='\t\tt_{\\mathrm{P}}',description='natural unit of time')
-    Unit('Planck charge','q(P)',Conversion(_C,_const_e/sqrt(_const_alpha)),order=0,
+    Unit('Planck charge','q(P)',Conversion(_C,_const_e/sqrt(alpha)),order=0,
          add_symbol=True,html_symbol='<i>q</i><sub>P</sub>',
          latex_symbol='\t\tq_{\\mathrm{P}}',description='natural unit of charge')
     Unit('Planck temperature','T(P)',Conversion(_K,sqrt(_const_hbar*_const_G**-1*_const_c**5*_const_k**-2)),order=0,

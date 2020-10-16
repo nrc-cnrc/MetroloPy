@@ -35,30 +35,15 @@ def _mrtxt(txt,fmt):
         txt = txt.replace('#','\\#')
     return txt
 
-class _search_display:
+class _search_display(PrettyPrinter):
     def __init__(self,search,show_all,units):
         self.search = search
         self.show_all = show_all
         self.units = units
         
-    def __repr__(self):
-        if PrettyPrinter.printer == 'ascii':
-            return search_units(self.search,fmt='ascii',show_all=self.show_all,
-                                units=self.units,prnt=False)
-        return search_units(self.search,fmt='unicode',show_all=self.show_all,
-                                units=self.units,prnt=False)
-        
-    def _repr_html_(self):
-        if PrettyPrinter.printer == 'any' or PrettyPrinter.printer == 'html':
-            return search_units(self.search,fmt='html',show_all=self.show_all,
-                                units=self.units,prnt=False)
-        return None
-        
-    def _repr_markdown_(self):
-        if PrettyPrinter.printer == 'any' or PrettyPrinter.printer == 'latex':
-            return search_units(self.search,fmt='latex',show_all=self.show_all,
-                                units=self.units,prnt=False)
-        return None
+    def tostring(self,fmt='unicode',**kwds):
+        return search_units(self.search,fmt=fmt,show_all=self.show_all,
+                            units=self.units,prnt=False)
     
 def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
     """

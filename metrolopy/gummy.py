@@ -41,7 +41,9 @@ from .printing import MetaPrettyPrinter
 from math import isnan, isinf,log10
 from fractions import Fraction
 from numbers import Integral,Rational
-from math import pi
+
+pi = np.pi
+e = np.e
 
 try:
     import mpmath as mp

@@ -219,29 +219,14 @@ def constant(name,toummy=None,splonk=None):
         
     return ret
 
-class _search_display:
+class _search_display(PrettyPrinter):
     def __init__(self,search,constants):
         self.search = search
         self.constants = constants
         
-    def __repr__(self):
-        if PrettyPrinter.printer == 'ascii':
-            return search_constants(self.search,fmt='ascii',
-                                    constants=self.constants,prnt=False)
-        return search_constants(self.search,fmt='unicode',
-                                constants=self.constants,prnt=False)
-        
-    def _repr_html_(self):
-        if PrettyPrinter.printer == 'any' or PrettyPrinter.printer == 'html':
-            return search_constants(self.search,fmt='html',
-                                    constants=self.constants,prnt=False)
-        return None
-        
-    def _repr_markdown_(self):
-        if PrettyPrinter.printer == 'any' or PrettyPrinter.printer == 'latex':
-            return search_constants(self.search,fmt='latex',
-                                    constants=self.constants,prnt=False)
-        return None
+    def tostring(self,fmt='unicode',**kwds):
+        return search_constants(self.search,fmt=fmt,constants=self.constants,
+                                prnt=False)
 
 def search_constants(search=None,fmt=None,constants=None,prnt=True):
     """
