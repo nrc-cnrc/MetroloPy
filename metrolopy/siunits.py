@@ -47,24 +47,34 @@ _const_hbar = _const_h/(2*pi)
 _const_e = MFraction('1.602176634e-19') # electron charge in C
 _const_k = MFraction('1.380649e-23') # Boltzmann constant in J/K
 
-# constants from CODATA 2019
+# constants from CODATA 2018
 
 _const_G = gummy(6.67430e-11,0.00015e-11) # gravitational constant in m**3/kg s**2
 
-# fine structure constant, Rydberg constant in unit 1/m,and the electron relative mass
-_const_alpha,_const_rydberg,_const_are = gummy.create([7.2973525664e-3,10973731.568160,5.48579909065e-4],
-                                                      u=[0.0000000017e-3,0.000021,0.00000000016e-4],
-                                                      correlation_matrix=[[1,0.00207,-0.05927],
-                                                                          [0.00207,1,0.00704],
-                                                                          [-0.05927,0.00704,1]])
+(
+ _const_alpha,  # fine structure constant
+ _const_rydberg, # Rydberg constant in units 1/m
+ _const_are, # electron relative mass
+ _const_pemr # proton electron mass ratio
+ ) = gummy.create([7.2973525664e-3,
+                   10973731.568160,
+                   5.48579909065e-4,
+                   5.44617021487e-4],
+                  [0.0000000017e-3,
+                   0.000021,
+                   0.00000000016e-4,
+                   0.00000000033e-4],
+     correlation_matrix=[[1,0.00207,-0.05927,-0.03103],
+                         [0.00207,1,0.00704,0.01206],
+                         [-0.05927,0.00704,1,0.48443],
+                         [ -0.03103,0.01206,0.48443,1]])
 
-_const_me = 2*_const_h*_const_rydberg/(_const_c*_const_alpha**2) #electron mass in kg
+_const_dalton = 2*_const_rydberg*_const_h/(_const_are*_const_c*_const_alpha**2)
+_const_me = _const_dalton*_const_are #electron mass in kg
+
 _const_a0 = _const_alpha/(4*pi*_const_rydberg) # bohr radius in m
 
-# atomic mass constant in kg
-_const_dalton = 2*_const_rydberg*_const_h/(_const_are*_const_c*_const_alpha**2)
-
-_const_proton_mass = gummy(1.672621898e-27,0.000000021e-27) # in kg
+_const_proton_mass = _const_pemr*_const_me # in kg
 
 # constants from IAU 2009
 _const_earth_mass = gummy(3.986004418e14,8e5)/_const_G # in kg

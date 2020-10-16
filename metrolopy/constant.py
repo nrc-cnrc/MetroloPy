@@ -51,7 +51,7 @@ class GummyConstant(gummy,Indexed):
                  utype=None,name=None,symbol=None,short_name=None,
                  add_symbol=False, html_symbol=None,latex_symbol=None,
                  ascii_symbol=None,description=None):
-        if symbol is None:
+        if symbol is None or name is None:
             ret = gummy.__new__(gummy,x,u=u,unit=unit,dof=dof,k=k,p=p,
                                 uunit=uunit,utype=utype,name=name)
             ret.__init__(x,u=u,unit=unit,dof=dof,k=k,p=p,uunit=uunit,
@@ -120,6 +120,15 @@ class GummyConstant(gummy,Indexed):
                                 show_name=show_name,name=name,norm=norm,
                                 raw=raw,nsig=nsig,solidus=solidus,
                                 mulsep=mulsep)
+    
+    @property
+    def unit(self):
+        return self._unit
+    @unit.setter
+    def unit(self,u):
+        name = self.name
+        gummy.unit.fset(self,u)
+        self.name = name
     
 class JummyConstant(jummy,Indexed):
     _builtins_to_import = ['..codata2018']
