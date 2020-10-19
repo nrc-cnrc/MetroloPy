@@ -251,7 +251,7 @@ class Unit(PrettyPrinter,Indexed):
     # to speed loading of the module, only wait to load units until they are
     # needed.  If a unit cannot be found the modules below are loaded in 
     # reverse order.
-    _builtins_to_import = ['..usunits','..siunits','..relunits']
+    _builtins_to_import = ['..usunits','..miscunits','..siunits','..relunits']
     _builtin_lib = {}
     _lib = {}
     _open_lib = _lib

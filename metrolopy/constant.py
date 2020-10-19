@@ -50,7 +50,7 @@ class GummyConstant(gummy,Indexed):
     def __new__(cls,x,u=0,unit=1,dof=float('inf'),k=1,p=None,uunit=None,
                  utype=None,name=None,symbol=None,short_name=None,
                  add_symbol=False, html_symbol=None,latex_symbol=None,
-                 ascii_symbol=None,description=None):
+                 ascii_symbol=None,description=None,_key=None):
         if symbol is None or name is None:
             ret = gummy.__new__(gummy,x,u=u,unit=unit,dof=dof,k=k,p=p,
                                 uunit=uunit,utype=utype,name=name)
@@ -63,7 +63,7 @@ class GummyConstant(gummy,Indexed):
     def __init__(self,x,u=0,unit=1,dof=float('inf'),k=1,p=None,uunit=None,
                  utype=None,name=None,symbol=None,short_name=None,
                  add_symbol=False, html_symbol=None,latex_symbol=None,
-                 ascii_symbol=None,description=None):
+                 ascii_symbol=None,description=None,_key=None):
         """
         A subclass of `gummy` that can be retrieved by name or alias from the
         constant library with the `constant` function.
@@ -106,6 +106,8 @@ class GummyConstant(gummy,Indexed):
                          add_symbol=add_symbol,html_symbol=html_symbol,
                          latex_symbol=latex_symbol,ascii_symbol=ascii_symbol,
                          description=description)
+        
+        self._key = _key
     
     def tostring(self,fmt=None,style=None,k=None,p=None,show_k=None,
                  show_p=None,show_dof=None,show_name=None,name=None,
