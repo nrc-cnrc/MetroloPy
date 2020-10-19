@@ -709,7 +709,7 @@ with GummyConstant._builtin():
     GummyConstant(sigmapp,
                   name='proton magnetic shielding correction',
                   symbol='\u03c3\u2032(p)',
-                  html_symbol='<i>&sigma;</i>&prime<sub>p</sub>',
+                  html_symbol='<i>&sigma;</i>&prime;<sub>p</sub>',
                   latex_symbol='\\sigma\'_{' + norm('p') + '}',
                   ascii_symbol='sigma\'(p)',
                   add_symbol=True,

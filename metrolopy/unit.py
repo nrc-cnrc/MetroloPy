@@ -1770,14 +1770,14 @@ class Quantity(PrettyPrinter):
     def __array_function__(self,func,method,*args,**kwds):        
         return self._ufunc(func,*args,**kwds)
     
-    def __float__(self):
-        return float(self.value)
+    #def __float__(self):
+        #return float(self.value)
     
-    def __int__(self):
-        return int(self.value)
+    #def __int__(self):
+        #return int(self.value)
 
-    def __complex__(self):
-        return complex(self.value)
+    #def __complex__(self):
+        #return complex(self.value)
     
     @property
     def real(self):

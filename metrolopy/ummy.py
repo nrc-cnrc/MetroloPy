@@ -1217,14 +1217,14 @@ class ummy(Dfunc,PrettyPrinter):
         
         return False
         
-    def __float__(self):
-        return float(self.x)
+    #def __float__(self):
+        #return float(self.x)
         
-    def __int__(self):
-        return int(self.x)
+    #def __int__(self):
+        #return int(self.x)
         
-    def __complex__(self):
-        return complex(self.x)
+    #def __complex__(self):
+        #return complex(self.x)
     
     @property
     def real(self):
@@ -2141,14 +2141,14 @@ class immy(PrettyPrinter,Dfunc,metaclass=MetaImmy):
         return type(self)(real=self.real.copy(formatting=False),
                           imag=self.imag.copy(formatting=False))
     
-    def __complex__(self):
-        return complex(self.real.x,self.imag.x)
+    #def __complex__(self):
+        #return complex(self.real.x,self.imag.x)
     
-    def __float__(self):
-        raise TypeError("can't convert immy to float")
+    #def __float__(self):
+        #raise TypeError("can't convert immy to float")
         
-    def __int__(self):
-        raise TypeError("can't convert immy to int")
+    #def __int__(self):
+        #raise TypeError("can't convert immy to int")
         
     def __eq__(self,v):
         return self.real == v.real and self.imag == v.imag

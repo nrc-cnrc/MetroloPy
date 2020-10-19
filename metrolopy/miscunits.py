@@ -82,7 +82,7 @@ with Unit._builtin():
             return np.log(x)
         except:
             return np.log(float(x))
-    LogUnit('neper','Np',LogConversion(1,1,e,_ln),add_symbol=True)
+    LogUnit('neper','Np',LogConversion(1,1,np.e,_ln),add_symbol=True)
 
 
     # astronomical units
