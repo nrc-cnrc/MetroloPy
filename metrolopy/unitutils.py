@@ -24,7 +24,8 @@
 the search_units, shadow_units, and convert functions are defined here
 """
 from .gummy import gummy
-from .unit import Unit,one
+from .ummy import ummy
+from .unit import Unit,one,Quantity
 from .printing import PrettyPrinter,print_markdown,print_html,ipython_installed
 
 
@@ -201,7 +202,12 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                         else:
                             ttxt = str(len(u.prefixes)) + ' prefixes'
                 elif isinstance(u,LogUnit):
-                    if (round(float(u.conversion.log_base),3) - 2.718) < 0.001:
+                    bse = u.conversion.log_base
+                    if isinstance(bse,Quantity):
+                        bse = bse.value
+                    if isinstance(bse,ummy):
+                        bse = bse.x
+                    if (round(bse,3) - 2.718) < 0.001:
                         if fmt == 'latex':
                             ttxt += ', log base ' + PrettyPrinter.latex_math('e')
                         if fmt == 'html':

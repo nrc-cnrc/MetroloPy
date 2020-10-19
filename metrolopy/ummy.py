@@ -1378,9 +1378,9 @@ class _GummyRef:
     # Instances of this class are hashable unlike gummys, so we can use this in 
     # a gummy's ._cor weak key dictionary and a GummyTag's .values weak set.
 
-    _cortol = 1e-8 # correlations smaller than this are rounded to zero
-    _cortolp = 1 - 1e-8 # correlations larger than this are rounded to 1
-    _cortoln = -1 + 1e-8 # correlations smaller than this are rounded to -1
+    _cortol = 1e-15 # correlations smaller than this are rounded to zero
+    _cortolp = 1 - 1e-15 # correlations larger than this are rounded to 1
+    _cortoln = -1 + 1e-15 # correlations smaller than this are rounded to -1
     
     def __init__(self,dof=float('inf')):
         self._cor = weakref.WeakKeyDictionary()

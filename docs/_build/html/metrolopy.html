@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>metrolopy package &#8212; metrolopy 0.5.7 documentation</title>
+    <title>metrolopy package &#8212; metrolopy 0.6.0 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -24,7 +24,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.7 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -298,8 +298,8 @@ all values displayed as strings.</p>
 </div>
 <div class="section" id="module-metrolopy.dfunc">
 <span id="metrolopy-dfunc-module"></span><h2>metrolopy.dfunc module<a class="headerlink" href="#module-metrolopy.dfunc" title="Permalink to this headline">¶</a></h2>
-<p>Class Dfunc is an abstract base class inherited by gummy and jummy to provides
-some support for numpy broadcasting for functions and operators.</p>
+<p>Class Dfunc is an abstract base class inherited by ummy and immy to provide
+support for numpy ufunc functions.</p>
 <dl class="class">
 <dt id="metrolopy.dfunc.Dfunc">
 <em class="property">class </em><code class="sig-prename descclassname">metrolopy.dfunc.</code><code class="sig-name descname">Dfunc</code><a class="headerlink" href="#metrolopy.dfunc.Dfunc" title="Permalink to this definition">¶</a></dt>
@@ -434,8 +434,8 @@ a complex return value.</p>
 </div>
 <div class="section" id="module-metrolopy.distributions">
 <span id="metrolopy-distributions-module"></span><h2>metrolopy.distributions module<a class="headerlink" href="#module-metrolopy.distributions" title="Permalink to this headline">¶</a></h2>
-<p>This module contains the classed that represent distributions for use with
-gummy objects</p>
+<p>This module contains the classed that represent distributions for Monte Carlo
+calculations.</p>
 <dl class="class">
 <dt id="metrolopy.distributions.ArcSinDist">
 <em class="property">class </em><code class="sig-prename descclassname">metrolopy.distributions.</code><code class="sig-name descname">ArcSinDist</code><span class="sig-paren">(</span><em class="sig-param">center=None</em>, <em class="sig-param">half_width=None</em>, <em class="sig-param">lower_limit=None</em>, <em class="sig-param">upper_limit=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.ArcSinDist" title="Permalink to this definition">¶</a></dt>
@@ -1381,6 +1381,12 @@ get the <cite>x</cite> value of a gummy defined with the distribution.</p>
 <dt id="metrolopy.exceptions.CircularUnitConversionError">
 <em class="property">exception </em><code class="sig-prename descclassname">metrolopy.exceptions.</code><code class="sig-name descname">CircularUnitConversionError</code><a class="headerlink" href="#metrolopy.exceptions.CircularUnitConversionError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#metrolopy.exceptions.UnitError" title="metrolopy.exceptions.UnitError"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.exceptions.UnitError</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="metrolopy.exceptions.ConstantNotFoundError">
+<em class="property">exception </em><code class="sig-prename descclassname">metrolopy.exceptions.</code><code class="sig-name descname">ConstantNotFoundError</code><a class="headerlink" href="#metrolopy.exceptions.ConstantNotFoundError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></p>
 </dd></dl>
 
 <dl class="exception">
@@ -3510,7 +3516,64 @@ module.  The gummy object, in turn, inherits from the nummy object.</p>
 <dl class="class">
 <dt id="metrolopy.gummy.MetaGummy">
 <em class="property">class </em><code class="sig-prename descclassname">metrolopy.gummy.</code><code class="sig-name descname">MetaGummy</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.MetaPrettyPrinter" title="metrolopy.printing.MetaPrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.printing.MetaPrettyPrinter</span></code></a>, <a class="reference internal" href="#metrolopy.nummy.MetaNummy" title="metrolopy.nummy.MetaNummy"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.nummy.MetaNummy</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.MetaPrettyPrinter" title="metrolopy.printing.MetaPrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.printing.MetaPrettyPrinter</span></code></a></p>
+<dl class="method">
+<dt id="metrolopy.gummy.MetaGummy.bayesian">
+<em class="property">property </em><code class="sig-name descname">bayesian</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.bayesian" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>bool</cite></p>
+<p>Read/write at the class level, but read-only at the instance level.
+The default value is <cite>False</cite>; this should only be changed once at the
+beginning of the session.  This property affects how the level of
+confidence <cite>p</cite> (sometimes called coverage probability) of an expanded
+uncertainty is related to the coverage factor <cite>k</cite> for a gummy based on
+data with finite degrees of freedom.</p>
+<p>Standard uncertainties are often based on the standard deviation of a set
+of measurements (and the assumption that these measurements are drawn
+from a normally distributed population).  Traditionally (e.g. the GUM
+2008 edition) the standard uncertainty is taken to be the standard
+deviation of the mean (s/sqrt(n), where s is the sample standard deviation
+and n is the number of measurements).  However there is some “extra
+uncertainty” because the sample standard devation not exactly equal to
+the population standard deviation.  This is taken into account by using
+a Student’s t distribution to calculate the expanded uncertainty.  However
+it has been pointed out, by those who advocate a Bayesian point of view,
+that the probability distribution for the measurand here is best described
+by a shifted and scaled Student’s t distribution.  So the standard
+uncertainty should be the standard deviation of this distribution which
+is s*sqrt{(n-1)/[n*(n-3)]}.  Thus</p>
+<p>u(bayesian) = [dof/(dof - 2)]*u(traditional)</p>
+<p>where dof = n - 1 and the “extra uncertainty” is incorporated directly
+into the standard uncertainty.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">bayesian</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="n">dof</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">bayesian</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.MetaGummy.cimethod">
+<em class="property">property </em><code class="sig-name descname">cimethod</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.cimethod" title="Permalink to this definition">¶</a></dt>
+<dd><p>str in {‘shortest’, ‘symmetric’}</p>
+<p>Get or set the method for calculating the confidence interval from
+Monte-Carlo data.  If this property is set at the class level, it will
+change the default <cite>cimethod</cite> value for new gummys but will not affect
+gummys that have already been created.</p>
+<p>Can be set either to the string ‘shortest’ or the string ‘symmetric’.
+This property gets or sets the method for calculating confidence
+intervals from Monte-Carlo data.</p>
+<p>If it is set to ‘shortest’, the confidence interval will be taken to be
+the shortest interval that includes the desired fraction of the probability
+distribution.</p>
+<p>If it is set to ‘symmetric’, then the confidence interval will be set so
+that, for n Monte-Carlo samples and a coverage probability of <cite>p</cite>, then
+<cite>n`*(1-`p</cite>)/2 samples lie below the lower limit of the confidence interval
+and the same number of samples lie above the upper limit of the confidence
+interval.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="metrolopy.gummy.MetaGummy.cmp_k">
 <em class="property">property </em><code class="sig-name descname">cmp_k</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.cmp_k" title="Permalink to this definition">¶</a></dt>
@@ -3523,6 +3586,29 @@ Setting this property sets the <cite>cmp_p</cite> property to <cite>None</cite>.
 <em class="property">property </em><code class="sig-name descname">cmp_p</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.cmp_p" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get or set the probability level to use when comparing gummys.
 Setting this property sets the <cite>cmp_k</cite> property to <cite>None</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.MetaGummy.max_digits">
+<em class="property">property </em><code class="sig-name descname">max_digits</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.max_digits" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>int</cite></p>
+<p>Gets or sets the maximum number of digits in x to display.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.MetaGummy.max_dof">
+<em class="property">property </em><code class="sig-name descname">max_dof</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.max_dof" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>int</cite></p>
+<p>Gets or sets the maximum finite value for dof.  Any dof larger than
+max_dof will be rounded to float(‘inf’).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.MetaGummy.nsig">
+<em class="property">property </em><code class="sig-name descname">nsig</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.nsig" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>int</cite></p>
+<p>Gets or sets the number of significant digits in the uncertainty to
+display.</p>
 </dd></dl>
 
 <dl class="method">
@@ -3539,6 +3625,37 @@ and scaled Student’s t distribution otherwise.  If <cite>p_method</cite> = ‘
 ‘ccp’ then the Chebyshev inequality is used.  For <cite>p</cite> = 0.95 and
 <cite>dof</cite> = <cite>float(‘inf’)</cite>, <cite>p_method</cite> = ‘loc’ gives <cite>k</cite> = 2.0, while
 <cite>p_method</cite> = ‘gauss’ gives <cite>k</cite> = 3.0 and p_method = ‘chebyshev’ gives <cite>k</cite> = 4.5.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.MetaGummy.rounding_u">
+<em class="property">property </em><code class="sig-name descname">rounding_u</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.rounding_u" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>bool</cite></p>
+<p>If this is set to <cite>True</cite> then the uncertainty of the ummy or gummy
+includes a contribution to account for the finite resolution of the
+x-value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.MetaGummy.sci_notation">
+<em class="property">property </em><code class="sig-name descname">sci_notation</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.sci_notation" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>bool</cite> or <cite>None</cite></p>
+<p>Setting this to True or False forces or prevents scientific notation
+in the display of the value.  If this is set to <cite>None</cite> thr scientific
+notation will be used if the x value is below <cite>10**sci_notation_low</cite> or
+above <cite>10**sci_notation_high</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.MetaGummy.sci_notation_high">
+<em class="property">property </em><code class="sig-name descname">sci_notation_high</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.sci_notation_high" title="Permalink to this definition">¶</a></dt>
+<dd><p>see the sci_notation property</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.MetaGummy.sci_notation_low">
+<em class="property">property </em><code class="sig-name descname">sci_notation_low</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.sci_notation_low" title="Permalink to this definition">¶</a></dt>
+<dd><p>see the sci_notation property</p>
 </dd></dl>
 
 <dl class="method">
@@ -3603,12 +3720,20 @@ both <cite>solidus</cite> and <cite>mulsep</cite> are set to <cite>False</cite>.
 the instance or class level.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="metrolopy.gummy.MetaGummy.thousand_spaces">
+<em class="property">property </em><code class="sig-name descname">thousand_spaces</code><a class="headerlink" href="#metrolopy.gummy.MetaGummy.thousand_spaces" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>bool</cite></p>
+<p>Gets or sets a bool value that determines whether to insert a space to
+group digits in x.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="metrolopy.gummy.gummy">
-<em class="property">class </em><code class="sig-prename descclassname">metrolopy.gummy.</code><code class="sig-name descname">gummy</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">u=0</em>, <em class="sig-param">unit=</em>, <em class="sig-param">dof=inf</em>, <em class="sig-param">k=1</em>, <em class="sig-param">p=None</em>, <em class="sig-param">uunit=None</em>, <em class="sig-param">utype=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.printing.PrettyPrinter</span></code></a>, <a class="reference internal" href="#metrolopy.nummy.nummy" title="metrolopy.nummy.nummy"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.nummy.nummy</span></code></a></p>
+<em class="property">class </em><code class="sig-prename descclassname">metrolopy.gummy.</code><code class="sig-name descname">gummy</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">u=0</em>, <em class="sig-param">unit=one</em>, <em class="sig-param">dof=inf</em>, <em class="sig-param">k=1</em>, <em class="sig-param">p=None</em>, <em class="sig-param">uunit=None</em>, <em class="sig-param">utype=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.unit.Quantity" title="metrolopy.unit.Quantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.unit.Quantity</span></code></a></p>
 <p>A gummy object represents a numerical value with an uncertainty and (or) a
 unit.  They can be used in place of float values in Python expressions and
 the uncertainty can be propagated with with both first-order and
@@ -3729,6 +3854,78 @@ sim and simulate methods.  <cite>Usym</cite> is ready-only, but changing the <ci
 </dd></dl>
 
 <dl class="method">
+<dt id="metrolopy.gummy.gummy.angle">
+<code class="sig-name descname">angle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.angle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.apply">
+<em class="property">classmethod </em><code class="sig-name descname">apply</code><span class="sig-paren">(</span><em class="sig-param">function</em>, <em class="sig-param">derivative</em>, <em class="sig-param">*args</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>A classmethod that applies a function to one or more gummy or jummy
+objects propagating the uncertainty.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul>
+<li><p><strong>function</strong> (<cite>function</cite>) – The the function to be applied. For <cite>gummy.apply</cite>, ‘function’
+should take one or more float arguments and return a float value
+or float array.  For <cite>jummy.apply</cite>, ‘function’ may also take and
+return complex values.</p></li>
+<li><dl>
+<dt><strong>derivative</strong> (<cite>function</cite>) –  The name of a second function that gives the derivatives</dt><dd><p>with respect to the arguments of <cite>function</cite>.  <cite>derivative</cite> should
+take an equal number of arguments as <cite>function</cite>.  If <cite>function</cite>
+takes one argument <cite>derivative</cite> should return a float and if
+<cite>function</cite> takes more than one argument then <cite>derivative</cite> should
+return a tuple, list or array of floats that contains the derivatives
+with respect to each argument.  In the case of <cite>jummy.apply</cite>, the
+derivatives with respect to each argument may be real or complex
+values, in which case <cite>function</cite> is assumed to be holomorphic.  Or
+the derivative may be a 2 x 2 matrix of the form:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>[[ du/dx, du/dy ],</dt><dd><p>[ dv/dx, dv/dy ]]</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+<p>where function(x + j*y) = u + j*v.</p>
+</li>
+<li><p><strong>*args</strong> (<cite>gummy</cite>, <cite>jummy</cite>, or <cite>float</cite>) – One or more arguments to which <cite>function</cite> will be applied.  These
+arguments need not all be <cite>Dfunc</cite> objects; arguments  such as
+floats will be taken to be constants with no uncertainty.
+They may also be numpy ndarrays in which case the usual numpy
+broadcasting rules apply.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>If none of the arguments are <cite>gummy</cite> or <cite>jummy</cite>
+then the return value is the same type as the return value of <cite>function</cite>.
+Otherwise <cite>gummy.apply</cite> returns a <cite>gummy</cite> and <cite>jummy.apply</cite> returns either a
+<cite>gummy</cite> or a <cite>jummy</cite> depending on whether <cite>function</cite> has a float or
+a complex return value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>gummy</cite>, <cite>jummy</cite></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.678</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.077</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+<span class="go">0.627 +/- 0.060</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.22</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.44</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.44</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.67</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">dhypot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="p">(</span><span class="n">x1</span><span class="o">/</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span><span class="n">x2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">,</span><span class="n">dhypot</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+<span class="go">3.65 +/- 0.65</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="metrolopy.gummy.gummy.ascii">
 <code class="sig-name descname">ascii</code><span class="sig-paren">(</span><em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints the gummy formatted using only ASCII characters.  All parameters
@@ -3737,8 +3934,8 @@ attributes of the calling gummy.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="metrolopy.gummy.gummy.autoconvert">
-<code class="sig-name descname">autoconvert</code><em class="property"> = False</em><a class="headerlink" href="#metrolopy.gummy.gummy.autoconvert" title="Permalink to this definition">¶</a></dt>
+<dt id="metrolopy.gummy.gummy.bayesian">
+<code class="sig-name descname">bayesian</code><em class="property"> = False</em><a class="headerlink" href="#metrolopy.gummy.gummy.bayesian" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -3850,30 +4047,10 @@ in normal text mode rather than math mode.  The default value is <cite>False</ci
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="metrolopy.gummy.gummy.c">
-<em class="property">property </em><code class="sig-name descname">c</code><a class="headerlink" href="#metrolopy.gummy.gummy.c" title="Permalink to this definition">¶</a></dt>
-<dd><p>This read-only property is used as a conversion flag during calculations.
-When an arithmetic operation is carried out between two gummys with
-different units, a unit conversion on one of the input quantities may be
-required to complete the calculation.  Attach this flag to the unit that
-you prefer be converted.</p>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;cm&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;mm&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
-<span class="go">(1.200 +/- 0.022) cm</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">c</span> <span class="o">+</span> <span class="n">b</span>
-<span class="go">(12.00 +/- 0.22) mm</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="o">.</span><span class="n">c</span>
-<span class="go">(1.200 +/- 0.022) cm</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">*</span><span class="n">b</span>
-<span class="go">(0.200 +/- 0.020) cm**2</span>
-<span class="go">&gt;&gt;&gt;a.c*b</span>
-<span class="go">(20.0 +/- 2.0) mm**2</span>
-</pre></div>
-</div>
-</dd></dl>
+<dl class="attribute">
+<dt id="metrolopy.gummy.gummy.cimethod">
+<code class="sig-name descname">cimethod</code><em class="property"> = 'shortest'</em><a class="headerlink" href="#metrolopy.gummy.gummy.cimethod" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="metrolopy.gummy.gummy.cisim">
@@ -3892,28 +4069,49 @@ value.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="metrolopy.gummy.gummy.convert">
-<code class="sig-name descname">convert</code><span class="sig-paren">(</span><em class="sig-param">unit</em>, <em class="sig-param">uunit=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.convert" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a copy of the gummy with converted units.  This is equivalent
-to calling the copy method and then setting the unit and uunit properties
-on the copied gummy.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>unit</strong> (<cite>str</cite> or <cite>Unit</cite>) – The unit for the <cite>x</cite> value and if <cite>uunit</cite> is <cite>None</cite>, the
-uncertainty.  It must be string, None, a <cite>Unit</cite> object, or the
-integer 1.  Both 1 and <cite>None</cite> will be interpreted as the Unit
-instance <cite>one</cite>.</p></li>
-<li><p><strong>uunit `str`, `Unit` or None, optional</strong> – The unit for the uncertainty <cite>U</cite>.  If this is <cite>None</cite> then <cite>U</cite>
-will have the same units as <cite>x</cite>.  The default is <cite>None</cite>.</p></li>
-</ul>
-</dd>
-</dl>
+<dt id="metrolopy.gummy.gummy.conjugate">
+<code class="sig-name descname">conjugate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.conjugate" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a copy of the gummy</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param">formatting=True</em>, <em class="sig-param">tofloat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the gummy.  If the <cite>formatting</cite> parameter is
+<cite>True</cite> the display formatting information will be copied and if
+<cite>False</cite> the display formatting will be set to the default for a
+new gummy.  The default for <cite>formatting</cite> is <cite>True</cite>.  If tofloat
+is true the x and u properties will be converted to float values
+before copying.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.correlation">
+<code class="sig-name descname">correlation</code><span class="sig-paren">(</span><em class="sig-param">gummy</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the correlation coefficient between <cite>self</cite> and <cite>g</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.correlation_matrix">
+<em class="property">static </em><code class="sig-name descname">correlation_matrix</code><span class="sig-paren">(</span><em class="sig-param">gummys</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.correlation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the correlation matrix of a list or array of gummys.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.covariance">
+<code class="sig-name descname">covariance</code><span class="sig-paren">(</span><em class="sig-param">gummy</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.covariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the covariance between <cite>self</cite> and <cite>g</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.covariance_matrix">
+<em class="property">static </em><code class="sig-name descname">covariance_matrix</code><span class="sig-paren">(</span><em class="sig-param">gummys</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.covariance_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the variance-covariance matrix of a list or array of gummys.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="metrolopy.gummy.gummy.covplot">
-<em class="property">classmethod </em><code class="sig-name descname">covplot</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">title=None</em>, <em class="sig-param">xlabel=None</em>, <em class="sig-param">ylabel=None</em>, <em class="sig-param">mean_marker=False</em>, <em class="sig-param">mean_marker_options={}</em>, <em class="sig-param">hold=False</em>, <em class="sig-param">math=None</em>, <em class="sig-param">**plot_options</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.covplot" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">covplot</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">title=None</em>, <em class="sig-param">xlabel=None</em>, <em class="sig-param">ylabel=None</em>, <em class="sig-param">mean_marker=False</em>, <em class="sig-param">mean_marker_options={}</em>, <em class="sig-param">hold=False</em>, <em class="sig-param">math=None</em>, <em class="sig-param">**plot_options</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.covplot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates scatter plot showing the covariance between two gummys.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -3944,7 +4142,7 @@ dots in the plot.</p></li>
 
 <dl class="method">
 <dt id="metrolopy.gummy.gummy.create">
-<em class="property">classmethod </em><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">u=0</em>, <em class="sig-param">unit=</em>, <em class="sig-param">dof=inf</em>, <em class="sig-param">k=1</em>, <em class="sig-param">p=None</em>, <em class="sig-param">uunit=None</em>, <em class="sig-param">utype=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">correlation_matrix=None</em>, <em class="sig-param">covariance_matrix=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.create" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">u=0</em>, <em class="sig-param">unit=one</em>, <em class="sig-param">dof=inf</em>, <em class="sig-param">k=1</em>, <em class="sig-param">p=None</em>, <em class="sig-param">uunit=None</em>, <em class="sig-param">utype=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">correlation_matrix=None</em>, <em class="sig-param">covariance_matrix=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class method that creates a list of correlated gummys.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -3984,14 +4182,76 @@ joint distribution for Monte-Carlo calculations (but not first-
 order calculations) will default to a multivariate normal distribution.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.distribution">
+<em class="property">property </em><code class="sig-name descname">distribution</code><a class="headerlink" href="#metrolopy.gummy.gummy.distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>read-only</p>
+<p>Returns ths <cite>Distribution</cite> instance associated with the gummy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.dof">
+<em class="property">property </em><code class="sig-name descname">dof</code><a class="headerlink" href="#metrolopy.gummy.gummy.dof" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>float</cite>, read-only</p>
+<p>Returns the number or degrees of freedom that the uncertainty of the
+gummy is based on.  If the gummy was created as the result of an
+operation between two or more other gummys, then the dof is the effective
+number of degrees of freedom calculated using the Welch-Satterthwaite
+approximation.  Caution:  A variation of the the  Welch-Satterthwaite
+approximation is used that takes into account correlations, see
+[R. Willink, Metrologia, 44, 340 (2007)].  However correlations are
+not handled perfectly.  So if accurate dof calculations are need, care
+should be taken to ensure that correlations are not generated in
+intermediate calculations.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.doffrom">
+<code class="sig-name descname">doffrom</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.doffrom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the degrees of freedom contributed from particular gummys or
+utypes if all other free variables are held fixed.  Caution:  any
+correlations in the calculations can cause errors in dof calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<cite>gummy</cite>, <cite>str</cite>, or array_like) – A gummy, a string referencing a utype or a list containing
+gummys and strings.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>float</cite></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">a</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">dof</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">b</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.2</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="n">dof</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">c</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span><span class="o">.</span><span class="n">doffrom</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="go">9.0932962619709627</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="metrolopy.gummy.gummy.exception_on_fmt_error">
 <code class="sig-name descname">exception_on_fmt_error</code><em class="property"> = False</em><a class="headerlink" href="#metrolopy.gummy.gummy.exception_on_fmt_error" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="metrolopy.gummy.gummy.finfo">
+<em class="property">property </em><code class="sig-name descname">finfo</code><a class="headerlink" href="#metrolopy.gummy.gummy.finfo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.get_name">
+<code class="sig-name descname">get_name</code><span class="sig-paren">(</span><em class="sig-param">fmt='unicode'</em>, <em class="sig-param">norm=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.get_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="metrolopy.gummy.gummy.graft">
-<code class="sig-name descname">graft</code><span class="sig-paren">(</span><em class="sig-param">unit</em>, <em class="sig-param">uunit=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.graft" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">graft</code><span class="sig-paren">(</span><em class="sig-param">unit</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.graft" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a copy of the gummy with different units but the same <cite>x</cite> and
 <cite>u</cite> values.  This is different from <code class="docutils literal notranslate"><span class="pre">gummy.convert(unit)</span></code> in that
 <code class="docutils literal notranslate"><span class="pre">gummy.convert(unit)</span></code> changes the <cite>x</cite> and <cite>u `values to express the
@@ -3999,14 +4259,10 @@ same quantity  in different units while `gummy.graft(unit)</cite> simply
 tacks on a different unit to the same numerical values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>unit</strong> (<cite>str</cite> or <cite>Unit</cite>) – The unit for the <cite>x</cite> value and if <cite>uunit</cite> is <cite>None</cite>, the
+<dd class="field-odd"><p><strong>unit</strong> (<cite>str</cite> or <cite>Unit</cite>) – The unit for the <cite>x</cite> value and if <cite>uunit</cite> is <cite>None</cite>, the
 uncertainty.  It must be string, None, a <cite>Unit</cite> object, or the
 integer 1.  Both 1 and <cite>None</cite> will be interpreted as the Unit
-instance <cite>one</cite>.</p></li>
-<li><p><strong>uunit `str`, `Unit` or None, optional</strong> – The unit for the uncertainty <cite>U</cite>.  If this is <cite>None</cite> then <cite>U</cite>
-will have the same units as <cite>x</cite>.  The default is <cite>None</cite>.</p></li>
-</ul>
+instance <cite>one</cite>.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4077,6 +4333,14 @@ attributes of the calling gummy.</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="metrolopy.gummy.gummy.independant">
+<em class="property">property </em><code class="sig-name descname">independant</code><a class="headerlink" href="#metrolopy.gummy.gummy.independant" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>bool</cite>, read-only</p>
+<p>Returns <cite>False</cite> if the owning gummy was created from a operation involving
+other gummys and <cite>True</cite> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="metrolopy.gummy.gummy.k">
 <em class="property">property </em><code class="sig-name descname">k</code><a class="headerlink" href="#metrolopy.gummy.gummy.k" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get or set the coverage factor; must be &gt; 0.</p>
@@ -4110,6 +4374,13 @@ infinite or a Student’s t distribution otherwise.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="metrolopy.gummy.gummy.ksim">
+<em class="property">property </em><code class="sig-name descname">ksim</code><a class="headerlink" href="#metrolopy.gummy.gummy.ksim" title="Permalink to this definition">¶</a></dt>
+<dd><p>read-only</p>
+<p>Returns <code class="docutils literal notranslate"><span class="pre">0.5*(gummy.Usim[0]</span> <span class="pre">+</span> <span class="pre">gummy.Usim[1])/gummy.usim</span></code></p>
+</dd></dl>
+
+<dl class="method">
 <dt id="metrolopy.gummy.gummy.latex">
 <code class="sig-name descname">latex</code><span class="sig-paren">(</span><em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.latex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints the gummy using LaTeX if this method is executed from an Ipython
@@ -4119,8 +4390,73 @@ attributes of the calling gummy.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="metrolopy.gummy.gummy.max_digits">
+<code class="sig-name descname">max_digits</code><em class="property"> = 15</em><a class="headerlink" href="#metrolopy.gummy.gummy.max_digits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="metrolopy.gummy.gummy.mulsep">
 <code class="sig-name descname">mulsep</code><em class="property"> = False</em><a class="headerlink" href="#metrolopy.gummy.gummy.mulsep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#metrolopy.gummy.gummy.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets or sets an optional name for the gummy, may be <cite>str</cite> or <cite>None</cite></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.napply">
+<em class="property">classmethod </em><code class="sig-name descname">napply</code><span class="sig-paren">(</span><em class="sig-param">function</em>, <em class="sig-param">*args</em>, <em class="sig-param">fxx=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.napply" title="Permalink to this definition">¶</a></dt>
+<dd><p>gummy.napply(function, arg1, arg2, …) and
+jummy.napply(function, arg1, arg2, …)</p>
+<p>A classmethod that applies a function to one or more gummy or jummy
+objects propagating the uncertainty.  This method is similar to apply
+except that the derivatives are computed numerically so a derivative
+function does not need to be supplied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>function</strong> (<cite>function</cite>) – The the function to be applied. For <cite>gummy.apply</cite>, ‘function’
+should take one or more float arguments and return a float value
+r float array.  For <cite>jummy.apply</cite>, ‘function’ may also take and
+return complex values.</p></li>
+<li><p><strong>*args</strong> (<cite>gummy</cite>, <cite>jummy</cite>, or <cite>float</cite>) – One or more arguments to which <cite>function</cite> will be applied.  These
+arguments need not all be <cite>Dfunc</cite> objects; arguments  such as
+floats will be taken to be constants with no uncertainty.
+They may also be numpy ndarrays in which case the usual numpy
+broadcasting rules apply.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>If none of the arguments are <cite>gummy</cite> or <cite>jummy</cite>
+then the return value is the same type as the return value of <cite>function</cite>.
+Otherwise <cite>gummy.apply</cite> returns a <cite>gummy</cite> and <cite>jummy.apply</cite> returns either a
+<cite>gummy</cite> or a <cite>jummy</cite> depending on whether <cite>function</cite> has a float or
+a complex return value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>gummy</cite>, <cite>jummy</cite></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.678</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.077</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">napply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+<span class="go">0.627 +/- 0.060</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.22</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.44</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.44</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.67</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">napply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+<span class="go">3.65 +/- 0.65</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="metrolopy.gummy.gummy.nsig">
+<code class="sig-name descname">nsig</code><em class="property"> = 2</em><a class="headerlink" href="#metrolopy.gummy.gummy.nsig" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -4157,18 +4493,25 @@ infinite or a Student’s t distribution otherwise.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="metrolopy.gummy.gummy.reduce_unit">
-<code class="sig-name descname">reduce_unit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.reduce_unit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Cancels factors in a gummy’s unit when possible.  This modifies the
-calling gummy and returns <cite>None</cite>.</p>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;mm/m&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">reduce_unit</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
-<span class="go">0.005</span>
-</pre></div>
-</div>
+<dt id="metrolopy.gummy.gummy.real">
+<em class="property">property </em><code class="sig-name descname">real</code><a class="headerlink" href="#metrolopy.gummy.gummy.real" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a copy of the gummy</p>
 </dd></dl>
+
+<dl class="attribute">
+<dt id="metrolopy.gummy.gummy.sci_notation">
+<code class="sig-name descname">sci_notation</code><em class="property"> = None</em><a class="headerlink" href="#metrolopy.gummy.gummy.sci_notation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="metrolopy.gummy.gummy.sci_notation_high">
+<code class="sig-name descname">sci_notation_high</code><em class="property"> = 7</em><a class="headerlink" href="#metrolopy.gummy.gummy.sci_notation_high" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="metrolopy.gummy.gummy.sci_notation_low">
+<code class="sig-name descname">sci_notation_low</code><em class="property"> = -3</em><a class="headerlink" href="#metrolopy.gummy.gummy.sci_notation_low" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="metrolopy.gummy.gummy.show_dof">
@@ -4211,6 +4554,22 @@ a list containing  gummys and strings.  The default value is <cite>None</cite>.<
 </dd></dl>
 
 <dl class="method">
+<dt id="metrolopy.gummy.gummy.simdata">
+<em class="property">property </em><code class="sig-name descname">simdata</code><a class="headerlink" href="#metrolopy.gummy.gummy.simdata" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>numpy.ndarray</cite>, read-only</p>
+<p>Returns an array containing the Monte-Carlo simulation data.  A
+<cite>NoSimulatedDataError</cite> is raised if no Monte-Carlo data is available.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.simsorted">
+<em class="property">property </em><code class="sig-name descname">simsorted</code><a class="headerlink" href="#metrolopy.gummy.gummy.simsorted" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>numpy.ndarray</cite>, read-only</p>
+<p>Returns a sorted array containing the Monte-Carlo simulation data.  A
+<cite>NoSimulatedDataError</cite> is raised if no Monte-Carlo data is available.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="metrolopy.gummy.gummy.simulate">
 <em class="property">static </em><code class="sig-name descname">simulate</code><span class="sig-paren">(</span><em class="sig-param">gummys</em>, <em class="sig-param">n=100000</em>, <em class="sig-param">ufrom=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.simulate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates Monte-Carlo data for one or more gummys.  Calling this method
@@ -4239,9 +4598,20 @@ a list containing  gummys and strings.  The default value is <cite>None</cite>.<
 <code class="sig-name descname">solidus</code><em class="property"> = True</em><a class="headerlink" href="#metrolopy.gummy.gummy.solidus" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.splonk">
+<code class="sig-name descname">splonk</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.splonk" title="Permalink to this definition">¶</a></dt>
+<dd><p>splonks the gummy</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="metrolopy.gummy.gummy.style">
 <code class="sig-name descname">style</code><em class="property"> = 'concise'</em><a class="headerlink" href="#metrolopy.gummy.gummy.style" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="metrolopy.gummy.gummy.thousand_spaces">
+<code class="sig-name descname">thousand_spaces</code><em class="property"> = True</em><a class="headerlink" href="#metrolopy.gummy.gummy.thousand_spaces" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -4275,12 +4645,18 @@ parameter set to ‘latex’.</p>
 
 <dl class="method">
 <dt id="metrolopy.gummy.gummy.tostring">
-<code class="sig-name descname">tostring</code><span class="sig-paren">(</span><em class="sig-param">fmt=None</em>, <em class="sig-param">style=None</em>, <em class="sig-param">k=None</em>, <em class="sig-param">p=None</em>, <em class="sig-param">show_k=None</em>, <em class="sig-param">show_p=None</em>, <em class="sig-param">show_dof=None</em>, <em class="sig-param">show_name=None</em>, <em class="sig-param">norm=None</em>, <em class="sig-param">raw=False</em>, <em class="sig-param">nsig=None</em>, <em class="sig-param">solidus=None</em>, <em class="sig-param">mulsep=None</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.tostring" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">tostring</code><span class="sig-paren">(</span><em class="sig-param">fmt=None</em>, <em class="sig-param">style=None</em>, <em class="sig-param">k=None</em>, <em class="sig-param">p=None</em>, <em class="sig-param">show_k=None</em>, <em class="sig-param">show_p=None</em>, <em class="sig-param">show_dof=None</em>, <em class="sig-param">show_name=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">norm=None</em>, <em class="sig-param">raw=False</em>, <em class="sig-param">nsig=None</em>, <em class="sig-param">solidus=None</em>, <em class="sig-param">mulsep=None</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.tostring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a string displaying the value of the gummy in the desired format.
 The <cite>fmt</cite> parameter is a string with the value in {“unicode”,”latex”,
 “html”,”ascii”} or <cite>None</cite>.  <cite>fmt</cite> will default to ‘ascii’ if <cite>self.printer</cite>
 is ‘ascii’ or ‘unicode’ otherwise.  Any other parameters that are not
 <cite>None</cite> override the corresponding attributes of <cite>self</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.toummy">
+<code class="sig-name descname">toummy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.toummy" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a <cite>Quantity</cite> with an <cite>ummy</cite> value.</p>
 </dd></dl>
 
 <dl class="method">
@@ -4317,6 +4693,34 @@ displayed separately.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="metrolopy.gummy.gummy.ufrom">
+<code class="sig-name descname">ufrom</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">sim=False</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.ufrom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the standard uncertainty contributed from particular gummys
+or utypes if all other free variables are held fixed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<cite>gummy</cite>, <cite>str</cite>, or array_like) – A gummy, a string referencing a utype or a list containing
+gummys and strings.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>float</cite></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">a</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">b</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.2</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">c</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span><span class="o">.</span><span class="n">ufrom</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="go">0.53851648071345048</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="metrolopy.gummy.gummy.unicode">
 <code class="sig-name descname">unicode</code><span class="sig-paren">(</span><em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.unicode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints the gummy.  All parameters are optional.  Any parameters that are
@@ -4330,24 +4734,16 @@ not <cite>None</cite> override the corresponding attributes of the calling gummy
 <cite>None</cite>, the units for the uncertainty.</p>
 <p>If this property is set, a unit conversion will be performed.  The value
 it is set to may be a string, <cite>None</cite>, a <cite>Unit</cite> object, or the integer 1.
-Both 1 and <cite>None</cite> will be interpreted as the Unit instance <cite>one</cite>.</p>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span><span class="mf">0.0000012</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;V&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
-<span class="go">(0.001 000 0 +/- 0.000 001 2) V</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;uV&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
-<span class="go">(1000.0 +/- 1.2) uV</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">uunit</span> <span class="o">=</span> <span class="s1">&#39;%&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;mV&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
-<span class="go">1.0000 mV +/- 0.12%</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;uV&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
-<span class="go">1000.0 uV +/- 0.12%</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">uunit</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
-<span class="go">(1000.0 +/- 1.2) uV</span>
+Both 1 and <cite>None</cite> will be interpreted as the Unit instance <cite>one</cite>. A
+<cite>NoUnitConversionFoundError</cite> will be raised if the unit conversion is
+not possible.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;V&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<span class="go">0.001 V</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;uV&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<span class="go">1000.0 uV</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -4358,6 +4754,13 @@ Both 1 and <cite>None</cite> will be interpreted as the Unit instance <cite>one<
 <dd><p>Gets the standard deviation of the Monte-Carlo data.  If no simulated
 data is available a <cite>NoSimulatedDataError</cite> will be raised when this property
 is called; see the sim and simulate methods.  This property is read-only.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.gummy.utype">
+<em class="property">property </em><code class="sig-name descname">utype</code><a class="headerlink" href="#metrolopy.gummy.gummy.utype" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>str</cite> or <cite>None</cite></p>
+<p>An arbitrary string value labeling the uncertainty type.</p>
 </dd></dl>
 
 <dl class="method">
@@ -4432,77 +4835,39 @@ called; see the sim and simulate methods.  This property is read-only.</p>
 
 <dl class="class">
 <dt id="metrolopy.gummy.jummy">
-<em class="property">class </em><code class="sig-prename descclassname">metrolopy.gummy.</code><code class="sig-name descname">jummy</code><span class="sig-paren">(</span><em class="sig-param">real=None</em>, <em class="sig-param">imag=None</em>, <em class="sig-param">r=None</em>, <em class="sig-param">phi=None</em>, <em class="sig-param">cov=None</em>, <em class="sig-param">unit=</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.jummy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.printing.PrettyPrinter</span></code></a>, <a class="reference internal" href="#metrolopy.dfunc.Dfunc" title="metrolopy.dfunc.Dfunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.dfunc.Dfunc</span></code></a></p>
+<em class="property">class </em><code class="sig-prename descclassname">metrolopy.gummy.</code><code class="sig-name descname">jummy</code><span class="sig-paren">(</span><em class="sig-param">real=None</em>, <em class="sig-param">imag=None</em>, <em class="sig-param">r=None</em>, <em class="sig-param">phi=None</em>, <em class="sig-param">cov=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.jummy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.ummy.immy" title="metrolopy.ummy.immy"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.ummy.immy</span></code></a></p>
 <dl class="method">
-<dt id="metrolopy.gummy.jummy.angle">
-<code class="sig-name descname">angle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.jummy.angle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a gummy representing <code class="docutils literal notranslate"><span class="pre">Arg(jummy)</span></code>.</p>
+<dt id="metrolopy.gummy.jummy.get_name">
+<code class="sig-name descname">get_name</code><span class="sig-paren">(</span><em class="sig-param">fmt='unicode'</em>, <em class="sig-param">norm=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.jummy.get_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.jummy.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#metrolopy.gummy.jummy.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="metrolopy.gummy.jummy.show_name">
+<code class="sig-name descname">show_name</code><em class="property"> = True</em><a class="headerlink" href="#metrolopy.gummy.jummy.show_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.gummy.jummy.splonk">
+<code class="sig-name descname">splonk</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.jummy.splonk" title="Permalink to this definition">¶</a></dt>
+<dd><p>splonks the jummy</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="metrolopy.gummy.jummy.conjugate">
-<code class="sig-name descname">conjugate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.jummy.conjugate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the (<cite>jummy</cite> valued) complex conjugate.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="metrolopy.gummy.jummy.copy">
-<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param">formatting=True</em>, <em class="sig-param">tofloat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.jummy.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a copy of the jummy.  If the <cite>formatting</cite> parameter is
-<cite>True</cite> the display formatting information will be copied and if
-<cite>False</cite> the display formatting will be set to the default for a
-new jummy.  The default for <cite>formatting</cite> is <cite>True</cite>.  If the
-tofloats parameter is True x and u for both the real and
-imaginary components will be converted to floats.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="metrolopy.gummy.jummy.cov">
-<em class="property">property </em><code class="sig-name descname">cov</code><a class="headerlink" href="#metrolopy.gummy.jummy.cov" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the variance-covariance matrix between <cite>jummy.real</cite> and
-<cite>jummy.imag</cite>, read-only.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="metrolopy.gummy.jummy.imag">
-<em class="property">property </em><code class="sig-name descname">imag</code><a class="headerlink" href="#metrolopy.gummy.jummy.imag" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a <cite>gummy</cite> representing the imaginary part of the value.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="metrolopy.gummy.jummy.real">
-<em class="property">property </em><code class="sig-name descname">real</code><a class="headerlink" href="#metrolopy.gummy.jummy.real" title="Permalink to this definition">¶</a></dt>
-<dd><p>read-only
-Returns a <cite>gummy</cite> representing the real part of the value.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="metrolopy.gummy.jummy.tofloat">
-<code class="sig-name descname">tofloat</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.jummy.tofloat" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a copy of the gummy with x an u (for both the real and
-imaginary components) converted to floats.</p>
+<dt id="metrolopy.gummy.jummy.toimmy">
+<code class="sig-name descname">toimmy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.jummy.toimmy" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns an immy representation of the jummy</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="metrolopy.gummy.jummy.tostring">
-<code class="sig-name descname">tostring</code><span class="sig-paren">(</span><em class="sig-param">fmt='unicode'</em>, <em class="sig-param">norm=None</em>, <em class="sig-param">nsig=None</em>, <em class="sig-param">solidus=None</em>, <em class="sig-param">mulsep=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.jummy.tostring" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">tostring</code><span class="sig-paren">(</span><em class="sig-param">fmt='unicode'</em>, <em class="sig-param">norm=None</em>, <em class="sig-param">show_name=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">style=None</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.jummy.tostring" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="method">
-<dt id="metrolopy.gummy.jummy.unit">
-<em class="property">property </em><code class="sig-name descname">unit</code><a class="headerlink" href="#metrolopy.gummy.jummy.unit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets or sets the units of <cite>jummy.real</cite> and <cite>jummy.imag</cite>.  If the
-units of <cite>jummy.real</cite> are different from <cite>jummy.imag</cite> then a
-<cite>tuple</cite> of <cite>Unit</cite> with length 2 is returned.  Otherwise a <cite>Unit</cite>
-instance is returned.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="metrolopy.gummy.jummy.x">
-<em class="property">property </em><code class="sig-name descname">x</code><a class="headerlink" href="#metrolopy.gummy.jummy.x" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">complex(jummy.real.x,jummy.imag.x)</span></code>, read-only</p>
-</dd></dl>
 
 </dd></dl>
 
@@ -4518,6 +4883,16 @@ units.</p>
 <dl class="method">
 <dt id="metrolopy.logunit.LogConversion.copy">
 <code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.logunit.LogConversion.copy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.logunit.LogConversion.frm">
+<code class="sig-name descname">frm</code><span class="sig-paren">(</span><em class="sig-param">g</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.logunit.LogConversion.frm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.logunit.LogConversion.to">
+<code class="sig-name descname">to</code><span class="sig-paren">(</span><em class="sig-param">g</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.logunit.LogConversion.to" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -4793,11 +5168,6 @@ classes that are the base class for the LogUnit and OffsetUnit classes.</p>
 <code class="sig-name descname">get_composite</code><span class="sig-paren">(</span><em class="sig-param">ul</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nonlinearunit.NonlinearUnit.get_composite" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
-<dt id="metrolopy.nonlinearunit.NonlinearUnit.linear">
-<code class="sig-name descname">linear</code><em class="property"> = False</em><a class="headerlink" href="#metrolopy.nonlinearunit.NonlinearUnit.linear" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="method">
 <dt id="metrolopy.nonlinearunit.NonlinearUnit.to_uunit">
 <code class="sig-name descname">to_uunit</code><span class="sig-paren">(</span><em class="sig-param">u</em>, <em class="sig-param">unit</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nonlinearunit.NonlinearUnit.to_uunit" title="Permalink to this definition">¶</a></dt>
@@ -4839,16 +5209,22 @@ classes that are the base class for the LogUnit and OffsetUnit classes.</p>
 </div>
 <div class="section" id="module-metrolopy.nummy">
 <span id="metrolopy-nummy-module"></span><h2>metrolopy.nummy module<a class="headerlink" href="#module-metrolopy.nummy" title="Permalink to this headline">¶</a></h2>
-<p>The nummy object defined here was created as a super-class for gummy,
-integrating the Monte-Carlo uncertainty propagation code in the distributions
-module with the ummy object.</p>
+<p>The nummy object defined here integrates the Monte-Carlo uncertainty
+propagation code in the distributions module with the ummy object.  The nummy
+class is not intended to be used directly; rather it is utilized by the gummy
+class.</p>
 <dl class="class">
-<dt id="metrolopy.nummy.MetaNummy">
-<em class="property">class </em><code class="sig-prename descclassname">metrolopy.nummy.</code><code class="sig-name descname">MetaNummy</code><a class="headerlink" href="#metrolopy.nummy.MetaNummy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></p>
+<dt id="metrolopy.nummy.nummy">
+<em class="property">class </em><code class="sig-prename descclassname">metrolopy.nummy.</code><code class="sig-name descname">nummy</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">u=0</em>, <em class="sig-param">dof=inf</em>, <em class="sig-param">utype=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.ummy.ummy" title="metrolopy.ummy.ummy"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.ummy.ummy</span></code></a></p>
 <dl class="method">
-<dt id="metrolopy.nummy.MetaNummy.bayesian">
-<em class="property">property </em><code class="sig-name descname">bayesian</code><a class="headerlink" href="#metrolopy.nummy.MetaNummy.bayesian" title="Permalink to this definition">¶</a></dt>
+<dt id="metrolopy.nummy.nummy.Usim">
+<em class="property">property </em><code class="sig-name descname">Usim</code><a class="headerlink" href="#metrolopy.nummy.nummy.Usim" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.nummy.nummy.bayesian">
+<em class="property">property </em><code class="sig-name descname">bayesian</code><a class="headerlink" href="#metrolopy.nummy.nummy.bayesian" title="Permalink to this definition">¶</a></dt>
 <dd><p><cite>bool</cite></p>
 <p>Read/write at the class level, but read-only at the instance level.
 The default value is <cite>False</cite>; this should only be changed once at the
@@ -4883,12 +5259,12 @@ into the standard uncertainty.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="metrolopy.nummy.MetaNummy.cimethod">
-<em class="property">property </em><code class="sig-name descname">cimethod</code><a class="headerlink" href="#metrolopy.nummy.MetaNummy.cimethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>str in {‘shortest’, ‘symmetric’}</p>
+<dt id="metrolopy.nummy.nummy.cimethod">
+<em class="property">property </em><code class="sig-name descname">cimethod</code><a class="headerlink" href="#metrolopy.nummy.nummy.cimethod" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>str</cite> in {‘shortest’, ‘symmetric’}), default is ‘shortest’</p>
 <p>Get or set the method for calculating the confidence interval from
 Monte-Carlo data.  If this property is set at the class level, it will
-change the default <cite>cimethod</cite> value for new gummys but will not affect
+change the default <cite>cimethod</cite> value for new gummys but will no affect
 gummys that have already been created.</p>
 <p>Can be set either to the string ‘shortest’ or the string ‘symmetric’.
 This property gets or sets the method for calculating confidence
@@ -4902,36 +5278,6 @@ that, for n Monte-Carlo samples and a coverage probability of <cite>p</cite>, th
 and the same number of samples lie above the upper limit of the confidence
 interval.</p>
 </dd></dl>
-
-<dl class="method">
-<dt id="metrolopy.nummy.MetaNummy.mcpropagate">
-<em class="property">property </em><code class="sig-name descname">mcpropagate</code><a class="headerlink" href="#metrolopy.nummy.MetaNummy.mcpropagate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setting this property to <cite>False</cite> turns of the code for Monte-Carlo
-uncertainty propagation.  This property should only be set once, before
-any gummy instances are created.  Turning <cite>mcpropagate</cite> off then on again
-may have unpredictable results.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="metrolopy.nummy.nummy">
-<em class="property">class </em><code class="sig-prename descclassname">metrolopy.nummy.</code><code class="sig-name descname">nummy</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">u=0</em>, <em class="sig-param">dof=inf</em>, <em class="sig-param">utype=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.ummy.ummy" title="metrolopy.ummy.ummy"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.ummy.ummy</span></code></a></p>
-<dl class="method">
-<dt id="metrolopy.nummy.nummy.Usim">
-<em class="property">property </em><code class="sig-name descname">Usim</code><a class="headerlink" href="#metrolopy.nummy.nummy.Usim" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="metrolopy.nummy.nummy.bayesian">
-<code class="sig-name descname">bayesian</code><em class="property"> = False</em><a class="headerlink" href="#metrolopy.nummy.nummy.bayesian" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="metrolopy.nummy.nummy.cimethod">
-<code class="sig-name descname">cimethod</code><em class="property"> = 'shortest'</em><a class="headerlink" href="#metrolopy.nummy.nummy.cimethod" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="method">
 <dt id="metrolopy.nummy.nummy.cisim">
@@ -5039,6 +5385,11 @@ will always have dof = float(‘inf’).</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="metrolopy.nummy.nummy.get_name">
+<code class="sig-name descname">get_name</code><span class="sig-paren">(</span><em class="sig-param">fmt='unicode'</em>, <em class="sig-param">norm=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.get_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="metrolopy.nummy.nummy.hist">
 <code class="sig-name descname">hist</code><span class="sig-paren">(</span><em class="sig-param">xlabel=None</em>, <em class="sig-param">title=None</em>, <em class="sig-param">hold=False</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.hist" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -5057,6 +5408,11 @@ other gummys and <cite>True</cite> otherwise.</p>
 <dd><p>read-only</p>
 <p>Returns <code class="docutils literal notranslate"><span class="pre">0.5*(gummy.Usim[0]</span> <span class="pre">+</span> <span class="pre">gummy.Usim[1])/gummy.usim</span></code></p>
 </dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.nummy.nummy.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#metrolopy.nummy.nummy.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="metrolopy.nummy.nummy.p">
@@ -5090,6 +5446,18 @@ other gummys and <cite>True</cite> otherwise.</p>
 <dt id="metrolopy.nummy.nummy.simulate">
 <em class="property">static </em><code class="sig-name descname">simulate</code><span class="sig-paren">(</span><em class="sig-param">nummys</em>, <em class="sig-param">n=100000</em>, <em class="sig-param">ufrom=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.simulate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.nummy.nummy.splonk">
+<code class="sig-name descname">splonk</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.splonk" title="Permalink to this definition">¶</a></dt>
+<dd><p>splonks the nummy</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.nummy.nummy.toummy">
+<code class="sig-name descname">toummy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.toummy" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns an ummy representaion of the nummy</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="metrolopy.nummy.nummy.ufrom">
@@ -5143,6 +5511,16 @@ gummys and strings.</p>
 <dl class="method">
 <dt id="metrolopy.offsetunit.OffsetConversion.copy">
 <code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.offsetunit.OffsetConversion.copy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.offsetunit.OffsetConversion.frm">
+<code class="sig-name descname">frm</code><span class="sig-paren">(</span><em class="sig-param">g</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.offsetunit.OffsetConversion.frm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.offsetunit.OffsetConversion.to">
+<code class="sig-name descname">to</code><span class="sig-paren">(</span><em class="sig-param">g</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.offsetunit.OffsetConversion.to" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -5440,10 +5818,9 @@ are not desired.</p>
 </div>
 <div class="section" id="module-metrolopy.siunits">
 <span id="metrolopy-siunits-module"></span><h2>metrolopy.siunits module<a class="headerlink" href="#module-metrolopy.siunits" title="Permalink to this headline">¶</a></h2>
-<p>This module is loaded by the gummy.units module and is not intended be be
+<p>This module is loaded by the unit module and is not intended be be
 imported directly.</p>
-<p>The most of the units here are from the SI Brochure, draft 9th edition published
-by the BIPM.</p>
+<p>The most of the units here are from the SI Brochure, 9th edition.</p>
 </div>
 <div class="section" id="module-metrolopy.ummy">
 <span id="metrolopy-ummy-module"></span><h2>metrolopy.ummy module<a class="headerlink" href="#module-metrolopy.ummy" title="Permalink to this headline">¶</a></h2>
@@ -5481,9 +5858,123 @@ of gummy.</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="metrolopy.ummy.MetaImmy">
+<em class="property">class </em><code class="sig-prename descclassname">metrolopy.ummy.</code><code class="sig-name descname">MetaImmy</code><a class="headerlink" href="#metrolopy.ummy.MetaImmy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.MetaPrettyPrinter" title="metrolopy.printing.MetaPrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.printing.MetaPrettyPrinter</span></code></a></p>
+<dl class="method">
+<dt id="metrolopy.ummy.MetaImmy.imag_symbol">
+<em class="property">property </em><code class="sig-name descname">imag_symbol</code><a class="headerlink" href="#metrolopy.ummy.MetaImmy.imag_symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>str</cite></p>
+<p>The symbol for the unit imaginary number.  The default is ‘j’.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.MetaImmy.style">
+<em class="property">property </em><code class="sig-name descname">style</code><a class="headerlink" href="#metrolopy.ummy.MetaImmy.style" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>str</cite> in {‘polar’,’cartesian’}</p>
+<p>Sets whether to print the value using a cartesian or polar
+representaion.  This property can be set at the class or instance
+level.  The default is ‘cartesian’.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="metrolopy.ummy.immy">
+<em class="property">class </em><code class="sig-prename descclassname">metrolopy.ummy.</code><code class="sig-name descname">immy</code><span class="sig-paren">(</span><em class="sig-param">real=None</em>, <em class="sig-param">imag=None</em>, <em class="sig-param">r=None</em>, <em class="sig-param">phi=None</em>, <em class="sig-param">cov=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.immy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.printing.PrettyPrinter</span></code></a>, <a class="reference internal" href="#metrolopy.dfunc.Dfunc" title="metrolopy.dfunc.Dfunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.dfunc.Dfunc</span></code></a></p>
+<dl class="method">
+<dt id="metrolopy.ummy.immy.angle">
+<code class="sig-name descname">angle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.immy.angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the polar angle in radians.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.immy.conjugate">
+<code class="sig-name descname">conjugate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.immy.conjugate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the complex conjugate.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.immy.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param">formatting=True</em>, <em class="sig-param">tofloat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.immy.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the jummy.  If the <cite>formatting</cite> parameter is
+<cite>True</cite> the display formatting information will be copied and if
+<cite>False</cite> the display formatting will be set to the default for a
+new jummy.  The default for <cite>formatting</cite> is <cite>True</cite>.  If the
+tofloats parameter is True x and u for both the real and
+imaginary components will be converted to floats.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.immy.cov">
+<em class="property">property </em><code class="sig-name descname">cov</code><a class="headerlink" href="#metrolopy.ummy.immy.cov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the variance-covariance matrix between the real and imaginary
+parts of the value, read-only.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.immy.imag">
+<em class="property">property </em><code class="sig-name descname">imag</code><a class="headerlink" href="#metrolopy.ummy.immy.imag" title="Permalink to this definition">¶</a></dt>
+<dd><p>read-only
+Returns the imaginary part of the value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.immy.phi">
+<em class="property">property </em><code class="sig-name descname">phi</code><a class="headerlink" href="#metrolopy.ummy.immy.phi" title="Permalink to this definition">¶</a></dt>
+<dd><p>read-only
+Returns the polar angle of the value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.immy.r">
+<em class="property">property </em><code class="sig-name descname">r</code><a class="headerlink" href="#metrolopy.ummy.immy.r" title="Permalink to this definition">¶</a></dt>
+<dd><p>read-only
+Returns the magnitude of the value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.immy.real">
+<em class="property">property </em><code class="sig-name descname">real</code><a class="headerlink" href="#metrolopy.ummy.immy.real" title="Permalink to this definition">¶</a></dt>
+<dd><p>read-only
+Returns real part of the value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.immy.splonk">
+<code class="sig-name descname">splonk</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.immy.splonk" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="metrolopy.ummy.immy.style">
+<code class="sig-name descname">style</code><em class="property"> = 'cartesian'</em><a class="headerlink" href="#metrolopy.ummy.immy.style" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.immy.tofloat">
+<code class="sig-name descname">tofloat</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.immy.tofloat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the gummy with x an u (for both the real and
+imaginary components) converted to floats.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.immy.tostring">
+<code class="sig-name descname">tostring</code><span class="sig-paren">(</span><em class="sig-param">fmt='unicode'</em>, <em class="sig-param">norm=None</em>, <em class="sig-param">nsig=None</em>, <em class="sig-param">style=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.immy.tostring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.ummy.immy.x">
+<em class="property">property </em><code class="sig-name descname">x</code><a class="headerlink" href="#metrolopy.ummy.immy.x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <cite>complex(self.real.x,self.imag.x)</cite>, read-only</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="metrolopy.ummy.ummy">
 <em class="property">class </em><code class="sig-prename descclassname">metrolopy.ummy.</code><code class="sig-name descname">ummy</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">u=0</em>, <em class="sig-param">dof=inf</em>, <em class="sig-param">utype=None</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.dfunc.Dfunc" title="metrolopy.dfunc.Dfunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.dfunc.Dfunc</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.dfunc.Dfunc" title="metrolopy.dfunc.Dfunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.dfunc.Dfunc</span></code></a>, <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.printing.PrettyPrinter</span></code></a></p>
 <dl class="method">
 <dt id="metrolopy.ummy.ummy.angle">
 <code class="sig-name descname">angle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.angle" title="Permalink to this definition">¶</a></dt>
@@ -5495,16 +5986,9 @@ of gummy.</p>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="metrolopy.ummy.ummy.const">
-<em class="property">property </em><code class="sig-name descname">const</code><a class="headerlink" href="#metrolopy.ummy.ummy.const" title="Permalink to this definition">¶</a></dt>
-<dd><p><cite>bool</cite>, read-only</p>
-<p>Returns <cite>True</cite> if the gummy represents an exact value with no uncertainty.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="metrolopy.ummy.ummy.copy">
 <code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param">formatting=True</em>, <em class="sig-param">tofloat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a copy of the gummy.  If the <cite>formatting</cite> parameter is
+<dd><p>Returns a copy of the ummy.  If the <cite>formatting</cite> parameter is
 <cite>True</cite> the display formatting information will be copied and if
 <cite>False</cite> the display formatting will be set to the default for a
 new gummy.  The default for <cite>formatting</cite> is <cite>True</cite>.  If tofloat
@@ -5521,7 +6005,7 @@ before copying.</p>
 <dl class="method">
 <dt id="metrolopy.ummy.ummy.correlation_matrix">
 <em class="property">static </em><code class="sig-name descname">correlation_matrix</code><span class="sig-paren">(</span><em class="sig-param">gummys</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.correlation_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the correlation matrix of a list or array of gummys.</p>
+<dd><p>Returns the correlation matrix of a list or array of ummys.</p>
 </dd></dl>
 
 <dl class="method">
@@ -5533,7 +6017,7 @@ before copying.</p>
 <dl class="method">
 <dt id="metrolopy.ummy.ummy.covariance_matrix">
 <em class="property">static </em><code class="sig-name descname">covariance_matrix</code><span class="sig-paren">(</span><em class="sig-param">gummys</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.covariance_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the variance-covariance matrix of a list or array of gummys.</p>
+<dd><p>Returns the variance-covariance matrix of a list or array of ummys.</p>
 </dd></dl>
 
 <dl class="method">
@@ -5576,22 +6060,27 @@ will be uncorrelated.</p></li>
 <em class="property">property </em><code class="sig-name descname">dof</code><a class="headerlink" href="#metrolopy.ummy.ummy.dof" title="Permalink to this definition">¶</a></dt>
 <dd><p><cite>float</cite>, read-only</p>
 <p>Returns the number or degrees of freedom that the uncertainty of the
-gummy is based on.  If the gummy was created as the result of an
+ummy is based on.  If the ummy was created as the result of an
 operation between two or more other gummys, then the dof is the effective
-number of degrees of freedom calculated using a version of the Welch-
-Satterthwaite approximation that takes into account correlations, see
-[R. Willink, Metrologia, 44, 340 (2007)].</p>
+number of degrees of freedom calculated using the Welch-Satterthwaite
+approximation.  Caution:  A variation of the the  Welch-Satterthwaite
+approximation is used that takes into account correlations, see
+[R. Willink, Metrologia, 44, 340 (2007)].  However correlations are
+not handled perfectly.  So if accurate dof calculations are need, care
+should be taken to ensure that correlations are not generated in
+intermediate calculations.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="metrolopy.ummy.ummy.doffrom">
 <code class="sig-name descname">doffrom</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.doffrom" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the degrees of freedom contributed from particular gummys or
-utypes if all other free variables are held fixed.</p>
+<dd><p>Gets the degrees of freedom contributed from particular ummys or
+utypes if all other free variables are held fixed.  Caution:  any
+correlations in the calculations can cause errors in dof calculations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>x</strong> (<cite>gummy</cite>, <cite>str</cite>, or array_like) – A gummy, a string referencing a utype or a list containing
-gummys and strings.</p>
+<dd class="field-odd"><p><strong>x</strong> (<cite>ummy</cite>, <cite>str</cite>, or array_like) – A ummy, a string referencing a utype or a list containing
+ummys and strings.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p></p>
@@ -5601,9 +6090,9 @@ gummys and strings.</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">a</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">dof</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span> <span class="n">b</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.2</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="n">dof</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span> <span class="n">c</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">a</span> <span class="o">=</span> <span class="n">ummy</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">dof</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">b</span> <span class="o">=</span> <span class="n">ummy</span><span class="p">(</span><span class="mf">3.2</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="n">dof</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">c</span> <span class="o">=</span> <span class="n">ummy</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
 <span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span><span class="o">.</span><span class="n">doffrom</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
 <span class="go">9.0932962619709627</span>
@@ -5661,6 +6150,12 @@ gummys and strings.</p>
 <code class="sig-name descname">sci_notation_low</code><em class="property"> = -3</em><a class="headerlink" href="#metrolopy.ummy.ummy.sci_notation_low" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="metrolopy.ummy.ummy.splonk">
+<code class="sig-name descname">splonk</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.splonk" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns self.x if u == 0 else returns self</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="metrolopy.ummy.ummy.thousand_spaces">
 <code class="sig-name descname">thousand_spaces</code><em class="property"> = True</em><a class="headerlink" href="#metrolopy.ummy.ummy.thousand_spaces" title="Permalink to this definition">¶</a></dt>
@@ -5673,6 +6168,11 @@ gummys and strings.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="metrolopy.ummy.ummy.tostring">
+<code class="sig-name descname">tostring</code><span class="sig-paren">(</span><em class="sig-param">fmt='unicode'</em>, <em class="sig-param">nsig=None</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.tostring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="metrolopy.ummy.ummy.u">
 <em class="property">property </em><code class="sig-name descname">u</code><a class="headerlink" href="#metrolopy.ummy.ummy.u" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -5680,12 +6180,12 @@ gummys and strings.</p>
 <dl class="method">
 <dt id="metrolopy.ummy.ummy.ufrom">
 <code class="sig-name descname">ufrom</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.ufrom" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the standard uncertainty contributed from particular gummys
+<dd><p>Gets the standard uncertainty contributed from particular ummys
 or utypes if all other free variables are held fixed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>x</strong> (<cite>gummy</cite>, <cite>str</cite>, or array_like) – A gummy, a string referencing a utype or a list containing
-gummys and strings.</p>
+<dd class="field-odd"><p><strong>x</strong> (<cite>ummy</cite>, <cite>str</cite>, or array_like) – A ummy, a string referencing a utype or a list containing
+ummys and strings.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p></p>
@@ -5695,9 +6195,9 @@ gummys and strings.</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">a</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span> <span class="n">b</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.2</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span> <span class="n">c</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">a</span> <span class="o">=</span> <span class="n">ummy</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">b</span> <span class="o">=</span> <span class="n">ummy</span><span class="p">(</span><span class="mf">3.2</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">c</span> <span class="o">=</span> <span class="n">ummy</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
 <span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span><span class="o">.</span><span class="n">ufrom</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
 <span class="go">0.53851648071345048</span>
@@ -5722,22 +6222,28 @@ gummys and strings.</p>
 </div>
 <div class="section" id="module-metrolopy.unit">
 <span id="metrolopy-unit-module"></span><h2>metrolopy.unit module<a class="headerlink" href="#module-metrolopy.unit" title="Permalink to this headline">¶</a></h2>
-<p>This module contains the procedures for defining units and unit algebera used
-by the gummy class.</p>
+<p>Classes that for handling units are defined here:  Conversion, Unit,
+_CompositeUnit, one, Quantity and QuantityArray</p>
 <dl class="class">
 <dt id="metrolopy.unit.Conversion">
 <em class="property">class </em><code class="sig-prename descclassname">metrolopy.unit.</code><code class="sig-name descname">Conversion</code><span class="sig-paren">(</span><em class="sig-param">unit</em>, <em class="sig-param">factor=1</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Conversion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Represents a unit conversion.  This class should only be used as arguments
-to <cite>Unit</cite> object initializers.  Each conversion should be associated with one
-and only one parent Unit.</p>
+to <cite>Unit</cite> object initializers.  Each conversion should be associated with
+one and only one parent Unit; do not re-use conversion instances with more
+than one <cite>Unit</cite> instance.</p>
+<p>The base <cite>Conversion</cite> class is defined by a single conversion factor.
+More comlicated conversions overriding the <cite>to</cite> and <cite>frm</cite> methods should
+inherit from the <cite>NonlinearConversion</cite> subclass and be used with units
+that inherit from the <cite>NonlinearUnit</cite> subclass.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>unit</strong> (<cite>str</cite> or <cite>Unit</cite>) – the Unit that the parent Unit will be converted to.</p></li>
 <li><p><strong>factor</strong> (<cite>float</cite>, optional) – The conversion factor between the parent Unit and the new Unit:
-[value with new Unit] = factor * [value with parent Unit]
-The default value is 1</p></li>
+[value with new Unit] = factor * [value with parent Unit].  The
+conversion factor may not have a unit, but may be an ummy of gummy
+with not unit one.  The default value is 1.</p></li>
 </ul>
 </dd>
 </dl>
@@ -5779,24 +6285,198 @@ The default value is 1</p></li>
 </dd></dl>
 
 <dl class="class">
+<dt id="metrolopy.unit.Quantity">
+<em class="property">class </em><code class="sig-prename descclassname">metrolopy.unit.</code><code class="sig-name descname">Quantity</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">unit=one</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.printing.PrettyPrinter</span></code></a></p>
+<p>Instances of this class represent a quantity with a value and a unit.
+The behavior of Quantity instances under mathematical operations with
+other Quanitity object or numerical values depends on the unit. E.g.
+an interger of float may be added to <cite>Quantity(1,unit=’%’)</cite> but not to
+<cite>Quantity(1,unit=’m/s’)</cite>.  For operations involving only linear units, the
+units will be automatically converted to facilitate the operation, e.g.
+<cite>Quantity(1,unit=’psi’)</cite> may be added to <cite>Quantity(1,unit=’psi’)</cite> but not
+<cite>Quantity(1,unit=’db(uPa)’.  Manual unit conversions can be realized by
+calling the `Quantity.convert</cite> method, or in place by setting the
+<cite>Quantity.unit</cite> property.</p>
+<p>Quantity instances may be created directly or by multiplying or dividing
+a number by a <cite>Unit</cite> instance: <cite>Quantity(2.2,unit=’cm’)</cite> is equivalent to
+<cite>2.2 * unit(‘cm’)</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (number like including <cite>ummy</cite>) – the value of the Quantity</p></li>
+<li><p><strong>unit</strong> (<cite>str</cite> or <cite>Unit</cite>) – The <cite>Unit</cite> instance representing the unit of the Quantity or a string
+that references the <cite>Unit</cite> instance.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.c">
+<em class="property">property </em><code class="sig-name descname">c</code><a class="headerlink" href="#metrolopy.unit.Quantity.c" title="Permalink to this definition">¶</a></dt>
+<dd><p>This read-only property is used as a conversion flag during calculations.
+When an arithmetic operation is carried out between two Quantaties with
+different units, a unit conversion on one of the input quantities may be
+required to complete the calculation.  Attach this flag to the unit that
+you prefer be converted.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Quantity</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;cm&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">Quantity</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;mm&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+<span class="go">1.2 cm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">c</span> <span class="o">+</span> <span class="n">b</span>
+<span class="go">12 mm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="o">.</span><span class="n">c</span>
+<span class="go">1.2 cm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">*</span><span class="n">b</span>
+<span class="go">0.2 cm**2</span>
+<span class="go">&gt;&gt;&gt;a.c*b</span>
+<span class="go">20 mm**2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.convert">
+<code class="sig-name descname">convert</code><span class="sig-paren">(</span><em class="sig-param">unit</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the Quantity with converted units.  A
+<cite>NoUnitConversionFoundError</cite> will be raised if the unit conversion is
+not possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>unit</strong> (<cite>str</cite> or <cite>Unit</cite>) – The unit for the <cite>x</cite> value and if <cite>uunit</cite> is <cite>None</cite>, the
+uncertainty.  It must be string, None, a <cite>Unit</cite> object, or the
+integer 1.  Both 1 and <cite>None</cite> will be interpreted as the Unit
+instance <cite>one</cite>.</p></li>
+<li><p><strong>uunit `str`, `Unit` or None, optional</strong> – The unit for the uncertainty <cite>U</cite>.  If this is <cite>None</cite> then <cite>U</cite>
+will have the same units as <cite>x</cite>.  The default is <cite>None</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param">tofloat=False</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.copy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.imag">
+<em class="property">property </em><code class="sig-name descname">imag</code><a class="headerlink" href="#metrolopy.unit.Quantity.imag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.real">
+<em class="property">property </em><code class="sig-name descname">real</code><a class="headerlink" href="#metrolopy.unit.Quantity.real" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.reduce_unit">
+<code class="sig-name descname">reduce_unit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.reduce_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cancels factors in a Quantity’s unit when possible.  This modifies the
+calling gummy and returns <cite>None</cite>.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">Quantity</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;mm/m&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">reduce_unit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<span class="go">0.005</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.splonk">
+<code class="sig-name descname">splonk</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.splonk" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns self.value if self.unit is one else returns self</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="metrolopy.unit.Quantity.splonk_func_ret">
+<code class="sig-name descname">splonk_func_ret</code><em class="property"> = False</em><a class="headerlink" href="#metrolopy.unit.Quantity.splonk_func_ret" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.tofloat">
+<code class="sig-name descname">tofloat</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.tofloat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.tostring">
+<code class="sig-name descname">tostring</code><span class="sig-paren">(</span><em class="sig-param">fmt=None</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.tostring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.totuple">
+<code class="sig-name descname">totuple</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.totuple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.unit">
+<em class="property">property </em><code class="sig-name descname">unit</code><a class="headerlink" href="#metrolopy.unit.Quantity.unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets or sets the unit for the Quantity.</p>
+<p>If this property is set, a unit conversion will be performed.  The value
+it is set to may be a string, <cite>None</cite>, a <cite>Unit</cite> object, or the integer 1.
+Both 1 and <cite>None</cite> will be interpreted as the Unit instance <cite>one</cite>. A
+<cite>NoUnitConversionFoundError</cite> will be raised if the unit conversion is
+not possible.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">Quantity</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;V&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<span class="go">0.001 V</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;uV&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<span class="go">1000.0 uV</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="metrolopy.unit.Quantity.value">
+<em class="property">property </em><code class="sig-name descname">value</code><a class="headerlink" href="#metrolopy.unit.Quantity.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="metrolopy.unit.QuantityArray">
+<em class="property">class </em><code class="sig-prename descclassname">metrolopy.unit.</code><code class="sig-name descname">QuantityArray</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">unit=one</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.QuantityArray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.unit.Quantity" title="metrolopy.unit.Quantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.unit.Quantity</span></code></a></p>
+<p>A subclass of Quantity.  Instance of this class represent a list, tuple,
+or numpy array of values all with the same unit.  Elements of the array
+are returned as <cite>Quantity</cite> instances.  Instances of this class can be
+created directly or by multiplying a list, tuple, or numpy array by a
+<cite>Unit</cite> instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<cite>list</cite>, <cite>tuple</cite> or <cite>ndarray</cite>) – the value of the Quantity</p></li>
+<li><p><strong>unit</strong> (<cite>str</cite> or <cite>Unit</cite>) – The <cite>Unit</cite> instance representing the unit of the Quantity or a string
+that references the <cite>Unit</cite> instance.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
 <dt id="metrolopy.unit.Unit">
 <em class="property">class </em><code class="sig-prename descclassname">metrolopy.unit.</code><code class="sig-name descname">Unit</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">symbol</em>, <em class="sig-param">conversion=None</em>, <em class="sig-param">short_name=None</em>, <em class="sig-param">add_symbol=False</em>, <em class="sig-param">html_symbol=None</em>, <em class="sig-param">latex_symbol=None</em>, <em class="sig-param">ascii_symbol=None</em>, <em class="sig-param">description=None</em>, <em class="sig-param">order=-1</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Unit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.printing.PrettyPrinter</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.printing.PrettyPrinter</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">metrolopy.indexed.Indexed</span></code></p>
 <p>Creating an instance of this class creates a representation of a physical
-unit and adds it to the unit library.  Units already in the unit library or
-derived units made up of other units in the unit library can be accessed
-by passing a text string with the unit name or symbol to the static method
-<cite>Unit.unit</cite>.</p>
+unit and adds it to the unit library.  Once created the unit intance may
+be retrived by passing a string with the unit name or alias to the <cite>unit</cite>
+or <cite>Unit.unit</cite> functions.  Units can be multiplied and divided by other
+Units or Quantities and raised to numerical powers.  Multiplying or
+dividing a numerical value by a Unit will create a Quantity instance.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul>
 <li><p><strong>name</strong> (<cite>str</cite>) – The name of the unit.  The name can be used access the unit with the
-<cite>Unit.unit</cite> method, but note that if you define a Unit with an
+<cite>unit</cite> function, but note that if you define a Unit with an
 identical name to a previously defined unit then the older name will
 be shadowed.</p></li>
 <li><p><strong>symbol</strong> (<cite>str</cite>) – A unicode symbol used when displaying the unit.  If the <cite>add_symbol</cite>
 parameter is set to <cite>True</cite>, then this symbol can also be used
-to access the unit with the <cite>Unit.unit</cite> method.</p></li>
+to access the unit with the <cite>unit</cite> function.</p></li>
 <li><p><strong>conversion</strong> (<cite>Conversion</cite> or <cite>None</cite>, optional) – A conversion to another unit.  When creating units be careful to avoid
 circular conversions, i.e. you can define:</p>
 <p>Unit(‘inch’,’in’,conversion=None)
@@ -5816,7 +6496,8 @@ yards.  You can also define the inch as:</p>
 <p>Unit(‘inch’,’in’,conversion=(‘cm’,2.54)</p>
 <p>(The inch is actually defined this way in the builtin unit library.)</p>
 </li>
-<li><p><strong>short_name</strong> (<cite>str</cite> or <cite>None</cite>) – a short name</p></li>
+<li><p><strong>short_name</strong> (<cite>str</cite> or <cite>None</cite>) – a short name which can be used as an additional alias for the unit in
+the unit library</p></li>
 <li><p><strong>add_symbol</strong> (<cite>bool</cite>, optional) – If this is <cite>True</cite>, then the symbol can be used to look up the unit
 in the unit library.  The default is <cite>False</cite></p></li>
 <li><p><strong>html_symbol, latex_symbol, ascii_symbol</strong> (<cite>str</cite> or <cite>Mone</cite>, optional) – html, latex, and ascii versions of the symbol if they are different
@@ -5842,29 +6523,6 @@ from the unicode representation of the symbol.</p></li>
 </dl>
 </div>
 <dl class="method">
-<dt id="metrolopy.unit.Unit.alias">
-<em class="property">static </em><code class="sig-name descname">alias</code><span class="sig-paren">(</span><em class="sig-param">alias</em>, <em class="sig-param">unit</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Unit.alias" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates an alias that can be used to reference a Unit.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>alias</strong> (<cite>str</cite>) – a string containing the new alias</p></li>
-<li><p><strong>unit</strong> (<cite>str</cite> or <cite>Unit</cite>) – A string referencing the <cite>Unit</cite> that will be assigned
-the alias or the <cite>Unit</cite> instance its self.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="metrolopy.unit.Unit.aliases">
-<em class="property">property </em><code class="sig-name descname">aliases</code><a class="headerlink" href="#metrolopy.unit.Unit.aliases" title="Permalink to this definition">¶</a></dt>
-<dd><p>read-only</p>
-<p>Returns a set of the unshadowed aliases of this unit.  To add aliases
-to the unit use the <cite>Unit.alias</cite> static method.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="metrolopy.unit.Unit.conversion">
 <em class="property">property </em><code class="sig-name descname">conversion</code><a class="headerlink" href="#metrolopy.unit.Unit.conversion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets or sets the <cite>Conversion</cite> instance for the unit.</p>
@@ -5875,9 +6533,7 @@ property may cause problems*</strong></p>
 <dl class="method">
 <dt id="metrolopy.unit.Unit.convert">
 <code class="sig-name descname">convert</code><span class="sig-paren">(</span><em class="sig-param">g</em>, <em class="sig-param">unit</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Unit.convert" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a number or gummy from a quanitity with the units self to unit.</p>
-<p>This is not intended be used directly, instead use the <cite>gummy.convert</cite>
-method.</p>
+<dd><p>Converts a number from a quantity with the units <cite>self</cite> to <cite>unit</cite>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -5889,19 +6545,20 @@ method.</p>
 <dt id="metrolopy.unit.Unit.is_dimensionless">
 <em class="property">property </em><code class="sig-name descname">is_dimensionless</code><a class="headerlink" href="#metrolopy.unit.Unit.is_dimensionless" title="Permalink to this definition">¶</a></dt>
 <dd><p><cite>bool</cite>, read-only</p>
-<p>Returns <cite>True</cite> if a conversion exists between <cite>self</cite> and <cite>one</cite>, and <cite>False</cite>
-if not.</p>
+<p>Returns <cite>True</cite> if a conversion exists between <cite>self</cite> and <cite>one</cite>, and
+<cite>False</cite> if not.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="metrolopy.unit.Unit.linear">
-<code class="sig-name descname">linear</code><em class="property"> = True</em><a class="headerlink" href="#metrolopy.unit.Unit.linear" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="method">
-<dt id="metrolopy.unit.Unit.load">
-<em class="property">static </em><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param">library_name</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Unit.load" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="metrolopy.unit.Unit.linear">
+<em class="property">property </em><code class="sig-name descname">linear</code><a class="headerlink" href="#metrolopy.unit.Unit.linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a <cite>bool</cite> value indicating whether the Unit is linear.  If the
+unit is linear then any associated values will follow the standard
+rules of arithmatic for Quantaties and the unit’s Conversion is
+defined by multiplying or dividing by a single conversion factor.
+Nonlinear units may have a more complicated conversion and may
+override the unusal operator methods.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="metrolopy.unit.Unit.reorder">
@@ -5921,29 +6578,13 @@ are displayed.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="metrolopy.unit.Unit.shadowed_aliases">
-<em class="property">property </em><code class="sig-name descname">shadowed_aliases</code><a class="headerlink" href="#metrolopy.unit.Unit.shadowed_aliases" title="Permalink to this definition">¶</a></dt>
-<dd><p>read-only</p>
-<p>Returns a set of the shadowed aliases of this unit.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="metrolopy.unit.Unit.tostring">
-<code class="sig-name descname">tostring</code><span class="sig-paren">(</span><em class="sig-param">fmt=None</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Unit.tostring" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a string containing the symbol for the unit the format given by
-the keyword <cite>fmt</cite> which may be set to a string the values ‘html’, ‘latex’,
-‘ascii’, or ‘unicode’.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="metrolopy.unit.Unit.unit">
 <em class="property">static </em><code class="sig-name descname">unit</code><span class="sig-paren">(</span><em class="sig-param">txt</em>, <em class="sig-param">exception=True</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Unit.unit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds an returns a Unit object from the Unit library.</p>
+<dd><p>Finds an returns a <cite>Unit</cite> from the unit library.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul>
-<li><p><strong>txt</strong> – <cite>str</cite>, <cite>Unit</cite> or 1
-This may be a string representing the unit.  The string can
+<li><p><strong>txt</strong> (<cite>str</cite>, <cite>Unit</cite> or 1) – This may be a string representing the unit.  The string can
 contain the name, short name or (if the unit was created
 with <cite>add_symbol</cite> set to <cite>True</cite>) the symbol of the unit or a
 combination of names and/or symbols of several different
@@ -5958,12 +6599,18 @@ name must be enclosed in square brackets, e.g:</p>
 <p>[light year]</p>
 <p>If txt is a Unit instance that instance is returned.</p>
 </li>
-<li><p><strong>exception</strong> – <cite>bool</cite>, optional
-If this is <cite>True</cite> then a <cite>UnitNotFoundError</cite> or UnitLibError
+<li><p><strong>exception</strong> (<cite>bool</cite>, optional) – If this is <cite>True</cite> then a <cite>UnitNotFoundError</cite> or UnitLibError
 is raised if a unit is not found that matches <cite>txt</cite>.  If it is
 <cite>False</cite> and a unit is not found, then <cite>Unit.unit</cite> returns
 <cite>None</cite> without raising an exception.  The default is <cite>True</cite>.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>A <cite>Unit</cite> instance or possibly None if the <cite>exception</cite> parameter is</p></li>
+<li><p>set to <cite>True</cite>.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -5976,6 +6623,45 @@ is raised if a unit is not found that matches <cite>txt</cite>.  If it is
 kg m**2/s units would be [(kg, 1), (m, 2), (s, -1)].</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="metrolopy.unit.unit">
+<code class="sig-prename descclassname">metrolopy.unit.</code><code class="sig-name descname">unit</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">exception=True</em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds an returns a <cite>Unit</cite> from the unit library.  This function is an
+alias for the <cite>Unit.unit</cite> static method.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul>
+<li><p><strong>txt</strong> (<cite>str</cite>, <cite>Unit</cite> or 1) – This may be a string representing the unit.  The string can
+contain the name, short name or (if the unit was created
+with <cite>add_symbol</cite> set to <cite>True</cite>) the symbol of the unit or a
+combination of names and/or symbols of several different
+units.  Spaces or the character ‘*’ represent multiplication,
+the character ‘/’ represents division and the string ‘**’
+represents the power operator. For example txt can be:</p>
+<p>‘kg m**2/s’</p>
+<p>or equivalently:</p>
+<p>‘kilogram*metre*metre*second**-1’ or ‘(kg/s)*m**2’.</p>
+<p>If a unit name contains a space, ‘*’ or ‘/’ character then the
+name must be enclosed in square brackets, e.g:</p>
+<p>[light year]</p>
+<p>If txt is a Unit instance that instance is returned.</p>
+</li>
+<li><p><strong>exception</strong> (<cite>bool</cite>, optional) – If this is <cite>True</cite> then a <cite>UnitNotFoundError</cite> or UnitLibError
+is raised if a unit is not found that matches <cite>txt</cite>.  If it is
+<cite>False</cite> and a unit is not found, then <cite>Unit.unit</cite> returns
+<cite>None</cite> without raising an exception.  The default is <cite>True</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>A <cite>Unit</cite> instance or possibly None if the <cite>exception</cite> parameter is</p></li>
+<li><p>set to <cite>True</cite>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -6121,7 +6807,7 @@ Conversion Factors for General Use”, May 2006.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.7 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

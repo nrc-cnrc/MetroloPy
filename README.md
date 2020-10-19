@@ -33,8 +33,10 @@ MetroloPy can do much more including Monte-Carlo uncertainty propagation, genera
 * [a tutorial](https://nrc-cnrc.github.io/MetroloPy/_build/html/_static/tutorial.html) (or  <a href="https://nrc-cnrc.github.io/MetroloPy/_build/html/_downloads/tutorial.ipynb" download> download the tutorial as Jupyter notebook</a>)
 * [the documentation](https://nrc-cnrc.github.io/MetroloPy/)
 * [the issues page on GitHub](https://github.com/nrc-cnrc/Metrolopy/issues)
+* [a list of the units built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/units.html)
+* [a list of the physical constants built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/constants.html)
 
-## New in version 0.6.0
+## new in version 0.6.0
 
 * A constant library has been added with physical constants that can be accessed
   by name or alias with the `constant` function.  The `search_constants` function 

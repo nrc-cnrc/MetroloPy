@@ -56,6 +56,7 @@ class nummy(ummy):
 
     _cimethod = 'shortest'
     _bayesian = False # see the gummy bayesian property
+    _fp = None
     
     def __init__(self,x,u=0,dof=float('inf'),utype=None,name=None):
         self._bayesian = nummy._bayesian
@@ -355,10 +356,9 @@ class nummy(ummy):
         
     @property
     def p(self):
-        return 0.68268949213708585
-    @p.setter
-    def p(self,v):
-        pass
+        if self._fp is None:
+            return 0.68268949213708585
+        return self._fp()
         
     @staticmethod
     def set_seed(seed):
