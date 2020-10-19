@@ -42,8 +42,6 @@ from math import isnan, isinf,log10
 from fractions import Fraction
 from numbers import Integral,Rational
 
-pi = np.pi
-e = np.e
 
 try:
     import mpmath as mp
@@ -1163,7 +1161,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         if self.x >= 0:
             return type(self)(0)
         else:
-            return type(self)(pi)
+            return type(self)(np.pi)
     
     @property
     def utype(self):

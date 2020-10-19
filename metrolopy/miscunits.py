@@ -29,9 +29,8 @@ non-SI units accepted for use with the SI not in the siunits module, some
 obsolete SI units, and a few other units.
 """
 
-import numpy as np
-from .functions import sqrt
-from .gummy import gummy,pi,_lg10
+from numpy import sqrt,log,log2
+from .gummy import gummy,_lg10
 from .ummy import MFraction
 from .unit import Unit,Conversion
 from .prefixedunit import PrefixedUnit,BinaryPrefixedUnit
@@ -39,7 +38,7 @@ from .logunit import LogUnit,LogConversion
 from .siunits import (_kg,_V,_ohm,_s,_K,_J,_m,_d,_min,_h,_W,_Hz,_C,_A,_N,_cm,
                       _Wb,_T,_Pa)
 from .constcom import (dalton,KJ,RK,KJ90,RK90,e,c,solar_mass,jupiter_mass,
-                       earth_mass,hbar,a0,me,mp,G,alph,k)
+                       earth_mass,hbar,a0,me,mp,G,alph,k,pi,euler)
 
 with Unit._builtin():
     
@@ -79,10 +78,10 @@ with Unit._builtin():
     
     def _ln(x):
         try:
-            return np.log(x)
+            return log(x)
         except:
-            return np.log(float(x))
-    LogUnit('neper','Np',LogConversion(1,1,np.e,_ln),add_symbol=True)
+            return log(float(x))
+    LogUnit('neper','Np',LogConversion(1,1,euler,_ln),add_symbol=True)
 
 
     # astronomical units
@@ -303,12 +302,12 @@ with Unit._builtin():
                               description='unit of information')
     Unit.alias('shannon',_bit)
     
-    _nat = Unit('natural unit of information','nat',Conversion(_bit,1/np.log(2)),
+    _nat = Unit('natural unit of information','nat',Conversion(_bit,1/log(2)),
          add_symbol=True,order=0,description='unit of information')
     Unit.alias('nit',_nat)
     Unit.alias('nepit',_nat)
     
-    _Hart = Unit('hartley','Hart',Conversion(_bit,np.log2(10)),add_symbol=True,
+    _Hart = Unit('hartley','Hart',Conversion(_bit,log2(10)),add_symbol=True,
                  order=0,description='unit of information')
     Unit.alias('ban',_Hart)
     Unit.alias('dit',_Hart)

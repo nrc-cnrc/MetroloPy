@@ -27,7 +27,7 @@ imported directly.
 The most of the units here are from the SI Brochure, 9th edition.
 """
 
-from .gummy import pi
+from numpy import pi
 from .ummy import ummy,MFraction
 from .unit import Conversion,Unit
 from .prefixedunit import PrefixedUnit

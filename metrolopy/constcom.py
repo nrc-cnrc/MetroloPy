@@ -21,15 +21,36 @@
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
 """
-Constants used by both the siunits and the codata2018 modules.  All constants
+Constants used by both the siunits and the codata2018 modules.  Most constants
 are from CODATA 2018
 """
 
-from .gummy import gummy,pi
-from .ummy import ummy,MFraction,_getfinfo
+import numpy as np
+from warnings import warn
+from .gummy import gummy
+from .ummy import ummy,MFraction,_getfinfo,_iinfo
+
+
+def _rounding_u(x):
+    if not ummy.rounding_u:
+        try:
+            fi,_ = _getfinfo(x)
+            if fi is _iinfo:
+                raise ValueError()
+            return ummy(x,x*fi.rel_u)
+        except:
+            warn('numpy.finfo cannot get the floating point accuracy for float64 math constants')
+            return ummy(x)
+    else:
+        return ummy(x)
+    
+pi = _rounding_u(np.pi)
+euler = _rounding_u(np.e)
+sqrt2 = _rounding_u(np.sqrt(2))
 
 
 # constants from CODATA 2018:
+    
 (
 alph,
 aral,
@@ -117,15 +138,6 @@ gtn
 c = 299792458 # speed of light in m/s
 h = MFraction('6.62607015e-34') # planck constant in J s
 
-hbar = h/(2*pi)
-if not ummy.rounding_u:
-    try:
-        fi,_ = _getfinfo(hbar)
-        hbar = ummy(hbar,hbar*fi.rel_u)
-    except:
-        hbar = ummy(hbar)
-else:
-    hbar = ummy(hbar)
     
 e = MFraction('1.602176634e-19') # electron charge in C
 k = MFraction('1.380649e-23') # Boltzmann constant in J/K
@@ -150,3 +162,5 @@ mp = mpsme*me # in kg
 earth_mass = ummy(3.986004418e14,8e5)/G # in kg
 solar_mass = ummy(1.32712442099e20,1e10)/G # in kg
 jupiter_mass = solar_mass/ummy(1.047348644e3,1.7e-5) # in kg
+
+hbar = h/(2*pi)
