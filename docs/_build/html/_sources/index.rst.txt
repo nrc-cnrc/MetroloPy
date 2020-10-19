@@ -75,7 +75,7 @@ further reading
 * `a tutorial <_static/tutorial.html>`_ (or  :download:`download the tutorial as a Jupyter notebook <tutorial.ipynb>`)
 * :ref:`the API documentation <hand_made_doc>` (see the auto-generated docs below for an alternative set of documentation)
 * `a list of the measurement units built into MetroloPy <_static/units.html>`_
-* `a list of the physical constants built into MetroloPy <_static/constants.html>`_
+* `a list of the physical constants built into MetroloPy <https://nrc-cnrc.github.io/MetroloPy/_static/constants.html>`_
 * :ref:`package development and to do <todo>`
 * `the issues page on GitHub <https://github.com/nrc-cnrc/Metrolopy/issues>`_
 * `the source code on GitHub <https://github.com/nrc-cnrc/Metrolopy/>`_
