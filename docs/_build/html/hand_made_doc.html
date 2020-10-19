@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>MetroloPy &#8212; metrolopy 0.5.7 documentation</title>
+    <title>MetroloPy &#8212; metrolopy 0.6.0 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -24,7 +24,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.7 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -36,7 +36,11 @@
   <div class="section" id="metrolopy">
 <span id="hand-made-doc"></span><h1>MetroloPy<a class="headerlink" href="#metrolopy" title="Permalink to this headline">¶</a></h1>
 <p>Most of the functionality in the MetroloPy package lies in the
-<a class="reference internal" href="#gummy">gummy</a> object.</p>
+<a class="reference internal" href="#gummy">gummy</a> object which combines the functionality of the <a href="#id2"><span class="problematic" id="id3">Unit_</span></a> and <code class="docutils literal notranslate"><span class="pre">Quantity</span></code>
+classes for dealing with units, the <a href="#id4"><span class="problematic" id="id5">ummy_</span></a> class for first order propagation
+of uncertainty, and the <a class="reference internal" href="#distribution">Distribution</a> class for Monte Carlo propagation of
+uncertianty.  The <code class="docutils literal notranslate"><span class="pre">immy</span></code> and <a class="reference internal" href="#jummy">jummy</a> classes support calculations with
+complex numbers.</p>
 </div>
 <div class="section" id="class-gummy">
 <span id="gummy"></span><h1>class gummy<a class="headerlink" href="#class-gummy" title="Permalink to this headline">¶</a></h1>
@@ -1104,8 +1108,11 @@ with the <em>fmt</em> parameter set ‘ascii’.</p></li>
 <p>The <code class="docutils literal notranslate"><span class="pre">Distribution</span></code> class is the abstract base class for objects which
 represent the the probability distributions that the gummy Monte-Carlo
 samples are drawn from. Instances of these <code class="docutils literal notranslate"><span class="pre">Distributions</span></code> can used as
-the <em>x</em> parameter when creating gummys. The
-distributions below are built into the gummy package and custom
+the <em>x</em> parameter when creating gummys or can be used independantly as
+mathematical operations between <code class="docutils literal notranslate"><span class="pre">Distributions</span></code> produce <code class="docutils literal notranslate"><span class="pre">Convolutions</span></code>.
+See the auto-generated documentation for the <code class="docutils literal notranslate"><span class="pre">Distribution</span></code> methods and
+properties.
+The distributions below are built into the gummy package and custom
 distributions can also be defined by the user.</p>
 <ul class="simple" id="arcsindist">
 <li><p>class metrolopy.<strong>ArcSinDist(center=None, half_width=None,
@@ -1369,8 +1376,11 @@ for x &gt; 0</p>
 </div>
 <div class="section" id="class-unit">
 <span id="id1"></span><h1>class Unit<a class="headerlink" href="#class-unit" title="Permalink to this headline">¶</a></h1>
-<p>The gummy class uses <code class="docutils literal notranslate"><span class="pre">Unit</span></code> instances to represent physical units. A
-number of units are loaded with the gummy package. See the
+<p>The gummy class uses <code class="docutils literal notranslate"><span class="pre">Unit</span></code> instances to represent physical units or units
+cns be multiplied or divided by other <code class="docutils literal notranslate"><span class="pre">Unit</span></code> instances to create composite
+units or multiply or divider numerical values to create <code class="docutils literal notranslate"><span class="pre">Quantity</span></code> instances.
+See the auto-generated documentation for the deatils of the <code class="docutils literal notranslate"><span class="pre">Quantity</span></code> class.
+A number of units are loaded with the gummy package. See the
 <a class="reference internal" href="#search-units">search_units</a> function to get a list of all
 available units. Custom units can also be defined by creating instances
 of the <code class="docutils literal notranslate"><span class="pre">Unit</span></code> class or a sub-class. Though you
@@ -1591,7 +1601,8 @@ defined as any Unit where a conversion to <em>one</em> exists.</p></li>
 <p>class
 metrolopy.<strong>jummy(real=None,imag=None,r=None,phi=None,cov=None,unit=one</strong></p>
 <p>A jummy object represents a complex valued quantity with gummy real and
-imaginary components.</p>
+imaginary components.  See the <code class="docutils literal notranslate"><span class="pre">immy</span></code> class in the autogenerated docs for
+a class with <code class="docutils literal notranslate"><span class="pre">ummy</span></code> real and imaginary components.</p>
 <div class="section" id="jummy-parameters">
 <h2>jummy parameters<a class="headerlink" href="#jummy-parameters" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -2080,7 +2091,7 @@ this class.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.5.7 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

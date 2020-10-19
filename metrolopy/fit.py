@@ -29,6 +29,7 @@ from .gummy import gummy,_isscalar
 from .exceptions import FitWarning
 from .unit import Unit,one
 from .printing import PrettyPrinter
+from .unit import Quantity
 
 import numpy as np
 from warnings import warn
@@ -114,7 +115,7 @@ class _Fit:
                     raise TypeError('u'+txt+' is an array and u'+txt+'.shape != '+txt+'.shape')
 
         if x.ndim == 1:
-            if not isinstance(x[0],ummy):
+            if not isinstance(x[0],(Quantity,ummy)):
                 if units is None:
                     units = one
                 else:
@@ -126,7 +127,7 @@ class _Fit:
             dim = 1
         else:
             dim = x.shape[0]
-            if not isinstance(x[0][0],ummy):
+            if not isinstance(x[0][0],(Quantity,ummy)):
                 if units is None:
                     units = [one]*x.shape[0]
                 else:
@@ -138,15 +139,15 @@ class _Fit:
                     units = [Unit.unit(un) for un in units]
                 return x,np.asarray_chkfinite(x,dtype=np.float64),u,units,dim,False
 
-        if x[0][0].const:
-            gummies = False
-        else:
+        if isinstance(x[0][0],ummy) or (isinstance(x[0][0],Quantity) and isinstance(x[0][0].value,ummy)):
             gummies = True            
             if u is not None:
                 raise ValueError('u'+txt+' may not be specified if the '+txt+'-values contain non-constant gummies')
-                    
+        else:
+            gummies = False
+            
         if units is None:
-            if isinstance(x[0][0],gummy):
+            if isinstance(x[0][0],Quantity):
                 try:
                     units = [un.unit for un in (x.T)[0]]
                 except:
@@ -166,13 +167,17 @@ class _Fit:
         
         for i,e in enumerate(x):
             for j,v in enumerate(e):
-                if v.const != (not gummies) or not isinstance(v,ummy):
-                    raise TypeError('constant and non-constant quantities may be mixed in the '+txt+'-values')
-                if isinstance(v,gummy):
+                if isinstance(v,Quantity):
                     v = v.convert(units[i])
-                rxf[i][j] = v.x
-                if gummies:
-                    ru[i][j] = v.u
+                    v = v.value
+                if isinstance(v,ummy):
+                    rxf[i][j] = v.x
+                    if gummies:
+                        ru[i][j] = v.u
+                else:
+                    rxf[i][j] = v
+                    if gummies:
+                        ru[i][j] = 0
             
         if dim == 1:
             n = rxf.shape[1]
@@ -892,7 +897,7 @@ class Fit(_Fit,PrettyPrinter):
                         jac = np.array([self.jac(*(list(x)+list(self.pf)))[self.xdim:] for x in self.x.T],dtype=float)
                 sc = np.sqrt((jac*jac).sum(axis=0))
                 jac /= sc
-                y = [g.graft(one) for g in self.y]
+                y = [g/g.unit for g in self.y]
                 if ic is not None:
                     jac = ic@jac
                     y = [np.sum(y*c) for c in ic]
@@ -908,7 +913,7 @@ class Fit(_Fit,PrettyPrinter):
                 b = pcov@jac.T
                 self.p = [np.sum(y*bi) for bi in b]/sc
                 for g,gf in zip(self.p,self.pf):
-                    g._x = gf
+                    g.value._x = gf
             except:
                 self.p = None
                 if cov is not None:
@@ -942,7 +947,7 @@ class Fit(_Fit,PrettyPrinter):
                 self.p = [gummy(v,unit=self.punits[i]) for i,v in enumerate(self.pf)]
                 warn('unable get a covariance matrix of full rank; uncertainties cannot be calculated',FitWarning)
         else:
-            self.p = [g.graft(u) for g,u in zip(self.p,self.punits)]
+            self.p = [g*u/g.unit for g,u in zip(self.p,self.punits)]
             
     @staticmethod
     def _getw(x,u,cov,w,dim,gummies):
@@ -1196,21 +1201,21 @@ class Fit(_Fit,PrettyPrinter):
     def _ypred(self,*x):
         p = list(self.p)
         for i,e in enumerate(p):
-            p[i] = p[i].graft(one)
+            p[i] = p[i]/p[i].unit
         if self.xdim == 1:
             x = x[0]
-            if isinstance(x,gummy):
+            if isinstance(x,Quantity):
                 x = x.convert(self._xunit)
-                x = x.graft(one)
+                x = x/x.unit
             a = [x] + p
         else:
             if len(x) != self.xdim:
                 raise TypeError('the length of the x parameter does not match the dimensionality of the x-value array')
             x = list(x)
             for i,v in enumerate(x):
-                if isinstance(v,gummy):
+                if isinstance(v,Quantity):
                     x[i] = v.convert(self._xunit[i])
-                    x[i] = x.graft(one)
+                    x[i] = x[i]/x[i].unit
             a = x + p
             
         if self.ydim == 1:
@@ -1218,7 +1223,7 @@ class Fit(_Fit,PrettyPrinter):
                 r = gummy.apply(self.f,self.jac,*a)
             except NotImplementedError:
                 r = gummy.napply(self.f,*a)
-            r = r.graft(self._yunit)
+            r = r*self._yunit
             return r
         else:
             r = np.zeros(self.ydim,dtype=np.object)
@@ -1227,13 +1232,13 @@ class Fit(_Fit,PrettyPrinter):
                     def f(*v):
                         return self.f(*v)[i]
                     r[i] = gummy.apply(f,self.jac,*a)
-                    r[i] = r[i].graft(self._yunit)
+                    r[i] = r[i]*self._yunit
             except NotImplementedError:
                 for i in self.ydim:
                     def f(*v):
                         return self.f(*v)[i]
                     r[i] = gummy.napply(f,*a)
-                    r[i] = r[i].graft(self._yunit)
+                    r[i] = r[i]*self._yunit
             return r
                 
     def ptostring(self,fmt='unicode'):
@@ -1690,7 +1695,7 @@ class PolyFit(Fit):
             pf = tr.dot(pf)
             if p is not None:
                 for g,gf in zip(p,pf):
-                    g._x = gf
+                    g.value._x = gf
         
         if cov is not None:
             cov /= np.outer(sc,sc)
@@ -1746,7 +1751,7 @@ class PolyFit(Fit):
                 self.p = gummy.create(pf,unit=self.punits)
                 warn('the covariance matrix is not positive semidefinate; uncertainties cannot be calculated',FitWarning)
         else:
-            self.p = [g.graft(units[i]) for i,g in enumerate(p)]
+            self.p = [g*units[i]/g.unit for i,g in enumerate(p)]
             if pf is None:
                 pf = [g.x for g in p]
             

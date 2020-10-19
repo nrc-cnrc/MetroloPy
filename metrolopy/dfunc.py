@@ -21,8 +21,8 @@
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
 """
-Class Dfunc is an abstract base class inherited by gummy and jummy to provides 
-some support for numpy broadcasting for functions and operators.
+Class Dfunc is an abstract base class inherited by ummy and immy to provide 
+support for numpy ufunc functions.
 """
 
 import numpy as np
@@ -52,45 +52,45 @@ def _f_around(x,n=0):
 
 def _f_add(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._add(x2)
+        return x1.__add__(x2)
     else:
-        return x2._radd(x1)
+        return x2.__radd__(x1)
     
 def _f_sub(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._sub(x2)
+        return x1.__sub__(x2)
     else:
-        return x2._rsub(x1)
+        return x2.__rsub__(x1)
 
 def _f_mul(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._mul(x2)
+        return x1.__mul__(x2)
     else:
-        return x2._rmul(x1)
+        return x2.__rmul__(x1)
     
 def _f_div(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._truediv(x2)
+        return x1.__truediv__(x2)
     else:
-        return x2._rtruediv(x1)
+        return x2.__rtruediv__(x1)
     
 def _f_fdiv(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._floordiv(x2)
+        return x1.__floordiv__(x2)
     else:
-        return x2._rfloordiv(x1)
+        return x2.__rfloordiv__(x1)
     
 def _f_pow(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._pow(x2)
+        return x1.__pow__(x2)
     else:
-        return x2._rpow(x1)
+        return x2.__rpow__(x1)
     
 def _f_mod(x1,x2):
     if isinstance(x1,Dfunc):
-        return x1._mod(x2)
+        return x1.__mod__(x2)
     else:
-        return x2._rmod(x1)
+        return x2.__rmod__(x1)
 
 
 ddict = {np.sin: np.cos,
@@ -162,7 +162,7 @@ def _call(f,*x):
         try:
             return f(*x)
         except:
-            x = [a.tofloat() if isinstance(a,Dfunc) else float(a) for a in x]
+            x = [a.tofloat() if hasattr(a,'tofloat') else float(a) for a in x]
             return f(*x)
 
     return f(*x)
@@ -323,57 +323,23 @@ class Dfunc:
         ret = np.array([_call(lambda *x: cls._napply(function,*x), *a) for a in bargs])
         ret = ret.reshape(bargs.shape)
         return ret
-       
-    def __array_ufunc__(self,ufunc,method,*args,**kwds):
-        if method != '__call__':
-            return None
-        
+    
+    def _ufunc(self,ufunc,*args,**kwds):
+        if any(isinstance(a,np.ndarray) for a in args):
+            args = [np.array(a) if isinstance(a,Dfunc) else a for a in args]
         try:
             return _call(lambda *x: self._apply(ufunc,ddict[ufunc],*x), *args)
         except KeyError:
             try:
                 return _call(fdict[ufunc],*args)
             except KeyError:
-                return None
-            
-    def __add__(self,b):
-        return _broadcast(self._add,b)
-    
-    def __radd__(self,b):
-        return _broadcast(self._radd,b)
-    
-    def __sub__(self,b):
-        return _broadcast(self._sub,b)
-    
-    def __rsub__(self,b):
-        return _broadcast(self._rsub,b)
-    
-    def __mul__(self,b):
-        return _broadcast(self._mul,b)
+                return self.napply(ufunc,*args)
+       
+    def __array_ufunc__(self,ufunc,method,*args,**kwds):
+        if method != '__call__':
+            return None
         
-    def __rmul__(self,b):
-        return _broadcast(self._rmul,b)
-        
-    def __truediv__(self,b):
-        return _broadcast(self._truediv,b)
-    
-    def __rtruediv__(self,b):
-        return _broadcast(self._rtruediv,b)
-    
-    def __floordiv__(self,b):
-        return _broadcast(self._floordiv,b)
-    
-    def __rfloordiv__(self,b):
-        return _broadcast(self._rfloordiv,b)
-    
-    def __mod__(self,b):
-        return _broadcast(self._mod,b)
-    
-    def __rmod__(self,b):
-        return _broadcast(self._rmod,b)
-    
-    def __pow__(self,b):
-        return _broadcast(self._pow,b)
+        return self._ufunc(ufunc,*args,**kwds)
             
-    def __rpow__(self,b):
-        return _broadcast(self._rpow,b)
+    def __array_function__(self,func,method,*args,**kwds):        
+        return self._ufunc(func,*args,**kwds)

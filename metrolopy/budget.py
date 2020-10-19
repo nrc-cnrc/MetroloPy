@@ -423,7 +423,7 @@ class Budget(PrettyPrinter):
             yu = y.usim
         else:
             cm = gummy.correlation_matrix(x)
-            yu = y._u
+            yu = y.u
         svd = np.linalg.svd(cm,compute_uv=False)
         for v in svd:
             if v < 1e-6:
@@ -440,10 +440,10 @@ class Budget(PrettyPrinter):
                 for j in range(len(x)):
                     tu += d[i]*d[j]*x[i].correlation(x[j])*x[i].usim*x[j].usim
         else:
-            d = [p*yu/q._u for p,q in zip(s,x)]  
+            d = [p*yu/q.u for p,q in zip(s,x)]  
             for i in range(len(x)):
                 for j in range(len(x)):
-                    tu += d[i]*d[j]*x[i].correlation(x[j])*x[i]._u*x[j]._u
+                    tu += d[i]*d[j]*x[i].correlation(x[j])*x[i].u*x[j].u
         tu = np.sqrt(tu)
         
         if self.sim:
@@ -456,7 +456,7 @@ class Budget(PrettyPrinter):
         if sim:
             fsigs = [np.abs(i*j.usim/yu) for i,j in zip(d,x)]
         else:
-            fsigs = [np.abs(i*j._u/yu) for i,j in zip(d,x)]
+            fsigs = [np.abs(i*j.u/yu) for i,j in zip(d,x)]
         fsc = list(np.abs(d))
         
         sigs = []
@@ -483,7 +483,7 @@ class Budget(PrettyPrinter):
             sc.append(Budget._format_float(fsc[i]))
             html_sc.append(Budget._format_float(fsc[i],fmt='html'))
             latex_sc.append(Budget._format_float(fsc[i],fmt='latex'))
-            fdof.append(x[i]._dof)
+            fdof.append(x[i].dof)
             dof.append(gummy._dof_to_str(x[i].dof))
             html_dof.append(gummy._dof_to_str(x[i].dof,fmt='html'))
             latex_dof.append(gummy._dof_to_str(x[i].dof,fmt='latex'))
@@ -986,7 +986,7 @@ class Budget(PrettyPrinter):
                         if self.sim:
                             yu = self._y.usim
                         else:
-                            yu = self._y._u
+                            yu = self._y.u
                         fs.append(v[0]/yu)
                         s.append(Budget._formatsig(v[0]/yu))
                         hs.append(Budget._formatsig(v[0]/yu,'html'))

@@ -30,13 +30,15 @@ of gummy.
 
 import numpy as np
 import weakref
-from .dfunc import Dfunc
-from .exceptions import UncertiantyPrecisionWarning
 from collections import namedtuple
 from warnings import warn
 from math import isnan,isinf,log,log10,pi
 from fractions import Fraction
-from numbers import Rational,Integral
+from numbers import Rational,Integral,Real,Complex
+from .printing import PrettyPrinter,MetaPrettyPrinter
+from .dfunc import Dfunc
+from .exceptions import UncertiantyPrecisionWarning
+from .unit import Unit,one,Quantity
 
 try:
     from mpmath import mp,mpf,rational
@@ -74,7 +76,7 @@ def _getfinfo(x):
             _finfodict[t] = f
         except:
             _finfodict[t] = _iinfo
-            return _iinfo
+            return (_iinfo,x)
         return (f,x)
 
 def _combu(a,b,c):
@@ -123,8 +125,20 @@ def _sign(x):
         return -1
     return 1
 
+def _format_exp(fmt,xp):
+    if fmt == 'html':
+        ex = ' &times; 10<sup>' + str(xp) + '</sup>'
+    elif fmt == 'latex':
+        ex = r' \times\,10^{' + str(xp) + '}'
+    else:
+        ex = 'e'
+        if xp > 0:
+            ex += '+'
+        ex += str(xp)
+    return ex
 
-class ummy(Dfunc):
+
+class ummy(Dfunc,PrettyPrinter):
     max_dof = 10000 # any larger dof will be rounded to float('inf')
     nsig = 2 # The number of digits to quote the uncertainty to
     thousand_spaces = True # If true spaces will be placed between groups of three digits.
@@ -138,12 +152,15 @@ class ummy(Dfunc):
     sci_notation_low = -3
     
     # if rounding_u is true then uncertianty will be added for floating point 
-    #   rounding errors
+    # rounding errors
     rounding_u = False
     
     max_digits = 15
     
     def __init__(self,x,u=0,dof=float('inf'),utype=None):
+        if isinstance(x,Quantity):
+            x = x.convert(one).value
+            
         if isinstance(x,ummy):
              self._copy(x,self,formatting=False)
              return
@@ -159,26 +176,31 @@ class ummy(Dfunc):
                 raise TypeError()
         except TypeError:
             raise TypeError('u must be a real number >= 0')
+            
+        if u == 0:
+            dof = float('inf')
+            utype = None
+            
+        if isinstance(x,Fraction):
+            x = MFraction(x)
+        if isinstance(u,Fraction):
+            u = MFraction(u)
                 
         if self.rounding_u and not isinstance(x,Rational):
             finfo,x = _getfinfo(x)
             if finfo is _iinfo:
                 warn('numpy.finfo cannot get the floating point accuracy for x\nno uncertainty will be included to account for floating point rounding errors',UncertiantyPrecisionWarning)
             else:
-                uc = _combu(u,float(abs(x)*finfo.rel_u),0)
+                u = _combu(u,float(abs(x)*finfo.rel_u),0)
             
-            uinfo = _getfinfo(u)[0]
-            if uc < uinfo.warn_u and u is not 0:
-                warn('a gummy/ummy was defined with an uncertainty too small to be accurately represented by a float\nuncertainty values may contain significant numerical errors',UncertiantyPrecisionWarning)
-            u = uc
+            #uinfo = _getfinfo(u)[0]
+            #if uc < uinfo.warn_u and u is not 0:
+                #warn('a gummy/ummy was defined with an uncertainty too small to be accurately represented by a float\nuncertainty values may contain significant numerical errors',UncertiantyPrecisionWarning)
+            
             self._finfo = finfo
         else:
             self._finfo = None
-            
-        if isinstance(x,Fraction):
-            x = MFraction(x)
-        if isinstance(u,Fraction):
-            u = MFraction(u)
+
             
         self._x = x
         self._u = u
@@ -221,11 +243,15 @@ class ummy(Dfunc):
         `float`, read-only
 
         Returns the number or degrees of freedom that the uncertainty of the 
-        gummy is based on.  If the gummy was created as the result of an 
+        ummy is based on.  If the ummy was created as the result of an 
         operation between two or more other gummys, then the dof is the effective
-        number of degrees of freedom calculated using a version of the Welch-
-        Satterthwaite approximation that takes into account correlations, see
-        [R. Willink, Metrologia, 44, 340 (2007)].
+        number of degrees of freedom calculated using the Welch-Satterthwaite 
+        approximation.  Caution:  A variation of the the  Welch-Satterthwaite
+        approximation is used that takes into account correlations, see
+        [R. Willink, Metrologia, 44, 340 (2007)].  However correlations are
+        not handled perfectly.  So if accurate dof calculations are need, care
+        should be taken to ensure that correlations are not generated in
+        intermediate calculations.
         """
         if self._ref is None:
             return float('inf')
@@ -244,19 +270,11 @@ class ummy(Dfunc):
     def _dof(self,v):
         if self._ref is not None:
             self._ref.dof = v
-        
-    @property
-    def const(self):
-        """`bool`, read-only
-        
-        Returns `True` if the gummy represents an exact value with no uncertainty.
-        """
-        return (self._u == 0)
     
     @property
     def finfo(self):
         if self._finfo is None:
-            self._finfo = _getfinfo(self._x)
+            self._finfo = _getfinfo(self._x)[0]
         return self._finfo
         
     @staticmethod
@@ -280,7 +298,7 @@ class ummy(Dfunc):
     
     def copy(self,formatting=True,tofloat=False):
         """
-        Returns a copy of the gummy.  If the `formatting` parameter is
+        Returns a copy of the ummy.  If the `formatting` parameter is
         `True` the display formatting information will be copied and if
         `False` the display formatting will be set to the default for a
         new gummy.  The default for `formatting` is `True`.  If tofloat
@@ -297,9 +315,18 @@ class ummy(Dfunc):
         """
         return self.copy(formatting=False,tofloat=True)
     
+    def splonk(self):
+        """
+        returns self.x if u == 0 else returns self
+        """
+        if self.u == 0:
+            return self.x
+        return self
+    
     def correlation(self, g):
         """
-        Returns the correlation coefficient between `self` and `g`."""
+        Returns the correlation coefficient between `self` and `g`.
+        """
         if not isinstance(g,ummy):
             return 0
         if self._ref is None or g._ref is None:
@@ -319,7 +346,7 @@ class ummy(Dfunc):
     @staticmethod
     def correlation_matrix(gummys):
         """
-        Returns the correlation matrix of a list or array of gummys.
+        Returns the correlation matrix of a list or array of ummys.
         """
         return [[b.correlation(a) if isinstance(b,ummy) else 0 
                 for b in gummys] for a in gummys]
@@ -327,7 +354,7 @@ class ummy(Dfunc):
     @staticmethod
     def covariance_matrix(gummys):
         """
-        Returns the variance-covariance matrix of a list or array of gummys.
+        Returns the variance-covariance matrix of a list or array of ummys.
         """
         return [[b.covariance(a) if isinstance(b,ummy) else 0 for b in gummys] 
                 for a in gummys]
@@ -445,7 +472,10 @@ class ummy(Dfunc):
             
         return ret
         
-    def __str__(self):
+    def tostring(self,fmt='unicode',nsig=None,**kwds):
+        if nsig is None:
+            nsig = self.nsig
+            
         x = float(self._x)
         try:
             xabs = abs(x)
@@ -463,15 +493,12 @@ class ummy(Dfunc):
                 else:
                     if (((self.sci_notation is None and (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation) ):
-                        xtxt = self._format_mantissa('unicode',x*10**(-xexp),
+                        xtxt = self._format_mantissa(fmt,x*10**(-xexp),
                                                      self.finfo.precision)
-                        etxt = 'e'
-                        if xexp >= 0:
-                            etxt += '+'
-                        etxt += str(xexp)
+                        etxt = _format_exp(fmt,xexp)
                         return xtxt + etxt
                     else:
-                        return self._format_mantissa('unicode',x,
+                        return self._format_mantissa(fmt,x,
                                                      self.finfo.precision)
                     
             uabs = abs(u)
@@ -483,23 +510,20 @@ class ummy(Dfunc):
             else:
                 xp = max(xexp,uexp)
                 
-            psn = (uexp - self.nsig + 1 > 0)
+            psn = (uexp - nsig + 1 > 0)
             
             if (((self.sci_notation is None and (xp > self.sci_notation_high or xp < self.sci_notation_low)) 
                         or self.sci_notation) or psn or (xexp is not None and (uexp > xexp and xexp == 0))):
-                xtxt = self._format_mantissa('unicode',x*10**(-xp),-uexp+xp+self.nsig-1)
-                etxt = 'e'
-                if xp >= 0:
-                    etxt += '+'
-                etxt += str(xp)
+                xtxt = self._format_mantissa(fmt,x*10**(-xp),-uexp+xp+nsig-1)
+                etxt = _format_exp(fmt,xp)
             else:
-                xtxt = self._format_mantissa('unicode',x,-uexp+self.nsig-1)
+                xtxt = self._format_mantissa(fmt,x,-uexp+nsig-1)
                 etxt = ''
                 
-            if self.nsig <= 0:
+            if nsig <= 0:
                 return xtxt + etxt
     
-            utxt = self._format_mantissa('unicode',u*10**(-uexp),self.nsig-1,parenth=True)
+            utxt = self._format_mantissa(fmt,u*10**(-uexp),nsig-1,parenth=True)
             return xtxt + '(' + utxt + ')' + etxt
         except:
             try:
@@ -509,9 +533,6 @@ class ummy(Dfunc):
                     return(str(self.x) + '{??}')
                 except:
                     return('??')
-                
-    def __repr__(self):
-        return self.__str__()
           
     def _format_mantissa(self,fmt,x,sig,parenth=False):            
         try:
@@ -716,7 +737,7 @@ class ummy(Dfunc):
         return r
         
     @classmethod
-    def _napply(cls,function,*args,fxx=None):
+    def _napply(cls,function,*args,fxx=None):      
         n = len(args)
         if n == 0:
             return cls(function(),0)
@@ -761,7 +782,15 @@ class ummy(Dfunc):
             if self._ref is not b._ref:
                 self._check_cor()   
                 
-    def _add(self,b):
+    def __add__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self) + b
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__radd__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self) + b
+        
         if not isinstance(b,ummy):
             return type(self)(self._x + b,self._u,dof=self._ref,utype=self._refs)
     
@@ -791,10 +820,28 @@ class ummy(Dfunc):
         
         return r
     
-    def _radd(self,b):
+    def __radd__(self,b):
+        if isinstance(b,np.ndarray):
+            return b + np.array(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b + immy(self)
+        
+        if isinstance(b,ummy):
+            return b.__add__(self)
+        
         return type(self)(self._x + b,self._u,dof=self._ref,utype=self._refs)
     
-    def _sub(self,b):           
+    def __sub__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self) - b
+          
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rsub__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self) - b
+        
         if not isinstance(b,ummy):
             return type(self)(self._x - b,self._u,dof=self._ref,utype=self._refs)
             
@@ -824,11 +871,29 @@ class ummy(Dfunc):
 
         return r
     
-    def _rsub(self,b):
+    def __rsub__(self,b):
+        if isinstance(b,np.ndarray):
+            return b - np.array(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b - immy(self)
+        
+        if isinstance(b,ummy):
+            return b.__sub__(self)
+        
         r = type(self)(b - self._x,self._u,dof=self._ref,utype=-self._refs)
         return r
     
-    def _mul(self,b):
+    def __mul__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self)*b
+        
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rmul__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self)*b
+        
         if not isinstance(b,ummy):
             refs = -self._refs if b < 0 else self._refs
             return type(self)(self._x*b,abs(self._u*b),dof=self._ref,utype=refs)
@@ -863,11 +928,28 @@ class ummy(Dfunc):
 
         return r
     
-    def _rmul(self,b):
+    def __rmul__(self,b):
+        if isinstance(b,np.ndarray):
+            return b*np.array(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b*immy(self)
+        
+        if isinstance(b,ummy):
+            return b.__mul__(self)
+        
         refs = -self._refs if b < 0 else self._refs
         return type(self)(self._x*b,abs(self._u*b),dof=self._ref,utype=refs)
     
-    def _truediv(self,b):   
+    def __truediv__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self)/b
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rtruediv__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self)/b
+        
         if not isinstance(b,ummy):
             if b == 0:
                 raise ZeroDivisionError('division by zero')
@@ -918,7 +1000,16 @@ class ummy(Dfunc):
 
         return r
     
-    def _rtruediv(self,b):
+    def __rtruediv__(self,b):
+        if isinstance(b,np.ndarray):
+            return b/np.array(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b/immy(self)
+        
+        if isinstance(b,ummy):
+            return b.__div__(self)
+        
         if self._x == 0:
             raise ZeroDivisionError('division by zero')
         else:
@@ -931,7 +1022,16 @@ class ummy(Dfunc):
         refs = self._refs if b < 0 else -self._refs
         return type(self)(x,u,dof=self._ref,utype=refs)
     
-    def _pow(self,b):
+    def __pow__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self)**b
+        
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rpow__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self)**b
+        
         if isinstance(b,ummy) and b._u == 0:
             b = b._x
         if not isinstance(b,ummy):
@@ -994,7 +1094,16 @@ class ummy(Dfunc):
 
         return r
     
-    def _rpow(self,b):
+    def __rpow__(self,b):
+        if isinstance(b,np.ndarray):
+            return b**np.array(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b**immy(self)
+        
+        if isinstance(b,ummy):
+            return b.__pow__(self)
+        
         if b == 0:
             return type(self)(0)
         if (isinstance(self._x,Integral) and 
@@ -1025,18 +1134,51 @@ class ummy(Dfunc):
     def _nprnd(self,f):
         return type(self)(f(self._x))
         
-    def _floordiv(self,b):
+    def __floordiv__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self) // b
+        
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rmfloordiv__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self) // b
+        
         return self._truediv(b)._nprnd(_floor)
         
-    def _rfloordiv(self,b):
+    def __rfloordiv__(self,b):
+        if isinstance(b,np.ndarray):
+            return b // np.array(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return b // immy(self)
+        
+        if isinstance(b,ummy):
+            return b.__floordiv__(self)
+        
         return self._rtruediv(b)._nprnd(_floor)
         
-    def _mod(self,b):
+    def __mod__(self,b):
+        if isinstance(b,np.ndarray):
+            return np.array(self) % b
+        
+        if isinstance(b,(immy,Unit,Quantity)):
+            return b.__rmod__(self)
+        
+        if isinstance(b,Complex) and not isinstance(b,Real):
+            return immy(self) % b
+        
         ret = ummy._apply(lambda x1,x2: x1%x2,
                           lambda x1,x2: (1, _sign(x2)*abs(x1//x2)),self,b)
         return type(self)(ret)
         
-    def _rmod(self,b):
+    def __rmod__(self,b):
+        if isinstance(b,np.ndarray):
+            return b % np.array(self)
+        
+        if isinstance(b,ummy):
+            return b.__mod__(self)
+        
         ret = ummy._apply(lambda x1,x2: x1%x2,
                           lambda x1,x2: (1, _sign(x2)*abs(x1//x2)),b,self)
         return type(self)(ret)
@@ -1062,26 +1204,27 @@ class ummy(Dfunc):
     def __eq__(self,v):
         if self is v:
             return True
+        
         if isinstance(v,ummy):
-            if self._u == 0 and v._u == 0:
+            if self.u == 0 and v.u == 0:
                 return self._x == v._x
             if self._ref is v._ref and self._refs == v._refs:
-                if self._x == v._x and self._u == v._u:
-                    return True
-            return False
-        elif self._u == 0:
-            return self._x == v
-        else:
+                return self.x == v.x and self.u == v.u
             return False
         
-    def __float__(self):
-        return float(self.x)
+        if self.u == 0:
+            return self.x == v
         
-    def __int__(self):
-        return int(self.x)
+        return False
         
-    def __complex__(self):
-        return complex(self.x)
+    #def __float__(self):
+        #return float(self.x)
+        
+    #def __int__(self):
+        #return int(self.x)
+        
+    #def __complex__(self):
+        #return complex(self.x)
     
     @property
     def real(self):
@@ -1139,14 +1282,14 @@ class ummy(Dfunc):
         
     def ufrom(self,x):
         """
-        Gets the standard uncertainty contributed from particular gummys
+        Gets the standard uncertainty contributed from particular ummys
         or utypes if all other free variables are held fixed.
         
         Parameters
         ----------
-        x:  `gummy`, `str`, or array_like
-            A gummy, a string referencing a utype or a list containing
-            gummys and strings.
+        x:  `ummy`, `str`, or array_like
+            A ummy, a string referencing a utype or a list containing
+            ummys and strings.
             
         Returns
         -------
@@ -1154,9 +1297,9 @@ class ummy(Dfunc):
         
         Example
         -------
-        >>>  a = gummy(1.2,0.2,utype='A')
-        >>>  b = gummy(3.2,0.5,utype='A')
-        >>>  c = gummy(0.9,0.2,utype='B')
+        >>>  a = ummy(1.2,0.2,utype='A')
+        >>>  b = ummy(3.2,0.5,utype='A')
+        >>>  c = ummy(0.9,0.2,utype='B')
         >>>  d = a + b + c
         >>>  d.ufrom('A')
         0.53851648071345048
@@ -1172,23 +1315,24 @@ class ummy(Dfunc):
         s = np.linalg.lstsq(v,b,rcond=None)[0]
         u = 0
         
-        d = [i*self._u/j._u for i,j in zip(s,x)]
+        d = [i*self.u/j.u for i,j in zip(s,x)]
         for i in range(len(x)):
             for j in range(len(x)):
-                u += d[i]*d[j]*x[i].correlation(x[j])*x[i]._u*x[j]._u
+                u += d[i]*d[j]*x[i].correlation(x[j])*x[i].u*x[j].u
                 
         return u**0.5
         
     def doffrom(self,x):
         """
-        Gets the degrees of freedom contributed from particular gummys or
-        utypes if all other free variables are held fixed.
+        Gets the degrees of freedom contributed from particular ummys or
+        utypes if all other free variables are held fixed.  Caution:  any
+        correlations in the calculations can cause errors in dof calculations.
         
         Parameters
         ----------
-        x:  `gummy`, `str`, or array_like
-            A gummy, a string referencing a utype or a list containing
-            gummys and strings.
+        x:  `ummy`, `str`, or array_like
+            A ummy, a string referencing a utype or a list containing
+            ummys and strings.
 
         Returns
         -------
@@ -1196,9 +1340,9 @@ class ummy(Dfunc):
 
         Example
         -------
-        >>>  a = gummy(1.2,0.2,dof=5,utype='A')
-        >>>  b = gummy(3.2,0.5,dof=7,utype='A')
-        >>>  c = gummy(0.9,0.2,utype='B')
+        >>>  a = ummy(1.2,0.2,dof=5,utype='A')
+        >>>  b = ummy(3.2,0.5,dof=7,utype='A')
+        >>>  c = ummy(0.9,0.2,utype='B')
         >>>  d = a + b + c
         >>>  d.doffrom('A')
         9.0932962619709627
@@ -1211,12 +1355,12 @@ class ummy(Dfunc):
         v = ummy.correlation_matrix(x)
         b = [self.correlation(z) for z in x]
         s = np.linalg.lstsq(v,b,rcond=None)[0]
-        d = [i*self._u/j._u for i,j in zip(s,x)]
+        d = [i*self.u/j.u for i,j in zip(s,x)]
         usq = 0
         dm = 0
         for i in range(len(x)):
             for j in range(len(x)):
-                usqi = d[i]*d[j]*x[i].correlation(x[j])*x[i]._u*x[j]._u
+                usqi = d[i]*d[j]*x[i].correlation(x[j])*x[i].u*x[j].u
                 usq += usqi
                 dm += usqi**2/x[i].dof
                 
@@ -1234,9 +1378,9 @@ class _GummyRef:
     # Instances of this class are hashable unlike gummys, so we can use this in 
     # a gummy's ._cor weak key dictionary and a GummyTag's .values weak set.
 
-    _cortol = 1e-8 # correlations smaller than this are rounded to zero
-    _cortolp = 1 - 1e-8 # correlations larger than this are rounded to 1
-    _cortoln = -1 + 1e-8 # correlations smaller than this are rounded to -1
+    _cortol = 1e-15 # correlations smaller than this are rounded to zero
+    _cortolp = 1 - 1e-15 # correlations larger than this are rounded to 1
+    _cortoln = -1 + 1e-15 # correlations smaller than this are rounded to -1
     
     def __init__(self,dof=float('inf')):
         self._cor = weakref.WeakKeyDictionary()
@@ -1457,10 +1601,625 @@ def _der(function,*args):
             d[i] = di
             
     return d
+
+
+class MetaImmy(MetaPrettyPrinter):
+    @property
+    def style(cls):
+        """
+        `str` in {'polar','cartesian'}
+        
+        Sets whether to print the value using a cartesian or polar 
+        representaion.  This property can be set at the class or instance
+        level.  The default is 'cartesian'.
+        """
+        return cls._style
+    @style.setter
+    def style(cls,value):
+        value = value.lower().strip()
+        if value in ['cartesian','ri','real-imag']:
+            cls._style = 'cartesian'
+        elif value in ['polar','r-phi']:
+            cls._style = 'polar'
+        else:
+            raise ValueError('the style must be either "cartesian" or "polar"')
+        
+    @property
+    def imag_symbol(cls):
+        """
+        `str`
+        
+        The symbol for the unit imaginary number.  The default is 'j'.
+        """
+        return immy._imag_symbol
+    @imag_symbol.setter
+    def imag_symbol(cls,value):
+        immy._imag_symbol = str(value)
+    
+class immy(PrettyPrinter,Dfunc,metaclass=MetaImmy):
+    
+    _style = 'cartesian'
+    _imag_symbol = 'j'
+    _element_type = ummy # in the jummy subclass this is set to gummy
+    
+    def __init__(self,real=None,imag=None,r=None,phi=None,cov=None):
+        """
+        An immy object represents a complex valued quantity with `ummy`
+        real and imaginary components.
+        
+        Parameters
+        ----------
+        real, imag, r, phi:  `float` or `ummy`
+            The value may be specified in  either cartesian coordinates
+            using `real` and `imag` or polar coordinates with `r` and `phi`.
+            The pair `real`, `imag` or `r`, `phi` may both be `ummy` or
+            both be `float`.  If they are `float` then `cov` may
+            also be specified.
+                
+        cov:  2 x 2 array_like of `float`, optional
+            The variance-covariance matrix for either the pair `real`,
+            `imag` or the pair `r`, `phi`.
+        """
+        if isinstance(real,immy):
+            if real._ridef:
+                self._real = self._element_type(real._real)
+                self._imag = self._element_type(real._imag)
+                self._r = None
+                self._phi = None
+                self._ridef = True
+                return
+            else:
+                self._r = self._element_type(real._r)
+                self._phi = self._element_type(real._phi)
+                self._real = None
+                self._imag = None
+                self._ridef = False
+                return
+        
+        if cov is not None:
+            cov = np.asarray(cov)
+        
+        if real is not None:
+            self._ridef = True
+            if r is not None or phi is not None:
+                raise ValueError('r and phi may not be specified if real is specified')
+            
+            if imag is None:
+                imag = real.imag
+                real = real.real
+                    
+            if cov is not None and (isinstance(real,(ummy,self._element_type)) or 
+                                    isinstance(imag,(ummy,self._element_type))):
+                raise ValueError('cov may not be specified if real or imag has an uncertainty')
+    
+            if cov is None:
+                self._real = self._element_type(real)
+                self._imag = self._element_type(imag)
+            else:
+                if (isinstance(real,(ummy,self._element_type)) or 
+                    isinstance(imag,(ummy,self._element_type))):
+                    raise ValueError('cov may not be specified if real or imag ihas an uncertainty')
+            
+            try:
+                self._real,self._imag = self._element_type.create([real,imag],
+                                                                  covariance_matrix=cov)
+            except ValueError as e:
+                if str(e).startswith('matrix must have shape'):
+                    raise ValueError('cov must be a 2 x 2 matrix')
+                raise
+            self._r = None
+            self._phi = None
+        else:
+            self._ridef = False
+            if phi is None or r is None:
+                raise ValueError('if real is not specified then both r and phi must be specified')
+            
+            if (isinstance(r,(ummy,self._element_type)) or 
+                isinstance(phi,(ummy,self._element_type))):
+                if cov is not None:
+                    raise ValueError('cov may not be specified if r or phi is a gummy')
+                self._r = self._element_type(r)
+                self._phi = self._element_type(phi)
+            else: 
+                try:
+                    self._r,self._phi = self._element_type.create([r,phi],
+                                                                  covariance_matrix=cov)
+                except ValueError as e:
+                    if e[0].startswith('matrix must have shape'):
+                        raise ValueError('cov must be a 2 x 2 matrix')
+                    raise
+            self._real = None 
+            self._imag = None 
+            
+    @property
+    def x(self):
+        """
+        Returns `complex(self.real.x,self.imag.x)`, read-only
+        """
+        return complex(self.real.x,self.imag.x)
+    
+    @property
+    def cov(self):
+        """
+        Returns the variance-covariance matrix between the real and imaginary
+        parts of the value, read-only.
+        """
+        return ummy.covariance_matrix([self.real,self.imag])
+    
+    @property
+    def real(self):
+        """
+        read-only
+        Returns real part of the value.
+        """
+        if self._real is None: 
+            self._real = self._r*np.cos(self._phi)
+        return self._real
+    
+    @property
+    def imag(self):
+        """
+        read-only
+        Returns the imaginary part of the value.
+        """
+        if self._imag is None:
+            self._imag = self._r*np.sin(self._phi)
+        return self._imag
+    
+    @property
+    def r(self):
+        """
+        read-only
+        Returns the magnitude of the value.
+        """
+        if self._r is None:
+            self._r = abs(self)
+        return self._r
+    
+    @property
+    def phi(self):
+        """
+        read-only
+        Returns the polar angle of the value.
+        """
+        if self._phi is None:
+            self._phi = self.angle()
+        return self._phi
+    
+    def conjugate(self):
+        """
+        Returns the complex conjugate.
+        """
+        return type(self)(real=self.real,imag=-self.imag)
+    
+    def angle(self):
+        """
+        Returns the polar angle in radians.
+        """
+        return np.arctan2(self.imag,self.real)
+    
+    def copy(self,formatting=True,tofloat=False):
+        """
+        Returns a copy of the jummy.  If the `formatting` parameter is
+        `True` the display formatting information will be copied and if
+        `False` the display formatting will be set to the default for a
+        new jummy.  The default for `formatting` is `True`.  If the
+        tofloats parameter is True x and u for both the real and
+        imaginary components will be converted to floats.
+        """
+        if self._ridef:
+            r = self.real.copy(formatting=formatting,tofloat=tofloat)
+            i = self.imag.copy(formatting=formatting,tofloat=tofloat)
+            return type(self)(real=r,imag=i)
+        else:
+            r = self.r.copy(formatting=formatting,tofloat=tofloat)
+            phi = self.phi.copy(formatting=formatting,tofloat=tofloat)
+            return type(self)(r=r,phi=phi)
+    
+    def tofloat(self):
+        """
+        Returns a copy of the gummy with x an u (for both the real and
+        imaginary components) converted to floats.
+        """
+        return self.copy(formatting=False,tofloat=True)
+    
+    def splonk(self):
+        if self.real.u == 0 and self.imag.u == 0:
+            return self.x
+        if self.imag == 0:
+            return self.real
+        return self
+            
+    @classmethod
+    def _apply(cls,function,derivative,*args,fxx=None,rjd=None):
+        
+        n = len(args)
+        if fxx is None:
+            rargs = [a.real for a in args]
+            jargs = [a.imag for a in args]
+            args = rargs + jargs
+            args = [a.convert(one).value if isinstance(a,Quantity) else a for 
+                    a in args]
+            x = [a.x if isinstance(a,ummy) else a for a in args]
+            func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
+            der = lambda *a: derivative(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
+            fx = func(*x)
+        else:
+            fx,x = fxx
+            
+        if not _isscalar(fx):
+            return [cls._apply(lambda *y: func(*y)[i],
+                               lambda *y: der(*y)[i],
+                               *args,fxx=(fx[i],x)) 
+                    for i in range(len(fx))]
+        
+        d = der(*x)
+        
+        if n == 1:
+            d = [d]
+
+        rda = []
+        rdb = []
+        jda = []
+        jdb = []
+        for i,p in enumerate(d):
+            try:
+                if len(p) == 2 and len(p[0]) == 2 and len(p[1]) == 2:
+                    rda.append(p[0][0])
+                    rdb.append(p[0][1])
+                    jda.append(p[1][0])
+                    jdb.append(p[1][1])
+            except:
+                if p is None:
+                     p = 0
+                rda.append(p.real)
+                jdb.append(p.real)
+                jda.append(-p.imag)
+                rdb.append(p.imag)
+        rd = rda + rdb
+        jd = jda + jdb
+
+        if len(rd) == 1:
+            rd = rd[0]
+            jd = jd[0]
+            
+        if not isinstance(fx,Real) and isinstance(fx,Complex):
+            r = cls._element_type._apply(lambda *a: func(*a).real,None,*args,
+                                         fxdx=(fx.real,rd,x))
+            j = cls._element_type._apply(lambda *a: func(*a).imag,None,*args,
+                                         fxdx=(fx.imag,jd,x))
+            if (isinstance(r,(ummy,cls._element_type)) or 
+                isinstance(j,(ummy,cls._element_type))):
+                return cls(real=r,imag=j)
+            return complex(r,j)
+        
+        return cls._element_type._apply(function,der,*args,fxdx=(fx,rd,x))
+    
+    @classmethod
+    def _napply(cls,function,*args,fxx=None):
+        n = len(args)
+        if fxx is None:
+            rargs = [a.real for a in args]
+            jargs = [a.imag for a in args]
+            args = rargs + jargs
+            args = [a.convert(one).value if isinstance(a,Quantity) else a for 
+                    a in args]
+            x = [a.x if isinstance(a,ummy) else a for a in args]
+            func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
+            fx = func(*x)
+        else:
+            fx,x = fxx
+        
+        if not _isscalar(fx):
+            return [cls._napply(lambda *y: func(*y)[i],*args,fxx=(fx[i],x)) 
+                    for i in range(len(fx))]
+            
+        if not isinstance(fx,Real) and isinstance(fx,Complex):
+            r = cls._element_type._napply(lambda *a: func(*a).real,*args,
+                                          fxx=(fx.real,x))
+            j = cls._element_type._napply(lambda *a: func(*a).imag,*args,
+                                          fxx=(fx.imag,x))
+            return cls(real=r,imag=j)
+        
+        return cls._element_type._napply(func,*args,fxx=(fx,x))
+            
+    @property
+    def style(self):
+        """
+        `str` in {'polar','cartesian'}
+        
+        Sets whether to print the value using a cartesian or polar 
+        representaion.  This property can be set at the class or instance
+        level.  The default is 'cartesian'.
+        """
+        return self._style
+    @style.setter
+    def style(self,value):
+        value = value.lower().strip()
+        if value in ['cartesian','ri','real-imag']:
+            self._style = 'cartesian'
+        elif value in ['polar','r-phi']:
+            self._style = 'polar'
+        else:
+            raise ValueError('the style must be either "cartesian" or "polar"')
+    
+    def tostring(self,fmt='unicode',norm=None,nsig=None,style=None):
+        if self.imag == 0 and self.real == 0:
+            return '0'
+        
+        if style is None:
+            style = self.style
+        
+        if style == 'polar':
+            r = self.r.tostring(fmt=fmt,nsig=nsig)
+            
+            if self.phi.x < 0:
+                i = abs(self.phi).tostring(fmt=fmt,nsig=nsig)
+                sign = '-'
+            else:
+                i = self.phi.tostring(fmt=fmt,nsig=nsig)
+                sign = ''
+            
+            if fmt == 'html':
+                if sign == '':
+                    sign ='&thinsp;'
+                ret = r + '&thinsp;&middot;&thinsp;<i>e</i><sup>' + sign
+                ret += '<i>' + self._imag_symbol + '</i>&thinsp;'
+                ret += i + '</sup>'
+            elif fmt == 'latex':
+                ret = r + '\\,\\cdot\\,e^{' + sign + self._imag_symbol + i + '}'
+            else:
+                ret = r + ' exp(' + sign + self._imag_symbol + i + ')'
+            return ret
+        
+        if self.real == 0:
+            r = ''
+        else:
+            r = self.real.tostring(fmt=fmt,nsig=nsig)
+        if self.imag == 0:
+            return r
+        if self.imag.x < 0:
+            i = abs(self.imag).tostring(fmt=fmt,nsig=nsig)
+            if self.real == 0:
+                sign = '-'
+            else:
+                sign = ' - '
+        else:
+            i = self.imag.tostring(fmt=fmt,nsig=nsig)
+            if self.real == 0:
+                sign = ''
+            else:
+                sign = ' + '
+            
+        if fmt == 'html':
+            i = '<i>' + self._imag_symbol + '</i>&thinsp;' + i
+        elif fmt == 'latex':
+            i = self._imag_symbol + '\\,' + i
+        else:
+            i = self._imag_symbol + i
+
+        return r + sign + i
+            
+    def __add__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self) + v
+        
+        r = self.real + v.real
+        i = self.imag + v.imag
+        return type(self)(real=r,imag=i)
+    
+    def __radd__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self) + v
+        
+        r = v.real + self.real
+        i = v.imag + self.imag
+        return type(self)(real=r,imag=i)
+    
+    def __sub__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self) - v
+        
+        r = self.real - v.real
+        i = self.imag - v.imag
+        return type(self)(real=r,imag=i)
+    
+    def __rsub__(self,v):
+        if isinstance(v,np.ndarray):
+            return v - np.array(self)
+        
+        r = v.real - self.real
+        i = v.imag - self.imag
+        return type(self)(real=r,imag=i)
+    
+    def __mul__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self)*v
+        
+        r = self.real*v.real - self.imag*v.imag
+        i = self.imag*v.real + self.real*v.imag
+        return type(self)(real=r,imag=i)
+    
+    def __rmul__(self,v):
+        if isinstance(v,np.ndarray):
+            return v*np.array(self)
+        
+        r = v.real*self.real - v.imag*self.imag
+        i = v.imag*self.real + v.real*self.imag
+        return type(self)(real=r,imag=i)
+    
+    def __truediv__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self)/v
+        
+        h2 = v.real*v.real + v.imag*v.imag
+        r = (self.real*v.real + self.imag*v.imag)/h2
+        i = (self.imag*v.real - self.real*v.imag)/h2
+        return type(self)(real=r,imag=i)
+    
+    def __rtruediv__(self,v):
+        if isinstance(v,np.ndarray):
+            return v/np.array(self)
+        
+        h2 = self.real*self.real + self.imag*self.imag
+        r = (v.real*self.real + v.imag*self.imag)/h2
+        i = (v.imag*self.real - v.real*self.imag)/h2
+        return type(self)(real=r,imag=i)
+        
+    def __pow__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self)**v
+        
+        if self.real == 0 and self.imag == 0:
+            return self.copy(formatting=False)
+        
+        h2 = self.real*self.real + self.imag*self.imag
+        a = np.arctan2(self.imag,self.real)
+        c = h2**(v.real/2)
+        t = v.real*a
+        if v.imag != 0:
+            t += 0.5*v.imag*np.log(h2)
+            c *= np.exp(-v.imag*a)
+        r = c*np.cos(t)
+        i = c*np.sin(t)
+        return type(self)(real=r,imag=i)
+    
+    def __rpow__(self,v):
+        if isinstance(v,np.ndarray):
+            return v**np.array(self)
+        
+        if v.real == 0 and v.imag == 0:
+            return type(self)(real=0,imag=0)
+        
+        h2 = v.real*v.real + v.imag*v.imag
+        a = np.arctan2(v.imag,v.real)
+        c = h2**(self.real/2)
+        t = self.real*a
+        if self.imag != 0:
+            t += 0.5*self.imag*np.log(h2)
+            c *= np.exp(-self.imag*a)
+        r = c*np.cos(t)
+        i = c*np.sin(t)
+        return type(self)(real=r,imag=i)
+    
+    def _nprnd(self,f):
+        self._real = self.real._nprnd(f)
+        self._imag = self.imag._nprnd(f)
+        
+    def __floordiv__(self,v):
+        if isinstance(v,np.ndarray):
+            return np.array(self) // v
+        
+        h2 = v.real*v.real + v.imag*v.real
+        r = (self.real*v.real + self.imag*v.imag)//h2
+        i = (self.imag*v.real - self.real*v.imag)//h2
+        return type(self)(real=r,imag=i)
+        
+    def __rfloordiv__(self,v):
+        if isinstance(v,np.ndarray):
+            return v // np.array(self)
+        
+        h2 = self.real*self.real + self.imag*self.imag
+        r = (v.real*self.real + v.imag*self.imag)//h2
+        i = (v.imag*self.real - v.real*self.imag)//h2
+        return type(self)(real=r,imag=i)
+        
+    def __mod__(self,v):
+        raise TypeError("can't mod immy")
+    
+    def __rmod__(self,v):
+        raise TypeError("can't mod immy")
+    
+    def __abs__(self):
+        return (self.real**2 + self.imag**2)**0.5
+    
+    def __neg__(self):
+        return type(self)(real=-self.real.copy(formatting=False),
+                          imag=-self.imag.copy(formatting=False))
+    
+    def __pos__(self):
+        return type(self)(real=self.real.copy(formatting=False),
+                          imag=self.imag.copy(formatting=False))
+    
+    #def __complex__(self):
+        #return complex(self.real.x,self.imag.x)
+    
+    #def __float__(self):
+        #raise TypeError("can't convert immy to float")
+        
+    #def __int__(self):
+        #raise TypeError("can't convert immy to int")
+        
+    def __eq__(self,v):
+        return self.real == v.real and self.imag == v.imag
+
         
 class MFraction(Fraction):
     """
     A fraction.Fraction sub-class that works with mpmath.mpf objects
     """
+    
+    def __new__(cls, *args, **kwargs):
+        if len(args) == 1 and not (isinstance(args[0],str) 
+                                   or isinstance(args[0],Fraction)):
+            return args[0]
+        ret = super(MFraction, cls).__new__(cls, *args, **kwargs)
+        if ret.denominator == 1:
+            return ret.numerator
+        return ret
+    
     def _mpmath_(self,p,r):
         return rational.mpq(self.numerator,self.denominator)
+    
+    def __add__(self,v):
+        return MFraction(super().__add__(v))
+    
+    def __radd__(self,v):
+        return MFraction(super().__radd__(v))
+    
+    def __sub__(self,v):
+        return MFraction(super().__sub__(v))
+    
+    def __rsub__(self,v):
+        return MFraction(super().__rsub__(v))
+    
+    def __mul__(self,v):
+        return MFraction(super().__mul__(v))
+    
+    def __rmul__(self,v):
+        return MFraction(super().__rmul__(v))
+    
+    def __truediv__(self,v):
+        return MFraction(super().__truediv__(v))
+    
+    def __rtruediv__(self,v):
+        return MFraction(super().__rtruediv__(v))
+        
+    def __pow__(self,v):
+        return MFraction(super().__pow__(v))
+    
+    def __rpow__(self,v):
+        if isinstance(v,Fraction):
+            return MFraction(v).__pow__(self)
+        return MFraction(super().__rpow__(v))
+        
+    def __floordiv__(self,v):
+        return MFraction(super().__floordiv__(v))
+        
+    def __rfloordiv__(self,v):
+        return MFraction(super().__rfloordiv__(v))
+        
+    def __mod__(self,v):
+        return MFraction(super().__mod__(v))
+    
+    def __rmod__(self,v):
+        return MFraction(super().__rmod__(v))
+    
+    def __abs__(self):
+        return MFraction(super().__abs__())
+    
+    def __neg__(self):
+        return MFraction(super().__neg__())
+    
+    def __pos__(self):
+        return MFraction(super().__pos__())

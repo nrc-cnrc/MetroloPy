@@ -24,9 +24,9 @@
 the search_units, shadow_units, and convert functions are defined here
 """
 from .gummy import gummy
-from .unit import Unit,one
+from .ummy import ummy
+from .unit import Unit,one,Quantity
 from .printing import PrettyPrinter,print_markdown,print_html,ipython_installed
-import numpy as np
 
 
 def _mrtxt(txt,fmt):
@@ -36,30 +36,15 @@ def _mrtxt(txt,fmt):
         txt = txt.replace('#','\\#')
     return txt
 
-class _search_display:
+class _search_display(PrettyPrinter):
     def __init__(self,search,show_all,units):
         self.search = search
         self.show_all = show_all
         self.units = units
         
-    def __repr__(self):
-        if PrettyPrinter.printer == 'ascii':
-            return search_units(self.search,fmt='ascii',show_all=self.show_all,
-                                units=self.units,prnt=False)
-        return search_units(self.search,fmt='unicode',show_all=self.show_all,
-                                units=self.units,prnt=False)
-        
-    def _repr_html_(self):
-        if PrettyPrinter.printer == 'any' or PrettyPrinter.printer == 'html':
-            return search_units(self.search,fmt='html',show_all=self.show_all,
-                                units=self.units,prnt=False)
-        return None
-        
-    def _repr_markdown_(self):
-        if PrettyPrinter.printer == 'any' or PrettyPrinter.printer == 'latex':
-            return search_units(self.search,fmt='latex',show_all=self.show_all,
-                                units=self.units,prnt=False)
-        return None
+    def tostring(self,fmt='unicode',**kwds):
+        return search_units(self.search,fmt=fmt,show_all=self.show_all,
+                            units=self.units,prnt=False)
     
 def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
     """
@@ -217,7 +202,12 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                         else:
                             ttxt = str(len(u.prefixes)) + ' prefixes'
                 elif isinstance(u,LogUnit):
-                    if (round(float(u.conversion.log_base),3) - 2.718) < 0.001:
+                    bse = u.conversion.log_base
+                    if isinstance(bse,Quantity):
+                        bse = bse.value
+                    if isinstance(bse,ummy):
+                        bse = bse.x
+                    if (round(bse,3) - 2.718) < 0.001:
                         if fmt == 'latex':
                             ttxt += ', log base ' + PrettyPrinter.latex_math('e')
                         if fmt == 'html':
@@ -255,6 +245,7 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                         else:
                             txt += ', ' + ctxt
                     except:
+                        raise
                         txt += ', ?? = ??'
                 elif u is not one:
                     if fmt == 'latex':
@@ -283,6 +274,7 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                     else:
                         txt += 'shadowed aliases: ' + _mrtxt(', '.join(sorted(saliases,key=str.lower)),fmt)
         except:
+            raise
             txt += '??'
                 
         if fmt == 'html' or fmt == 'latex':

@@ -21,9 +21,10 @@
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
 """
-The nummy object defined here was created as a super-class for gummy,
-integrating the Monte-Carlo uncertainty propagation code in the distributions
-module with the ummy object.  
+The nummy object defined here integrates the Monte-Carlo uncertainty 
+propagation code in the distributions module with the ummy object.  The nummy 
+class is not intended to be used directly; rather it is utilized by the gummy
+class.
 """
 import numpy as np
 from .ummy import ummy
@@ -31,129 +32,31 @@ from .distributions import (Distribution,TDist,NormalDist,MultivariateElement,
                             MultivariateDistribution,MultiNormalDist,MultiTDist)
 from math import isinf,isfinite,isnan,sqrt
 
-def _bop(f,npf,s,b):
-    if not nummy._mcpropagate:
-        return f
-        
+def _bop(f,npf,s,b):    
     if isinstance(b,nummy):
         f._dist = Distribution.apply(npf,s._dist,b._dist)
+    elif isinstance(b,ummy):
+        f._dist = Distribution.apply(npf,s._dist,nummy(b)._dist)
     else:
         f._dist = Distribution.apply(npf,s._dist,b)
     return f
 
 def _rbop(f,npf,s,b):
-    if not nummy._mcpropagate:
-        return f
-    
     f._dist = Distribution.apply(npf,b,s._dist)
     return f
 
-def _uop(f,npf,s):
-    if not nummy._mcpropagate:
-        return f
-        
+def _uop(f,npf,s):        
     f._dist = Distribution.apply(npf,s._dist)
     return f
 
-
-class MetaNummy(type):
-    # Use a metaclass to define some "classproperties" for nummy   
-    @property
-    def mcpropagate(cls):
-        """
-        Setting this property to `False` turns of the code for Monte-Carlo
-        uncertainty propagation.  This property should only be set once, before
-        any gummy instances are created.  Turning `mcpropagate` off then on again
-        may have unpredictable results.
-        """
-        return nummy._mcpropagate
-    @mcpropagate.setter
-    def mcpropagate(cls,value):
-        nummy._mcpropagate = bool(value)
-        
-    @property
-    def cimethod(cls):
-        """
-        str in {'shortest', 'symmetric'}
-        
-        Get or set the method for calculating the confidence interval from 
-        Monte-Carlo data.  If this property is set at the class level, it will
-        change the default `cimethod` value for new gummys but will not affect
-        gummys that have already been created.
-        
-        Can be set either to the string 'shortest' or the string 'symmetric'.
-        This property gets or sets the method for calculating confidence
-        intervals from Monte-Carlo data.  
-        
-        If it is set to 'shortest', the confidence interval will be taken to be 
-        the shortest interval that includes the desired fraction of the probability 
-        distribution.  
-        
-        If it is set to 'symmetric', then the confidence interval will be set so 
-        that, for n Monte-Carlo samples and a coverage probability of `p`, then
-        `n`*(1-`p`)/2 samples lie below the lower limit of the confidence interval
-        and the same number of samples lie above the upper limit of the confidence 
-        interval.
-        """
-        return nummy._cimethod
-    @cimethod.setter
-    def cimethod(cls,value):
-        value = value.lower().strip()
-        if value not in ['shortest','symmetric']:
-            raise ValueError('cimethod ' + str(value) + ' is not recognized')
-        nummy._cimethod = value
-        
-    @property
-    def bayesian(cls):
-        """
-        `bool`
-        
-        Read/write at the class level, but read-only at the instance level.
-        The default value is `False`; this should only be changed once at the
-        beginning of the session.  This property affects how the level of 
-        confidence `p` (sometimes called coverage probability) of an expanded
-        uncertainty is related to the coverage factor `k` for a gummy based on
-        data with finite degrees of freedom.
-
-        Standard uncertainties are often based on the standard deviation of a set
-        of measurements (and the assumption that these measurements are drawn
-        from a normally distributed population).  Traditionally (e.g. the GUM
-        2008 edition) the standard uncertainty is taken to be the standard
-        deviation of the mean (s/sqrt(n), where s is the sample standard deviation
-        and n is the number of measurements).  However there is some "extra
-        uncertainty" because the sample standard devation not exactly equal to
-        the population standard deviation.  This is taken into account by using
-        a Student's t distribution to calculate the expanded uncertainty.  However
-        it has been pointed out, by those who advocate a Bayesian point of view,
-        that the probability distribution for the measurand here is best described
-        by a shifted and scaled Student's t distribution.  So the standard
-        uncertainty should be the standard deviation of this distribution which
-        is s*sqrt{(n-1)/[n*(n-3)]}.  Thus
-
-        u(bayesian) = [dof/(dof - 2)]*u(traditional)
-
-        where dof = n - 1 and the "extra uncertainty" is incorporated directly
-        into the standard uncertainty.
-        
-        Example
-        -------
-        >>> gummy.bayesian = True
-        >>> g = gummy(1,0.03,dof=5)
-        >>> g.bayesian
-        True
-        """
-        return nummy._bayesian
-    @bayesian.setter
-    def bayesian(cls,v):
-        nummy._bayesian = bool(v)
     
-class nummy(ummy,metaclass=MetaNummy):
+class nummy(ummy):
     #  This class is not intended to be used directly and was created to contain
     #  the code that the gummy object uses for Monte-Carlo uncertainty propagation.
 
-    _mcpropagate = True
     _cimethod = 'shortest'
-    _bayesian = False # see the MetaNummy bayesian property
+    _bayesian = False # see the gummy bayesian property
+    _fp = None
     
     def __init__(self,x,u=0,dof=float('inf'),utype=None,name=None):
         self._bayesian = nummy._bayesian
@@ -235,6 +138,59 @@ class nummy(ummy,metaclass=MetaNummy):
             # see the ummy._get_dof method.
             return 1
         return dof
+    
+    @property
+    def name(self):
+        if self._name is None:
+            return None
+        if isinstance(self._name,str):
+            return self._name
+        return self._name[0]
+    @name.setter
+    def name(self,v):
+        if v is None:
+            self._name = None
+            return
+        elif isinstance(v,str):
+            self._name = v.strip()
+            return
+        
+        try:
+            if len(v) != 4:
+                raise ValueError('the name must be a string or a length 4 tuple or str')
+        except TypeError:
+            raise ValueError('the name must be a string or a length 4 tuple of str')
+            
+        try:
+            n = v[0].strip()
+            self._name = tuple([n if e is None else e.strip() for e in v])
+        except AttributeError:
+            raise ValueError('the name must be a string or a length 4 tuple of str')
+            
+    def get_name(self,fmt='unicode',norm=None):
+        if self._name is None:
+            return None
+        
+        if isinstance(self._name,str):
+            name = str(self._name).strip()
+            if fmt == 'html' and len(name) == 1:
+                return '<i>' + name + '</i>'
+            if fmt == 'latex' and len(name) > 1:
+                if norm is None:
+                    norm = type(self).latex_norm
+                return norm(self.name)
+            return self._name
+        
+        fmt = fmt.strip().lower()
+        if fmt == 'unicode':
+            return self._name[0]
+        if fmt == 'html':
+            return self._name[1]
+        if fmt == 'latex':
+            return self._name[2]
+        if fmt == 'ascii':
+            return self._name[0]
+        raise ValueError('fmt "' + str(fmt) + '" is not recognized')
     
     @property
     def bayesian(self):
@@ -400,10 +356,9 @@ class nummy(ummy,metaclass=MetaNummy):
         
     @property
     def p(self):
-        return 0.68268949213708585
-    @p.setter
-    def p(self,v):
-        pass
+        if self._fp is None:
+            return 0.68268949213708585
+        return self._fp()
         
     @staticmethod
     def set_seed(seed):
@@ -413,6 +368,22 @@ class nummy(ummy,metaclass=MetaNummy):
         """
         
         Distribution.set_seed(seed)
+        
+    def toummy(self):
+        """
+        returns an ummy representaion of the nummy
+        """
+        r = ummy(self.x,u=self.u,dof=self.dof)
+        r._ref = self._ref
+        r._refs = self._refs
+        return r
+    
+    def splonk(self):
+        """
+        splonks the nummy
+        """
+        return self.toummy().splonk()
+    
         
     @staticmethod
     def _copy(s,r,formatting=True,tofloat=False):
@@ -443,15 +414,13 @@ class nummy(ummy,metaclass=MetaNummy):
     @classmethod
     def _apply(cls,function,derivative,*args,fxdx=None):
         # called from ummpy.apply()
-        if not nummy._mcpropagate:
-            return super(nummy,cls)._apply(function,derivative,*args,fxdx=fxdx)
-            
+
         a = list(args)
         for i,e in enumerate(args):
             if isinstance(e,nummy):
                 a[i] = e._dist
             elif isinstance(e,ummy):
-                return super(nummy,cls)._apply(function,derivative,*args,fxdx=fxdx)
+                a[i] = nummy(e)._dist
         r = super(nummy,cls)._apply(function,derivative,*args,fxdx=fxdx)
         if isinstance(r,nummy):
             r._dist = Distribution.apply(function,*a)
@@ -460,15 +429,13 @@ class nummy(ummy,metaclass=MetaNummy):
     @classmethod
     def _napply(cls,function,*args,fxx=None):
         # called from ummpy.napply()
-        if not nummy._mcpropagate:
-            return super(nummy,cls)._napply(function,*args,fxx=fxx)
             
         a = list(args)
         for i,e in enumerate(args):
             if isinstance(e,nummy):
                 a[i] = e._dist
             elif isinstance(e,ummy):
-                return super(nummy,cls)._napply(function,*args,fxx=fxx)
+                a[i] = nummy(e)._dist
         r = super(nummy,cls)._napply(function,*args,fxx=fxx)
         if isinstance(r,nummy):
             r._dist = Distribution.apply(function,*a)
@@ -682,47 +649,52 @@ class nummy(ummy,metaclass=MetaNummy):
                 
         return sqrt(u)
         
-    def _add(self,b):
-        return _bop(super()._add(b),np.add,self,b)
+    def __add__(self,b):
+        return _bop(super().__add__(b),np.add,self,b)
         
-    def _radd(self,b):
-        return _rbop(super()._radd(b),np.add,self,b)
+    def __radd__(self,b):
+        return _rbop(super().__radd__(b),np.add,self,b)
         
-    def _sub(self,b):
-        return _bop(super()._sub(b),np.subtract,self,b)
+    def __sub__(self,b):
+        return _bop(super().__sub__(b),np.subtract,self,b)
         
-    def _rsub(self,b):
-        return _rbop(super()._rsub(b),np.subtract,self,b)
+    def __rsub__(self,b):
+        return _rbop(super().__rsub__(b),np.subtract,self,b)
         
-    def _mul(self,b):
-        return _bop(super()._mul(b),np.multiply,self,b)
+    def __mul__(self,b):
+        return _bop(super().__mul__(b),np.multiply,self,b)
         
-    def _rmul(self,b):
-        return _rbop(super()._rmul(b),np.multiply,self,b)
+    def __rmul__(self,b):
+        return _rbop(super().__rmul__(b),np.multiply,self,b)
         
-    def _truediv(self,b):
-        return _bop(super()._truediv(b),np.divide,self,b)
+    def __truediv__(self,b):
+        return _bop(super().__truediv__(b),np.divide,self,b)
         
-    def _rtruediv(self,b):
-        return _rbop(super()._rtruediv(b),np.divide,self,b)
+    def __rtruediv__(self,b):
+        return _rbop(super().__rtruediv__(b),np.divide,self,b)
+    
+    def __floordiv__(self,b):
+        return _bop(super().__floordiv__(b),np.floor_divide,self,b)
         
-    def _pow(self,b):
-        return _bop(super()._pow(b),np.power,self,b)
+    def __rfloordiv__(self,b):
+        return _rbop(super().__rfloordiv__(b),np.floor_divide,self,b)
         
-    def _rpow(self,b):
-        return _rbop(super()._rpow(b),np.power,self,b)
+    def __pow__(self,b):
+        return _bop(super().__pow__(b),np.power,self,b)
+        
+    def __rpow__(self,b):
+        return _rbop(super().__rpow__(b),np.power,self,b)
     
     def _nprnd(self,f):
         ret = super()._nprnd(f)
-        if nummy._mcpropagate:
-            ret._dist = Distribution.apply(f,self._dist)
+        ret._dist = Distribution.apply(f,self._dist)
         return ret
         
-    def _mod(self,b):
-        return _bop(super()._mod(b),np.mod,self,b)
+    def __mod__(self,b):
+        return _bop(super().__mod__(b),np.mod,self,b)
     
-    def _rmod(self,b):
-        return _rbop(super()._rmod(b),np.mod,self,b)
+    def __rmod__(self,b):
+        return _rbop(super().__rmod__(b),np.mod,self,b)
         
     def __neg__(self):
         return _uop(super().__neg__(),np.negative,self)

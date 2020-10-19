@@ -31,12 +31,12 @@ NIST Special Publication 1038, "The International System of Units (SI) –
 Conversion Factors for General Use", May 2006.
 """
 
-from .unit import _BuiltinLib,Unit,Conversion
+from .unit import Unit,Conversion
 from .offsetunit import OffsetUnit,OffsetConversion
 from .prefixedunit import PrefixedUnit
 from .ummy import MFraction
 
-with _BuiltinLib():
+with Unit._builtin():
     _in = PrefixedUnit('inch','in',Conversion('m',MFraction('0.0254')),prefixes=['micro'],
                        add_symbol=True,description='unit of length')
     Unit('hand','hand',Conversion(_in,4),add_symbol=True,description='unit of length')
@@ -145,13 +145,13 @@ with _BuiltinLib():
     Unit('slug','slug',Conversion('lbf s**2 ft**-1',1),add_symbol=True,description='unit of force')
     
     _degR = Unit('degree Rankine','\u00B0R',Conversion('K',MFraction(5,9)),
-                 latex_symbol='^{\circ}R',ascii_symbol='degR',add_symbol=True,
+                 latex_symbol='^{\\circ}R',ascii_symbol='degR',add_symbol=True,
                  description='unit of temperature')
     Unit.alias('degree R',_degR)
     Unit.alias('deg R',_degR)
     
     _degF = OffsetUnit('degree Fahrenheit','\u00B0F',OffsetConversion('degR',MFraction('459.67')),
-                latex_symbol='^{\circ}F',ascii_symbol='degF',add_symbol=True,
+                latex_symbol='^{\\circ}F',ascii_symbol='degF',add_symbol=True,
                 description='unit of temperature')
     Unit.alias('degree F',_degF)
     Unit.alias('deg F',_degF)

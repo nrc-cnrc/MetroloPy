@@ -67,8 +67,8 @@ class _ChainedConversion(NonlinearConversion):
             frmlst = c1._frmlst
             tolst = c1._tolst
         elif not c1.linear:
-            frmlst = [c1._frm]
-            tolst = [c1._to]
+            frmlst = [c1.frm]
+            tolst = [c1.to]
         else:
             frmlst = []
             tolst = []
@@ -77,8 +77,8 @@ class _ChainedConversion(NonlinearConversion):
             frmlst = c2._frmlst + frmlst
             tolst += c2._tolst
         elif not c2.linear:
-            frmlst = [c1._frm] + frmlst
-            tolst += [c1._to]
+            frmlst = [c1.frm] + frmlst
+            tolst += [c1.to]
             
         self._frmlst = frmlst
         self._tolst = tolst
@@ -121,7 +121,7 @@ class _ChainedConversion(NonlinearConversion):
 class NonlinearUnit(Unit):
     """Base class of non-linear units.
     """
-    linear = False
+    _linear = False
         
     #def _getme(self,unit_list,power):
         # add this method to return a different instance depending on whether
@@ -214,8 +214,8 @@ class ReciprocalConversion(NonlinearConversion):
         self._conversion = conversion
         if hasattr(conversion,'factor'):
             self.factor = 1/conversion.factor
-        self._unit = 1/conversion._unit
-        self.parent = 1/conversion.parent
+        self._unit = conversion._unit**-1
+        self.parent = conversion.parent**-1
         
     def to(self,g):
         return self._conversion.frm(g)

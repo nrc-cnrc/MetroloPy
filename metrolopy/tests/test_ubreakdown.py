@@ -9,10 +9,10 @@ def test_ubreakdown(n=None,prnt=False,budget=False):
     uc.gummy.p_method = None
     
     if n is None:
-        if prnt:
+        if prnt or budget:
             n = 100
         else:
-            n = 10000
+            n = 1000
         
     for i in range(n):
         k = rand.randint(1,6)
@@ -24,7 +24,7 @@ def test_ubreakdown(n=None,prnt=False,budget=False):
         g,x,u,dof,unit,utype = zip(*[make_gummy(unit=unt) for y in range(k)])
         
         for i,y in enumerate(g):
-            if y._u != 0:
+            if y.u != 0:
                 assert y.utype is utype[i]
         
         c = rand.rand()*0.9 + 0.1
@@ -48,7 +48,7 @@ def test_ubreakdown(n=None,prnt=False,budget=False):
         
         ut = None
         for q in g:
-            if gr._ref is q._ref:
+            if gr.value._ref is q.value._ref:
                 ut = q.utype
         assert gr.utype is ut
         

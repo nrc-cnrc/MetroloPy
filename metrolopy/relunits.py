@@ -24,7 +24,7 @@
 This module is loaded by the gummy.units module and is not intended be be
 imported directly.  Dimensionless units are defined here.
 """
-from .unit import _BuiltinLib,Unit,Conversion,one
+from .unit import Unit,Conversion,one
 from .ummy import MFraction
 
 class RatioUnit(Unit):
@@ -42,7 +42,7 @@ class RatioUnit(Unit):
                 return ([[self,1]],c**(v + 1))
         return ([[one,1]],c**v)
 
-with _BuiltinLib():
+with Unit._builtin():
     # The \t at the beggining of the symbol causes the space between the numerical
     # value and the unit symbol per the Chicago Manual of Style (but not the 
     # SI brochure).
