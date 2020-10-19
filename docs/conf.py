@@ -54,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'metrolopy'
-copyright = '2019, National Research Council Canada'
+copyright = '2020, National Research Council Canada'
 author = 'Harold Parks'
 
 __version__ = None
