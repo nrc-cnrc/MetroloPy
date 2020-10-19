@@ -129,7 +129,7 @@ version history
 * Version 0.5.5, built 7 May 2020, minor bug fixes.
 * Version 0.5.6, built 24 September 2020, minor bug fixes.
 * Version 0.5.7, built 26 September 2020, minor change to setup.py.
-* Verison 0.6.0, built xx October 2020, added the `Quantity` and `immy` classes 
+* Verison 0.6.0, built 19 October 2020, added the `Quantity` and `immy` classes 
   as well as a library of physical constants.
 
 
