@@ -94,12 +94,12 @@ class _ChainedConversion(NonlinearConversion):
         self._c2 = c2
                     
     def to(self,g):
-        g = super().to(g)
+        g = self._to(g)
         return g*self.factor
         
     def frm(self,g):
         g = g/self.factor
-        return super().frm(g)
+        return self._frm(g)
         
     def _to(self,g):
         for f in self._tolst:

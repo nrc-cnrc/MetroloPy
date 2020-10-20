@@ -61,7 +61,7 @@ def _lg10(x):
         return x.log10() # in case x is a decimal.Decimal
     except:
         try:
-            return log10(x)
+            return np.log10(x)
         except:
             return log10(float(x)) # in case x is a fraction.Fraction
     
@@ -368,6 +368,20 @@ class MetaGummy(MetaPrettyPrinter):
     def max_digits(cls,v):
         ummy.max_digits = v
         
+    @property
+    def solidus(cls):
+        return Unit.solidus
+    @solidus.setter
+    def solidus(cls,v):
+        Unit.solidus = bool(v)
+        
+    @property
+    def mulsep(cls):
+        return Unit.mulsep
+    @mulsep.setter
+    def mulsep(cls,v):
+        Unit.mulsep = bool(v)
+        
     
 class gummy(Quantity,metaclass=MetaGummy):
     """
@@ -461,10 +475,8 @@ class gummy(Quantity,metaclass=MetaGummy):
     show_dof = None
     show_name = True
     
-    solidus = True # If True use a solidus in the unit, e.g. m/s if False use 
-                    # a negative exponent e.g. m s**-1
-    
-    mulsep = False # If True use a dot or * between units, if False us a space.
+    _solidus = None 
+    _mulsep = None 
     
     slashaxis = True
                     
@@ -572,8 +584,6 @@ class gummy(Quantity,metaclass=MetaGummy):
                     # if unit can be converted to one.  In this case the u
                     # passed to the intializer was a relative uncertainty.
                     u = abs(x)*U.convert(one).value
-        else:
-            U = u
                     
         if self._k != 1:
             try:
@@ -584,7 +594,8 @@ class gummy(Quantity,metaclass=MetaGummy):
         self._value = nummy(x,u=u,dof=dof,utype=utype,name=name)
         self._value._fp = self._get_p
         
-        self._U = U
+        self._U = None
+        self._set_U(self._k,uunit)
                         
     @property
     def x(self):
@@ -1348,6 +1359,24 @@ class gummy(Quantity,metaclass=MetaGummy):
         if text in ['usim','ufsim','xsim','xfsim','xf','uf','xunit','uunit']:
             return text
         raise ValueError('style ' + str(text) + ' is not recognized')
+        
+    @property
+    def solidus(self):
+        if self._solidus is None:
+            return Unit.solidus
+        return self._solidus
+    @solidus.setter
+    def solidus(self,v):
+        self._solidus = bool(v)
+        
+    @property
+    def mulsep(self):
+        if self._mulsep is None:
+            return Unit.mulsep
+    @mulsep.setter
+    def mulsep(self,v):
+        self._mulsep = bool(v)
+        return self._mulsep
         
     @property
     def bayesian(self):

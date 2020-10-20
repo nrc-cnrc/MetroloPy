@@ -480,7 +480,7 @@ class ummy(Dfunc,PrettyPrinter):
         try:
             xabs = abs(x)
            
-            if xabs != 0:
+            if xabs != 0 and not isinf(xabs) and not isnan(xabs):
                 xexp = _floor(log10(xabs))
             else:
                 xexp = None
@@ -489,7 +489,7 @@ class ummy(Dfunc,PrettyPrinter):
             
             if self._u == 0 or isnan(self._u) or isinf(self._u):
                 if xexp is None:
-                    return '0'
+                    return str(self._x)
                 else:
                     if (((self.sci_notation is None and (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
                         or self.sci_notation) ):

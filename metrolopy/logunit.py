@@ -27,6 +27,7 @@ units.
 
 import numpy as np
 from .unit import one,_CompositeUnit,Quantity
+from .ummy import ummy
 from .nonlinearunit import NonlinearConversion,NonlinearUnit
 from .exceptions import IncompatibleUnitsError
 
@@ -43,9 +44,19 @@ class LogConversion(NonlinearConversion):
         
         self.multiplier = multiplier           
         self.log_base = log_base
-        self.log_func = lambda x: log_func(x) if x > 0 else -float('inf')
+        self._log_func = log_func
         self._lnbase = np.log(log_base)
         self.offset = offset
+    
+    def log_func(self,x):
+        if isinstance(x,Quantity):
+            x = x.value
+            if isinstance(x,ummy):
+                x = x.x
+            if x <= 0:
+                return type(x)(-float('inf'))
+            
+        return self._log_func(x)
         
     def to(self,g):
         g = (g - self.offset)/self.multiplier

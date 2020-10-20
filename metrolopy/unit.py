@@ -279,6 +279,9 @@ class Unit(PrettyPrinter,Indexed):
                    np.power: lambda x,y: _f_bop(Unit._pow,Unit._rpow,x,y),
                    np.arctan2: lambda x,y: _f_ratio(np.arctan2,x,y)}
         
+    solidus = True
+    mulsep = False
+    
     @staticmethod
     def unit(txt,exception=True):
         """
@@ -1206,7 +1209,7 @@ class _CompositeUnit(Unit):
         """
         return self._units
         
-    def tostring(self,fmt=None,solidus=True,mulsep=False,**kwds):
+    def tostring(self,fmt=None,solidus=None,mulsep=None,**kwds):
         """
         Returns a string containing the symbol for the unit the format given by
         the keyword fmt which may be set to a string the values 'html', 'latex', 
@@ -1216,6 +1219,12 @@ class _CompositeUnit(Unit):
         and if `mulsep` is `True` a mid-dot or asterix will be used instead of a space
         to separate units.
         """
+        if solidus is None:
+            solidus = self.solidus
+            
+        if mulsep is None:
+            mulsep = self.mulsep
+            
         if fmt is None or fmt == 'utf-8' or fmt == 'unicode':
             if solidus:
                 ret = self.syms
@@ -1516,9 +1525,9 @@ class Quantity(PrettyPrinter):
         #Always convert back to the original units so we don't accumulate
         #rounding errors.
         if self._old is None:
-            self._old = (self.value,self._unit)
+            self._old = (self.value,self.unit)
         else:
-            self.value,self._unit = self._old
+            self._value,self._unit = self._old
             
         unit = Unit.unit(unit)
         value = self._unit.convert(self.value,unit)
