@@ -25,7 +25,7 @@ setup(name = 'metrolopy',
       packages = ['metrolopy','metrolopy.tests'],
       package_data = {'metrolopy':['license.txt']},
       python_requires='>=3.5',
-      install_requires=['numpy>=1.13','scipy','matplotlib-base','pandas'],
+      install_requires=['numpy>=1.13','scipy','matplotlib','pandas'],
       extras_require = {'pretty':['IPython']},
       zip_safe = True,
       classifiers=[
