@@ -36,9 +36,14 @@ class LogConversion(NonlinearConversion):
         if isinstance(reference,Quantity):
             self._unit = reference.unit
             self._rf = reference.value
+            if self._unit.is_dimensionless:
+                self._dim = False
+            else:
+                self._dimless = True
         else:
             self._unit = one
             self._rf = reference
+            self._dimless = False
     
         self.reference = reference
         
@@ -102,26 +107,40 @@ class LogUnit(NonlinearUnit):
         return -float('inf')
     
     def _add(self,a,bunit,b,aconv):
+        if not self._dim:
+            raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
         if bunit is not self:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be added to a quantity with unit ' + bunit.tostring() + '; automatic conversion is disabled with LogUnit instances')
         return (a + b,self)
     
     def _radd(self,a,bunit,b,aconv):
+        if not self._dim:
+            raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
+
         if bunit is not self:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be added to a quantity with unit ' + bunit.tostring() + '; automatic conversion is disabled with LogUnit instances')
         return (b + a,self)
     
     def _sub(self,a,bunit,b,aconv):
+        if not self._dim:
+            raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
+
         if bunit is not self:
             raise IncompatibleUnitsError('a quantity with unit ' + bunit.tostring() + ' may not be subtracted from a quantity with unit ' + self.tostring() + '; automatic conversion is disabled with LogUnit instances')
         return (a - b,self)
     
     def _rsub(self,a,bunit,b,aconv):
+        if not self._dim:
+            raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
+
         if bunit is not self:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be subtracted from a quantity with unit ' + bunit.tostring() + '; automatic conversion is disabled with LogUnit instances')
         return (a + b,self)
     
     def _mul(self,a,bunit,b,aconv):
+        if not self._dim:
+            raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
+
         if not bunit.linear:
             raise IncompatibleUnitsError('only quantities with linear units may multiply or divide a quanity with unit ' + self.tostring())
         
@@ -133,6 +152,9 @@ class LogUnit(NonlinearUnit):
         return ((a*b)*c,un)
     
     def _rmul(self,a,bunit,b,aconv):
+        if not self._dim:
+            raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
+
         if not bunit.linear:
             raise IncompatibleUnitsError('only quantities with linear units may multiply or divide a quanity with unit ' + self.tostring())
         
@@ -144,6 +166,9 @@ class LogUnit(NonlinearUnit):
         return ((b*a)*c,un)
     
     def _truediv(self,a,bunit,b,aconv):
+        if not self._dim:
+            raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
+
         if not bunit.linear:
             raise IncompatibleUnitsError('only quantities with linear units may multiply or divide a quanity with unit ' + self.tostring())
         
