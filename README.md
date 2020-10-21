@@ -1,5 +1,4 @@
-# MetroloPy  
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/metrolopy/badges/platforms.svg)](https://anaconda.org/conda-forge/metrolopy)
+# MetroloPy 
 
 tools for dealing with physical quantities:  uncertainty propagation and unit conversion
 
