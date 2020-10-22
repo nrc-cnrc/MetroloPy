@@ -557,6 +557,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                 
         if isinstance(x,Distribution):
             self._value = nummy(x,utype=utype,name=name)
+            self._value._fp = self._get_p
             if uunit is None:
                 self._U = _ku(self._k,self._value.u)
             else:
@@ -933,6 +934,7 @@ class gummy(Quantity,metaclass=MetaGummy):
     @unit.setter
     def unit(self,u):
         Quantity.unit.fset(self,u)
+        self._value._fp = self._get_p
         self._U = None
         self._set_U()
             
