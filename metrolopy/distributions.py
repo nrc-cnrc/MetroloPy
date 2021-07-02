@@ -992,9 +992,9 @@ class TriangularDist(Distribution):
             self.left_width = half_width
             self.right_width = half_width
             if left_width is not None:
-                raise ValueError('left_width and half_width both specified')
+                raise ValueError('left_width and half_width may not both be specified')
             if right_width is not None:
-                raise ValueError('right_width and half_width both specified')
+                raise ValueError('right_width and half_width may not both be specified')
             if mode is not None:
                 self.mode = mode
                 if lower_limit is not None or upper_limit is not None:
@@ -1019,14 +1019,14 @@ class TriangularDist(Distribution):
                     raise ValueError('right_width <= 0')
                 if upper_limit is not None:
                     raise ValueError('The distribution parameters are over specified.')
-                self.upper_limit = mode-right_width
+                self.upper_limit = mode+right_width
             else:
                 if upper_limit is None:
                     raise ValueError('The distribution parameters are under specified.')
-                self.right_width = mode-upper_limit
+                self.right_width = mode+upper_limit
             
     def random(self,n=None):
-        return Distribution.random_state().triangular(self.mode,self.lower_limit,self.upper_limit,n)
+        return Distribution.random_state().triangular(self.lower_limit,self.mode,self.upper_limit,n)
         
     def x(self):
         return self.mode
