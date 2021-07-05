@@ -1215,6 +1215,8 @@ class gummy(Quantity,metaclass=MetaGummy):
         """
 
         try:
+            if isinstance(x,str):
+                x = [x]
             x = [i.value if isinstance(i,Quantity) else i for i in x]
         except TypeError:
             # x is probably a gummy and not iterable
@@ -2576,10 +2578,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             # Round x to zero if it is smaller that one count in the last
             # digit of the expanded uncertainty.
             if xabs < 10**uuexp/2:
-                if self.unit.linear:
-                    x = 0
-                else:
-                    x = self.unit.zero()
+                x = 0
                     
             if xabs < 10**xcnt or xexp is None:
                 xexp = xcnt
