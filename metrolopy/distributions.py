@@ -1007,23 +1007,28 @@ class TriangularDist(Distribution):
                     raise ValueError('left_width <= 0')
                 if lower_limit is not None:
                     raise ValueError('The distribution parameters are over specified.')
-                self.lower_limit = mode-left_width
+                self.lower_limit = mode - left_width
+                self.left_width = left_width
             else:
                 if lower_limit is None:
                     raise ValueError('The distribution parameters are under specified.')
                 if upper_limit is not None and upper_limit <= lower_limit:
                     raise ValueError('upper_limit <= lower_limit')
-                self.left_width = mode-upper_limit
+                self.left_width = mode - lower_limit
+                self.lower_limit = lower_limit
+                
             if right_width is not None:
                 if right_width <= 0:
                     raise ValueError('right_width <= 0')
                 if upper_limit is not None:
                     raise ValueError('The distribution parameters are over specified.')
-                self.upper_limit = mode+right_width
+                self.upper_limit = mode + right_width
+                self.right_width = right_width
             else:
                 if upper_limit is None:
                     raise ValueError('The distribution parameters are under specified.')
-                self.right_width = mode+upper_limit
+                self.right_width = upper_limit - mode
+                self.upper_limit = upper_limit
             
     def random(self,n=None):
         return Distribution.random_state().triangular(self.lower_limit,self.mode,self.upper_limit,n)

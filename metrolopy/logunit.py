@@ -39,11 +39,11 @@ class LogConversion(NonlinearConversion):
             if self._unit.is_dimensionless:
                 self._dim = False
             else:
-                self._dimless = True
+                self._dim = True
         else:
             self._unit = one
             self._rf = reference
-            self._dimless = False
+            self._dim = False
     
         self.reference = reference
         
@@ -107,14 +107,14 @@ class LogUnit(NonlinearUnit):
         return -float('inf')
     
     def _add(self,a,bunit,b,aconv):
-        if not self._dim:
+        if self.conversion._dim:
             raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
         if bunit is not self:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be added to a quantity with unit ' + bunit.tostring() + '; automatic conversion is disabled with LogUnit instances')
         return (a + b,self)
     
     def _radd(self,a,bunit,b,aconv):
-        if not self._dim:
+        if self.conversion._dim:
             raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
 
         if bunit is not self:
@@ -122,7 +122,7 @@ class LogUnit(NonlinearUnit):
         return (b + a,self)
     
     def _sub(self,a,bunit,b,aconv):
-        if not self._dim:
+        if self.conversion._dim:
             raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
 
         if bunit is not self:
@@ -130,7 +130,7 @@ class LogUnit(NonlinearUnit):
         return (a - b,self)
     
     def _rsub(self,a,bunit,b,aconv):
-        if not self._dim:
+        if self.conversion._dim:
             raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
 
         if bunit is not self:
@@ -138,7 +138,7 @@ class LogUnit(NonlinearUnit):
         return (a + b,self)
     
     def _mul(self,a,bunit,b,aconv):
-        if not self._dim:
+        if self.conversion._dim:
             raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
 
         if not bunit.linear:
@@ -152,7 +152,7 @@ class LogUnit(NonlinearUnit):
         return ((a*b)*c,un)
     
     def _rmul(self,a,bunit,b,aconv):
-        if not self._dim:
+        if self.conversion._dim:
             raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
 
         if not bunit.linear:
@@ -166,7 +166,7 @@ class LogUnit(NonlinearUnit):
         return ((b*a)*c,un)
     
     def _truediv(self,a,bunit,b,aconv):
-        if not self._dim:
+        if self.conversion._dim:
             raise IncompatibleUnitsError('operation not allowed with unit ' + self.tostring)
 
         if not bunit.linear:
