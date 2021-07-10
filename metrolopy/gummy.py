@@ -1156,7 +1156,58 @@ class gummy(Quantity,metaclass=MetaGummy):
         return [[b.covariance(a) if isinstance(b,ummy) else 0 
                 for b in m] for a in m]
     
+    def correlation_sim(self,gummy):
+        """
+        Returns the correlation coefficient, calculated from Monte-Carlo data, 
+        between the owning gummy and the gummy `g`.
         
+        See the method `gummy.correlation(g)` for the corresponding result based
+        on first order error propagation.
+        """
+        if isinstance(gummy,Quantity):
+            gummy = gummy.value
+        return self.value.correlation_sim(gummy)
+    
+    def covariance_sim(self,gummy):
+        """
+        Returns the covariance, calculated from Monte-Carlo data, between the 
+        owning gummy and the gummy `g.`
+        
+        See the method `gummy.covariance(g)` for the corresponding result based
+        on first order error propagation.
+        """
+        if isinstance(gummy,Quantity):
+            gummy = gummy.value
+        return self.value.covariance_sim(gummy)
+    
+    @staticmethod
+    def correlation_matrix_sim(gummys):
+        """
+        The staticmethod takes a list of gummys an returns the correlation
+        matrix calculated from Monte-Carlo data.  The return value is numpy 
+        ndarray.
+        
+        See the method `gummy.correlation_matrix(gummys)` for the corresponding
+        result based on first order error propagation.
+        """
+        m = [g.value if isinstance(g,Quantity) else g for g in gummys]
+        return [[b.correlation_sim(a) if isinstance(b,nummy) else 0 
+                for b in m] for a in m]
+    
+    @staticmethod
+    def covariance_matrix_sim(gummys):
+        """
+        The staticmethod takes a list of gummys an returns the variance-covariance
+        matrix calculated from Monte-Carlo data.  The return value is numpy
+        ndarray.
+        
+        See the method gummy.covariance_matrix(gummys) for the corresponding
+        result based on first order error propagation.
+        """
+        m = [g.value if isinstance(g,Quantity) else g for g in gummys]
+        return [[b.covariance_sim(a) if isinstance(b,nummy) else 0 
+                for b in m] for a in m]
+    
     @property
     def finfo(self):
         return self.value.finfo

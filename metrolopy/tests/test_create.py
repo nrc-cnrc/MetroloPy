@@ -260,7 +260,7 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
             else:
                 assert abs(g.x - x) < 1e-10
                             
-            if unit is 'degF':
+            if unit == 'degF':
                 assert g.unit in [uc.Unit.unit('degF'),uc.Unit.unit('degF-i')]
             else:
                 assert g.unit is uc.Unit.unit(unit)
