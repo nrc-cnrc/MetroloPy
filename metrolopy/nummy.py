@@ -629,7 +629,7 @@ class nummy(ummy):
         v = nummy.correlation_matrix_sim(x)
             
         b = [self.correlation(z) for z in x]
-        s = np.linalg.lstsq(v,b)[0]
+        s = np.linalg.lstsq(v,b,rcond=-1)[0]
         u = 0
         
         d = [i*self.usim/j.usim for i,j in zip(s,x)]
