@@ -1572,8 +1572,9 @@ class Quantity(PrettyPrinter):
         >>> x
         0.005
         """
-        un = self._unit.mulr(one)[0]
+        un,f = self._unit._mul_cancel(one)
         self._unit = un
+        self._value *= f
     
     @property
     def c(self):

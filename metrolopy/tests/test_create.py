@@ -19,7 +19,7 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
         else:
             n = 10000
     
-    units=['m','lb','m**2 s**3/kg**4','degF','dB(SPL)','%','Np']
+    units=['m','lb','m**2 s**3/kg**4','degF','cm','%','kg']
     uunits = {'%':100, 'ppm':1e6, 'ppb':1e9, 'ms/s':1000}
     
     with warnings.catch_warnings():
@@ -260,7 +260,7 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
             else:
                 assert abs(g.x - x) < 1e-10
                             
-            if unit is 'degF':
+            if unit == 'degF':
                 assert g.unit in [uc.Unit.unit('degF'),uc.Unit.unit('degF-i')]
             else:
                 assert g.unit is uc.Unit.unit(unit)

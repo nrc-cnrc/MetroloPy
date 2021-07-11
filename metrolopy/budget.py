@@ -293,11 +293,13 @@ class Budget(PrettyPrinter):
         
         self.sim = sim
         
-        got_dof = np.isfinite(y.dof) or any(np.isfinite(g.dof) for g in xlist)
-        got_unit = (y.unit is not one) or any(g.unit is not one for g in xlist)
-        got_uunit = (((y.uunit is not None) or any(g.uunit is not None for g in xlist))
+        x = [gummy(g) for g in xlist]
+        
+        got_dof = np.isfinite(y.dof) or any(np.isfinite(g.dof) for g in x)
+        got_unit = (y.unit is not one) or any(g.unit is not one for g in x)
+        got_uunit = (((y.uunit is not None) or any(g.uunit is not None for g in x))
                      and uunit is None)
-        got_tag = any(g.utype is not None for g in xlist)
+        got_tag = any(g.utype is not None for g in x)
             
         self._y = y.copy(formatting=True)
         if k is not None or p is not None:
@@ -313,11 +315,11 @@ class Budget(PrettyPrinter):
         self._yu = y.copy(formatting=True)
         self._yu.k = 1
         
-        self.nx = len(xlist)
+        self.nx = len(x)
         
-        ind = list(range(len(xlist)))
+        ind = list(range(len(x)))
         
-        if xnames is not None and len(xnames) != len(xlist):
+        if xnames is not None and len(xnames) != len(x):
             raise ValueError('len(xnames) != len(xlist)')
         if xnames is not None:
             xnames = [str(nm).strip() for nm in xnames]
@@ -329,19 +331,19 @@ class Budget(PrettyPrinter):
             xnames = []
             hxnames = []
             lxnames = []
-            for i,x in enumerate(xlist):
-                if x.name is None:
+            for i,g in enumerate(x):
+                if g.name is None:
                     xnames.append('x[' + str(i+1) + ']')
                     hxnames.append('<span><i>x</i><sub>' + str(i+1) + '</sub></span>')
                     lxnames.append('x_{' + str(i+1) + '}')
                 else:
-                    xnames.append(str(x.name).strip())
-                    if not isinstance(x.name,str) or len(x.name) > 1:
-                        hxnames.append(str(x.name).strip())
-                        lxnames.append(type(self).latex_norm(str(x.name).strip()))
+                    xnames.append(str(g.name).strip())
+                    if not isinstance(g.name,str) or len(g.name) > 1:
+                        hxnames.append(str(g.name).strip())
+                        lxnames.append(type(self).latex_norm(str(g.name).strip()))
                     else:
-                        hxnames.append('<span><i>' + str(x.name).strip() + '</i></span>')
-                        lxnames.append(str(x.name).strip())
+                        hxnames.append('<span><i>' + str(g.name).strip() + '</i></span>')
+                        lxnames.append(str(g.name).strip())
                         
             
         if yname is None:
@@ -410,9 +412,6 @@ class Budget(PrettyPrinter):
         else:
             self.custom_heading = custom_heading
             
-        x = xlist
-            
-        x = [g.copy(formatting=True) for g in x]
         for g in x:
             g.k = 1
             if uunit is not None:
@@ -421,10 +420,14 @@ class Budget(PrettyPrinter):
         if self.sim:
             cm = gummy.correlation_matrix_sim(x)
             yu = y.usim
+            xs = [g for g in x if g.usim != 0]
+            cms = gummy.correlation_matrix_sim(xs)
         else:
             cm = gummy.correlation_matrix(x)
             yu = y.u
-        svd = np.linalg.svd(cm,compute_uv=False)
+            xs = [g for g in x if g.u != 0]
+            cms = gummy.correlation_matrix(xs)
+        svd = np.linalg.svd(cms,compute_uv=False)
         for v in svd:
             if v < 1e-6:
                 warnings.warn('the x variables are over determined; they cannot all be taken as independant variables',BudgetWarning,stacklevel=2)
@@ -435,12 +438,12 @@ class Budget(PrettyPrinter):
         tu = 0
         
         if self.sim:
-            d = [p*yu/q.usim for p,q in zip(s,x)]  
+            d = [p*yu/q.usim if q.usim !=0 else 0 for p,q in zip(s,x)]  
             for i in range(len(x)):
                 for j in range(len(x)):
                     tu += d[i]*d[j]*x[i].correlation(x[j])*x[i].usim*x[j].usim
         else:
-            d = [p*yu/q.u for p,q in zip(s,x)]  
+            d = [p*yu/q.u  if q.u !=0 else 0 for p,q in zip(s,x)]  
             for i in range(len(x)):
                 for j in range(len(x)):
                     tu += d[i]*d[j]*x[i].correlation(x[j])*x[i].u*x[j].u
@@ -490,7 +493,7 @@ class Budget(PrettyPrinter):
         
         a = np.array([x,ind,xnames,hxnames,lxnames,dof,html_dof,latex_dof,fdof,
                       sigs,html_sigs,latex_sigs,fsigs,str_d,html_d,latex_d,d,sc,
-                      html_sc,latex_sc,fsc,description[1:(self.nx + 1)],custom[1:(self.nx + 1)]]).T
+                      html_sc,latex_sc,fsc,description[1:(self.nx + 1)],custom[1:(self.nx + 1)]],dtype=object).T
 
         self._dfx = DataFrame(a,columns=['x','i','xnames','hxnames','lxnames',
                                          'dof','html_dof','latex_dof','fdof',
@@ -501,7 +504,7 @@ class Budget(PrettyPrinter):
             self._dfx.sort_values(by=['fs'],inplace=True,ascending=False)
             
         stags = set([])
-        for r in xlist:
+        for r in x:
             if r.utype is not None:
                 stags.add(r.utype)
         self.type = OrderedDict()

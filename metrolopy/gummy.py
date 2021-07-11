@@ -1065,8 +1065,8 @@ class gummy(Quantity,metaclass=MetaGummy):
         self._set_U(self._k,None)
         
     def _get_p(self):
-        if self.u == 0:
-            return 1
+        #if self.u == 0:
+            #return 1
         if self._pm is not None:
             if self._pm < 0:
                 return 0
@@ -1156,7 +1156,58 @@ class gummy(Quantity,metaclass=MetaGummy):
         return [[b.covariance(a) if isinstance(b,ummy) else 0 
                 for b in m] for a in m]
     
+    def correlation_sim(self,gummy):
+        """
+        Returns the correlation coefficient, calculated from Monte-Carlo data, 
+        between the owning gummy and the gummy `g`.
         
+        See the method `gummy.correlation(g)` for the corresponding result based
+        on first order error propagation.
+        """
+        if isinstance(gummy,Quantity):
+            gummy = gummy.value
+        return self.value.correlation_sim(gummy)
+    
+    def covariance_sim(self,gummy):
+        """
+        Returns the covariance, calculated from Monte-Carlo data, between the 
+        owning gummy and the gummy `g.`
+        
+        See the method `gummy.covariance(g)` for the corresponding result based
+        on first order error propagation.
+        """
+        if isinstance(gummy,Quantity):
+            gummy = gummy.value
+        return self.value.covariance_sim(gummy)
+    
+    @staticmethod
+    def correlation_matrix_sim(gummys):
+        """
+        The staticmethod takes a list of gummys an returns the correlation
+        matrix calculated from Monte-Carlo data.  The return value is numpy 
+        ndarray.
+        
+        See the method `gummy.correlation_matrix(gummys)` for the corresponding
+        result based on first order error propagation.
+        """
+        m = [g.value if isinstance(g,Quantity) else g for g in gummys]
+        return [[b.correlation_sim(a) if isinstance(b,nummy) else 0 
+                for b in m] for a in m]
+    
+    @staticmethod
+    def covariance_matrix_sim(gummys):
+        """
+        The staticmethod takes a list of gummys an returns the variance-covariance
+        matrix calculated from Monte-Carlo data.  The return value is numpy
+        ndarray.
+        
+        See the method gummy.covariance_matrix(gummys) for the corresponding
+        result based on first order error propagation.
+        """
+        m = [g.value if isinstance(g,Quantity) else g for g in gummys]
+        return [[b.covariance_sim(a) if isinstance(b,nummy) else 0 
+                for b in m] for a in m]
+    
     @property
     def finfo(self):
         return self.value.finfo
@@ -1215,6 +1266,8 @@ class gummy(Quantity,metaclass=MetaGummy):
         """
 
         try:
+            if isinstance(x,str):
+                x = [x]
             x = [i.value if isinstance(i,Quantity) else i for i in x]
         except TypeError:
             # x is probably a gummy and not iterable
@@ -2497,10 +2550,12 @@ class gummy(Quantity,metaclass=MetaGummy):
                 if fmt == 'latex':
                     return ('override',norm('no simulated data'))
                 return ('override','no simulated data')
+            u = self.usim
         else:
             sim = False
+            u = self.u
                 
-        if self.u == 0 and style in ['u','uf','usim','ufsim']:
+        if u == 0 and style in ['u','uf','usim','ufsim']:
             return (style,('','',''),('0','',''))
         
         if xsig is None and nsig <= 0:
@@ -2527,7 +2582,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             xexp = None
             oexp = 0
             
-        if self.u == 0 or isnan(self.u) or isinf(self.u) or (style=='x' and xsig is not None):
+        if u == 0 or isnan(u) or isinf(u) or (style=='x' and xsig is not None):
             if isinstance(x,Rational) and not isinstance(x,Integral):
                 ffstr = str(x)
                 fstr = ffstr.split('/')[-1]
@@ -2562,16 +2617,10 @@ class gummy(Quantity,metaclass=MetaGummy):
             lgadd = _lg10(1/(1-10**-nsig/2))+10**-16
             if sim and abs(self.cisim[1]-self.cisim[0]) != 0 and not isinf(self.cisim[0]) and not isinf(self.cisim[1]) and not isnan(self.cisim[0]) and not isnan(self.cisim[1]):
                 xcnt = _floor(_lg10(abs((self.cisim[1]-self.cisim[0])/2))+lgadd)
-            if style != 'ueq' and not isinstance(self._U,Quantity) and not isinf(self._U):
-                try:
-                    xcnt = _floor(_lg10(abs(self._U))+lgadd)
-                except:
-                    xcnt = _floor(_lg10(abs(self._U))+type(self._U)(lgadd))
-            else:
-                try:
-                    xcnt = _floor(_lg10(abs(_ku(self._k,self.u)))+lgadd)
-                except:
-                    xcnt = _floor(_lg10(abs(_ku(self._k,self.u)))+type(self.u)(lgadd))
+            try:
+                xcnt = _floor(_lg10(abs(_ku(self._k,u)))+lgadd)
+            except:
+                xcnt = _floor(_lg10(abs(_ku(self._k,u)))+type(u)(lgadd))
             uuexp = xcnt - nsig + 1
                     
             if xexp is not None and xexp - uuexp > self.max_digits and style in ['pm','concise']:
@@ -2580,10 +2629,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             # Round x to zero if it is smaller that one count in the last
             # digit of the expanded uncertainty.
             if xabs < 10**uuexp/2:
-                if self.unit.linear:
-                    x = 0
-                else:
-                    x = self.unit.zero()
+                x = 0
                     
             if xabs < 10**xcnt or xexp is None:
                 xexp = xcnt

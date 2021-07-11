@@ -249,8 +249,6 @@ class nummy(ummy):
         Returns an array containing the Monte-Carlo simulation data.  A 
         `NoSimulatedDataError` is raised if no Monte-Carlo data is available.
         """
-        if self._u == 0:
-            raise TypeError('simulated data is not available from a constant')
         return self.distribution.simdata
         
     @property
@@ -261,27 +259,18 @@ class nummy(ummy):
         Returns a sorted array containing the Monte-Carlo simulation data.  A 
         `NoSimulatedDataError` is raised if no Monte-Carlo data is available.
         """
-        if self._u == 0:
-            raise TypeError('simulated data is not available from a constant')
         return self.distribution.simsorted
         
     @property
     def xsim(self):
-        if self._u == 0:
-            return self.x
         return self.distribution.mean
         
     @property
     def usim(self):
-        if self._u == 0:
-            return 0
         return self.distribution.stdev
         
     @property
     def cisim(self):
-        if self._u == 0:
-            return (self.x,self.x)
-
         if self._cimethod == 'shortest':
             return self.distribution.ci(self.p)
         else:
@@ -289,8 +278,6 @@ class nummy(ummy):
               
     @property
     def Usim(self):
-        if self._u == 0:
-            return (0,0)
         x = self.distribution.mean
         
         if self._cimethod == 'shortest':
@@ -307,6 +294,8 @@ class nummy(ummy):
 
         Returns ``0.5*(gummy.Usim[0] + gummy.Usim[1])/gummy.usim``
         """
+        if self.usim == 0:
+            return float('inf')
         return 0.5*(self.Usim[0] + self.Usim[1])/self.usim
         
     @property
@@ -317,9 +306,10 @@ class nummy(ummy):
         Returns `False` if the owning gummy was created from a operation involving
         other gummys and `True` otherwise.
         """
-        if self._u == 0:
+        if isinstance(self._dist,Distribution):
+            return self._dist.isindependent
+        else:
             return False
-        return self._dist.isindependent
         
     @property
     def cimethod(self):
@@ -550,8 +540,8 @@ class nummy(ummy):
         See the method `gummy.covariance(g)` for the corresponding result based
         on first order error propagation.
         """
-        if self._u == 0 or g._u == 0:
-            return 0
+        #if self._u == 0 or g._u == 0:
+            #return 0
         return self._dist.covsim(g._dist)
         
     def correlation_sim(self,g):
@@ -562,8 +552,8 @@ class nummy(ummy):
         See the method `gummy.correlation(g)` for the corresponding result based
         on first order error propagation.
         """
-        if self._u == 0 or g._u == 0:
-            return 0
+        #if self._u == 0 or g._u == 0:
+            #return 0
         return self.covariance_sim(g)/(self.usim*g.usim)
         
     @staticmethod
@@ -639,7 +629,7 @@ class nummy(ummy):
         v = nummy.correlation_matrix_sim(x)
             
         b = [self.correlation(z) for z in x]
-        s = np.linalg.lstsq(v,b)[0]
+        s = np.linalg.lstsq(v,b,rcond=-1)[0]
         u = 0
         
         d = [i*self.usim/j.usim for i,j in zip(s,x)]

@@ -132,6 +132,7 @@ version history
 * Verison 0.6.0, built 19 October 2020, added the `Quantity` and `immy` classes 
   as well as a library of physical constants.
 * Version 0.6.1 built 19 October 2020, bug fixes
+* Version 0.6.2 built 10 July 2021, bug fixes
 
 
 author

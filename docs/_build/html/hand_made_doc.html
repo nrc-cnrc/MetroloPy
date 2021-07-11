@@ -1,17 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>MetroloPy &#8212; metrolopy 0.6.1 documentation</title>
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>MetroloPy &#8212; metrolopy 0.6.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
@@ -24,7 +25,8 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">MetroloPy</a></li> 
       </ul>
     </div>  
 
@@ -33,7 +35,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="metrolopy">
+  <section id="metrolopy">
 <span id="hand-made-doc"></span><h1>MetroloPy<a class="headerlink" href="#metrolopy" title="Permalink to this headline">¶</a></h1>
 <p>Most of the functionality in the MetroloPy package lies in the
 <a class="reference internal" href="#gummy">gummy</a> object which combines the functionality of the <a href="#id2"><span class="problematic" id="id3">Unit_</span></a> and <code class="docutils literal notranslate"><span class="pre">Quantity</span></code>
@@ -41,8 +43,8 @@ classes for dealing with units, the <a href="#id4"><span class="problematic" id=
 of uncertainty, and the <a class="reference internal" href="#distribution">Distribution</a> class for Monte Carlo propagation of
 uncertianty.  The <code class="docutils literal notranslate"><span class="pre">immy</span></code> and <a class="reference internal" href="#jummy">jummy</a> classes support calculations with
 complex numbers.</p>
-</div>
-<div class="section" id="class-gummy">
+</section>
+<section id="class-gummy">
 <span id="gummy"></span><h1>class gummy<a class="headerlink" href="#class-gummy" title="Permalink to this headline">¶</a></h1>
 <p>class metrolopy.<strong>gummy(x, u=0, unit=one, dof=float(‘inf’), k=1, p=None,
 uunit=None, utype=None, name=None)</strong></p>
@@ -52,7 +54,7 @@ and the uncertainty can be propagated with with both first-order and
 Monte-Carlo methods. Correlations between gummys are tracked. gummys
 must be real valued; the <a class="reference internal" href="#jummy">jummy</a> class is an extension of the
 gummy class to complex numbers.</p>
-<div class="section" id="gummy-parameters">
+<section id="gummy-parameters">
 <h2>gummy parameters<a class="headerlink" href="#gummy-parameters" title="Permalink to this headline">¶</a></h2>
 <p>(all parameters except <em>x</em> are optional)</p>
 <ul>
@@ -159,8 +161,8 @@ insert them into a measurement equation and find the combined utype
 used when displaying the gummy value or labeling plot axes and serves
 no other function.</p></li>
 </ul>
-</div>
-<div class="section" id="basic-gummy-properties">
+</section>
+<section id="basic-gummy-properties">
 <h2>basic gummy properties<a class="headerlink" href="#basic-gummy-properties" title="Permalink to this headline">¶</a></h2>
 <ul class="simple" id="x">
 <li><p><strong>x</strong>: (read-only) Gets the value of the gummy. This property is
@@ -284,8 +286,8 @@ is <code class="docutils literal notranslate"><span class="pre">False</span></co
 <li><p><strong>cmp_k</strong>, <strong>cmp_p</strong>: k or p values for comparisons, e.g. a &gt; b is True
 if c.x &gt; k*c.u where c = b - a.  Set only at the class level.</p></li>
 </ul>
-</div>
-<div class="section" id="basic-gummy-methods">
+</section>
+<section id="basic-gummy-methods">
 <h2>basic gummy methods<a class="headerlink" href="#basic-gummy-methods" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p><strong>correlation(g)</strong>: Returns the correlation coefficient between
@@ -509,8 +511,8 @@ attributes <a class="reference internal" href="#solidus">solidus</a> and <a clas
 <li><p><strong>angle()</strong>: returns <code class="docutils literal notranslate"><span class="pre">gummy(numpy.pi)</span></code> if <code class="docutils literal notranslate"><span class="pre">self.x</span></code> &lt; 0 and
 <code class="docutils literal notranslate"><span class="pre">gummy(0)</span></code> otherwise</p></li>
 </ul>
-</div>
-<div class="section" id="arithmetic-operations-and-functions-involving-gummys">
+</section>
+<section id="arithmetic-operations-and-functions-involving-gummys">
 <h2>arithmetic operations and functions involving gummys<a class="headerlink" href="#arithmetic-operations-and-functions-involving-gummys" title="Permalink to this headline">¶</a></h2>
 <p>The standard Python arithmetic operations are allowed between gummys and
 between gummys and floats or integers: addition, subtraction,
@@ -554,7 +556,7 @@ directly to dimensionless gummys, e.g:</p>
 </div>
 <p>The two class methods immediately below may also be used to apply an
 arbitrary numerical function to one or more gummys.</p>
-<div class="section" id="gummy-methods-for-applying-numerical-functions">
+<section id="gummy-methods-for-applying-numerical-functions">
 <h3>gummy methods for applying numerical functions<a class="headerlink" href="#gummy-methods-for-applying-numerical-functions" title="Permalink to this headline">¶</a></h3>
 <ul id="apply">
 <li><p>classmethod <strong>apply(function, derivative, arg1, arg2, …)</strong>:
@@ -645,16 +647,16 @@ arguments. Otherwise the return value is a gummy.</p></li>
 </div>
 </div></blockquote>
 </div></blockquote>
-</div>
-</div>
-<div class="section" id="gummy-properties-and-methods-related-to-units-and-unit-conversion">
+</section>
+</section>
+<section id="gummy-properties-and-methods-related-to-units-and-unit-conversion">
 <h2>gummy properties and methods related to units and unit conversion<a class="headerlink" href="#gummy-properties-and-methods-related-to-units-and-unit-conversion" title="Permalink to this headline">¶</a></h2>
 <p>Units are represented by instances of the <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> class or
 sub-classes, however the user rarely needs to interact directly with
 these objects as strings can be used in place of <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a>
 objects in all properties and methods dealing with units. It is,
 however, straight forward for to create custom units.</p>
-<div class="section" id="gummy-properties-related-to-units">
+<section id="gummy-properties-related-to-units">
 <h3>gummy properties related to units<a class="headerlink" href="#gummy-properties-related-to-units" title="Permalink to this headline">¶</a></h3>
 <ul id="property-unit">
 <li><p><strong>unit</strong>: Gets or sets the units for the values of the
@@ -707,8 +709,8 @@ gummy to make the choice. For example:</p>
 </div>
 </li>
 </ul>
-</div>
-<div class="section" id="gummy-methods-related-to-units">
+</section>
+<section id="gummy-methods-related-to-units">
 <h3>gummy methods related to units<a class="headerlink" href="#gummy-methods-related-to-units" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p><strong>convert(unit,uunit=None)</strong>: Returns a copy of the original gummy
@@ -731,8 +733,8 @@ example:</p>
 </div>
 </li>
 </ul>
-</div>
-<div class="section" id="unit-search-function">
+</section>
+<section id="unit-search-function">
 <span id="search-units"></span><h3>unit search function<a class="headerlink" href="#unit-search-function" title="Permalink to this headline">¶</a></h3>
 <p>The following function is not part of the gummy class but is useful when
 dealing with units.</p>
@@ -765,9 +767,9 @@ The default is True.</p></li>
 </ul>
 </li>
 </ul>
-</div>
-</div>
-<div class="section" id="gummy-properties-and-methods-related-to-monte-carlo-simulation">
+</section>
+</section>
+<section id="gummy-properties-and-methods-related-to-monte-carlo-simulation">
 <h2>gummy properties and methods related to Monte-Carlo simulation<a class="headerlink" href="#gummy-properties-and-methods-related-to-monte-carlo-simulation" title="Permalink to this headline">¶</a></h2>
 <p>Gummy allows uncertainty propagation using Monte-Carlo simulation in
 addition to first order error propagation. Before using many of the
@@ -781,7 +783,7 @@ multiple gummys use the <a class="reference internal" href="#simulate">simulate<
 rather than the <a class="reference internal" href="#sim">sim</a> method. A <code class="docutils literal notranslate"><span class="pre">NoSimulatedDataError</span></code>
 exception will be raised if no simulated data is available when a
 property is accessed or a method called that needs Monte-Carlo data.</p>
-<div class="section" id="gummy-properties-related-to-monte-carlo-simulation">
+<section id="gummy-properties-related-to-monte-carlo-simulation">
 <h3>gummy properties related to Monte-Carlo simulation<a class="headerlink" href="#gummy-properties-related-to-monte-carlo-simulation" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><strong>xsim</strong>: (read-only) Gets the mean of the simulated data.</p></li>
@@ -823,8 +825,8 @@ initializer. If <em>x</em> is not specified as a
 either the <a class="reference internal" href="#normaldist">NormalDist</a> or <a class="reference internal" href="#tdist">TDist</a>
 sub-classes of <a class="reference internal" href="#distribution">Distribution</a>.</p></li>
 </ul>
-</div>
-<div class="section" id="gummy-methods-related-to-monte-carlo-simulation">
+</section>
+<section id="gummy-methods-related-to-monte-carlo-simulation">
 <h3>gummy methods related to Monte-Carlo simulation<a class="headerlink" href="#gummy-methods-related-to-monte-carlo-simulation" title="Permalink to this headline">¶</a></h3>
 <ul class="simple" id="sim">
 <li><p><strong>sim(n=100000,ufrom=None)</strong>: Generates Monte-Carlo data for the
@@ -934,11 +936,11 @@ size of the dots in the plot.</p></li>
 </ul>
 </li>
 </ul>
-</div>
-</div>
-<div class="section" id="gummy-properties-and-methods-related-to-display-and-formatting">
+</section>
+</section>
+<section id="gummy-properties-and-methods-related-to-display-and-formatting">
 <h2>gummy properties and methods related to display and formatting<a class="headerlink" href="#gummy-properties-and-methods-related-to-display-and-formatting" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="gummy-formatting-properties-and-attributes">
+<section id="gummy-formatting-properties-and-attributes">
 <h3>gummy formatting properties and attributes<a class="headerlink" href="#gummy-formatting-properties-and-attributes" title="Permalink to this headline">¶</a></h3>
 <p>All of these properties and attributes can be set at either the class or
 instance level.</p>
@@ -1041,8 +1043,8 @@ not available the display will default to ‘unicode’.</p></li>
 <li><p><strong>max_digits</strong>:  (int) Gets or sets the maximum number of digits to display
 for the x value.</p></li>
 </ul>
-</div>
-<div class="section" id="gummy-display-methods">
+</section>
+<section id="gummy-display-methods">
 <h3>gummy display methods<a class="headerlink" href="#gummy-display-methods" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><strong>latex(style=None, k=None, p=None, show_k=None, show_p=None,
@@ -1100,10 +1102,10 @@ parameters that are not None override the corresponding attributes of
 the calling gummy. This is equivalent to the gummy.tostring method
 with the <em>fmt</em> parameter set ‘ascii’.</p></li>
 </ul>
-</div>
-</div>
-</div>
-<div class="section" id="class-distribution-and-sub-classes">
+</section>
+</section>
+</section>
+<section id="class-distribution-and-sub-classes">
 <span id="distribution"></span><h1>class Distribution and sub-classes<a class="headerlink" href="#class-distribution-and-sub-classes" title="Permalink to this headline">¶</a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">Distribution</span></code> class is the abstract base class for objects which
 represent the the probability distributions that the gummy Monte-Carlo
@@ -1214,7 +1216,7 @@ A uniform distribution. Specify two, and only two, of the parameters
 <li><p>class metrolopy.<strong>WeibullDist(shape, scale)</strong>: Weibull distribution with
 <em>shape</em> and <em>scale</em> parameters.</p></li>
 </ul>
-<div class="section" id="custom-distributions">
+<section id="custom-distributions">
 <h2>custom distributions<a class="headerlink" href="#custom-distributions" title="Permalink to this headline">¶</a></h2>
 <p>Custom distributions can be implemented by creating a class that
 inherits from the <code class="docutils literal notranslate"><span class="pre">Distribution</span></code> class and implements the following
@@ -1247,8 +1249,8 @@ distribution.</p></li>
         <span class="k">return</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dof</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="custom-multi-variate-distributions">
+</section>
+<section id="custom-multi-variate-distributions">
 <h2>custom multi-variate distributions<a class="headerlink" href="#custom-multi-variate-distributions" title="Permalink to this headline">¶</a></h2>
 <p>To create a multi-variate distribution, inherit from the
 <code class="docutils literal notranslate"><span class="pre">MultivariateDistribution</span></code> class and define the following methods:</p>
@@ -1304,9 +1306,9 @@ dimensions nd of the distribution e.g. <code class="docutils literal notranslate
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cov</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="built-in-mathematical-functions">
+</section>
+</section>
+<section id="built-in-mathematical-functions">
 <span id="functions"></span><h1>built-in mathematical functions<a class="headerlink" href="#built-in-mathematical-functions" title="Permalink to this headline">¶</a></h1>
 <p>The following functions are installed as part of the gummy package can
 take gummy, jummy, or float arguments. Arguments must be
@@ -1373,8 +1375,8 @@ for x &gt; 0</p>
 <p>metrolopy.<strong>tanh(x)</strong>: hyperbolic tangent of x</p>
 <p>metrolopy.<strong>true_divide(x1,x2)</strong>: equivalent to x1 / x2</p>
 <p>metrolopy.<strong>trunc(x)</strong>: x rounded towards zero</p>
-</div>
-<div class="section" id="class-unit">
+</section>
+<section id="class-unit">
 <span id="id1"></span><h1>class Unit<a class="headerlink" href="#class-unit" title="Permalink to this headline">¶</a></h1>
 <p>The gummy class uses <code class="docutils literal notranslate"><span class="pre">Unit</span></code> instances to represent physical units or units
 cns be multiplied or divided by other <code class="docutils literal notranslate"><span class="pre">Unit</span></code> instances to create composite
@@ -1403,7 +1405,7 @@ static method <a class="reference internal" href="#unit-unit"><span class="std s
 do not need to call the <a class="reference internal" href="#unit-unit"><span class="std std-ref">unit</span></a> method directly; a gummy object
 will automatically call this method when a gummy property or method is
 passed a string that references a unit).</p>
-<div class="section" id="unit-parameters">
+<section id="unit-parameters">
 <h2>Unit parameters<a class="headerlink" href="#unit-parameters" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p><strong>name</strong>: (str) The name of the unit. The name can be used access
@@ -1463,8 +1465,8 @@ of the unit. Words used in the description can be searched using the
 symbols with the lowest <em>order</em> value will be printed to the left (unless
 this behavior is overridden with the <a class="reference internal" href="#unit-reorder"><span class="std std-ref">reorder</span></a> method).</p></li>
 </ul>
-</div>
-<div class="section" id="unit-static-methods">
+</section>
+<section id="unit-static-methods">
 <h2>Unit static methods<a class="headerlink" href="#unit-static-methods" title="Permalink to this headline">¶</a></h2>
 <ul class="simple" id="unit-unit">
 <li><p>static <strong>unit(text, exception=True)</strong>: This method is called whenever a
@@ -1508,8 +1510,8 @@ containing the new alias. The parameter <em>unit</em> is a string
 referencing the Unit (or the Unit instance itself) that will be
 assigned the alias.</p></li>
 </ul>
-</div>
-<div class="section" id="unit-properties">
+</section>
+<section id="unit-properties">
 <h2>Unit properties<a class="headerlink" href="#unit-properties" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><strong>aliases</strong>: (read-only) Returns a set of the unshadowed aliases of the unit.</p></li>
@@ -1520,8 +1522,8 @@ between <cite>self</cite> and the Unit instance <cite>one</cite>, and <cite>Fals
 <li><p><strong>units</strong>: (read-only) Returns a list of the constituent units and their
 exponents, e.g. for kg m**2/s <em>units</em> would return [(kg, 1), (m, 2), (s, -1)].</p></li>
 </ul>
-</div>
-<div class="section" id="unit-sub-classes">
+</section>
+<section id="unit-sub-classes">
 <h2>Unit sub-classes<a class="headerlink" href="#unit-sub-classes" title="Permalink to this headline">¶</a></h2>
 <p>For examples of unit definitions using the following Unit sub-classes
 see the siunit.py and usunits.py modules in the gummy package</p>
@@ -1594,16 +1596,16 @@ of several Unit (or Unit sub-class) instances combined.</p></li>
 the number 1 and is the default unit for a gummy.  Dimensionless units are
 defined as any Unit where a conversion to <em>one</em> exists.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="class-jummy">
+</section>
+</section>
+<section id="class-jummy">
 <span id="jummy"></span><h1>class jummy<a class="headerlink" href="#class-jummy" title="Permalink to this headline">¶</a></h1>
 <p>class
 metrolopy.<strong>jummy(real=None,imag=None,r=None,phi=None,cov=None,unit=one</strong></p>
 <p>A jummy object represents a complex valued quantity with gummy real and
 imaginary components.  See the <code class="docutils literal notranslate"><span class="pre">immy</span></code> class in the autogenerated docs for
 a class with <code class="docutils literal notranslate"><span class="pre">ummy</span></code> real and imaginary components.</p>
-<div class="section" id="jummy-parameters">
+<section id="jummy-parameters">
 <h2>jummy parameters<a class="headerlink" href="#jummy-parameters" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><strong>real,imag,r,phi</strong>: (float or gummy) The value may be specified
@@ -1621,8 +1623,8 @@ float) The variance-covariance matrix for either the pair <em>real</em>,
 specified with different units, there must exist a conversion between
 the two units. Units for <em>phi</em> must be dimensionless.</p></li>
 </ul>
-</div>
-<div class="section" id="jummy-properties">
+</section>
+<section id="jummy-properties">
 <h2>jummy properties<a class="headerlink" href="#jummy-properties" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><strong>x</strong>: (read-only) returns <code class="docutils literal notranslate"><span class="pre">complex(jummy.real.x,jummy.imag.x)</span></code></p></li>
@@ -1636,8 +1638,8 @@ units of jummy.real are different from jummy.imag then a tuple of
 Unit and length 2 is returned. Otherwise a <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> instance
 is returned.</p></li>
 </ul>
-</div>
-<div class="section" id="jummy-methods">
+</section>
+<section id="jummy-methods">
 <h2>jummy methods<a class="headerlink" href="#jummy-methods" title="Permalink to this headline">¶</a></h2>
 <p>In addition to the methods below, the <a class="reference external" href="#gummy-display-methods">gummy class display
 methods</a> can also be used with the jummy
@@ -1693,11 +1695,11 @@ This method is similar to <code class="docutils literal notranslate"><span class
 are computed numerically so a derivative function does not need to be
 supplied.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="curve-fitting">
+</section>
+</section>
+<section id="curve-fitting">
 <h1>curve fitting<a class="headerlink" href="#curve-fitting" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="class-fit">
+<section id="class-fit">
 <span id="fit"></span><h2>class Fit<a class="headerlink" href="#class-fit" title="Permalink to this headline">¶</a></h2>
 <p>class metrolopy.<strong>Fit(x, y=None, f=None, p0=None, ux=None, uy=None,
 sigma_is_known=True, xunit=None, yunit=None, solver=None,
@@ -1705,7 +1707,7 @@ maxiter=None, nprop=False, **keywords)</strong></p>
 <p>A class for performing non-linear fitting. The fit function may be
 passed in the parameter <em>f</em> or may be specified by sub-classing <code class="docutils literal notranslate"><span class="pre">Fit</span></code>
 and overriding the <a class="reference internal" href="#f">f</a> method.</p>
-<div class="section" id="fit-parameters">
+<section id="fit-parameters">
 <h3>Fit parameters<a class="headerlink" href="#fit-parameters" title="Permalink to this headline">¶</a></h3>
 <p>All parameters except x are optional</p>
 <ul>
@@ -1774,8 +1776,8 @@ calculate the uncertainties.</p></li>
 <li><p><strong>other keywords</strong>: Any additional keyword parameters will be passed
 to the solver.</p></li>
 </ul>
-</div>
-<div class="section" id="fit-properties">
+</section>
+<section id="fit-properties">
 <h3>Fit properties<a class="headerlink" href="#fit-properties" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><strong>p</strong>: (read-only, list of gummy) The fitted values for the fit
@@ -1811,8 +1813,8 @@ fit function parameters</p></li>
 the fit parameters</p></li>
 <li><p><strong>nparam</strong>: (read-only, int) the number of fit parameters</p></li>
 </ul>
-</div>
-<div class="section" id="fit-methods">
+</section>
+<section id="fit-methods">
 <h3>Fit methods<a class="headerlink" href="#fit-methods" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p><strong>ypred(x1,x2,…)</strong>: Takes xdim floats and returns a gummy
@@ -1820,9 +1822,9 @@ representing the predicted value at that x-coordinate.</p></li>
 <li><p><strong>ypredf(x1,x2,…)</strong>: Takes xdim floats and returns a float giving
 the predicted value at that x-coordinate.</p></li>
 <li><p><strong>plot(data_format=’ko’, data_options={}, show_data=True,
-error_bars=True, error_bar_k=1, fit_format=’k-‘, fit_options={},
-show_fit=True, cik=None, cip=None, ciformat=’g-‘, cioptions={},
-clk=None, clp=None, clformat=’r-‘, cloptions = {}, xmin=None,
+error_bars=True, error_bar_k=1, fit_format=’k-’, fit_options={},
+show_fit=True, cik=None, cip=None, ciformat=’g-’, cioptions={},
+clk=None, clp=None, clformat=’r-’, cloptions = {}, xmin=None,
 xmax=None, xlabel=None, ylabel=None, hold=False,
 plot_points=None)</strong>: plots the data (only available if <em>x</em> and <em>y</em> are
 one-dimensional)</p>
@@ -1877,7 +1879,7 @@ not specify both <em>cik</em> and <em>cip</em>.</p></li>
 uncertainty bands in the plot. If <em>cik</em> and <em>cip</em> are None (
 the default values) then uncertainty bands will not be shown. Do
 not specify both <em>cik</em> and <em>cip</em>.</p></li>
-<li><p><strong>ciformat</strong>: (str, default is ‘g-‘) Format string passes
+<li><p><strong>ciformat</strong>: (str, default is ‘g-’) Format string passes
 to the pyplot.plot command that plots the uncertainty bands.</p></li>
 <li><p><strong>cioptions</strong>: (dict) Keywork options passed to the pyplot.plot
 command that plots the uncertainty bands.</p></li>
@@ -1889,8 +1891,8 @@ residuals.</p></li>
 </ul>
 </li>
 </ul>
-</div>
-<div class="section" id="fit-abstract-methods">
+</section>
+<section id="fit-abstract-methods">
 <h3>Fit abstract methods<a class="headerlink" href="#fit-abstract-methods" title="Permalink to this headline">¶</a></h3>
 <p>These methods may be overridden when sub-classing <code class="docutils literal notranslate"><span class="pre">Fit</span></code></p>
 <ul id="f">
@@ -1930,9 +1932,9 @@ used.</p></li>
 containing unicode, latex, and html representations of the fit
 function.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="sub-classes-of-fit-for-some-common-functions">
+</section>
+</section>
+<section id="sub-classes-of-fit-for-some-common-functions">
 <h2>sub-classes of Fit for some common functions<a class="headerlink" href="#sub-classes-of-fit-for-some-common-functions" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p>metrolopy.<strong>PolyFit(x, y, deg=1, p0=None, ux=None, uy=None,
@@ -1991,10 +1993,11 @@ function of the form:</p>
 this class.</p>
 </li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -2091,12 +2094,13 @@ this class.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">MetroloPy</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, National Research Council Canada.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>
