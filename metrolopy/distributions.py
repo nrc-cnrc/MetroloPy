@@ -1037,7 +1037,7 @@ class TriangularDist(Distribution):
         return self.mode
         
     def u(self):
-        return np.sqrt((self.lower_limit**2+self.upper_limit**2)/6)
+        return np.sqrt((self.left_width**2+self.right_width**2+self.left_width*self.right_width)/18)
         
 class ExponentialDist(Distribution):
     def __init__(self,scale=None,rate=None):

@@ -526,21 +526,6 @@ class gummy(Quantity,metaclass=MetaGummy):
             self._set_k = True
             return
         
-        if isinstance(u,gummy):
-            uunit = u.unit
-            u = u.x
-        elif isinstance(u,Quantity):
-            uunit = u.unit
-            u = u.value
-        
-        if uunit is not None:
-            if u != 0:
-                uunit = Unit.unit(uunit)
-                if uunit is unit:
-                    uunit = None
-            else:
-                uunit = None
-            
         if p is not None:
             p = float(p)
             self._k = self._p_method.fptok(p,dof,gummy.bayesian)
@@ -560,9 +545,27 @@ class gummy(Quantity,metaclass=MetaGummy):
             if uunit is None:
                 self._U = _ku(self._k,self._value.u)
             else:
+                uunit = Unit.unit(uunit)
+                if uunit is unit:
+                    uunit = None
                 self._U = None
                 self._set_U(self._k,uunit)
             return
+        
+        if isinstance(u,gummy):
+            uunit = u.unit
+            u = u.x
+        elif isinstance(u,Quantity):
+            uunit = u.unit
+            u = u.value
+        
+        if uunit is not None:
+            if u != 0:
+                uunit = Unit.unit(uunit)
+                if uunit is unit:
+                    uunit = None
+            else:
+                uunit = None
 
         if uunit is not None and u != 0:
             U = Quantity(u,unit=uunit)
