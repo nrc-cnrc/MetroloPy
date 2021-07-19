@@ -45,7 +45,7 @@ def test_lg10():
     assert _lg10(2.2) == np.log10(2.2)
     assert _lg10(Fraction(2,3)) == math.log10(float(Fraction(2,3)))
     
-def test_meta_cimethod():
+def test_meta_properties():
     a = uc.gummy.cimethod
     assert isinstance(a,str)
     uc.gummy.cimethod = 'symmetric'
@@ -61,7 +61,6 @@ def test_meta_cimethod():
     
     uc.gummy.cimethod = a
 
-def test_meta_bayesian():
     b = uc.gummy.bayesian
     assert isinstance(b,bool)
     uc.gummy.bayesian = not b
@@ -71,7 +70,6 @@ def test_meta_bayesian():
     
     uc.gummy.bayesian = b
     
-def test_meta_style():
     b = uc.gummy.style
     assert isinstance(b,str)
     uc.gummy.style = 'xf'
@@ -87,7 +85,6 @@ def test_meta_style():
     
     uc.gummy.style = b
     
-def test_meta_cmpk_cmpp():
     k = uc.gummy.cmp_k
     p = uc.gummy.cmp_p
     if p is None:
@@ -107,7 +104,6 @@ def test_meta_cmpk_cmpp():
     else:
         uc.gummy.cmp_k = k
         
-def test_meta_pmethod():
     pm = uc.gummy.p_method
     assert isinstance(pm,str)
     uc.gummy.p_method = 'ccp'
@@ -116,13 +112,11 @@ def test_meta_pmethod():
     assert uc.gummy.p_method == 'loc'
     uc.gummy.p_method = pm
     
-def test_meta_max_dof():
     d = uc.gummy.max_dof
     uc.gummy.max_dof = 1021
     assert uc.gummy.max_dof == 1021
     uc.gummy.max_dof = d
     
-def test_meta_nsig():
     n = uc.gummy.nsig
     uc.gummy.nsig = n + 1
     assert uc.gummy.nsig == n + 1
@@ -130,7 +124,6 @@ def test_meta_nsig():
     assert g.nsig == n + 1
     uc.gummy.nsig = n
     
-def test_meta_th_sp():
     ts = uc.gummy.thousand_spaces
     assert isinstance(ts,bool)
     uc.gummy.thousand_spaces = not ts
@@ -238,5 +231,68 @@ def test_init():
     assert gg.dof == 3.3
     assert gg.utype == 'abc'
     assert gg.name == 'def'
+    
+def test_U():
+    a = uc.gummy(1.1,2.2)
+    assert a.U == 2.2
+    b = uc.gummy(3,4.4)
+    c = a + b
+    c.ubreakdown = [a,b]
+    assert c.U[0] == 2.2
+    assert c.U[1] == 4.4
+    
+    a = uc.gummy(1.1,2.2,'m')
+    assert a.U == 2.2
+    b = uc.gummy(3,4.4,'s')
+    c = a/b
+    c.ubreakdown = [a,b]
+    assert abs(c.U[0] - 2.2/3) < 1e-12
+    assert abs(c.U[1] - 4.4*1.1/3**2) < 1e-12
+    
+def test_set_U():
+    g = uc.gummy(1,1,k=2,unit='cm',uunit='mm')
+    assert g.U == 1
+    assert g.uunit is uc.unit('mm')
+    g.unit = 'm'
+    assert g.U == 0.001
+    
+    a = uc.gummy(1.1,2.2)
+    b = uc.gummy(3,4.4)
+    c = a + b
+    c.ubreakdown = [a,b]
+    assert c.U[0] == 2.2
+    assert c.U[1] == 4.4
+    
+def test_iset_U():
+    g = uc.gummy(1)
+    assert g._iset_U() == 0
+    assert g._iset_U(unit='m').unit is uc.unit('m')
+    assert g._iset_U(unit='m').value == 0
+    assert g._iset_U(u=float('inf')) == float('inf')
+    assert g._iset_U(u=float('inf'),unit='m').value == float('inf')
+    assert g._iset_U(u=float('inf'),unit='m').unit is uc.unit('m')
+    
+    g = uc.gummy(1,1,k=2,unit='m')
+    assert g._iset_U(unit='m').value == 1
+    assert g._iset_U(k=4) == 2
+    assert g._iset_U(unit='%').value == 100
+    assert g._iset_U(unit='%').unit is uc.unit('%')
+    assert g._iset_U(unit='cm').value == 100
+    assert g._iset_U(unit='cm').unit is uc.unit('cm')
+    
+    try:
+        assert g._iset_U(unit='kg')
+        assert False
+    except uc.NoUnitConversionFoundError:
+        pass
+    
+    g = uc.gummy(0,1,unit='m')
+    g._iset_U(unit='%').value == float('inf')
+    g._iset_U(unit='%').unit is uc.unit('%')
+    
+    g = uc.gummy(1,1,unit='degC')
+    assert g._iset_U(k=2) == 2
+    
+    
     
     
