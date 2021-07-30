@@ -163,8 +163,10 @@ def test_gummy_init(n=None,exception_on_warning=True,prnt=False,plot=False):
                 if bayesian and n > 0:
                     dof = float('inf')
                 if n == 0:
+                    nm = g.name
                     g = uc.gummy(g)
-                    assert g.name is None
+                    assert g.name is nm
+                    g.name = None
                 elif n == 1:
                     if unit == 'degF':
                         g =  g + uc.gummy(0,unit='degF-i')

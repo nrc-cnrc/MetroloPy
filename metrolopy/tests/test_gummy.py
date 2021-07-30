@@ -367,18 +367,18 @@ def test_distribution():
    
 def test_ksim():
     g = uc.gummy(1,1)
-    g.p = 0.9545\
+    g.p = 0.9545
     g.sim()
     assert abs(g.ksim - 2) < 0.1
     
-def test_independant():
+def test_independent():
     a = uc.gummy(1,1)
     b = uc.gummy(-2,2)
     c = a + b
-    assert a.independant
-    assert not c.independant
+    assert a.independent
+    assert not c.independent
     d = uc.gummy(1)
-    assert not d.independant
+    assert not d.independent
     
 def test_name():
     g = uc.gummy(1,1)
