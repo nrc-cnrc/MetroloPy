@@ -170,6 +170,10 @@ class nummy(ummy):
             raise ValueError('the name must be a string or a length 4 tuple of str')
             
     def get_name(self,fmt='unicode',norm=None):
+        fmt = fmt.strip().lower()
+        if fmt not in {'unicode','html','latex','ascii'}:
+            raise ValueError('fmt "' + str(fmt) + '" is not recognized')
+            
         if self._name is None:
             return None
         
@@ -183,7 +187,6 @@ class nummy(ummy):
                 return norm(self.name)
             return self._name
         
-        fmt = fmt.strip().lower()
         if fmt == 'unicode':
             return self._name[0]
         if fmt == 'html':
@@ -192,7 +195,6 @@ class nummy(ummy):
             return self._name[2]
         if fmt == 'ascii':
             return self._name[3]
-        raise ValueError('fmt "' + str(fmt) + '" is not recognized')
     
     @property
     def bayesian(self):

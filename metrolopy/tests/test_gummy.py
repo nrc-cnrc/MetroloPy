@@ -299,8 +299,8 @@ def test_Usim():
     assert abs(g.Usim[0] - 1) < 0.1
     assert abs(g.Usim[1] - 1) < 0.1
     g.uunit = '%'
-    assert abs(g.Usim[0] - 100) < 10
-    assert abs(g.Usim[1] - 100) < 10
+    assert abs(g.Usim[0] - 100*1/8.5) < 10
+    assert abs(g.Usim[1] - 100*1/8.5) < 10
     g.uunit = 'mm'
     assert abs(g.Usim[0] - 1000) < 100
     assert abs(g.Usim[1] - 1000) < 100
@@ -450,8 +450,8 @@ def test_uunit():
     g = uc.gummy(1,1,unit='m')
     assert g.uunit is None
     g.uunit = 'cm'
-    assert str(g.uunit) == 'mm'
-    assert g.U == 1000
+    assert str(g.uunit) == 'cm'
+    assert g.U == 100
     g.uunit = None
     assert g.uunit is None
     
