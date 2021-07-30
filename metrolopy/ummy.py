@@ -664,10 +664,10 @@ class ummy(Dfunc,PrettyPrinter):
         if r > cls.max_dof:
             return float('inf')
         
-        if r < -1e-6:
-            raise ValueError('dof is negative')
+        #if r < -1e-6:
+            #raise ValueError('dof is negative')
         if r < 0:
-            r == 1
+            r = 1
         
         return r
     

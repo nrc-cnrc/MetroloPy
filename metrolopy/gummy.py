@@ -504,6 +504,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             self._value._fp = self._get_p
             self._unit = x._unit
             self._U = self._value._u
+            self._value._name = x._value._name
             self._k = 1
             self._pm = None
             self._set_k = True
@@ -776,8 +777,9 @@ class gummy(Quantity,metaclass=MetaGummy):
         else:
             unit = self._U.unit
             x = float(self.unit.convert(self.xsim,unit))
-            ci = self.cisim          
-            return (ci[1] - x, x - ci[0])
+            ci1 = float(self.unit.convert(self.cisim[1],unit))
+            ci0 = float(self.unit.convert(self.cisim[0],unit))
+            return (ci1 - x, x - ci0)
         
         
     @property
@@ -892,14 +894,19 @@ class gummy(Quantity,metaclass=MetaGummy):
         `bool`, read-only
 
         Returns `False` if the owning gummy was created from a operation involving
-        other gummys and `True` otherwise.
+        other gummys or has zero uncertainty and `True` otherwise.
         """
         return self.value.independant
             
     @property
     def name(self):
         """
-        gets or sets an optional name for the gummy, may be `str` or `None`
+        gets or sets an optional name for the gummy, may be `str`, `None` or a
+        length four `tuple` of `str`.  If name is set to a length four tuple
+        the elements are, in order, the unicode name, the html name, the latex
+        name and the ASCII name.  Getting this property returns only the unicode
+        name not the full tuple.  Use the `get_name` method to get the name
+        in html, latex or ASCII format.
         """
         return self.value.name
     @name.setter
@@ -907,6 +914,23 @@ class gummy(Quantity,metaclass=MetaGummy):
         self.value.name = v
         
     def get_name(self,fmt='unicode',norm=None):
+        """
+
+        Parameters
+        ----------
+        fmt: The format, must be a `str` in {'unicode','html','latex','ascii'}.
+              The default is 'unicode'.
+        norm: An optional function which returns the name in nomral text.  This
+              function is applied to the name before it is returned if
+              fmt = 'latex', name has been set to single string, and the name
+              is more than one character long.  The default is 
+              '\\text{' + name + '}'.
+
+        Returns
+        -------
+        `str`, the name in the requested format.
+
+        """
         return self.value.get_name(fmt,norm)
     
     @property
@@ -1174,7 +1198,7 @@ class gummy(Quantity,metaclass=MetaGummy):
     def covariance_sim(self,gummy):
         """
         Returns the covariance, calculated from Monte-Carlo data, between the 
-        owning gummy and the gummy `g.`
+        owning gummy and the gummy `g`.
         
         See the method `gummy.covariance(g)` for the corresponding result based
         on first order error propagation.

@@ -30,6 +30,7 @@ import numpy as np
 from .ummy import ummy
 from .distributions import (Distribution,TDist,NormalDist,MultivariateElement,
                             MultivariateDistribution,MultiNormalDist,MultiTDist)
+from exceptions import NoSimulatedDataError
 from math import isinf,isfinite,isnan,sqrt
 
 def _bop(f,npf,s,b):    
@@ -57,6 +58,7 @@ class nummy(ummy):
     _cimethod = 'shortest'
     _bayesian = False # see the gummy bayesian property
     _fp = None
+    _nsim = None
     
     def __init__(self,x,u=0,dof=float('inf'),utype=None,name=None):
         self._bayesian = nummy._bayesian
@@ -189,7 +191,7 @@ class nummy(ummy):
         if fmt == 'latex':
             return self._name[2]
         if fmt == 'ascii':
-            return self._name[0]
+            return self._name[3]
         raise ValueError('fmt "' + str(fmt) + '" is not recognized')
     
     @property
@@ -240,6 +242,7 @@ class nummy(ummy):
         if isinstance(nummys,nummy):
             nummys = [nummys]
         Distribution.simulate([g.distribution for g in nummys],n,ufrom)
+        nummy._nsim = n
         
     @property
     def simdata(self):
@@ -249,6 +252,10 @@ class nummy(ummy):
         Returns an array containing the Monte-Carlo simulation data.  A 
         `NoSimulatedDataError` is raised if no Monte-Carlo data is available.
         """
+        if not isinstance(self._dist,Distribution):
+            if nummy._nsim is None:
+                raise NoSimulatedDataError()
+            return np.full(nummy._nsim,self._dist)
         return self.distribution.simdata
         
     @property
@@ -259,18 +266,28 @@ class nummy(ummy):
         Returns a sorted array containing the Monte-Carlo simulation data.  A 
         `NoSimulatedDataError` is raised if no Monte-Carlo data is available.
         """
+        if not isinstance(self._dist,Distribution):
+            if nummy._nsim is None:
+                raise NoSimulatedDataError
+            return np.full(nummy._nsim,self._dist)
         return self.distribution.simsorted
         
     @property
     def xsim(self):
+        if not isinstance(self._dist,Distribution):
+            return self._dist
         return self.distribution.mean
         
     @property
     def usim(self):
+        if not isinstance(self._dist,Distribution):
+            return 0
         return self.distribution.stdev
         
     @property
     def cisim(self):
+        if not isinstance(self._dist,Distribution):
+            return [self._dist,self._dist]
         if self._cimethod == 'shortest':
             return self.distribution.ci(self.p)
         else:
@@ -278,6 +295,8 @@ class nummy(ummy):
               
     @property
     def Usim(self):
+        if not isinstance(self._dist,Distribution):
+            return 0
         x = self.distribution.mean
         
         if self._cimethod == 'shortest':
@@ -294,7 +313,7 @@ class nummy(ummy):
 
         Returns ``0.5*(gummy.Usim[0] + gummy.Usim[1])/gummy.usim``
         """
-        if self.usim == 0:
+        if self.usim == 0 or not isinstance(self._dist,Distribution):
             return float('inf')
         return 0.5*(self.Usim[0] + self.Usim[1])/self.usim
         

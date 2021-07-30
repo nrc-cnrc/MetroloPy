@@ -293,6 +293,165 @@ def test_iset_U():
     g = uc.gummy(1,1,unit='degC')
     assert g._iset_U(k=2) == 2
     
+def test_Usim():
+    g = uc.gummy(-8.5,1,unit='m')
+    g.sim()
+    assert abs(g.Usim[0] - 1) < 0.1
+    assert abs(g.Usim[1] - 1) < 0.1
+    g.uunit = '%'
+    assert abs(g.Usim[0] - 100) < 10
+    assert abs(g.Usim[1] - 100) < 10
+    g.uunit = 'mm'
+    assert abs(g.Usim[0] - 1000) < 100
+    assert abs(g.Usim[1] - 1000) < 100
     
+def test_xusim():
+    """
+    tests gummy.xsim and gummy.usim
+    """
+    g = uc.gummy(-3.3,0.11)
+    g.sim()
+    assert abs(g.xsim + 3.3) < 0.1
+    assert abs(g.usim - 0.11) < 0.01
     
+def test_cisim():
+    """
+    tests gummy.cisim and gummy.cimethod
+    """
+    g = uc.gummy(-3.3,0.11)
+    g.sim()
+    
+    g.cimethod = 'symmetric'
+    ci = g.cisim
+    assert abs(ci[0] + 3.41) < 0.01
+    assert abs(ci[1] + 3.19) < 0.01
+    
+    g.cimethod = 'shortest'
+    ci = g.cisim
+    assert abs(ci[0] + 3.41) < 0.01
+    assert abs(ci[1] + 3.19) < 0.01
+    
+    try:
+        g.cimethod = 'asdfhasd'
+        assert False
+    except ValueError:
+        pass
+    
+    a = uc.gummy(uc.UniformDist(center=0,half_width=1))
+    b = a**2
+    b.p = 0.8
+    b.cimethod = 'shortest'
+    b.sim()
+    ci = b.cisim
+    assert abs(ci[0]) < 0.001
+    assert abs(ci[1] - 0.64) < 0.01
+    b.cimethod = 'symmetric'
+    ci = b.cisim
+    assert abs(ci[0]- 0.01) < 0.001
+    assert abs(ci[1] - 0.81) < 0.01
+    
+def test_simdata():
+    """
+    tests gummy.simdata and gummy.simsorted
+    """
+    g = uc.gummy(1,1)
+    g.sim(n=10)
+    assert len(g.simdata) == 10
+    assert len(g.simsorted) == 10
+    for i in range(9):
+        assert g.simsorted[i+1] >= g.simsorted[i]
+        
+def test_distribution():
+    g = uc.gummy(1,1)
+    assert isinstance(g.distribution,uc.Distribution)
+   
+def test_ksim():
+    g = uc.gummy(1,1)
+    g.p = 0.9545
+    assert abs(g.ksim - 2) < 0.1
+    
+def test_independant():
+    a = uc.gummy(1,1)
+    b = uc.gummy(-2,2)
+    c = a + b
+    assert a.independant
+    assert not c.independant
+    d = uc.gummy(1)
+    assert not d.independant
+    
+def test_name():
+    g = uc.gummy(1,1)
+    assert g.name is None
+    g.name = 'abc'
+    assert g.name == 'abc'
+    g.name = ['def','g','hi','jkl']
+    assert g.name == 'def'
+    assert g.get_name() == 'def'
+    assert g.get_name(fmt='html') == 'g'
+    assert g.get_name(fmt='latex') == 'hi'
+    assert g.get_name(fmt='ascii') == 'jkl'
+    g.name = 'f'
+    assert g.get_name(fmt='html') == '<i>f</i>'
+    g.name = 'ff'
+    assert g.get_name(fmt='latex') == '\\text{ff}'
+    assert g.get_name(fmt='latex',norm=lambda x:'*'+x+'*') == '*ff*'
+    
+    try:
+        g.get_name(fmt='asdgfads')
+        assert False
+    except ValueError:
+        pass
+    
+    g.name = None
+    assert g.name is None
+    
+    try:
+        g.name = 3
+        assert False
+    except ValueError:
+        pass
+    
+    try:
+        g.name = ['a','b']
+        assert False
+    except ValueError:
+        pass
+    
+    try:
+        g.name = [1,2]
+        assert False
+    except ValueError:
+        pass
+    
+def test_unit():
+    g = uc.gummy(1,1,unit='m')
+    assert g.unit is uc.unit('m')
+    assert str(g.unit) == 'm'
+    g.unit = 'cm'
+    assert str(g.unit) = 'cm'
+    assert g.x = 100
+    assert g.u = 100
+    g.unit = uc.unit('mm')
+    assert str(g.unit) = 'mm'
+    assert g.x = 1000
+    assert g.u = 1000
+    
+def test_uunit():
+    g = uc.gummy(1,1)
+    assert g.uunit is None
+    g = uc.gummy(1,1,unit='m',uunit='cm')
+    assert str(g.uunit) == 'cm'
+    
+    g = uc.gummy(1,unit='m',uunit='cm')
+    assert uunit is None
+    g.uunit = 'mm'
+    assert g.uunit is None
+    
+    g = uc.gummy(1,1,unit='m')
+    assert g.uunit is None
+    g.uunit = 'cm'
+    assert str(g.uunit) == 'mm'
+    assert g.U = 1000
+    g.uunit = None
+    assert g.uunit is None
     
