@@ -367,7 +367,8 @@ def test_distribution():
    
 def test_ksim():
     g = uc.gummy(1,1)
-    g.p = 0.9545
+    g.p = 0.9545\
+    g.sim()
     assert abs(g.ksim - 2) < 0.1
     
 def test_independant():
@@ -428,13 +429,13 @@ def test_unit():
     assert g.unit is uc.unit('m')
     assert str(g.unit) == 'm'
     g.unit = 'cm'
-    assert str(g.unit) = 'cm'
-    assert g.x = 100
-    assert g.u = 100
+    assert str(g.unit) == 'cm'
+    assert g.x == 100
+    assert g.u == 100
     g.unit = uc.unit('mm')
-    assert str(g.unit) = 'mm'
-    assert g.x = 1000
-    assert g.u = 1000
+    assert str(g.unit) == 'mm'
+    assert g.x == 1000
+    assert g.u == 1000
     
 def test_uunit():
     g = uc.gummy(1,1)
@@ -443,7 +444,6 @@ def test_uunit():
     assert str(g.uunit) == 'cm'
     
     g = uc.gummy(1,unit='m',uunit='cm')
-    assert uunit is None
     g.uunit = 'mm'
     assert g.uunit is None
     
@@ -451,7 +451,7 @@ def test_uunit():
     assert g.uunit is None
     g.uunit = 'cm'
     assert str(g.uunit) == 'mm'
-    assert g.U = 1000
+    assert g.U == 1000
     g.uunit = None
     assert g.uunit is None
     

@@ -889,14 +889,14 @@ class gummy(Quantity,metaclass=MetaGummy):
         return self.value.ksim
     
     @property
-    def independant(self):
+    def independent(self):
         """
         `bool`, read-only
 
         Returns `False` if the owning gummy was created from a operation involving
         other gummys or has zero uncertainty and `True` otherwise.
         """
-        return self.value.independant
+        return self.value.independent
             
     @property
     def name(self):

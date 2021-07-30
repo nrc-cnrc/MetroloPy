@@ -30,7 +30,7 @@ import numpy as np
 from .ummy import ummy
 from .distributions import (Distribution,TDist,NormalDist,MultivariateElement,
                             MultivariateDistribution,MultiNormalDist,MultiTDist)
-from exceptions import NoSimulatedDataError
+from .exceptions import NoSimulatedDataError
 from math import isinf,isfinite,isnan,sqrt
 
 def _bop(f,npf,s,b):    
