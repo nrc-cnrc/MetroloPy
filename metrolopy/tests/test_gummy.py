@@ -455,3 +455,211 @@ def test_uunit():
     g.uunit = None
     assert g.uunit is None
     
+def test_uunit_is_rel():
+    g = uc.gummy(1,1)
+    assert not g.uunit_is_rel
+    g.uunit='%'
+    assert g.uunit_is_rel
+    
+    g = uc.gummy(1,1,unit='m')
+    assert not g.uunit_is_rel
+    g.uunit = 'mm'
+    assert not g.uunit_is_rel
+    g.uunit = '%'
+    assert g.uunit_is_rel
+    
+def test_k():
+    g = uc.gummy(1)
+    assert k is None
+    
+    g = uc.gummy(1,1,k=2)
+    assert g.k == 2
+    g.k = 3
+    assert g.k == 3
+    try:
+        g.k = -1
+        assert False
+    except ValueError:
+        pass
+    
+    uc.gummy.p_method = None
+    g.p = 0.68
+    assert abs(g.k - 0.99) < 0.01
+    g.p = 0.95
+    assert abs(g.k - 1.96) < 0.01
+    
+def test_p():
+    uc.gummy.p_method = None
+    g = uc.gummy(1,1)
+    g.p = 0.95
+    assert g.p == 0.95
+    a.k = 2
+    assert abs(a.p - 0.9545) < 0.0001
+    
+    try:
+        g.p = -0.1
+        assert False
+    except ValueError:
+        pass
+    try:
+        g.p = 1.1
+        assert False
+    except ValueError:
+        pass
+    
+def test_correlation():
+    a = uc.gummy(1,1)
+    b = uc.gummy(1,2)
+    c = a + b
+    assert a.correlation(b) == 0
+    assert a.correlation(1) == 0
+    assert abs(c.correlation(a) - 1/c.u) < 1e-4
+    assert abs(a.correlation(c) - 1/c.u) < 1e-4
+    assert abs(c.correlation(b) - 2/c.u) < 1e-4
+    assert abs(b.correlation(c) - 2/c.u) < 1e-4
+    assert a.correlation(a) == 1
+    
+def test_covariance():
+    a = uc.gummy(1,1)
+    b = uc.gummy(1,2)
+    c = a + b
+    assert a.covariance(b) == 0
+    assert a.covariance(1) == 0
+    assert abs(c.covariance(a) - 1) < 1e-4
+    assert abs(a.covariance(c) - 1) < 1e-4
+    assert abs(c.covariance(b) - 4) < 1e-4
+    assert abs(b.covariance(c) - 4) < 1e-4
+    assert a.covariance(a) == 1
+    assert b.covariance(b) == 4
+    
+def test_correlation_matrix():
+    a = uc.gummy(1,1)
+    b = uc.gummy(1,2)
+    c = a + b
+    m = uc.gummy.correlation_matrix([a,b,c])
+    assert m[0][0] == m[1][1] == m[2,2] == 1
+    assert m[0][1] == m[1][0] == 0
+    assert abs(m[2][0] - 1/c.u) < 1e-4
+    assert abs(m[0][2] - 1/c.u) < 1e-4
+    assert abs(m[2][1] - 2/c.u) < 1e-4
+    assert abs(m[1][2] - 2/c.u) < 1e-4
+    
+def test_covariance_matrix():
+    a = uc.gummy(1,1)
+    b = uc.gummy(1,2)
+    c = a + b
+    m = uc.gummy.covariance_matrix([a,b,c])
+    assert m[0][0] == 1
+    assert m[1][1] == 4
+    assert abs(m[2][2] - 5) < 1e-4
+    assert m[0][1] == m[1][0] == 0
+    assert abs(m[2][0] - 1) < 1e-4
+    assert abs(m[0][2] - 1) < 1e-4
+    assert abs(m[2][1] - 4) < 1e-4
+    assert abs(m[1][2] - 4) < 1e-4
+    
+def test_correlation_sim():
+    a = uc.gummy(1,1)
+    b = uc.gummy(1,2)
+    c = a + b
+    uc.gummy.simulate([a,b,c])
+    assert a.correlation_sim(b) == 0
+    assert a.correlation_sim(1) == 0
+    assert abs(c.correlation_sim(a) - 1/c.u) < 1e-2
+    assert abs(a.correlation_sim(c) - 1/c.u) < 1e-2
+    assert abs(c.correlation_sim(b) - 2/c.u) < 1e-2
+    assert abs(b.correlation_sim(c) - 2/c.u) < 1e-2
+    assert a.correlation_sim(a) == 1
+    
+def test_covariance_sim():
+    a = uc.gummy(1,1)
+    b = uc.gummy(1,2)
+    c = a + b
+    uc.gummy.simulate([a,b,c])
+    assert a.covariance_sim(b) == 0
+    assert a.covariance_sim(1) == 0
+    assert abs(c.covariance_sim(a) - 1) < 1e-2
+    assert abs(a.covariance_sim(c) - 1) < 1e-2
+    assert abs(c.covariance_sim(b) - 4) < 1e-2
+    assert abs(b.covariance_sim(c) - 4) < 1e-2
+    assert abs(a.covariance_sim(a) - 1) < 1e-2
+    assert abs(b.covariance_sim(b) - 4) < 1e-2
+    
+def test_correlation_matrix():
+    a = uc.gummy(1,1)
+    b = uc.gummy(1,2)
+    c = a + b
+    uc.gummy.simulate([a,b,c])
+    m = uc.gummy.correlation_matrix_sim([a,b,c])
+    assert m[0][0] == m[1][1] == m[2,2] == 1
+    assert m[0][1] == m[1][0] == 0
+    assert (m[2][0] - 1/c.u) < 1e-4
+    assert (m[0][2] - 1/c.u) < 1e-4
+    assert (m[2][1] - 2/c.u) < 1e-4
+    assert (m[1][2] - 2/c.u) < 1e-4
+    
+def test_covariance_matrix():
+    a = uc.gummy(1,1)
+    b = uc.gummy(1,2)
+    c = a + b
+    uc.gummy.simulate([a,b,c])
+    m = uc.gummy.covariance_matrix_sim([a,b,c])
+    assert abs(m[0][0] - 1) < 1e-2
+    assert abs(m[1][1] - 4) < 1e-2
+    assert abs(m[2][2] - 5) < 1e-4
+    assert m[0][1] == m[1][0] == 0
+    assert (m[2][0] - 1) < 1e-4
+    assert (m[0][2] - 1) < 1e-4
+    assert (m[2][1] - 4) < 1e-4
+    assert (m[1][2] - 4) < 1e-4
+    
+def test_finfo():
+    a = uc.gummy(1,1)
+    assert a.finfo.rel_u == 0
+    
+def test_real():
+    a = uc.gummy(1.1,0.3)
+    b = a.real
+    assert not a is b
+    assert a.x == b.x
+    assert a.u == b.u
+    assert a.correlation(b) == 1
+    
+def test_conjugate():
+    a = uc.gummy(1.1,0.3)
+    b = a.conjugate()
+    assert not a is b
+    assert a.x == b.x
+    assert a.u == b.u
+    assert a.correlation(b) == 1
+    
+def test_angle():
+    assert uc.gummy(1.1,0.3).angle == 0
+    assert abs(abs(uc.gummy(-1.1,0.3).angle) - np.pi) < 1e-10
+    
+def test_utype():
+    a = uc.gummy(1.2,1,1,utype='A')
+    assert a.utype == 'A'
+    b = uc.gummy(1.2,1,1,utype='xyz')
+    assert b.utype == 'xyz'
+    
+def test_ufrom():
+    a = uc.gummy(1.2,0.2,utype='A')
+    b = uc.gummy(3.2,0.5,utype='A')
+    c = uc.gummy(0.9,0.2,utype='B')
+    d = a + b + c
+    assert abs(d.ufrom('A') - np.sqrt(0.2**2+0.5**2)) < 1e-8
+    assert abs(d.ufrom('A',sim=True) - np.sqrt(0.2**2+0.5**2)) < 1e-2
+    assert d.ufrom(c) == 0.2
+    
+def test_dof_from():
+    a = gummy(1.2,0.2,dof=5,utype='A')
+    b = gummy(3.2,0.5,dof=7,utype='A')
+    c = gummy(0.9,0.2,utype='B')
+    d = a + b + c
+    assert abs(d.doffrom('A') - (0.2**2+0.5**2)**2/(0.2**4/5 + 0.5**4/7)) < 1e-10
+    assert d.doffrom(a) == 5
+    
+        
+        
+    

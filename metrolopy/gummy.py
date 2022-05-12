@@ -1094,11 +1094,8 @@ class gummy(Quantity,metaclass=MetaGummy):
     def _get_p(self):
         #if self.u == 0:
             #return 1
-        if self._pm is not None:
-            if self._pm < 0:
-                return 0
-            return self._pm
-        self._pm = self._p_method.fktop(self._k,self.dof,self.bayesian)
+        if self._pm is None:
+            self._pm = self._p_method.fktop(self._k,self.dof,self.bayesian)
         if self._pm < 0:
                 return 0
         return self._pm
