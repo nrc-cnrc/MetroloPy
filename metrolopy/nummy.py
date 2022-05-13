@@ -30,6 +30,7 @@ import numpy as np
 from .ummy import ummy
 from .distributions import (Distribution,TDist,NormalDist,MultivariateElement,
                             MultivariateDistribution,MultiNormalDist,MultiTDist)
+from .exceptions import NoSimulatedDataError
 from math import isinf,isfinite,isnan,sqrt
 
 def _bop(f,npf,s,b):    
@@ -57,6 +58,7 @@ class nummy(ummy):
     _cimethod = 'shortest'
     _bayesian = False # see the gummy bayesian property
     _fp = None
+    _nsim = None
     
     def __init__(self,x,u=0,dof=float('inf'),utype=None,name=None):
         self._bayesian = nummy._bayesian
@@ -77,7 +79,7 @@ class nummy(ummy):
             
             if hasattr(x,'dof'):
                 if nummy._bayesian:
-                    u = float(x.u())*x.dof/(x.dof-2)
+                    u = float(x.u())*np.sqrt(x.dof/(x.dof-2))
                     dof = float('inf')
                 else:
                     u = float(x.u())
@@ -100,7 +102,7 @@ class nummy(ummy):
                 self._dist = NormalDist(x,u)
             else:
                 if nummy._bayesian:
-                    self._dist = TDist(x,u*(dof-2)/dof,dof)
+                    self._dist = TDist(x,u*np.sqrt((dof-2)/dof),dof)
                     self._dof = float('inf')
                 else:
                     self._dist = TDist(x,u,dof)
@@ -168,6 +170,10 @@ class nummy(ummy):
             raise ValueError('the name must be a string or a length 4 tuple of str')
             
     def get_name(self,fmt='unicode',norm=None):
+        fmt = fmt.strip().lower()
+        if fmt not in {'unicode','html','latex','ascii'}:
+            raise ValueError('fmt "' + str(fmt) + '" is not recognized')
+            
         if self._name is None:
             return None
         
@@ -181,7 +187,6 @@ class nummy(ummy):
                 return norm(self.name)
             return self._name
         
-        fmt = fmt.strip().lower()
         if fmt == 'unicode':
             return self._name[0]
         if fmt == 'html':
@@ -189,8 +194,7 @@ class nummy(ummy):
         if fmt == 'latex':
             return self._name[2]
         if fmt == 'ascii':
-            return self._name[0]
-        raise ValueError('fmt "' + str(fmt) + '" is not recognized')
+            return self._name[3]
     
     @property
     def bayesian(self):
@@ -219,7 +223,7 @@ class nummy(ummy):
         uncertainty should be the standard deviation of this distribution which
         is s*sqrt{(n-1)/[n*(n-3)]}.  Thus
 
-        u(bayesian) = [dof/(dof - 2)]*u(traditional)
+        u(bayesian) = sqrt[dof/(dof - 2)]*u(traditional)
 
         where dof = n - 1 and the "extra uncertainty" is incorporated directly
         into the standard uncertainty.
@@ -240,6 +244,7 @@ class nummy(ummy):
         if isinstance(nummys,nummy):
             nummys = [nummys]
         Distribution.simulate([g.distribution for g in nummys],n,ufrom)
+        nummy._nsim = n
         
     @property
     def simdata(self):
@@ -249,6 +254,10 @@ class nummy(ummy):
         Returns an array containing the Monte-Carlo simulation data.  A 
         `NoSimulatedDataError` is raised if no Monte-Carlo data is available.
         """
+        if not isinstance(self._dist,Distribution):
+            if nummy._nsim is None:
+                raise NoSimulatedDataError()
+            return np.full(nummy._nsim,self._dist)
         return self.distribution.simdata
         
     @property
@@ -259,18 +268,28 @@ class nummy(ummy):
         Returns a sorted array containing the Monte-Carlo simulation data.  A 
         `NoSimulatedDataError` is raised if no Monte-Carlo data is available.
         """
+        if not isinstance(self._dist,Distribution):
+            if nummy._nsim is None:
+                raise NoSimulatedDataError
+            return np.full(nummy._nsim,self._dist)
         return self.distribution.simsorted
         
     @property
     def xsim(self):
+        if not isinstance(self._dist,Distribution):
+            return self._dist
         return self.distribution.mean
         
     @property
     def usim(self):
+        if not isinstance(self._dist,Distribution):
+            return 0
         return self.distribution.stdev
         
     @property
     def cisim(self):
+        if not isinstance(self._dist,Distribution):
+            return [self._dist,self._dist]
         if self._cimethod == 'shortest':
             return self.distribution.ci(self.p)
         else:
@@ -278,6 +297,8 @@ class nummy(ummy):
               
     @property
     def Usim(self):
+        if not isinstance(self._dist,Distribution):
+            return 0
         x = self.distribution.mean
         
         if self._cimethod == 'shortest':
@@ -294,7 +315,7 @@ class nummy(ummy):
 
         Returns ``0.5*(gummy.Usim[0] + gummy.Usim[1])/gummy.usim``
         """
-        if self.usim == 0:
+        if self.usim == 0 or not isinstance(self._dist,Distribution):
             return float('inf')
         return 0.5*(self.Usim[0] + self.Usim[1])/self.usim
         
@@ -396,7 +417,7 @@ class nummy(ummy):
                 r._dist = NormalDist(s._x,s._u)
             else:
                 if r._bayesian:
-                    r._dist = TDist(s._x,s._u*(dof-2)/dof,dof)
+                    r._dist = TDist(s._x,s._u*np.sqrt((dof-2)/dof),dof)
                     r._dof = float('inf')
                 else:
                     r._dist = TDist(s._x,s._u,dof)
@@ -472,7 +493,7 @@ class nummy(ummy):
                 if nummy._bayesian:
                     dof = [float('inf')]*nd
                     for i,uu in u:
-                        u[i] *= x.dof[i]/(x.dof[i]-2)
+                        u[i] *= np.sqrt(x.dof[i]/(x.dof[i]-2))
                 else:
                     dof = x.dof
             else:
@@ -503,7 +524,7 @@ class nummy(ummy):
                 if hasattr(v,'dof'):
                     dof[i] = v.dof
                     if nummy._bayesian:
-                        u[i] = u[i]*v.dof/(v.dof-2)
+                        u[i] = u[i]*np.sqrt(v.dof/(v.dof-2))
                         dof[i] = float('inf')
             
         ret = super(nummy,cls).create(x,u,dof,correlation_matrix,covariance_matrix)
@@ -516,7 +537,7 @@ class nummy(ummy):
                     r._dist = NormalDist(x[i],u[i])
                 else:
                     if nummy._bayesian:
-                        r._dist = TDist(x,u[i]*(dof[i]-2)/dof[i],dof[i])
+                        r._dist = TDist(x,u[i]*np.sqrt((dof[i]-2)/dof[i]),dof[i])
                         r._dof = float('inf')
                     else:
                         r._dist = TDist(x,u[i],dof[i])

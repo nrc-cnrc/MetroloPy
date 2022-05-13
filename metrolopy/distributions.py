@@ -915,7 +915,7 @@ class UniformDist(Distribution):
                 self.lower_limit = self.center - half_width 
         if lower_limit is not None:
             k += 1
-            self.lower_limit = upper_limit
+            self.lower_limit = lower_limit
             if upper_limit is not None:
                 if lower_limit >= upper_limit:
                     raise ValueError('lower_limit >= upper_limit')
@@ -1037,7 +1037,7 @@ class TriangularDist(Distribution):
         return self.mode
         
     def u(self):
-        return np.sqrt((self.lower_limit**2+self.upper_limit**2)/6)
+        return np.sqrt((self.left_width**2+self.right_width**2+self.left_width*self.right_width)/18)
         
 class ExponentialDist(Distribution):
     def __init__(self,scale=None,rate=None):

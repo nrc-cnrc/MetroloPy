@@ -154,7 +154,7 @@ def test_mod(n=1000,sim=False):
     def df(ax,bx):
         return (1,np.sign(bx)*abs(ax//bx))
     for i in range(n):
-        binary_func(f,df,sim=sim,fionly=True)
+        binary_func(f,df,sim=sim,fionly=True,allowazero=False)
     
 def test_abs(n=1000,sim=False):
     def f(a,b):
@@ -276,7 +276,7 @@ def test_addxmul(n=1000):
             assert d.u == 0
         else:
             assert abs((d.u - b.u)/b.u) < 1e-3
-            assert d.correlation(b) == 1
+            assert abs(d.correlation(b) - 1) < 1e-14
         
 def test_mulxpow(n=1000):
     def f(*x):

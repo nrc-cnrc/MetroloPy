@@ -36,11 +36,11 @@ from .nummy import nummy
 from .exceptions import IncompatibleUnitsError,NoUnitConversionFoundError
 from .unit import Unit,one,Quantity
 from .distributions import Distribution,MultivariateDistribution
-from .pmethod import _Pmthd
+from .pmethod import _Pmthd,loc_from_k
 from .printing import MetaPrettyPrinter
 from math import isnan, isinf,log10
 from fractions import Fraction
-from numbers import Integral,Rational
+from numbers import Integral,Rational,Real,Complex
 
 
 try:
@@ -128,7 +128,7 @@ class MetaGummy(MetaPrettyPrinter):
         uncertainty should be the standard deviation of this distribution which
         is s*sqrt{(n-1)/[n*(n-3)]}.  Thus
 
-        u(bayesian) = [dof/(dof - 2)]*u(traditional)
+        u(bayesian) = sqrt[dof/(dof - 2)]*u(traditional)
 
         where dof = n - 1 and the "extra uncertainty" is incorporated directly
         into the standard uncertainty.
@@ -504,6 +504,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             self._value._fp = self._get_p
             self._unit = x._unit
             self._U = self._value._u
+            self._value._name = x._value._name
             self._k = 1
             self._pm = None
             self._set_k = True
@@ -526,21 +527,6 @@ class gummy(Quantity,metaclass=MetaGummy):
             self._set_k = True
             return
         
-        if isinstance(u,gummy):
-            uunit = u.unit
-            u = u.x
-        elif isinstance(u,Quantity):
-            uunit = u.unit
-            u = u.value
-        
-        if uunit is not None:
-            if u != 0:
-                uunit = Unit.unit(uunit)
-                if uunit is unit:
-                    uunit = None
-            else:
-                uunit = None
-            
         if p is not None:
             p = float(p)
             self._k = self._p_method.fptok(p,dof,gummy.bayesian)
@@ -560,9 +546,27 @@ class gummy(Quantity,metaclass=MetaGummy):
             if uunit is None:
                 self._U = _ku(self._k,self._value.u)
             else:
+                uunit = Unit.unit(uunit)
+                if uunit is unit:
+                    uunit = None
                 self._U = None
                 self._set_U(self._k,uunit)
             return
+        
+        if isinstance(u,gummy):
+            uunit = u.unit
+            u = u.x
+        elif isinstance(u,Quantity):
+            uunit = u.unit
+            u = u.value
+        
+        if uunit is not None:
+            if u != 0:
+                uunit = Unit.unit(uunit)
+                if uunit is unit:
+                    uunit = None
+            else:
+                uunit = None
 
         if uunit is not None and u != 0:
             U = Quantity(u,unit=uunit)
@@ -773,8 +777,9 @@ class gummy(Quantity,metaclass=MetaGummy):
         else:
             unit = self._U.unit
             x = float(self.unit.convert(self.xsim,unit))
-            ci = self.cisim          
-            return (ci[1] - x, x - ci[0])
+            ci1 = float(self.unit.convert(self.cisim[1],unit))
+            ci0 = float(self.unit.convert(self.cisim[0],unit))
+            return (ci1 - x, x - ci0)
         
         
     @property
@@ -884,19 +889,24 @@ class gummy(Quantity,metaclass=MetaGummy):
         return self.value.ksim
     
     @property
-    def independant(self):
+    def independent(self):
         """
         `bool`, read-only
 
         Returns `False` if the owning gummy was created from a operation involving
-        other gummys and `True` otherwise.
+        other gummys or has zero uncertainty and `True` otherwise.
         """
-        return self.value.independant
+        return self.value.independent
             
     @property
     def name(self):
         """
-        gets or sets an optional name for the gummy, may be `str` or `None`
+        gets or sets an optional name for the gummy, may be `str`, `None` or a
+        length four `tuple` of `str`.  If name is set to a length four tuple
+        the elements are, in order, the unicode name, the html name, the latex
+        name and the ASCII name.  Getting this property returns only the unicode
+        name not the full tuple.  Use the `get_name` method to get the name
+        in html, latex or ASCII format.
         """
         return self.value.name
     @name.setter
@@ -904,6 +914,23 @@ class gummy(Quantity,metaclass=MetaGummy):
         self.value.name = v
         
     def get_name(self,fmt='unicode',norm=None):
+        """
+
+        Parameters
+        ----------
+        fmt: The format, must be a `str` in {'unicode','html','latex','ascii'}.
+              The default is 'unicode'.
+        norm: An optional function which returns the name in nomral text.  This
+              function is applied to the name before it is returned if
+              fmt = 'latex', name has been set to single string, and the name
+              is more than one character long.  The default is 
+              '\\text{' + name + '}'.
+
+        Returns
+        -------
+        `str`, the name in the requested format.
+
+        """
         return self.value.get_name(fmt,norm)
     
     @property
@@ -1067,11 +1094,8 @@ class gummy(Quantity,metaclass=MetaGummy):
     def _get_p(self):
         #if self.u == 0:
             #return 1
-        if self._pm is not None:
-            if self._pm < 0:
-                return 0
-            return self._pm
-        self._pm = self._p_method.fktop(self._k,self.dof,self.bayesian)
+        if self._pm is None:
+            self._pm = self._p_method.fktop(self._k,self.dof,self.bayesian)
         if self._pm < 0:
                 return 0
         return self._pm
@@ -1115,6 +1139,9 @@ class gummy(Quantity,metaclass=MetaGummy):
         return self._get_p()
     @p.setter
     def p(self,v):
+        if isinstance(v,str) and v.strip().lower() == 'ssd':
+            self.p = loc_from_k(1)
+            return
         if v <= 0 or v >= 1:
             raise ValueError('p is not in the interval (0,1)')
         self._pm = v
@@ -1171,7 +1198,7 @@ class gummy(Quantity,metaclass=MetaGummy):
     def covariance_sim(self,gummy):
         """
         Returns the covariance, calculated from Monte-Carlo data, between the 
-        owning gummy and the gummy `g.`
+        owning gummy and the gummy `g`.
         
         See the method `gummy.covariance(g)` for the corresponding result based
         on first order error propagation.
@@ -1458,7 +1485,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         uncertainty should be the standard deviation of this distribution which
         is s*sqrt{(n-1)/[n*(n-3)]}.  Thus
 
-        u(bayesian) = [dof/(dof - 2)]*u(traditional)
+        u(bayesian) = sqrt[dof/(dof - 2)]*u(traditional)
 
         where dof = n - 1 and the "extra uncertainty" is incorporated directly
         into the standard uncertainty.
@@ -3173,11 +3200,17 @@ class gummy(Quantity,metaclass=MetaGummy):
         if isinstance(v,np.ndarray):
             return np.array(self) + v
         
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return jummy(self) + v
+        
         return super().__add__(v)
     
     def __radd__(self,v):
         if isinstance(v,np.ndarray):
             return v + np.array(self)
+        
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return v + jummy(self)
         
         return super().__radd__(v)
     
@@ -3185,11 +3218,17 @@ class gummy(Quantity,metaclass=MetaGummy):
         if isinstance(v,np.ndarray):
             return np.array(self) - v
         
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return jummy(self) - v
+        
         return super().__sub__(v)
     
     def __rsub__(self,v):
         if isinstance(v,np.ndarray):
             return v - np.array(self)
+        
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return v - jummy(self)
         
         return super().__rsub__(v)
     
@@ -3197,11 +3236,17 @@ class gummy(Quantity,metaclass=MetaGummy):
         if isinstance(v,np.ndarray):
             return np.array(self)*v
         
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return jummy(self)*v
+        
         return super().__mul__(v)
     
     def __rmul__(self,v):
         if isinstance(v,np.ndarray):
             return v*np.array(self)
+        
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return v*jummy(self)
         
         return super().__rmul__(v)
     
@@ -3209,11 +3254,17 @@ class gummy(Quantity,metaclass=MetaGummy):
         if isinstance(v,np.ndarray):
             return np.array(self)/v
         
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return jummy(self)/v
+        
         return super().__truediv__(v)
     
     def __rtruediv__(self,v):
         if isinstance(v,np.ndarray):
             return v/np.array(self)
+        
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return v/jummy(self)
         
         return super().__rtruediv__(v)
         
@@ -3221,11 +3272,17 @@ class gummy(Quantity,metaclass=MetaGummy):
         if isinstance(v,np.ndarray):
             return np.array(self)**v
         
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return jummy(self)**v
+        
         return super().__pow__(v)
     
     def __rpow__(self,v):
         if isinstance(v,np.ndarray):
             return v**np.array(self)
+        
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return v**jummy(self)
         
         return super().__rpow__(v)
         
@@ -3233,17 +3290,26 @@ class gummy(Quantity,metaclass=MetaGummy):
         if isinstance(v,np.ndarray):
             return np.array(self) // v
         
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return jummy(self) // v
+        
         return super().__floordiv__(v)
         
     def __rfloordiv__(self,v):
         if isinstance(v,np.ndarray):
             return v // np.array(self)
         
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return v // jummy(self)
+        
         return super().__rfloordiv__(v)
         
     def __mod__(self,v):
         if isinstance(v,np.ndarray):
             return np.array(self) % v
+        
+        if isinstance(v,Complex) and not isinstance(v,Real):
+            return jummy(self) % v
         
         return super().__mod__(v)
     

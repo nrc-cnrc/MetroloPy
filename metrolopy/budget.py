@@ -250,7 +250,7 @@ class Budget(PrettyPrinter):
         g.style = 'xf'
         if nsig is not None:
             g.nsig = nsig
-        return g.tostring(fmt)
+        return g.tostring(fmt,show_name=False)
     
     units_on_values = None
     show_s = True
@@ -828,9 +828,9 @@ class Budget(PrettyPrinter):
                         xst = 'xf'
                     
                 fvalues = [g.x for g in self._dfx['x']]
-                values = [g.tostring(style=xst,solidus=self.solidus,mulsep=self.mulsep) for g in self._dfx['x']]
-                hvalues = [g.tostring(fmt='html',style=xst,solidus=self.solidus,mulsep=self.mulsep) for g in self._dfx['x']]
-                lvalues = [g.tostring(fmt='latex',style=xst,solidus=self.solidus,mulsep=self.mulsep) for g in self._dfx['x']]
+                values = [g.tostring(style=xst,solidus=self.solidus,mulsep=self.mulsep,show_name=False) for g in self._dfx['x']]
+                hvalues = [g.tostring(fmt='html',style=xst,solidus=self.solidus,mulsep=self.mulsep,show_name=False) for g in self._dfx['x']]
+                lvalues = [g.tostring(fmt='latex',style=xst,solidus=self.solidus,mulsep=self.mulsep,show_name=False) for g in self._dfx['x']]
                 
                 if self.show_subtotals:
                     for t in self.type.values():
@@ -843,9 +843,9 @@ class Budget(PrettyPrinter):
                     fvalues.append(self._y.xsim)
                 else:
                     fvalues.append(self._y.x)
-                values.append(self._y.tostring(style=xst))
-                hvalues.append(self._y.tostring(fmt='html',style=xst))
-                lvalues.append(self._y.tostring(fmt='latex',style=xst))
+                values.append(self._y.tostring(style=xst,show_name=False))
+                hvalues.append(self._y.tostring(fmt='html',style=xst,show_name=False))
+                lvalues.append(self._y.tostring(fmt='latex',style=xst,show_name=False))
                 
                 if show_exu:
                     fvalues.append(None)
@@ -877,30 +877,30 @@ class Budget(PrettyPrinter):
                         ust = 'uf'
                     
                 fu = [g.u for g in self._dfx['x']]
-                u = [g.tostring(style=ust,solidus=self.solidus,mulsep=self.mulsep) for g in self._dfx['x']]
-                hu = [g.tostring(fmt='html',style=ust,solidus=self.solidus,mulsep=self.mulsep) for g in self._dfx['x']]
-                lu = [g.tostring(fmt='latex',style=ust,solidus=self.solidus,mulsep=self.mulsep) for g in self._dfx['x']]
+                u = [g.tostring(style=ust,solidus=self.solidus,mulsep=self.mulsep,show_name=False) for g in self._dfx['x']]
+                hu = [g.tostring(fmt='html',style=ust,solidus=self.solidus,mulsep=self.mulsep,show_name=False) for g in self._dfx['x']]
+                lu = [g.tostring(fmt='latex',style=ust,solidus=self.solidus,mulsep=self.mulsep,show_name=False) for g in self._dfx['x']]
                 
                 if self.show_subtotals:
                     for t in self.type.values():
                         fu.append(t[2].U)
-                        u.append(t[2].tostring(style=ust_g,solidus=self.solidus,mulsep=self.mulsep))
-                        hu.append(t[2].tostring(fmt='html',style=ust_g,solidus=self.solidus,mulsep=self.mulsep))
-                        lu.append(t[2].tostring(fmt='latex',style=ust_g,solidus=self.solidus,mulsep=self.mulsep))
+                        u.append(t[2].tostring(style=ust_g,solidus=self.solidus,mulsep=self.mulsep,show_name=False))
+                        hu.append(t[2].tostring(fmt='html',style=ust_g,solidus=self.solidus,mulsep=self.mulsep,show_name=False))
+                        lu.append(t[2].tostring(fmt='latex',style=ust_g,solidus=self.solidus,mulsep=self.mulsep,show_name=False))
                             
                 fu.append(self._yu.U)
-                u.append(self._yu.tostring(style=ust,solidus=self.solidus,mulsep=self.mulsep))
-                hu.append(self._yu.tostring(fmt='html',style=ust,solidus=self.solidus,mulsep=self.mulsep))
-                lu.append(self._yu.tostring(fmt='latex',style=ust,solidus=self.solidus,mulsep=self.mulsep))
+                u.append(self._yu.tostring(style=ust,solidus=self.solidus,mulsep=self.mulsep,show_name=False))
+                hu.append(self._yu.tostring(fmt='html',style=ust,solidus=self.solidus,mulsep=self.mulsep,show_name=False))
+                lu.append(self._yu.tostring(fmt='latex',style=ust,solidus=self.solidus,mulsep=self.mulsep,show_name=False))
                 if show_exu:
                     if self.sim:
                         g = gummy(self._y.x,self._y.ksim*self._y.usim,unit=self._y.unit)
                     else:
                         g = self._y
                     fu.append(g.U)
-                    u.append(g.tostring(style=ust_g,solidus=self.solidus,mulsep=self.mulsep))
-                    hu.append(g.tostring(fmt='html',style=ust_g,solidus=self.solidus,mulsep=self.mulsep))
-                    lu.append(g.tostring(fmt='latex',style=ust_g,solidus=self.solidus,mulsep=self.mulsep))
+                    u.append(g.tostring(style=ust_g,solidus=self.solidus,mulsep=self.mulsep,show_name=False))
+                    hu.append(g.tostring(fmt='html',style=ust_g,solidus=self.solidus,mulsep=self.mulsep,show_name=False))
+                    lu.append(g.tostring(fmt='latex',style=ust_g,solidus=self.solidus,mulsep=self.mulsep,show_name=False))
                     
                 cnm = cnmh = self.column_names.get(c)
                 if cnm is None:
