@@ -1266,14 +1266,18 @@ class ummy(Dfunc,PrettyPrinter):
                 return []
             x = t.get_values()
             return x
+        elif hasattr(x,'value') and isinstance(x.value,ummy):
+            return [x.value]
         
         xl = []
         for e in x:
-            if isinstance(e,ummy):
-               xl.append(e)
-            if isinstance(e,GummyTag):
+            if hasattr(e,'value') and isinstance(e.value,ummy):
+                xl.append(e.value)
+            elif isinstance(e,ummy):
+                xl.append(e)
+            elif isinstance(e,GummyTag):
                 xl += e.get_values()
-            if isinstance(e,str):
+            elif isinstance(e,str):
                 t = GummyTag.tags.get(e)
                 if t is not None:
                     xl += t.get_values()

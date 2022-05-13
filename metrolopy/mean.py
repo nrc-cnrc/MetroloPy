@@ -26,6 +26,7 @@ Some miscellaneous functions that are useful for uncertainty analysis.
 
 import numpy as np
 from .gummy import gummy
+from .distributions import TDist
 import datetime
 
 def autocorrelation(x):
@@ -181,7 +182,7 @@ def wmean(x,chi_correct=False):
         
     return ret
     
-def mean(x,n_sigma_trim=3,unit=1,ignore_nan=True,use_n_eff=None,bayesian=None):
+def mean(x,n_sigma_trim=3,unit=1,ignore_nan=True,use_n_eff=None):
     """
     Returns a gummy representing the mean of a float array.
     
@@ -211,7 +212,7 @@ def mean(x,n_sigma_trim=3,unit=1,ignore_nan=True,use_n_eff=None,bayesian=None):
         If bayesian is `False` the standard uncertainty of the returned
         gummy is s/sqrt(n) where s is the standard deviation of x and n is
         the the number of samples (or n_eff).  If bayesian is `True` then
-        the standard uncertainty is ((n-1)/(n-3))*s/sqrt(n).  If bayesian
+        the standard uncertainty is sqrt((n-1)/(n-3))*s/sqrt(n).  If bayesian
         is `None` then the value of `gummy.bayesian` will be used.  The
         default value is `None`.
     """
@@ -231,16 +232,11 @@ def mean(x,n_sigma_trim=3,unit=1,ignore_nan=True,use_n_eff=None,bayesian=None):
     if dof < 1:
         dof = 1
         
-    if bayesian is None:
-        bayesian = gummy.bayesian
-    if bayesian:
-        if dof <= 2:
-            raise ValueError('dof is ' + str(dof) + '; it must be > 2')
-        u = (dof/(dof - 2))*float(np.std(x,ddof=1))/np.sqrt(n)
-        return gummy(m,u,unit=unit)
-    else:
-        u = float(np.std(x,ddof=1))/np.sqrt(n)
-        return gummy(m,u,dof=dof,unit=unit)
+    u = float(np.std(x,ddof=1))/np.sqrt(n)
+    if gummy.bayesian:
+        u *= np.sqrt(dof/(dof-2))
+
+    return gummy(m,u,dof=dof,unit=unit)
     
 def sigma_trim(x, n_sigma = 3):
     """
@@ -288,7 +284,7 @@ def delta_diff(x):
     z[0::2] = -z[0::2]
     return z
 
-def delta_diff_mean(x,n_sigma=None,unit=1,bayesian=None):
+def delta_diff_mean(x,n_sigma=None,unit=1):
     """
     Returns a gummy representing the mean value and uncertainty of a delta 
     type difference taken on the data.  A delta type difference removes a 
@@ -313,7 +309,7 @@ def delta_diff_mean(x,n_sigma=None,unit=1,bayesian=None):
         If bayesian is `False` the standard uncertainty of the returned
         gummy is s/sqrt(n) where s is the standard deviation of x and n is
         the the number of samples (or n_eff).  If bayesian is `True` then
-        the standard uncertainty is ((n-1)/(n-3))*s/sqrt(n).  If bayesian
+        the standard uncertainty is sqrt((n-1)/(n-3))*s/sqrt(n).  If bayesian
         is `None` then the value of `gummy.bayesian` will be used.  The
         default value is `None`.
             
@@ -335,12 +331,8 @@ def delta_diff_mean(x,n_sigma=None,unit=1,bayesian=None):
     sd = np.std(diff,ddof=1)
     u = (np.sqrt(4*n-11)/(n-2))*sd
     dof = (4*n-11)**2/(41/2+16*(n-4))
-    
-    if bayesian is None:
-        bayesian = gummy.bayesian
-    if bayesian:
-        u = u*dof/(dof-2)
-        return gummy(mn,u,unit=unit)
+    if gummy.bayesian:
+        u *= np.sqrt(dof/(dof-2))
     
     return gummy(mn,u,dof=dof,unit=unit)
     

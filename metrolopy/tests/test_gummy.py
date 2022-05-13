@@ -184,13 +184,9 @@ def test_init():
     gp = uc.gummy(2,1,p=0.95)
     assert gp.x == 2
     assert gp.p == 0.95
-    try:
-        assert abs(gp.k - 1.96) < 0.01
-        assert abs(gp.u - 1/1.96) < 0.01
-    except:
-        print('gp',gp,gp.k,gp.u)
-        raise
-    
+    assert abs(gp.k - 1.96) < 0.01
+    assert abs(gp.u - 1/1.96) < 0.01
+
     gk = uc.gummy(3,1,k=2)
     assert gk.x == 3
     assert gk.k == 2

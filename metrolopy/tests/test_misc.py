@@ -75,3 +75,39 @@ def test_ufrom_multiletter():
     y = a - b
     assert abs(y.ufrom('A') - 1) < 1e-15
     assert abs(y.ufrom('DUT') - 2) < 1e-15
+    
+def test_uniform_params():
+    # issue 33
+    g = uc.gummy(uc.UniformDist(lower_limit=6,upper_limit=9),unit='pA')
+    g.sim()
+    assert abs(min(g.simdata) - 6) < 0.01
+    assert abs(max(g.simdata) - 9) < 0.01
+    
+    g = uc.gummy(uc.UniformDist(center=7.5,half_width=1.5),unit='pA')
+    g.sim()
+    assert abs(min(g.simdata) - 6) < 0.01
+    assert abs(max(g.simdata) - 9) < 0.01
+    
+def test_mean_b():
+    # issue 32
+    import numpy as np
+    from scipy.stats import t
+    from scipy import special
+
+    con = special.erf(1/np.sqrt(2))
+    def u(x):
+        return t.ppf(1-(1-con)/2, len(x)-1)*x.std(ddof=1)/np.sqrt(len(x))
+
+    x = np.random.rand(5)
+    g = uc.mean(x)
+    g.p = 'ssd'
+    assert abs(con-g.p) < 1e-6
+    assert abs(g.U - u(x)) < 1e-6
+    try:
+        uc.gummy.bayesian = True
+        gg = uc.mean(x)
+        assert abs(gg.u - np.sqrt(2)*g.u) < 1e-6
+        gg.p = 'ssd'
+        assert abs(gg.U - u(x)) < 1e-6
+    finally:
+        uc.gummy.bayesian = False

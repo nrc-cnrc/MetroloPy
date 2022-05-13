@@ -79,7 +79,7 @@ class nummy(ummy):
             
             if hasattr(x,'dof'):
                 if nummy._bayesian:
-                    u = float(x.u())*x.dof/(x.dof-2)
+                    u = float(x.u())*np.sqrt(x.dof/(x.dof-2))
                     dof = float('inf')
                 else:
                     u = float(x.u())
@@ -102,7 +102,7 @@ class nummy(ummy):
                 self._dist = NormalDist(x,u)
             else:
                 if nummy._bayesian:
-                    self._dist = TDist(x,u*(dof-2)/dof,dof)
+                    self._dist = TDist(x,u*np.sqrt((dof-2)/dof),dof)
                     self._dof = float('inf')
                 else:
                     self._dist = TDist(x,u,dof)
@@ -223,7 +223,7 @@ class nummy(ummy):
         uncertainty should be the standard deviation of this distribution which
         is s*sqrt{(n-1)/[n*(n-3)]}.  Thus
 
-        u(bayesian) = [dof/(dof - 2)]*u(traditional)
+        u(bayesian) = sqrt[dof/(dof - 2)]*u(traditional)
 
         where dof = n - 1 and the "extra uncertainty" is incorporated directly
         into the standard uncertainty.
@@ -417,7 +417,7 @@ class nummy(ummy):
                 r._dist = NormalDist(s._x,s._u)
             else:
                 if r._bayesian:
-                    r._dist = TDist(s._x,s._u*(dof-2)/dof,dof)
+                    r._dist = TDist(s._x,s._u*np.sqrt((dof-2)/dof),dof)
                     r._dof = float('inf')
                 else:
                     r._dist = TDist(s._x,s._u,dof)
@@ -493,7 +493,7 @@ class nummy(ummy):
                 if nummy._bayesian:
                     dof = [float('inf')]*nd
                     for i,uu in u:
-                        u[i] *= x.dof[i]/(x.dof[i]-2)
+                        u[i] *= np.sqrt(x.dof[i]/(x.dof[i]-2))
                 else:
                     dof = x.dof
             else:
@@ -524,7 +524,7 @@ class nummy(ummy):
                 if hasattr(v,'dof'):
                     dof[i] = v.dof
                     if nummy._bayesian:
-                        u[i] = u[i]*v.dof/(v.dof-2)
+                        u[i] = u[i]*np.sqrt(v.dof/(v.dof-2))
                         dof[i] = float('inf')
             
         ret = super(nummy,cls).create(x,u,dof,correlation_matrix,covariance_matrix)
@@ -537,7 +537,7 @@ class nummy(ummy):
                     r._dist = NormalDist(x[i],u[i])
                 else:
                     if nummy._bayesian:
-                        r._dist = TDist(x,u[i]*(dof[i]-2)/dof[i],dof[i])
+                        r._dist = TDist(x,u[i]*np.sqrt((dof[i]-2)/dof[i]),dof[i])
                         r._dof = float('inf')
                     else:
                         r._dist = TDist(x,u[i],dof[i])
