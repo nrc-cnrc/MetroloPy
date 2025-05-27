@@ -121,7 +121,6 @@ ddict = {np.sin: np.cos,
 
 fdict = {np.angle:  lambda x: x.angle(),
          np.around:  _f_around,
-         np.round_:  _f_around,
          np.heaviside:  _f_heaviside,
          np.absolute:  lambda x: abs(x),
          np.add:  _f_add,
@@ -154,6 +153,10 @@ fdict = {np.angle:  lambda x: x.angle(),
          np.isneginf:  lambda x: np.isneginf(x.x),
          np.isposinf:  lambda x: np.isposinf(x.x)
         }
+if np.lib.NumpyVersion(np.__version__) >= '1.25.0':
+    fdict[np.round] =  _f_around
+else:
+    fdict[np.round_] =  _f_around
 
 
 try_fconvert = True

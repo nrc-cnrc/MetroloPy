@@ -134,6 +134,7 @@ version history
 * Version 0.6.1 built 19 October 2020, bug fixes
 * Version 0.6.2 built 10 July 2021, bug fixes
 * Version 0.6.3 built 13 May 2022, bug fixes
+* Version 0.6.4 built 28 May 2025, bug fixes
 
 
 author

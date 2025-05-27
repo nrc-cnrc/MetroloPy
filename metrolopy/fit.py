@@ -415,7 +415,7 @@ class _Fit:
             s = self.s
         else:
             s = self.sigma
-        return k*(np.sqrt(self.ypred(x).u + s**2))
+        return k*(np.sqrt(self.ypred(x).u**2 + s**2))
         
     
 class Fit(_Fit,PrettyPrinter):
@@ -2017,7 +2017,7 @@ class DoubleExpFit(Fit):
         return 'y = p(1)*exp(-x/p(2)) + p(3)*exp(-x/p(4)) + p(5)'
     
     def flatex(self):
-        return '$ y = p_{1}\exp(-x/p_{2}) + p_{3}\exp(-x/p_{4}) + p_{5} $'
+        return '$ y = p_{1}\\exp(-x/p_{2}) + p_{3}\\exp(-x/p_{4}) + p_{5} $'
     
     def fhtml(self):
         return '<i>y</i> = <i>p</i><sub>1</sub> exp(-<i>x</i>/<i>p</i><sub>2</sub>) + <i>p</i><sub>3</sub> exp(-<i>x</i>/<i>p</i><sub>4</sub>) + <i>p</i><sub>5</sub>'
@@ -2160,7 +2160,7 @@ class ExpFit(Fit):
         return 'y = p(1)*exp(x/p(2)) + p(3)'
     
     def flatex(self):
-        return '$ y = p_{1}\exp(x/p_{2}) + p_{3} $'
+        return '$ y = p_{1}\\exp(x/p_{2}) + p_{3} $'
     
     def fhtml(self):
         return '<i>y</i> = <i>p</i><sub>1</sub> exp(<i>x</i>/<i>p</i><sub>2</sub>) + <i>p</i><sub>3</sub>'

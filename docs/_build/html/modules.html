@@ -1,22 +1,20 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>metrolopy &#8212; metrolopy 0.6.3 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/nature.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <title>metrolopy &#8212; metrolopy 0.6.4 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <script src="_static/documentation_options.js?v=73d9a94e"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -25,7 +23,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.4 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">metrolopy</a></li> 
       </ul>
     </div>  
@@ -36,7 +34,7 @@
           <div class="body" role="main">
             
   <section id="metrolopy">
-<h1>metrolopy<a class="headerlink" href="#metrolopy" title="Permalink to this headline">¶</a></h1>
+<h1>metrolopy<a class="headerlink" href="#metrolopy" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="metrolopy.html">metrolopy package</a><ul>
@@ -50,26 +48,783 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="metrolopy.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.budget">metrolopy.budget module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.dfunc">metrolopy.dfunc module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.distributions">metrolopy.distributions module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.exceptions">metrolopy.exceptions module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.fit">metrolopy.fit module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.functions">metrolopy.functions module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.gummy">metrolopy.gummy module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.logunit">metrolopy.logunit module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.mean">metrolopy.mean module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.nonlinearunit">metrolopy.nonlinearunit module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.nummy">metrolopy.nummy module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.offsetunit">metrolopy.offsetunit module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.pmethod">metrolopy.pmethod module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.prefixedunit">metrolopy.prefixedunit module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.printing">metrolopy.printing module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.relunits">metrolopy.relunits module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.budget">metrolopy.budget module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget"><code class="docutils literal notranslate"><span class="pre">Budget</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.column_names"><code class="docutils literal notranslate"><span class="pre">Budget.column_names</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.columns"><code class="docutils literal notranslate"><span class="pre">Budget.columns</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.default_column_names"><code class="docutils literal notranslate"><span class="pre">Budget.default_column_names</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.default_columns"><code class="docutils literal notranslate"><span class="pre">Budget.default_columns</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.default_css"><code class="docutils literal notranslate"><span class="pre">Budget.default_css</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.df"><code class="docutils literal notranslate"><span class="pre">Budget.df</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.df_html"><code class="docutils literal notranslate"><span class="pre">Budget.df_html</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.df_latex"><code class="docutils literal notranslate"><span class="pre">Budget.df_latex</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.df_str"><code class="docutils literal notranslate"><span class="pre">Budget.df_str</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.k"><code class="docutils literal notranslate"><span class="pre">Budget.k</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.p"><code class="docutils literal notranslate"><span class="pre">Budget.p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.show_c"><code class="docutils literal notranslate"><span class="pre">Budget.show_c</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.show_d"><code class="docutils literal notranslate"><span class="pre">Budget.show_d</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.show_s"><code class="docutils literal notranslate"><span class="pre">Budget.show_s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.tostring"><code class="docutils literal notranslate"><span class="pre">Budget.tostring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.budget.Budget.units_on_values"><code class="docutils literal notranslate"><span class="pre">Budget.units_on_values</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.dfunc">metrolopy.dfunc module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.dfunc.Dfunc"><code class="docutils literal notranslate"><span class="pre">Dfunc</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.dfunc.Dfunc.apply"><code class="docutils literal notranslate"><span class="pre">Dfunc.apply()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.dfunc.Dfunc.napply"><code class="docutils literal notranslate"><span class="pre">Dfunc.napply()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.dfunc.Dfunc.tofloat"><code class="docutils literal notranslate"><span class="pre">Dfunc.tofloat()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.distributions">metrolopy.distributions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.ArcSinDist"><code class="docutils literal notranslate"><span class="pre">ArcSinDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.ArcSinDist.random"><code class="docutils literal notranslate"><span class="pre">ArcSinDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.ArcSinDist.u"><code class="docutils literal notranslate"><span class="pre">ArcSinDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.ArcSinDist.x"><code class="docutils literal notranslate"><span class="pre">ArcSinDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.BinomialDist"><code class="docutils literal notranslate"><span class="pre">BinomialDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.BinomialDist.random"><code class="docutils literal notranslate"><span class="pre">BinomialDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.BinomialDist.u"><code class="docutils literal notranslate"><span class="pre">BinomialDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.BinomialDist.x"><code class="docutils literal notranslate"><span class="pre">BinomialDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Convolution"><code class="docutils literal notranslate"><span class="pre">Convolution</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Convolution.isindependent"><code class="docutils literal notranslate"><span class="pre">Convolution.isindependent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Convolution.random"><code class="docutils literal notranslate"><span class="pre">Convolution.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Convolution.x"><code class="docutils literal notranslate"><span class="pre">Convolution.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.CurvlinearTrapDist"><code class="docutils literal notranslate"><span class="pre">CurvlinearTrapDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.CurvlinearTrapDist.random"><code class="docutils literal notranslate"><span class="pre">CurvlinearTrapDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.CurvlinearTrapDist.u"><code class="docutils literal notranslate"><span class="pre">CurvlinearTrapDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.CurvlinearTrapDist.x"><code class="docutils literal notranslate"><span class="pre">CurvlinearTrapDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution"><code class="docutils literal notranslate"><span class="pre">Distribution</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.simdata"><code class="docutils literal notranslate"><span class="pre">Distribution.simdata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.isindependent"><code class="docutils literal notranslate"><span class="pre">Distribution.isindependent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.apply"><code class="docutils literal notranslate"><span class="pre">Distribution.apply()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.ci"><code class="docutils literal notranslate"><span class="pre">Distribution.ci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.cisym"><code class="docutils literal notranslate"><span class="pre">Distribution.cisym()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.clear"><code class="docutils literal notranslate"><span class="pre">Distribution.clear()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.covplot"><code class="docutils literal notranslate"><span class="pre">Distribution.covplot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.covsim"><code class="docutils literal notranslate"><span class="pre">Distribution.covsim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.covsim_matrix"><code class="docutils literal notranslate"><span class="pre">Distribution.covsim_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.hist"><code class="docutils literal notranslate"><span class="pre">Distribution.hist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#id0"><code class="docutils literal notranslate"><span class="pre">Distribution.isindependent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.mean"><code class="docutils literal notranslate"><span class="pre">Distribution.mean</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.random"><code class="docutils literal notranslate"><span class="pre">Distribution.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.random_state"><code class="docutils literal notranslate"><span class="pre">Distribution.random_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.set_seed"><code class="docutils literal notranslate"><span class="pre">Distribution.set_seed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#id1"><code class="docutils literal notranslate"><span class="pre">Distribution.simdata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.simsorted"><code class="docutils literal notranslate"><span class="pre">Distribution.simsorted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.simulate"><code class="docutils literal notranslate"><span class="pre">Distribution.simulate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.stdev"><code class="docutils literal notranslate"><span class="pre">Distribution.stdev</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.u"><code class="docutils literal notranslate"><span class="pre">Distribution.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.Distribution.x"><code class="docutils literal notranslate"><span class="pre">Distribution.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.ExponentialDist"><code class="docutils literal notranslate"><span class="pre">ExponentialDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.ExponentialDist.random"><code class="docutils literal notranslate"><span class="pre">ExponentialDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.ExponentialDist.u"><code class="docutils literal notranslate"><span class="pre">ExponentialDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.ExponentialDist.x"><code class="docutils literal notranslate"><span class="pre">ExponentialDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.GammaDist"><code class="docutils literal notranslate"><span class="pre">GammaDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.GammaDist.random"><code class="docutils literal notranslate"><span class="pre">GammaDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.GammaDist.u"><code class="docutils literal notranslate"><span class="pre">GammaDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.GammaDist.x"><code class="docutils literal notranslate"><span class="pre">GammaDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.LaplaceDist"><code class="docutils literal notranslate"><span class="pre">LaplaceDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.LaplaceDist.random"><code class="docutils literal notranslate"><span class="pre">LaplaceDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.LaplaceDist.u"><code class="docutils literal notranslate"><span class="pre">LaplaceDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.LaplaceDist.x"><code class="docutils literal notranslate"><span class="pre">LaplaceDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.LogNormalDist"><code class="docutils literal notranslate"><span class="pre">LogNormalDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.LogNormalDist.random"><code class="docutils literal notranslate"><span class="pre">LogNormalDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.LogNormalDist.u"><code class="docutils literal notranslate"><span class="pre">LogNormalDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.LogNormalDist.x"><code class="docutils literal notranslate"><span class="pre">LogNormalDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultiNormalDist"><code class="docutils literal notranslate"><span class="pre">MultiNormalDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultiNormalDist.cov"><code class="docutils literal notranslate"><span class="pre">MultiNormalDist.cov</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultiNormalDist.u"><code class="docutils literal notranslate"><span class="pre">MultiNormalDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultiNormalDist.x"><code class="docutils literal notranslate"><span class="pre">MultiNormalDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultiTDist"><code class="docutils literal notranslate"><span class="pre">MultiTDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultiTDist.cov"><code class="docutils literal notranslate"><span class="pre">MultiTDist.cov</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultiTDist.u"><code class="docutils literal notranslate"><span class="pre">MultiTDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultiTDist.x"><code class="docutils literal notranslate"><span class="pre">MultiTDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultiTElement"><code class="docutils literal notranslate"><span class="pre">MultiTElement</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultivariateDistribution"><code class="docutils literal notranslate"><span class="pre">MultivariateDistribution</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultivariateDistribution.clear"><code class="docutils literal notranslate"><span class="pre">MultivariateDistribution.clear()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultivariateDistribution.cov"><code class="docutils literal notranslate"><span class="pre">MultivariateDistribution.cov</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultivariateDistribution.u"><code class="docutils literal notranslate"><span class="pre">MultivariateDistribution.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultivariateDistribution.x"><code class="docutils literal notranslate"><span class="pre">MultivariateDistribution.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultivariateElement"><code class="docutils literal notranslate"><span class="pre">MultivariateElement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultivariateElement.clear"><code class="docutils literal notranslate"><span class="pre">MultivariateElement.clear()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultivariateElement.cov"><code class="docutils literal notranslate"><span class="pre">MultivariateElement.cov()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultivariateElement.random"><code class="docutils literal notranslate"><span class="pre">MultivariateElement.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultivariateElement.u"><code class="docutils literal notranslate"><span class="pre">MultivariateElement.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.MultivariateElement.x"><code class="docutils literal notranslate"><span class="pre">MultivariateElement.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.NormalDist"><code class="docutils literal notranslate"><span class="pre">NormalDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.NormalDist.random"><code class="docutils literal notranslate"><span class="pre">NormalDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.NormalDist.u"><code class="docutils literal notranslate"><span class="pre">NormalDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.NormalDist.x"><code class="docutils literal notranslate"><span class="pre">NormalDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.PoissonDist"><code class="docutils literal notranslate"><span class="pre">PoissonDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.PoissonDist.random"><code class="docutils literal notranslate"><span class="pre">PoissonDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.PoissonDist.u"><code class="docutils literal notranslate"><span class="pre">PoissonDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.PoissonDist.x"><code class="docutils literal notranslate"><span class="pre">PoissonDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TDist"><code class="docutils literal notranslate"><span class="pre">TDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TDist.bayesian_default"><code class="docutils literal notranslate"><span class="pre">TDist.bayesian_default</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TDist.random"><code class="docutils literal notranslate"><span class="pre">TDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TDist.u"><code class="docutils literal notranslate"><span class="pre">TDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TDist.x"><code class="docutils literal notranslate"><span class="pre">TDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TrapezoidalDist"><code class="docutils literal notranslate"><span class="pre">TrapezoidalDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TrapezoidalDist.random"><code class="docutils literal notranslate"><span class="pre">TrapezoidalDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TrapezoidalDist.u"><code class="docutils literal notranslate"><span class="pre">TrapezoidalDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TrapezoidalDist.x"><code class="docutils literal notranslate"><span class="pre">TrapezoidalDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TriangularDist"><code class="docutils literal notranslate"><span class="pre">TriangularDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TriangularDist.random"><code class="docutils literal notranslate"><span class="pre">TriangularDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TriangularDist.u"><code class="docutils literal notranslate"><span class="pre">TriangularDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.TriangularDist.x"><code class="docutils literal notranslate"><span class="pre">TriangularDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.UniformDist"><code class="docutils literal notranslate"><span class="pre">UniformDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.UniformDist.random"><code class="docutils literal notranslate"><span class="pre">UniformDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.UniformDist.u"><code class="docutils literal notranslate"><span class="pre">UniformDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.UniformDist.x"><code class="docutils literal notranslate"><span class="pre">UniformDist.x()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.WeibullDist"><code class="docutils literal notranslate"><span class="pre">WeibullDist</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.WeibullDist.random"><code class="docutils literal notranslate"><span class="pre">WeibullDist.random()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.WeibullDist.u"><code class="docutils literal notranslate"><span class="pre">WeibullDist.u()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.distributions.WeibullDist.x"><code class="docutils literal notranslate"><span class="pre">WeibullDist.x()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.exceptions">metrolopy.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.BudgetWarning"><code class="docutils literal notranslate"><span class="pre">BudgetWarning</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.CircularUnitConversionError"><code class="docutils literal notranslate"><span class="pre">CircularUnitConversionError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.ConstantNotFoundError"><code class="docutils literal notranslate"><span class="pre">ConstantNotFoundError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.FitWarning"><code class="docutils literal notranslate"><span class="pre">FitWarning</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.GummyWarning"><code class="docutils literal notranslate"><span class="pre">GummyWarning</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.IncompatibleUnitsError"><code class="docutils literal notranslate"><span class="pre">IncompatibleUnitsError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.NoSimulatedDataError"><code class="docutils literal notranslate"><span class="pre">NoSimulatedDataError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.NoUnitConversionFoundError"><code class="docutils literal notranslate"><span class="pre">NoUnitConversionFoundError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.UncertiantyPrecisionWarning"><code class="docutils literal notranslate"><span class="pre">UncertiantyPrecisionWarning</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.UnitError"><code class="docutils literal notranslate"><span class="pre">UnitError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.UnitLibError"><code class="docutils literal notranslate"><span class="pre">UnitLibError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.UnitLibNotFoundError"><code class="docutils literal notranslate"><span class="pre">UnitLibNotFoundError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.UnitNotFoundError"><code class="docutils literal notranslate"><span class="pre">UnitNotFoundError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.exceptions.UnitWarning"><code class="docutils literal notranslate"><span class="pre">UnitWarning</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.fit">metrolopy.fit module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.p"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.pf"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.pf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.res"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.res</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.s"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.cov"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.cov</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.fit_output"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.fit_output</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.x"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.x</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.xf"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.xf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.xdim"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.xdim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.ux"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.ux</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.y"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.y</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.yf"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.yf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.ydim"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.ydim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.uy"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.uy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.count"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.p0"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.p0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.solver"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.solver</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.punits"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.punits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.nparam"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.nparam</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.f"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.f()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.fhtml"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.fhtml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.flatex"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.flatex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.funicode"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.funicode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.get_p0"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.get_p0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.get_punits"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.get_punits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.DoubleExpFit.jac"><code class="docutils literal notranslate"><span class="pre">DoubleExpFit.jac()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit"><code class="docutils literal notranslate"><span class="pre">ExpFit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.p"><code class="docutils literal notranslate"><span class="pre">ExpFit.p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.pf"><code class="docutils literal notranslate"><span class="pre">ExpFit.pf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.res"><code class="docutils literal notranslate"><span class="pre">ExpFit.res</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.s"><code class="docutils literal notranslate"><span class="pre">ExpFit.s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.cov"><code class="docutils literal notranslate"><span class="pre">ExpFit.cov</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.fit_output"><code class="docutils literal notranslate"><span class="pre">ExpFit.fit_output</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.x"><code class="docutils literal notranslate"><span class="pre">ExpFit.x</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.xf"><code class="docutils literal notranslate"><span class="pre">ExpFit.xf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.xdim"><code class="docutils literal notranslate"><span class="pre">ExpFit.xdim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.ux"><code class="docutils literal notranslate"><span class="pre">ExpFit.ux</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.y"><code class="docutils literal notranslate"><span class="pre">ExpFit.y</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.yf"><code class="docutils literal notranslate"><span class="pre">ExpFit.yf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.ydim"><code class="docutils literal notranslate"><span class="pre">ExpFit.ydim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.uy"><code class="docutils literal notranslate"><span class="pre">ExpFit.uy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.count"><code class="docutils literal notranslate"><span class="pre">ExpFit.count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.p0"><code class="docutils literal notranslate"><span class="pre">ExpFit.p0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.solver"><code class="docutils literal notranslate"><span class="pre">ExpFit.solver</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.punits"><code class="docutils literal notranslate"><span class="pre">ExpFit.punits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.nparam"><code class="docutils literal notranslate"><span class="pre">ExpFit.nparam</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.f"><code class="docutils literal notranslate"><span class="pre">ExpFit.f()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.fhtml"><code class="docutils literal notranslate"><span class="pre">ExpFit.fhtml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.flatex"><code class="docutils literal notranslate"><span class="pre">ExpFit.flatex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.funicode"><code class="docutils literal notranslate"><span class="pre">ExpFit.funicode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.get_p0"><code class="docutils literal notranslate"><span class="pre">ExpFit.get_p0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.get_punits"><code class="docutils literal notranslate"><span class="pre">ExpFit.get_punits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.ExpFit.jac"><code class="docutils literal notranslate"><span class="pre">ExpFit.jac()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit"><code class="docutils literal notranslate"><span class="pre">Fit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.f"><code class="docutils literal notranslate"><span class="pre">Fit.f()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.fhtml"><code class="docutils literal notranslate"><span class="pre">Fit.fhtml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.flatex"><code class="docutils literal notranslate"><span class="pre">Fit.flatex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.funicode"><code class="docutils literal notranslate"><span class="pre">Fit.funicode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.get_p0"><code class="docutils literal notranslate"><span class="pre">Fit.get_p0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.get_punits"><code class="docutils literal notranslate"><span class="pre">Fit.get_punits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.html"><code class="docutils literal notranslate"><span class="pre">Fit.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.jac"><code class="docutils literal notranslate"><span class="pre">Fit.jac()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.latex"><code class="docutils literal notranslate"><span class="pre">Fit.latex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.latex_math"><code class="docutils literal notranslate"><span class="pre">Fit.latex_math</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.ptostring"><code class="docutils literal notranslate"><span class="pre">Fit.ptostring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.toascii"><code class="docutils literal notranslate"><span class="pre">Fit.toascii()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.tohtml"><code class="docutils literal notranslate"><span class="pre">Fit.tohtml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.tolatex"><code class="docutils literal notranslate"><span class="pre">Fit.tolatex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.tostring"><code class="docutils literal notranslate"><span class="pre">Fit.tostring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.ypred"><code class="docutils literal notranslate"><span class="pre">Fit.ypred()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.Fit.ypredf"><code class="docutils literal notranslate"><span class="pre">Fit.ypredf()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit"><code class="docutils literal notranslate"><span class="pre">OneOverTFit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.p"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.pf"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.pf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.res"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.res</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.s"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.cov"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.cov</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.fit_output"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.fit_output</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.x"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.x</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.xf"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.xf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.xdim"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.xdim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.ux"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.ux</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.y"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.y</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.yf"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.yf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.ydim"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.ydim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.uy"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.uy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.count"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.p0"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.p0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.solver"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.solver</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.punits"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.punits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.nparam"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.nparam</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.f"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.f()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.fhtml"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.fhtml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.flatex"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.flatex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.funicode"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.funicode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.get_p0"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.get_p0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.get_punits"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.get_punits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.OneOverTFit.jac"><code class="docutils literal notranslate"><span class="pre">OneOverTFit.jac()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.fit.PolyFit"><code class="docutils literal notranslate"><span class="pre">PolyFit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.PolyFit.f"><code class="docutils literal notranslate"><span class="pre">PolyFit.f()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.PolyFit.fhtml"><code class="docutils literal notranslate"><span class="pre">PolyFit.fhtml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.PolyFit.flatex"><code class="docutils literal notranslate"><span class="pre">PolyFit.flatex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.PolyFit.funicode"><code class="docutils literal notranslate"><span class="pre">PolyFit.funicode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.PolyFit.get_p0"><code class="docutils literal notranslate"><span class="pre">PolyFit.get_p0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.PolyFit.get_punits"><code class="docutils literal notranslate"><span class="pre">PolyFit.get_punits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.PolyFit.jac"><code class="docutils literal notranslate"><span class="pre">PolyFit.jac()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit"><code class="docutils literal notranslate"><span class="pre">SinFit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.p"><code class="docutils literal notranslate"><span class="pre">SinFit.p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.pf"><code class="docutils literal notranslate"><span class="pre">SinFit.pf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.res"><code class="docutils literal notranslate"><span class="pre">SinFit.res</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.s"><code class="docutils literal notranslate"><span class="pre">SinFit.s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.cov"><code class="docutils literal notranslate"><span class="pre">SinFit.cov</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.fit_output"><code class="docutils literal notranslate"><span class="pre">SinFit.fit_output</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.x"><code class="docutils literal notranslate"><span class="pre">SinFit.x</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.xf"><code class="docutils literal notranslate"><span class="pre">SinFit.xf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.xdim"><code class="docutils literal notranslate"><span class="pre">SinFit.xdim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.ux"><code class="docutils literal notranslate"><span class="pre">SinFit.ux</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.y"><code class="docutils literal notranslate"><span class="pre">SinFit.y</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.yf"><code class="docutils literal notranslate"><span class="pre">SinFit.yf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.ydim"><code class="docutils literal notranslate"><span class="pre">SinFit.ydim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.uy"><code class="docutils literal notranslate"><span class="pre">SinFit.uy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.count"><code class="docutils literal notranslate"><span class="pre">SinFit.count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.p0"><code class="docutils literal notranslate"><span class="pre">SinFit.p0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.solver"><code class="docutils literal notranslate"><span class="pre">SinFit.solver</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.punits"><code class="docutils literal notranslate"><span class="pre">SinFit.punits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.nparam"><code class="docutils literal notranslate"><span class="pre">SinFit.nparam</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.f"><code class="docutils literal notranslate"><span class="pre">SinFit.f()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.fhtml"><code class="docutils literal notranslate"><span class="pre">SinFit.fhtml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.flatex"><code class="docutils literal notranslate"><span class="pre">SinFit.flatex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.funicode"><code class="docutils literal notranslate"><span class="pre">SinFit.funicode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.get_p0"><code class="docutils literal notranslate"><span class="pre">SinFit.get_p0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.get_punits"><code class="docutils literal notranslate"><span class="pre">SinFit.get_punits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.fit.SinFit.jac"><code class="docutils literal notranslate"><span class="pre">SinFit.jac()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.functions">metrolopy.functions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.absolute"><code class="docutils literal notranslate"><span class="pre">absolute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.add"><code class="docutils literal notranslate"><span class="pre">add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.angle"><code class="docutils literal notranslate"><span class="pre">angle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.arccos"><code class="docutils literal notranslate"><span class="pre">arccos()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.arccosh"><code class="docutils literal notranslate"><span class="pre">arccosh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.arcsin"><code class="docutils literal notranslate"><span class="pre">arcsin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.arcsinh"><code class="docutils literal notranslate"><span class="pre">arcsinh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.arctan"><code class="docutils literal notranslate"><span class="pre">arctan()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.arctan2"><code class="docutils literal notranslate"><span class="pre">arctan2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.arctanh"><code class="docutils literal notranslate"><span class="pre">arctanh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.around"><code class="docutils literal notranslate"><span class="pre">around()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.cbrt"><code class="docutils literal notranslate"><span class="pre">cbrt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.ceil"><code class="docutils literal notranslate"><span class="pre">ceil()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.conj"><code class="docutils literal notranslate"><span class="pre">conj()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.cos"><code class="docutils literal notranslate"><span class="pre">cos()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.cosh"><code class="docutils literal notranslate"><span class="pre">cosh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.cross"><code class="docutils literal notranslate"><span class="pre">cross()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.cumprod"><code class="docutils literal notranslate"><span class="pre">cumprod()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.cumsum"><code class="docutils literal notranslate"><span class="pre">cumsum()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.diff"><code class="docutils literal notranslate"><span class="pre">diff()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.divide"><code class="docutils literal notranslate"><span class="pre">divide()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.divmod"><code class="docutils literal notranslate"><span class="pre">divmod()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.ediff1d"><code class="docutils literal notranslate"><span class="pre">ediff1d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.exp"><code class="docutils literal notranslate"><span class="pre">exp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.exp2"><code class="docutils literal notranslate"><span class="pre">exp2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.expm1"><code class="docutils literal notranslate"><span class="pre">expm1()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.fix"><code class="docutils literal notranslate"><span class="pre">fix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.floor"><code class="docutils literal notranslate"><span class="pre">floor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.floor_divide"><code class="docutils literal notranslate"><span class="pre">floor_divide()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.gradient"><code class="docutils literal notranslate"><span class="pre">gradient()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.heaviside"><code class="docutils literal notranslate"><span class="pre">heaviside()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.imag"><code class="docutils literal notranslate"><span class="pre">imag()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.log"><code class="docutils literal notranslate"><span class="pre">log()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.log10"><code class="docutils literal notranslate"><span class="pre">log10()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.log1p"><code class="docutils literal notranslate"><span class="pre">log1p()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.log2"><code class="docutils literal notranslate"><span class="pre">log2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.logaddexp"><code class="docutils literal notranslate"><span class="pre">logaddexp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.logaddexp2"><code class="docutils literal notranslate"><span class="pre">logaddexp2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.mod"><code class="docutils literal notranslate"><span class="pre">mod()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.modf"><code class="docutils literal notranslate"><span class="pre">modf()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.multiply"><code class="docutils literal notranslate"><span class="pre">multiply()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.negative"><code class="docutils literal notranslate"><span class="pre">negative()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.power"><code class="docutils literal notranslate"><span class="pre">power()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.prod"><code class="docutils literal notranslate"><span class="pre">prod()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.real"><code class="docutils literal notranslate"><span class="pre">real()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.reciprocal"><code class="docutils literal notranslate"><span class="pre">reciprocal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.remainder"><code class="docutils literal notranslate"><span class="pre">remainder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.rint"><code class="docutils literal notranslate"><span class="pre">rint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.sign"><code class="docutils literal notranslate"><span class="pre">sign()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.sin"><code class="docutils literal notranslate"><span class="pre">sin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.sinh"><code class="docutils literal notranslate"><span class="pre">sinh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.sqrt"><code class="docutils literal notranslate"><span class="pre">sqrt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.square"><code class="docutils literal notranslate"><span class="pre">square()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.subtract"><code class="docutils literal notranslate"><span class="pre">subtract()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.sum"><code class="docutils literal notranslate"><span class="pre">sum()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.tan"><code class="docutils literal notranslate"><span class="pre">tan()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.tanh"><code class="docutils literal notranslate"><span class="pre">tanh()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.true_divide"><code class="docutils literal notranslate"><span class="pre">true_divide()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.functions.trunc"><code class="docutils literal notranslate"><span class="pre">trunc()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.gummy">metrolopy.gummy module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy"><code class="docutils literal notranslate"><span class="pre">MetaGummy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.bayesian"><code class="docutils literal notranslate"><span class="pre">MetaGummy.bayesian</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.cimethod"><code class="docutils literal notranslate"><span class="pre">MetaGummy.cimethod</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.cmp_k"><code class="docutils literal notranslate"><span class="pre">MetaGummy.cmp_k</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.cmp_p"><code class="docutils literal notranslate"><span class="pre">MetaGummy.cmp_p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.max_digits"><code class="docutils literal notranslate"><span class="pre">MetaGummy.max_digits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.max_dof"><code class="docutils literal notranslate"><span class="pre">MetaGummy.max_dof</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.mulsep"><code class="docutils literal notranslate"><span class="pre">MetaGummy.mulsep</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.nsig"><code class="docutils literal notranslate"><span class="pre">MetaGummy.nsig</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.p_method"><code class="docutils literal notranslate"><span class="pre">MetaGummy.p_method</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.rounding_u"><code class="docutils literal notranslate"><span class="pre">MetaGummy.rounding_u</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.sci_notation"><code class="docutils literal notranslate"><span class="pre">MetaGummy.sci_notation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.sci_notation_high"><code class="docutils literal notranslate"><span class="pre">MetaGummy.sci_notation_high</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.sci_notation_low"><code class="docutils literal notranslate"><span class="pre">MetaGummy.sci_notation_low</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.solidus"><code class="docutils literal notranslate"><span class="pre">MetaGummy.solidus</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.style"><code class="docutils literal notranslate"><span class="pre">MetaGummy.style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.MetaGummy.thousand_spaces"><code class="docutils literal notranslate"><span class="pre">MetaGummy.thousand_spaces</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy"><code class="docutils literal notranslate"><span class="pre">gummy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.U"><code class="docutils literal notranslate"><span class="pre">gummy.U</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.Usim"><code class="docutils literal notranslate"><span class="pre">gummy.Usim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.angle"><code class="docutils literal notranslate"><span class="pre">gummy.angle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.apply"><code class="docutils literal notranslate"><span class="pre">gummy.apply()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.ascii"><code class="docutils literal notranslate"><span class="pre">gummy.ascii()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.bayesian"><code class="docutils literal notranslate"><span class="pre">gummy.bayesian</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.budget"><code class="docutils literal notranslate"><span class="pre">gummy.budget()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.cimethod"><code class="docutils literal notranslate"><span class="pre">gummy.cimethod</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.cisim"><code class="docutils literal notranslate"><span class="pre">gummy.cisim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.conjugate"><code class="docutils literal notranslate"><span class="pre">gummy.conjugate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.copy"><code class="docutils literal notranslate"><span class="pre">gummy.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.correlation"><code class="docutils literal notranslate"><span class="pre">gummy.correlation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.correlation_matrix"><code class="docutils literal notranslate"><span class="pre">gummy.correlation_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.correlation_matrix_sim"><code class="docutils literal notranslate"><span class="pre">gummy.correlation_matrix_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.correlation_sim"><code class="docutils literal notranslate"><span class="pre">gummy.correlation_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.covariance"><code class="docutils literal notranslate"><span class="pre">gummy.covariance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.covariance_matrix"><code class="docutils literal notranslate"><span class="pre">gummy.covariance_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.covariance_matrix_sim"><code class="docutils literal notranslate"><span class="pre">gummy.covariance_matrix_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.covariance_sim"><code class="docutils literal notranslate"><span class="pre">gummy.covariance_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.covplot"><code class="docutils literal notranslate"><span class="pre">gummy.covplot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.create"><code class="docutils literal notranslate"><span class="pre">gummy.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.distribution"><code class="docutils literal notranslate"><span class="pre">gummy.distribution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.dof"><code class="docutils literal notranslate"><span class="pre">gummy.dof</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.doffrom"><code class="docutils literal notranslate"><span class="pre">gummy.doffrom()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.exception_on_fmt_error"><code class="docutils literal notranslate"><span class="pre">gummy.exception_on_fmt_error</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.finfo"><code class="docutils literal notranslate"><span class="pre">gummy.finfo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.get_name"><code class="docutils literal notranslate"><span class="pre">gummy.get_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.graft"><code class="docutils literal notranslate"><span class="pre">gummy.graft()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.hist"><code class="docutils literal notranslate"><span class="pre">gummy.hist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.html"><code class="docutils literal notranslate"><span class="pre">gummy.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.imag"><code class="docutils literal notranslate"><span class="pre">gummy.imag</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.independent"><code class="docutils literal notranslate"><span class="pre">gummy.independent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.k"><code class="docutils literal notranslate"><span class="pre">gummy.k</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.ksim"><code class="docutils literal notranslate"><span class="pre">gummy.ksim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.latex"><code class="docutils literal notranslate"><span class="pre">gummy.latex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.max_digits"><code class="docutils literal notranslate"><span class="pre">gummy.max_digits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.mulsep"><code class="docutils literal notranslate"><span class="pre">gummy.mulsep</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.name"><code class="docutils literal notranslate"><span class="pre">gummy.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.napply"><code class="docutils literal notranslate"><span class="pre">gummy.napply()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.nsig"><code class="docutils literal notranslate"><span class="pre">gummy.nsig</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.p"><code class="docutils literal notranslate"><span class="pre">gummy.p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.real"><code class="docutils literal notranslate"><span class="pre">gummy.real</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.sci_notation"><code class="docutils literal notranslate"><span class="pre">gummy.sci_notation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.sci_notation_high"><code class="docutils literal notranslate"><span class="pre">gummy.sci_notation_high</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.sci_notation_low"><code class="docutils literal notranslate"><span class="pre">gummy.sci_notation_low</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.show_dof"><code class="docutils literal notranslate"><span class="pre">gummy.show_dof</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.show_k"><code class="docutils literal notranslate"><span class="pre">gummy.show_k</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.show_name"><code class="docutils literal notranslate"><span class="pre">gummy.show_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.show_p"><code class="docutils literal notranslate"><span class="pre">gummy.show_p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.sim"><code class="docutils literal notranslate"><span class="pre">gummy.sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.simdata"><code class="docutils literal notranslate"><span class="pre">gummy.simdata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.simsorted"><code class="docutils literal notranslate"><span class="pre">gummy.simsorted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.simulate"><code class="docutils literal notranslate"><span class="pre">gummy.simulate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.slashaxis"><code class="docutils literal notranslate"><span class="pre">gummy.slashaxis</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.solidus"><code class="docutils literal notranslate"><span class="pre">gummy.solidus</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.splonk"><code class="docutils literal notranslate"><span class="pre">gummy.splonk()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.style"><code class="docutils literal notranslate"><span class="pre">gummy.style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.thousand_spaces"><code class="docutils literal notranslate"><span class="pre">gummy.thousand_spaces</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.toascii"><code class="docutils literal notranslate"><span class="pre">gummy.toascii()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.tohtml"><code class="docutils literal notranslate"><span class="pre">gummy.tohtml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.tolatex"><code class="docutils literal notranslate"><span class="pre">gummy.tolatex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.tostring"><code class="docutils literal notranslate"><span class="pre">gummy.tostring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.toummy"><code class="docutils literal notranslate"><span class="pre">gummy.toummy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.u"><code class="docutils literal notranslate"><span class="pre">gummy.u</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.ubreakdown"><code class="docutils literal notranslate"><span class="pre">gummy.ubreakdown</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.ufrom"><code class="docutils literal notranslate"><span class="pre">gummy.ufrom()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.unicode"><code class="docutils literal notranslate"><span class="pre">gummy.unicode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.unit"><code class="docutils literal notranslate"><span class="pre">gummy.unit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.usim"><code class="docutils literal notranslate"><span class="pre">gummy.usim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.utype"><code class="docutils literal notranslate"><span class="pre">gummy.utype</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.uunit"><code class="docutils literal notranslate"><span class="pre">gummy.uunit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.uunit_is_rel"><code class="docutils literal notranslate"><span class="pre">gummy.uunit_is_rel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.x"><code class="docutils literal notranslate"><span class="pre">gummy.x</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.gummy.xsim"><code class="docutils literal notranslate"><span class="pre">gummy.xsim</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.jummy"><code class="docutils literal notranslate"><span class="pre">jummy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.jummy.get_name"><code class="docutils literal notranslate"><span class="pre">jummy.get_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.jummy.name"><code class="docutils literal notranslate"><span class="pre">jummy.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.jummy.show_name"><code class="docutils literal notranslate"><span class="pre">jummy.show_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.jummy.splonk"><code class="docutils literal notranslate"><span class="pre">jummy.splonk()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.jummy.toimmy"><code class="docutils literal notranslate"><span class="pre">jummy.toimmy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.gummy.jummy.tostring"><code class="docutils literal notranslate"><span class="pre">jummy.tostring()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.logunit">metrolopy.logunit module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.logunit.LogConversion"><code class="docutils literal notranslate"><span class="pre">LogConversion</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.logunit.LogConversion.copy"><code class="docutils literal notranslate"><span class="pre">LogConversion.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.logunit.LogConversion.frm"><code class="docutils literal notranslate"><span class="pre">LogConversion.frm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.logunit.LogConversion.log_func"><code class="docutils literal notranslate"><span class="pre">LogConversion.log_func()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.logunit.LogConversion.to"><code class="docutils literal notranslate"><span class="pre">LogConversion.to()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.logunit.LogUnit"><code class="docutils literal notranslate"><span class="pre">LogUnit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.logunit.LogUnit.get_composite"><code class="docutils literal notranslate"><span class="pre">LogUnit.get_composite()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.logunit.LogUnit.zero"><code class="docutils literal notranslate"><span class="pre">LogUnit.zero()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.mean">metrolopy.mean module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.mean.autocorrelation"><code class="docutils literal notranslate"><span class="pre">autocorrelation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.mean.delta_diff"><code class="docutils literal notranslate"><span class="pre">delta_diff()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.mean.delta_diff_mean"><code class="docutils literal notranslate"><span class="pre">delta_diff_mean()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.mean.delta_sum"><code class="docutils literal notranslate"><span class="pre">delta_sum()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.mean.delta_sum_mean"><code class="docutils literal notranslate"><span class="pre">delta_sum_mean()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.mean.mean"><code class="docutils literal notranslate"><span class="pre">mean()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.mean.mean_datetime"><code class="docutils literal notranslate"><span class="pre">mean_datetime()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.mean.n_eff"><code class="docutils literal notranslate"><span class="pre">n_eff()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.mean.sigma_trim"><code class="docutils literal notranslate"><span class="pre">sigma_trim()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.mean.wmean"><code class="docutils literal notranslate"><span class="pre">wmean()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.nonlinearunit">metrolopy.nonlinearunit module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.NonlinearConversion"><code class="docutils literal notranslate"><span class="pre">NonlinearConversion</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.NonlinearConversion.chain"><code class="docutils literal notranslate"><span class="pre">NonlinearConversion.chain()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.NonlinearConversion.copy"><code class="docutils literal notranslate"><span class="pre">NonlinearConversion.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.NonlinearConversion.linear"><code class="docutils literal notranslate"><span class="pre">NonlinearConversion.linear</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.NonlinearConversion.pow"><code class="docutils literal notranslate"><span class="pre">NonlinearConversion.pow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.NonlinearConversion.rchain"><code class="docutils literal notranslate"><span class="pre">NonlinearConversion.rchain()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.NonlinearUnit"><code class="docutils literal notranslate"><span class="pre">NonlinearUnit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.NonlinearUnit.from_uunit"><code class="docutils literal notranslate"><span class="pre">NonlinearUnit.from_uunit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.NonlinearUnit.get_composite"><code class="docutils literal notranslate"><span class="pre">NonlinearUnit.get_composite()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.NonlinearUnit.to_uunit"><code class="docutils literal notranslate"><span class="pre">NonlinearUnit.to_uunit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.NonlinearUnit.zero"><code class="docutils literal notranslate"><span class="pre">NonlinearUnit.zero()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.ReciprocalConversion"><code class="docutils literal notranslate"><span class="pre">ReciprocalConversion</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.ReciprocalConversion.chain"><code class="docutils literal notranslate"><span class="pre">ReciprocalConversion.chain()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.ReciprocalConversion.copy"><code class="docutils literal notranslate"><span class="pre">ReciprocalConversion.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.ReciprocalConversion.frm"><code class="docutils literal notranslate"><span class="pre">ReciprocalConversion.frm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nonlinearunit.ReciprocalConversion.to"><code class="docutils literal notranslate"><span class="pre">ReciprocalConversion.to()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.nummy">metrolopy.nummy module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy"><code class="docutils literal notranslate"><span class="pre">nummy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.Usim"><code class="docutils literal notranslate"><span class="pre">nummy.Usim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.bayesian"><code class="docutils literal notranslate"><span class="pre">nummy.bayesian</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.cimethod"><code class="docutils literal notranslate"><span class="pre">nummy.cimethod</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.cisim"><code class="docutils literal notranslate"><span class="pre">nummy.cisim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.correlation_matrix_sim"><code class="docutils literal notranslate"><span class="pre">nummy.correlation_matrix_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.correlation_sim"><code class="docutils literal notranslate"><span class="pre">nummy.correlation_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.covariance_matrix_sim"><code class="docutils literal notranslate"><span class="pre">nummy.covariance_matrix_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.covariance_sim"><code class="docutils literal notranslate"><span class="pre">nummy.covariance_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.covplot"><code class="docutils literal notranslate"><span class="pre">nummy.covplot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.create"><code class="docutils literal notranslate"><span class="pre">nummy.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.distribution"><code class="docutils literal notranslate"><span class="pre">nummy.distribution</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.dof"><code class="docutils literal notranslate"><span class="pre">nummy.dof</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.get_name"><code class="docutils literal notranslate"><span class="pre">nummy.get_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.hist"><code class="docutils literal notranslate"><span class="pre">nummy.hist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.independent"><code class="docutils literal notranslate"><span class="pre">nummy.independent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.ksim"><code class="docutils literal notranslate"><span class="pre">nummy.ksim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.name"><code class="docutils literal notranslate"><span class="pre">nummy.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.p"><code class="docutils literal notranslate"><span class="pre">nummy.p</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.set_seed"><code class="docutils literal notranslate"><span class="pre">nummy.set_seed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.simdata"><code class="docutils literal notranslate"><span class="pre">nummy.simdata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.simsorted"><code class="docutils literal notranslate"><span class="pre">nummy.simsorted</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.simulate"><code class="docutils literal notranslate"><span class="pre">nummy.simulate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.splonk"><code class="docutils literal notranslate"><span class="pre">nummy.splonk()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.toummy"><code class="docutils literal notranslate"><span class="pre">nummy.toummy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.ufrom"><code class="docutils literal notranslate"><span class="pre">nummy.ufrom()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.usim"><code class="docutils literal notranslate"><span class="pre">nummy.usim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.nummy.nummy.xsim"><code class="docutils literal notranslate"><span class="pre">nummy.xsim</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.offsetunit">metrolopy.offsetunit module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.offsetunit.OffsetConversion"><code class="docutils literal notranslate"><span class="pre">OffsetConversion</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.offsetunit.OffsetConversion.copy"><code class="docutils literal notranslate"><span class="pre">OffsetConversion.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.offsetunit.OffsetConversion.frm"><code class="docutils literal notranslate"><span class="pre">OffsetConversion.frm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.offsetunit.OffsetConversion.to"><code class="docutils literal notranslate"><span class="pre">OffsetConversion.to()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.offsetunit.OffsetUnit"><code class="docutils literal notranslate"><span class="pre">OffsetUnit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.offsetunit.OffsetUnit.zero"><code class="docutils literal notranslate"><span class="pre">OffsetUnit.zero()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.pmethod">metrolopy.pmethod module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.pmethod.ccp_from_k"><code class="docutils literal notranslate"><span class="pre">ccp_from_k()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.pmethod.conservative_coverage_probability"><code class="docutils literal notranslate"><span class="pre">conservative_coverage_probability()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.pmethod.coverage_factor"><code class="docutils literal notranslate"><span class="pre">coverage_factor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.pmethod.coverage_probability"><code class="docutils literal notranslate"><span class="pre">coverage_probability()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.pmethod.cp_from_k"><code class="docutils literal notranslate"><span class="pre">cp_from_k()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.pmethod.loc_from_k"><code class="docutils literal notranslate"><span class="pre">loc_from_k()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.prefixedunit">metrolopy.prefixedunit module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.prefixedunit.BinaryPrefixedUnit"><code class="docutils literal notranslate"><span class="pre">BinaryPrefixedUnit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.prefixedunit.BinaryPrefixedUnit.prefix_definitions"><code class="docutils literal notranslate"><span class="pre">BinaryPrefixedUnit.prefix_definitions</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.prefixedunit.PrefixedUnit"><code class="docutils literal notranslate"><span class="pre">PrefixedUnit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.prefixedunit.PrefixedUnit.prefix_definitions"><code class="docutils literal notranslate"><span class="pre">PrefixedUnit.prefix_definitions</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.printing">metrolopy.printing module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.printing.MetaPrettyPrinter"><code class="docutils literal notranslate"><span class="pre">MetaPrettyPrinter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.MetaPrettyPrinter.printer"><code class="docutils literal notranslate"><span class="pre">MetaPrettyPrinter.printer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.ascii"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.ascii()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.break_on_printing_error"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.break_on_printing_error</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.html"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.latex"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.latex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.latex_math"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.latex_math()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.latex_math_plot"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.latex_math_plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.latex_norm"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.latex_norm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.latex_norm_plot"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.latex_norm_plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.printer"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.printer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.toascii"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.toascii()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.tohtml"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.tohtml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.tolatex"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.tolatex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.tounicode"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.tounicode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.printing.PrettyPrinter.unicode"><code class="docutils literal notranslate"><span class="pre">PrettyPrinter.unicode()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.printing.print_html"><code class="docutils literal notranslate"><span class="pre">print_html()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.printing.print_latex"><code class="docutils literal notranslate"><span class="pre">print_latex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.printing.print_markdown"><code class="docutils literal notranslate"><span class="pre">print_markdown()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.printing.set_printer"><code class="docutils literal notranslate"><span class="pre">set_printer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.relunits">metrolopy.relunits module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.relunits.RatioUnit"><code class="docutils literal notranslate"><span class="pre">RatioUnit</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.siunits">metrolopy.siunits module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.ummy">metrolopy.ummy module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.unit">metrolopy.unit module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.unitutils">metrolopy.unitutils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.ummy">metrolopy.ummy module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.GummyTag"><code class="docutils literal notranslate"><span class="pre">GummyTag</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.GummyTag.get_values"><code class="docutils literal notranslate"><span class="pre">GummyTag.get_values()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.GummyTag.set_tag"><code class="docutils literal notranslate"><span class="pre">GummyTag.set_tag()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.GummyTag.tags"><code class="docutils literal notranslate"><span class="pre">GummyTag.tags</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.MFraction"><code class="docutils literal notranslate"><span class="pre">MFraction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.MetaImmy"><code class="docutils literal notranslate"><span class="pre">MetaImmy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.MetaImmy.imag_symbol"><code class="docutils literal notranslate"><span class="pre">MetaImmy.imag_symbol</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.MetaImmy.style"><code class="docutils literal notranslate"><span class="pre">MetaImmy.style</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy"><code class="docutils literal notranslate"><span class="pre">immy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.angle"><code class="docutils literal notranslate"><span class="pre">immy.angle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.conjugate"><code class="docutils literal notranslate"><span class="pre">immy.conjugate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.copy"><code class="docutils literal notranslate"><span class="pre">immy.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.cov"><code class="docutils literal notranslate"><span class="pre">immy.cov</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.imag"><code class="docutils literal notranslate"><span class="pre">immy.imag</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.phi"><code class="docutils literal notranslate"><span class="pre">immy.phi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.r"><code class="docutils literal notranslate"><span class="pre">immy.r</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.real"><code class="docutils literal notranslate"><span class="pre">immy.real</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.splonk"><code class="docutils literal notranslate"><span class="pre">immy.splonk()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.style"><code class="docutils literal notranslate"><span class="pre">immy.style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.tofloat"><code class="docutils literal notranslate"><span class="pre">immy.tofloat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.tostring"><code class="docutils literal notranslate"><span class="pre">immy.tostring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.immy.x"><code class="docutils literal notranslate"><span class="pre">immy.x</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy"><code class="docutils literal notranslate"><span class="pre">ummy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.angle"><code class="docutils literal notranslate"><span class="pre">ummy.angle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.conjugate"><code class="docutils literal notranslate"><span class="pre">ummy.conjugate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.copy"><code class="docutils literal notranslate"><span class="pre">ummy.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.correlation"><code class="docutils literal notranslate"><span class="pre">ummy.correlation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.correlation_matrix"><code class="docutils literal notranslate"><span class="pre">ummy.correlation_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.covariance"><code class="docutils literal notranslate"><span class="pre">ummy.covariance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.covariance_matrix"><code class="docutils literal notranslate"><span class="pre">ummy.covariance_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.create"><code class="docutils literal notranslate"><span class="pre">ummy.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.dof"><code class="docutils literal notranslate"><span class="pre">ummy.dof</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.doffrom"><code class="docutils literal notranslate"><span class="pre">ummy.doffrom()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.finfo"><code class="docutils literal notranslate"><span class="pre">ummy.finfo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.imag"><code class="docutils literal notranslate"><span class="pre">ummy.imag</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.max_digits"><code class="docutils literal notranslate"><span class="pre">ummy.max_digits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.max_dof"><code class="docutils literal notranslate"><span class="pre">ummy.max_dof</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.nsig"><code class="docutils literal notranslate"><span class="pre">ummy.nsig</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.real"><code class="docutils literal notranslate"><span class="pre">ummy.real</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.rounding_u"><code class="docutils literal notranslate"><span class="pre">ummy.rounding_u</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.sci_notation"><code class="docutils literal notranslate"><span class="pre">ummy.sci_notation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.sci_notation_high"><code class="docutils literal notranslate"><span class="pre">ummy.sci_notation_high</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.sci_notation_low"><code class="docutils literal notranslate"><span class="pre">ummy.sci_notation_low</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.splonk"><code class="docutils literal notranslate"><span class="pre">ummy.splonk()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.thousand_spaces"><code class="docutils literal notranslate"><span class="pre">ummy.thousand_spaces</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.tofloat"><code class="docutils literal notranslate"><span class="pre">ummy.tofloat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.tostring"><code class="docutils literal notranslate"><span class="pre">ummy.tostring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.u"><code class="docutils literal notranslate"><span class="pre">ummy.u</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.ufrom"><code class="docutils literal notranslate"><span class="pre">ummy.ufrom()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.utype"><code class="docutils literal notranslate"><span class="pre">ummy.utype</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.ummy.ummy.x"><code class="docutils literal notranslate"><span class="pre">ummy.x</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.unit">metrolopy.unit module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Conversion"><code class="docutils literal notranslate"><span class="pre">Conversion</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Conversion.chain"><code class="docutils literal notranslate"><span class="pre">Conversion.chain()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Conversion.copy"><code class="docutils literal notranslate"><span class="pre">Conversion.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Conversion.frm"><code class="docutils literal notranslate"><span class="pre">Conversion.frm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Conversion.linear"><code class="docutils literal notranslate"><span class="pre">Conversion.linear</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Conversion.pow"><code class="docutils literal notranslate"><span class="pre">Conversion.pow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Conversion.to"><code class="docutils literal notranslate"><span class="pre">Conversion.to()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Conversion.unit"><code class="docutils literal notranslate"><span class="pre">Conversion.unit</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity"><code class="docutils literal notranslate"><span class="pre">Quantity</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.c"><code class="docutils literal notranslate"><span class="pre">Quantity.c</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.convert"><code class="docutils literal notranslate"><span class="pre">Quantity.convert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.copy"><code class="docutils literal notranslate"><span class="pre">Quantity.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.imag"><code class="docutils literal notranslate"><span class="pre">Quantity.imag</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.real"><code class="docutils literal notranslate"><span class="pre">Quantity.real</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.reduce_unit"><code class="docutils literal notranslate"><span class="pre">Quantity.reduce_unit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.splonk"><code class="docutils literal notranslate"><span class="pre">Quantity.splonk()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.splonk_func_ret"><code class="docutils literal notranslate"><span class="pre">Quantity.splonk_func_ret</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.tofloat"><code class="docutils literal notranslate"><span class="pre">Quantity.tofloat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.tostring"><code class="docutils literal notranslate"><span class="pre">Quantity.tostring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.totuple"><code class="docutils literal notranslate"><span class="pre">Quantity.totuple()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.unit"><code class="docutils literal notranslate"><span class="pre">Quantity.unit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Quantity.value"><code class="docutils literal notranslate"><span class="pre">Quantity.value</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.unit.QuantityArray"><code class="docutils literal notranslate"><span class="pre">QuantityArray</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Unit"><code class="docutils literal notranslate"><span class="pre">Unit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Unit.conversion"><code class="docutils literal notranslate"><span class="pre">Unit.conversion</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Unit.convert"><code class="docutils literal notranslate"><span class="pre">Unit.convert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Unit.format_latex"><code class="docutils literal notranslate"><span class="pre">Unit.format_latex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Unit.is_dimensionless"><code class="docutils literal notranslate"><span class="pre">Unit.is_dimensionless</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Unit.linear"><code class="docutils literal notranslate"><span class="pre">Unit.linear</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Unit.mulsep"><code class="docutils literal notranslate"><span class="pre">Unit.mulsep</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Unit.reorder"><code class="docutils literal notranslate"><span class="pre">Unit.reorder()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Unit.solidus"><code class="docutils literal notranslate"><span class="pre">Unit.solidus</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Unit.unit"><code class="docutils literal notranslate"><span class="pre">Unit.unit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="metrolopy.html#metrolopy.unit.Unit.units"><code class="docutils literal notranslate"><span class="pre">Unit.units</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.unit.unit"><code class="docutils literal notranslate"><span class="pre">unit()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.unitutils">metrolopy.unitutils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.unitutils.convert"><code class="docutils literal notranslate"><span class="pre">convert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.unitutils.search_units"><code class="docutils literal notranslate"><span class="pre">search_units()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrolopy.html#metrolopy.unitutils.shadowed_units"><code class="docutils literal notranslate"><span class="pre">shadowed_units()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.usunits">metrolopy.usunits module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy.version">metrolopy.version module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="metrolopy.html#module-metrolopy">Module contents</a></li>
@@ -84,7 +839,7 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -93,7 +848,7 @@
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -101,13 +856,13 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -116,13 +871,13 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.3 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.4 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">metrolopy</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, National Research Council Canada.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+    &#169; Copyright 2020, National Research Council Canada.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>
 </html>
