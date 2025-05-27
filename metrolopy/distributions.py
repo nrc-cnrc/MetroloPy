@@ -920,7 +920,7 @@ class UniformDist(Distribution):
                 if lower_limit >= upper_limit:
                     raise ValueError('lower_limit >= upper_limit')
                 self.center = (upper_limit + lower_limit)/2
-                self.half_width = upper_limit - lower_limit
+                self.half_width = (upper_limit - lower_limit)/2
         if upper_limit is not None:
             k += 1
             self.upper_limit = upper_limit

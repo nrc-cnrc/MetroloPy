@@ -2,7 +2,7 @@
 
 # module version
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -20,4 +20,4 @@
 # You should have received a copy of the GNU General Public License along with 
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = '0.6.3'
+__version__ = '0.6.4'

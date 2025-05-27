@@ -1207,7 +1207,7 @@ class Budget(PrettyPrinter):
             if i == self.nx - 1 or i == self.nx+nt-1 or i == ndf-2:
                 txt += r'\hline'
                 txt += '\n'
-        txt += '\end{array}'
+        txt += '\\end{array}'
         return txt
 
     def _tohtml(self):

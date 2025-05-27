@@ -134,7 +134,7 @@ class _UnitParser:
                     c = self.txt[self.i]
                     if c == '(':
                         if par == 0:
-                            if cl.ispace() or cl == '*':
+                            if cl.isspace() or cl == '*':
                                 f =  float(et)
                                 if np.modf(f)[0] == 0:
                                     return int(f)
@@ -147,7 +147,7 @@ class _UnitParser:
                             else:
                                 par += 1
                     elif c == '[':
-                        if cl.ispace() or cl == '*':
+                        if cl.isspace() or cl == '*':
                             f =  float(et)
                             if np.modf(f)[0] == 0:
                                 return int(f)

@@ -21,6 +21,7 @@
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+import unittest
 from metrolopy import immy,ummy,jummy,gummy
 from metrolopy.tests.common import display
 
@@ -75,148 +76,152 @@ def make_immy(prnt=False):
     
     return (ret,real,imag)
 
-def assert_ummy_close(u1,u2):
-        assert abs(u1.correlation(u2)) > 1 - 1e-4
-        u1x = max(u1.x,u1.u,u2.x,u2.u)
-        assert abs((u1.x - u2.x)/(u1x)) < 1e-10
-        assert abs((u1.u - u2.u)/(u1.u)) < 1e-2
-        
-        if u1.dof == float('inf'):
-            assert u2.dof == float('inf')
-        else:
-            assert abs((u2.dof - u1.dof)/u1.dof) < 1e-2
-        
-def assert_immy_close(i1,i2):
-        assert_ummy_close(i1.real,i2.real)
-        assert_ummy_close(i1.imag,i2.imag)
 
-def test_immy_init(n=1000,prnt=False):
-    for m in range(n):
-        x,xr,xi = make_immy(prnt=prnt)
-        
-        if rand.randint(2):
-            if rand.randint(2):
-                x = type(x)(x)
-            else:
-                x = x.copy(formatting=False)
-        
-        assert_ummy_close(x.real,xr)
-        assert_ummy_close(x.imag,xi)
-        assert_ummy_close(x.angle(),np.arctan2(xi,xr))
-        assert_ummy_close(abs(x),np.sqrt(xr**2 + xi**2))
-        assert_immy_close(x.conjugate(),immy(real=xr,imag=-xi))
-        assert_immy_close(-x,immy(real=-xr,imag=-xi))
-        assert_immy_close(+x,immy(real=xr,imag=xi))
-        
-        if prnt:
-            if rand.randint(2):
-                y =1e12*x
-            else:
-                y = x/1e12
-            display(y)
-
-def _test_immy_bop(f,nf,n=1000,prnt=False,allow_small=True):
-    m = 0
-    while m < n:
-        a,ar,ai = make_immy()
-        if True:#rand.randint(2):
-            b,br,bi = make_immy()
-        else:
-            if rand.randint(2):
-                b = 4*rand.rand() + 1
-                if rand.randint(2):
-                    b = -b
-                if rand.randint(2):
-                    bu = (0.1*rand.rand()+0.01)*(abs(b))
-                    b = ummy(b,u=bu)
-            else:
-                br = 4*rand.rand() + 1
-                if rand.randint(2):
-                    br = -br
-                bi = 4*rand.rand() + 1
-                if rand.randint(2):
-                    bi = -bi
-                b = complex(br,bi)
-            if rand.randint(2):
-                bb = b
-                b = a
-                a = bb
-                
-        if isinstance(a,(immy,ummy)):
-            ax = a.x
-        else:
-            ax = a
-        if isinstance(b,(immy,ummy)):
-            bx = b.x
-        else:
-            bx = b
-        
+class TestComplex(unittest.TestCase):
+    def assert_ummy_close(self,u1,u2):
+            self.assertTrue(abs(u1.correlation(u2)) > 1 - 1e-4)
+            u1x = max(u1.x,u1.u,u2.x,u2.u)
+            self.assertTrue(abs((u1.x - u2.x)/(u1x)) < 1e-10)
+            self.assertTrue(abs((u1.u - u2.u)/(u1.u)) < 1e-2)
             
-        cx = f(ax,bx)
-        
-        if allow_small or abs(cx) > 0.1:
-            m +=1
+            if u1.dof == float('inf'):
+                self.assertTrue(u2.dof == float('inf'))
+            else:
+                self.assertTrue(abs((u2.dof - u1.dof)/u1.dof) < 1e-2)
             
-            c = f(a,b)
-            cn = type(c).napply(nf,a,b)
+    def assert_immy_close(self,i1,i2):
+            self.assert_ummy_close(i1.real,i2.real)
+            self.assert_ummy_close(i1.imag,i2.imag)
+    
+    def test_immy_init(self,n=1000,prnt=False):
+        for m in range(n):
+            x,xr,xi = make_immy(prnt=prnt)
+            
+            if rand.randint(2):
+                if rand.randint(2):
+                    x = type(x)(x)
+                else:
+                    x = x.copy(formatting=False)
+            
+            self.assert_ummy_close(x.real,xr)
+            self.assert_ummy_close(x.imag,xi)
+            self.assert_ummy_close(x.angle(),np.arctan2(xi,xr))
+            self.assert_ummy_close(abs(x),np.sqrt(xr**2 + xi**2))
+            self.assert_immy_close(x.conjugate(),immy(real=xr,imag=-xi))
+            self.assert_immy_close(-x,immy(real=-xr,imag=-xi))
+            self.assert_immy_close(+x,immy(real=xr,imag=xi))
             
             if prnt:
-                display(a)
-                display(b)
-                display(c)
-                display(cn)
-                print('---')
+                if rand.randint(2):
+                    y =1e12*x
+                else:
+                    y = x/1e12
+                display(y)
     
-            assert abs((c.real.x - cx.real)/cx.real) < 1e-10
-            assert abs((c.imag.x - cx.imag)/cx.imag) < 1e-10
-            assert_immy_close(c,cn)
-    
-def test_immy_add(n=1000,prnt=False):
-    _test_immy_bop(lambda a,b: a + b,np.add,n,prnt)
-    
-    for m in range(10):
-        i = make_immy()[0]
-        assert i + 0 == i
-        assert 0 + i == i
-    
-def test_immy_sub(n=1000,prnt=False):
-    _test_immy_bop(lambda a,b: a - b,np.subtract,n,prnt)
-    
-    for m in range(10):
-        i = make_immy()[0]
-        assert i - 0 == i
-        assert 0 - i == -i
-    
-def test_immy_mul(n=1000,prnt=False):
-    _test_immy_bop(lambda a,b: a*b,np.multiply,n,prnt)
-    
-    for m in range(10):
-        i = make_immy()[0]
-        assert i*0 == 0
-        assert i*immy(0) == 0
-        assert i*1 == i
-        assert i*immy(1) == i
-        assert 1*i == i
-        assert immy(1)*i == i
-    
-def test_immy_div(n=1000,prnt=False):
-    _test_immy_bop(lambda a,b: a/b,np.divide,n,prnt,allow_small=False)
-    
-    for m in range(10):
-        i = make_immy()[0]
-        assert i/1 == i
-    
-def test_immy_pow(n=1000,prnt=False):
-    #_test_immy_bop(lambda a,b: a**b,np.power,n,prnt,allow_small=False)
-    
-    for m in range(10):
-        i = make_immy()[0]
-        assert 0**i == immy(0)
-        assert 0**i == ummy(0)
-        assert 0**i == 0
-        assert i**0 == 1
+    def _test_immy_bop(self,f,nf,n=1000,prnt=False,allow_small=True):
+        m = 0
+        while m < n:
+            a,ar,ai = make_immy()
+            if True:#rand.randint(2):
+                b,br,bi = make_immy()
+            else:
+                if rand.randint(2):
+                    b = 4*rand.rand() + 1
+                    if rand.randint(2):
+                        b = -b
+                    if rand.randint(2):
+                        bu = (0.1*rand.rand()+0.01)*(abs(b))
+                        b = ummy(b,u=bu)
+                else:
+                    br = 4*rand.rand() + 1
+                    if rand.randint(2):
+                        br = -br
+                    bi = 4*rand.rand() + 1
+                    if rand.randint(2):
+                        bi = -bi
+                    b = complex(br,bi)
+                if rand.randint(2):
+                    bb = b
+                    b = a
+                    a = bb
+                    
+            if isinstance(a,(immy,ummy)):
+                ax = a.x
+            else:
+                ax = a
+            if isinstance(b,(immy,ummy)):
+                bx = b.x
+            else:
+                bx = b
+            
+                
+            cx = f(ax,bx)
+            
+            if allow_small or abs(cx) > 0.1:
+                m +=1
+                
+                c = f(a,b)
+                cn = type(c).napply(nf,a,b)
+                
+                if prnt:
+                    display(a)
+                    display(b)
+                    display(c)
+                    display(cn)
+                    print('---')
         
-        assert_immy_close(i**-1,1/i)
-        assert_immy_close(i**2,i*i)
-        assert_immy_close(i**3,i*i*i)
+                self.assertTrue(abs((c.real.x - cx.real)/cx.real) < 1e-10)
+                self.assertTrue(abs((c.imag.x - cx.imag)/cx.imag) < 1e-10)
+                self.assert_immy_close(c,cn)
+        
+    def test_immy_add(self,n=1000,prnt=False):
+        self._test_immy_bop(lambda a,b: a + b,np.add,n,prnt)
+        
+        for m in range(10):
+            i = make_immy()[0]
+            self.assertTrue(i + 0 == i)
+            self.assertTrue(0 + i == i)
+        
+    def test_immy_sub(self,n=1000,prnt=False):
+        self._test_immy_bop(lambda a,b: a - b,np.subtract,n,prnt)
+        
+        for m in range(10):
+            i = make_immy()[0]
+            self.assertTrue(i - 0 == i)
+            self.assertTrue(0 - i == -i)
+        
+    def test_immy_mul(self,n=1000,prnt=False):
+        self._test_immy_bop(lambda a,b: a*b,np.multiply,n,prnt)
+        
+        for m in range(10):
+            i = make_immy()[0]
+            self.assertTrue(i*0 == 0)
+            self.assertTrue(i*immy(0) == 0)
+            self.assertTrue(i*1 == i)
+            self.assertTrue(i*immy(1) == i)
+            self.assertTrue(1*i == i)
+            self.assertTrue(immy(1)*i == i)
+        
+    def test_immy_div(self,n=1000,prnt=False):
+        self._test_immy_bop(lambda a,b: a/b,np.divide,n,prnt,allow_small=False)
+        
+        for m in range(10):
+            i = make_immy()[0]
+            self.assertTrue(i/1 == i)
+        
+    def test_immy_pow(self,n=1000,prnt=False):
+        #_test_immy_bop(lambda a,b: a**b,np.power,n,prnt,allow_small=False)
+        
+        for m in range(10):
+            i = make_immy()[0]
+            self.assertTrue(0**i == immy(0))
+            self.assertTrue(0**i == ummy(0))
+            self.assertTrue(0**i == 0)
+            self.assertTrue(i**0 == 1)
+            
+            self.assert_immy_close(i**-1,1/i)
+            self.assert_immy_close(i**2,i*i)
+            self.assert_immy_close(i**3,i*i*i)
     
+if __name__ == '__main__':
+    unittest.main()
