@@ -4,7 +4,7 @@ authors:
 - family-names: "Parks"
   given-names: "Harold V."
 title: "MetroloPy"
-version: 0.6.4
-doi: 10.5281/zenodo.15546571
-date-released: 2025-05-27
+version: 0.6.5
+doi: 10.5281/zenodo.15595291
+date-released: 2025-06-04
 url: "https://github.com/nrc-cnrc/MetroloPy"
