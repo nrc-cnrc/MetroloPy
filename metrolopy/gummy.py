@@ -1695,13 +1695,11 @@ class gummy(Quantity,metaclass=MetaGummy):
             else:
                 slashaxis = gummy.slashaxis
             
-        if isinstance(g,nummy):
-            if g.name is not None:
-                name = g.name
-            else:
-                name = None
-        else:
-            name = g
+        try:
+            name = g.name
+        except:
+            name = None
+
         if name == '':
             name = None
             
@@ -1721,7 +1719,10 @@ class gummy(Quantity,metaclass=MetaGummy):
                 name = str(name).replace(' ','\\,').strip()
                 xl += norm(name)
             else:
-                xl += str(name).strip()
+                try:
+                    xl += name.tolatex()
+                except:
+                    xl += str(name).strip()
         if symbol is not None:
             if xl != '':
                 if slashaxis:
@@ -2861,7 +2862,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             return '{:.4f}'.format(x) + pct
         if x < 99.9999:
             return '{:.5f}'.format(x) + pct
-        return str(x) + ' %'
+        return str(x) + pct
         
     @staticmethod
     def _k_to_str(k):
