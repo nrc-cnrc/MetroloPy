@@ -64,8 +64,6 @@ class _IntervalUnit(Unit):
         kwds['parent'] = parent
         Unit.__init__(self,params[0] + ' interval',params[1],conversion=conv,**kwds)
     
-    def _getme(self,ul,e):
-        return self.parent
     
 class OffsetUnit(NonlinearUnit):
     """
@@ -107,4 +105,5 @@ class OffsetUnit(NonlinearUnit):
             return (b - a,self.interval_unit)
         raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be subtracted from a quantity with unit ' + bunit.tostring() + '; automatic conversion is disabled with offset unit instances')
 
-        
+    def _getme(self,ul,e):
+        return self.interval_unit

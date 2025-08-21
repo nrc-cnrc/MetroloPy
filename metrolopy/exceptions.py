@@ -2,7 +2,7 @@
 
 # module exceptions
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -20,16 +20,17 @@
 # You should have received a copy of the GNU General Public License along with 
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
-class IncompatibleUnitsError(ValueError):
+
+class UnitError(ValueError):
     """
-    This exception is raised when an operation is attempted with gummys that
-    have units that are incompatible for that operation.
+    Base class for Unit exceptions.
     """
     pass
 
-class UnitError(Exception):
+class IncompatibleUnitsError(UnitError):
     """
-    Base class for Unit exceptions.
+    This exception is raised when an operation or conversion is attempted with
+    Quantity instances that have units that are incompatible for that operation.
     """
     pass
 
@@ -43,9 +44,6 @@ class UnitNotFoundError(UnitLibError):
     pass
 
 class CircularUnitConversionError(UnitError):
-    pass
-
-class NoUnitConversionFoundError(UnitError):
     pass
 
 class UnitLibNotFoundError(UnitLibError):

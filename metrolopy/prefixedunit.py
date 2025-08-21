@@ -25,6 +25,7 @@ Classes to automatically generate prefixed units from a base unit.
 """
 
 from .unit import Unit,Conversion
+from .ummy import MFraction
 
 class PrefixedUnit(Unit):    
     """PrefixedUnit(name,symbol,conversion=None,short_name=None,
@@ -40,26 +41,26 @@ class PrefixedUnit(Unit):
     will be generated. 
     """
     prefix_definitions = {
-                'yocto':[1e-24,'y',None,None,None],
-                'zepto':[1e-21,'z',None,None,None],
-                'atto':[1e-18,'a',None,None,None],
-                'femto':[1e-15,'f',None,None,None],
-                'pico':[1e-12,'p',None,None,None],
-                'nano':[1e-9,'n',None,None,None],
-                'micro':[1e-6,'\u03BC','&mu;',None,'u'],
-                'milli':[0.001,'m',None,None,None],
-                'centi':[0.01,'c',None,None,None],
-                'deci':[0.1,'d',None,None,None],
+                'yocto':[MFraction('1e-24'),'y',None,None,None],
+                'zepto':[MFraction('1e-21'),'z',None,None,None],
+                'atto':[MFraction('1e-18'),'a',None,None,None],
+                'femto':[MFraction('1e-15'),'f',None,None,None],
+                'pico':[MFraction('1e-12'),'p',None,None,None],
+                'nano':[MFraction('1e-9'),'n',None,None,None],
+                'micro':[MFraction('1e-6'),'\u03BC','&mu;',None,'u'],
+                'milli':[MFraction('0.001'),'m',None,None,None],
+                'centi':[MFraction('0.01'),'c',None,None,None],
+                'deci':[MFraction('0.1'),'d',None,None,None],
                 'deca':[10,'da',None,None,None],
                 'hecto':[100,'h',None,None,None],
                 'kilo':[1000,'k',None,None,None],
                 'mega':[1000000,'M',None,None,None],
-                'giga':[1e9,'G',None,None,None],
-                'tera':[1e12,'T',None,None,None],
-                'peta':[1e15,'P',None,None,None],
-                'exa':[1e18,'E',None,None,None],
-                'zetta':[1e21,'Z',None,None,None],
-                'yotta':[1e24,'Y',None,None,None],
+                'giga':[1000000000,'G',None,None,None],
+                'tera':[1000000000000,'T',None,None,None],
+                'peta':[1000000000000000,'P',None,None,None],
+                'exa': [1000000000000000000,'E',None,None,None],
+                'zetta':[MFraction('1e21'),'Z',None,None,None],
+                'yotta':[MFraction('1e24'),'Y',None,None,None],
                 }
     
     @staticmethod
@@ -223,13 +224,13 @@ class BinaryPrefixedUnit(PrefixedUnit):
     """
     prefix_definitions = {
                 'kilo':[1000,'k',None,None,None],
-                'mega':[1e6,'M',None,None,None],
-                'giga':[1e9,'G',None,None,None],
-                'tera':[1e12,'T',None,None,None],
-                'peta':[1e15,'P',None,None,None],
-                'exa':[1e18,'E',None,None,None],
-                'zetta':[1e21,'Z',None,None,None],
-                'yotta':[1e24,'Y',None,None,None],
+                'mega':[1000000,'M',None,None,None],
+                'giga':[1000000000,'G',None,None,None],
+                'tera':[1000000000000,'T',None,None,None],
+                'peta':[1000000000000000,'P',None,None,None],
+                'exa':[1000000000000000000,'E',None,None,None],
+                'zetta':[MFraction('1e21'),'Z',None,None,None],
+                'yotta':[MFraction('1e24'),'Y',None,None,None],
                 'kibi':[1024,'Ki',None,None,None],
                 'mebi':[1024**2,'Mi',None,None,None],
                 'gibi':[1024**3,'Gi',None,None,None],

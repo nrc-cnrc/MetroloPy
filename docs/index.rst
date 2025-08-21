@@ -109,7 +109,7 @@ which contains the definitions of the SI units, and
 `NIST Special Publication 1038 <https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication1038.pdf>`_ 
 where many of the US customary units are defined.  Some physical constants
 used for unit definitions are from the 
-`2014 CODATA recommended values <http://www.codata.org/committees-and-groups/fundamental-physical-constants>`_
+`2022 CODATA recommended values <http://www.codata.org/committees-and-groups/fundamental-physical-constants>`_
 and the 
 `IAU 2009 system of astronomical constants <http://maia.usno.navy.mil/NSFA/IAU2009_consts.html>`_.
 
@@ -135,7 +135,8 @@ version history
 * Version 0.6.2 built 10 July 2021, bug fixes
 * Version 0.6.3 built 13 May 2022, bug fixes
 * Version 0.6.4 built 28 May 2025, bug fixes
-* Version 0.6.5 built 04 June 2025, bug fixe
+* Version 0.6.5 built 04 June 2025, bug fixes
+* Version 1.0.0 built xx xxxx 2025, improved dof calculations other fixes
 
 
 author

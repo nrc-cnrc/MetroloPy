@@ -37,16 +37,19 @@ def _mrtxt(txt,fmt):
     return txt
 
 class _search_display(PrettyPrinter):
-    def __init__(self,search,show_all,units):
+    def __init__(self,search,show_all,units,converts_to):
         self.search = search
         self.show_all = show_all
         self.units = units
+        self.converts_to = converts_to
         
     def tostring(self,fmt='unicode',**kwds):
         return search_units(self.search,fmt=fmt,show_all=self.show_all,
-                            units=self.units,prnt=False)
+                            units=self.units,converts_to=self.converts_to,
+                            prnt=False)
     
-def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
+def search_units(search=None,fmt=None,show_all=False,units=None,converts_to=None,
+                 prnt=True):
     """
     Prints a list of all loaded units or all units that match the search terms.
     
@@ -84,7 +87,7 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
     from .unit import _CompositeUnit
     
     if fmt is None and prnt:
-        return _search_display(search,show_all,units)
+        return _search_display(search,show_all,units,converts_to)
 
     fmt = fmt.lower().strip()
     if fmt == 'utf-8':
@@ -96,7 +99,17 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
             
         units = set(Unit._builtin_lib.values()).union(set(Unit._lib.values()))
         
-        if search is None:
+        if converts_to is not None:
+            uf = set()
+            bunit = Unit.unit(converts_to)
+            if isinstance(bunit,_CompositeUnit):
+                raise TypeError('converts_to may not be a composite unit')
+            bunit = bunit.base
+            for u in units:
+                if not isinstance(u,_CompositeUnit) and u.base is bunit:
+                    uf.add(u)
+            units = uf
+        elif search is None:
             if len(units) == 0:
                 if prnt:
                     print('no units are loaded')

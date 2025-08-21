@@ -2,7 +2,7 @@
 
 # module functions
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -39,11 +39,11 @@ def _callg(f,*args):
     for a in args:
         if isinstance(a,jummy):
             return a.__array_ufunc__(f,'__call__',*args)
-        if isinstance(a,gummy):
+        elif isinstance(a,gummy):
             g = a
-        if isinstance(a,ummy):
+        elif isinstance(a,ummy):
             u = a
-        if isinstance(a,Complex):
+        elif isinstance(a,Complex):
             c = True
     if g is not None:
         if c:

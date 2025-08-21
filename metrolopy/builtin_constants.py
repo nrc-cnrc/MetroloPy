@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# module codata2018
+# module builtin_constants
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -26,13 +26,12 @@ constant definitions
 
 from numpy import sqrt
 from .constant import GummyConstant
-from .unit import unit
-from .ummy import MFraction
+from .unit import unit,MFraction
 from .gummy import gummy
 from .constcom import h,c,e,hbar,k,dalton,me,mp,a0,G,pi,euler,sqrt2
 from .constcom import (alph,aral,ryd,ae,rd,ghn,arh,sigmah,mmu,amu,
                        arn,gnn,ard,gdn,gp,sigmapp,mtu,gtn)
-                       
+from .constcom import  earth_mass,jupiter_mass,solar_mass
 
 def norm(x):
     return GummyConstant.latex_norm(x)
@@ -76,28 +75,28 @@ with GummyConstant._builtin():
                   latex_symbol='\\Delta\\nu_{' + norm('Cs') + '}',
                   ascii_symbol='hf(Cs)',
                   add_symbol=True,
-                  description='SI defining constant, SI Brochure 9th ed.,Caesium, Cesium',
+                  description='hyperfine transition frequency of Cs-133, SI defining constant, SI Brochure 9th ed.,Caesium, Cesium',
                   _key='nucs')
     
     _h = GummyConstant(h,unit='J s',
                        name='Planck constant',
                        symbol='h',
                        add_symbol=True,
-                       description='SI defining constant, SI Brochure 9th ed.',
+                       description='Planck constant, SI defining constant, SI Brochure 9th ed.',
                        _key='h')
     
     _c = GummyConstant(c,unit='m/s',
                        name='speed of light in vacuum',
                        symbol='c',
                        add_symbol=True,
-                       description='SI defining constant, SI Brochure 9th ed.',
+                       description='speed of light in vacuum, SI defining constant, SI Brochure 9th ed.',
                        _key='c')
     
     _e = GummyConstant(e,unit='C',
                        name='elementary charge',
                        symbol='e',
                        add_symbol=True,
-                       description='SI defining constant, SI Brochure 9th ed.',
+                       description='elementary charge, SI defining constant, SI Brochure 9th ed.',
                        _key='e')
     
     _NA = GummyConstant(MFraction('6.02214076e23'),unit='mol**-1',
@@ -106,14 +105,14 @@ with GummyConstant._builtin():
                         html_symbol='<i>N</i><sub>A</sub>',
                         latex_symbol='N_{' + norm('A') + '}',
                         add_symbol=True,
-                        description='SI defining constant, SI Brochure 9th ed.',
+                        description='Avogadro constant, SI defining constant, SI Brochure 9th ed.',
                         _key='na')
     
     _k = GummyConstant(k,unit='J/K',
                        name='Boltzmann constant',
                        symbol='k',
                        add_symbol=True,
-                       description='SI defining constant, SI Brochure 9th ed.',
+                       description='Boltzmann constant, SI defining constant, SI Brochure 9th ed.',
                        _key='k')
     
     GummyConstant(683,unit='lm/W',
@@ -122,7 +121,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>K</i><sub>cd</sub>',
                   latex_symbol='K_{' + norm('cd') + '}',
                   add_symbol=True,
-                  description='SI defining constant, SI Brochure 9th ed., candela',
+                  description='luminous efficacy, SI defining constant, SI Brochure 9th ed., candela',
                   _key='kcd')
 
     _hbar = GummyConstant(hbar*unit('J s'),
@@ -131,10 +130,9 @@ with GummyConstant._builtin():
                           html_symbol='&hbar;',
                           latex_symbol='\\hbar',
                           add_symbol=True,
-                          description='calculated from SI Brochure 9th ed. value as h/(2*pi)',
+                          description='reduced Planck constant, calculated from SI Brochure 9th ed. value as h/(2*numpy.pi)',
                           _key='hbar')
     GummyConstant.alias('h-bar',_hbar)
-    
     
     _mu = GummyConstant(dalton*unit('kg'),
                         name='atomic mass constant',
@@ -142,7 +140,7 @@ with GummyConstant._builtin():
                         html_symbol='<i>m<sub>u</sub></i>',
                         latex_symbol='m_u',
                         add_symbol=True,
-                        description='calculated from CODATA 2018 values as 2*R(inf)*h/(Ar(e)*c*alpha**2\nsee also the Unit dalton',
+                        description='atomic mass constant, calculated from CODATA 2022 values as 2*R(inf)*h/(Ar(e)*c*alpha**2\nsee also the Unit dalton',
                         _key='u')
     
     _me = GummyConstant(me*unit('kg'),
@@ -151,7 +149,7 @@ with GummyConstant._builtin():
                         html_symbol='<i>m<sub>e</sub></i>',
                         latex_symbol='m_{' + norm('e')+ '}',
                         add_symbol=True,
-                        description='calculated from CODATA 2018 values as 2*R(inf)*h/c*alpha**2',
+                        description='electron mass, calculated from CODATA 2022 values as 2*R(inf)*h/c*alpha**2',
                         _key='me')
     
     _alpha = GummyConstant(alph,
@@ -160,7 +158,7 @@ with GummyConstant._builtin():
                            html_symbol='<i>&alpha;</i>',
                            latex_symbol='\\alpha',
                            add_symbol=True,
-                           description='CODATA 2018',
+                           description='fine-structure constant, CODATA 2022',
                            _key='alph')
     
     GummyConstant(ryd*unit('m**-1'),
@@ -170,7 +168,7 @@ with GummyConstant._builtin():
                    latex_symbol='R_{\\infty}',
                    ascii_symbol='R(inf)',
                    add_symbol=True,
-                   description='CODATA 2018',
+                   description='Rydberg constant, CODATA 2022',
                    _key='ryd')
     
     _a0= GummyConstant(a0*unit('m'),
@@ -179,7 +177,7 @@ with GummyConstant._builtin():
                        html_symbol='<i>a</i><sub>0</sub>',
                        latex_symbol='a_{0}',
                        add_symbol=True,
-                       description='calculated from CODATA 2018 values as alpha/(4*pi*R(inf))',
+                       description='Bohr radius, calculated from CODATA 2022 values as alpha/(4*pi*R(inf))',
                        _key='bohrrada0')
         
     _mp = GummyConstant(mp*unit('kg'),
@@ -188,7 +186,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>m</i><sub>p</sub>',
                   latex_symbol='m_{' + norm('p') + '}',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as p_e_mass_ratio*m(e) where\nm(e) = 2*R(inf)*h/c*alpha**2',
+                  description='proton mass, calculated from CODATA 2022 values as p_e_mass_ratio*m(e) where\nm(e) = 2*R(inf)*h/c*alpha**2',
                   _key='mp')
     
     _e0 = GummyConstant(_e**2/(2*_h*_c*_alpha),
@@ -198,7 +196,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\epsilon_{0}',
                   ascii_symbol = 'epsilon(0)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as e**2/(s*h*c*alpha)',
+                  description='vacuum electric permittivity, calculated from CODATA 2022 values as e**2/(s*h*c*alpha)',
                   _key='ep0')
     _e0.unit = 'F/m'
     
@@ -207,7 +205,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>k</i><sub>e</sub>',
                   latex_symbol='k_{' + norm('e') + '}',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as 1/(4*pi*e(0)) where\ne(0) = e**2/(s*h*c*alpha)'
+                  description='Coulomb constant, calculated from CODATA 2022 values as 1/(4*pi*e(0)) where\ne(0) = e**2/(s*h*c*alpha)'
                   ).unit='N m**2/C**2'
     
     GummyConstant(2*_h*_alpha/(_c*_e**2),
@@ -217,7 +215,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\mu_{0}',
                   ascii_symbol='mu(0)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as 2*h*alpha/(c*e**2)',
+                  description='vacuum magnetic permeability, calculated from CODATA 2022 values as 2*h*alpha/(c*e**2)',
                   _key='mu0'
                   ).unit = 'N/A**2'
     
@@ -226,7 +224,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>R</i><sub>K</sub>',
                   latex_symbol='R_{' + norm('K') + '}',
                   add_symbol=True,
-                  description='calculated from SI Brochure 9th ed. values as h/e**2',
+                  description='von Klitzing constant, calculated from SI Brochure 9th ed. values as h/e**2',
                   _key='rk')
     
     GummyConstant(2*_e/_h,name='Josephson constant',
@@ -234,7 +232,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>K</i><sub>J</sub>',
                   latex_symbol='K_{' + norm('J') + '}',
                   add_symbol=True,
-                  description='calculated from SI Brochure 9th ed. values as 2*e/h',
+                  description='Josephson constant, calculated from SI Brochure 9th ed. values as 2*e/h',
                   _key='kjos'
                   ).unit = 'Hz/V'
     
@@ -244,6 +242,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>K</i><sub>J-90</sub>',
                   latex_symbol='K_{' + norm('J-90') + '}',
                   add_symbol=True,
+                  description='1990 conventional value of Josephson constant',
                   _key='kj90')
     
     GummyConstant(MFraction('25812.807'),unit='ohm',
@@ -252,6 +251,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>R</i><sub>K-90</sub>',
                   latex_symbol='R_{' + norm('K-90') + '}',
                   add_symbol=True,
+                  description='1990 conventional value of von Klitzing constant',
                   _key='rk90')
     
     GummyConstant(_h/(2*_e),
@@ -260,7 +260,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>&Phi;</i><sub>0</sub>',
                   latex_symbol='\\Phi_{0}',
                   add_symbol=True,
-                  description='calculated from SI Brochure 9th ed. values as h/(2*e)',
+                  description='magnetic flux quantum, calculated from SI Brochure 9th ed. values as h/(2*e)',
                   _key='flxquhs2e'
                   ).unit = 'Wb'
     
@@ -271,7 +271,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\lambda_{' + norm('C') + '}',
                   ascii_symbol='lambda(C)',
                   add_symbol=True,
-                  description='Compton wavelength of the electron, calculated from CODATA 2018 values as\nh/(m(e)*c) where m(e) = 2*R(inf)*h/c*alpha**2',
+                  description='Compton wavelength of the electron, calculated from CODATA 2022 values as\nh/(m(e)*c) where m(e) = 2*R(inf)*h/c*alpha**2',
                   _key='ecomwl'
                   ).unit = 'm'
     
@@ -281,7 +281,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>r</i><sub>r</sub>',
                   latex_symbol='r_{' + norm('e') + '}',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as e**2/(4*pi*e(0)*m(e)*c**2) where\nm(e) = 2*R(inf)*h/c*alpha**2 and e(0) = e**2/(s*h*c*alpha)',
+                  description='classical electron radius, calculated from CODATA 2022 values as e**2/(4*pi*e(0)*m(e)*c**2) where\nm(e) = 2*R(inf)*h/c*alpha**2 and e(0) = e**2/(s*h*c*alpha)',
                   _key='re'
                   ).unit='m'
     
@@ -291,7 +291,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>Z</i><sub>0</sub>',
                   latex_symbol='Z_{0}',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as 2*h*alpha/e**2',
+                  description='vacuum impedance, calculated from CODATA 2022 values as 2*h*alpha/e**2',
                   _key='z0'
                   ).unit = 'ohm'
     
@@ -302,7 +302,7 @@ with GummyConstant._builtin():
                   latex_symbol='m_{' + norm('\u03b1') + '}',
                   ascii_symbol='m(alpha)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as Ar(alpha)*m(u)',
+                  description='alpha particle mass, calculated from CODATA 2022 values as Ar(alpha)*m(u)',
                   _key='mal'
                   )
     
@@ -313,7 +313,7 @@ with GummyConstant._builtin():
                          latex_symbol='\\mu_{' + norm('B') + '}',
                          ascii_symbol='mu(B)',
                          add_symbol=True,
-                         description='calculated from CODATA 2018 values as e*hbar/(2*m(e))',
+                         description='Bohr magneton, calculated from CODATA 2022 values as e*hbar/(2*m(e))',
                          _key='mub')
     _muB.unit = 'J/T'
                   
@@ -323,7 +323,7 @@ with GummyConstant._builtin():
                           html_symbol='<i>a</i><sub>e</sub>',
                           latex_symbol='a_{' + norm('e') + '}',
                           add_symbol=True,
-                          description='CODATA 2018',
+                          description='electron magnetic moment anomaly, CODATA 2022',
                           _key='ae')
     
     _ge = GummyConstant(-2*(1+_emma),
@@ -332,7 +332,7 @@ with GummyConstant._builtin():
                         html_symbol='<i>g</i><sub>e<sup>-</sup></sub>',
                         latex_symbol='g_{' + norm('e') + '^{-}}',
                         add_symbol=True,
-                        description='calculated from CODATA 2018 values as -2*(1-a(e))',
+                        description='electron g factor, calculated from CODATA 2022 values as -2*(1-a(e))',
                         _key='gem')
     
     GummyConstant(-_ge*_muB/_hbar,
@@ -342,7 +342,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\gamma_{' + norm('e') + '}',
                   ascii_symbol='gamma(e)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as -g(e)*mu(B)/hbar where\ng(e) = -2*(1-a(e)) and mu(B) = e*hbar/(2*m(e))',
+                  description='electron gyromagnetic ratio, calculated from CODATA 2022 values as -g(e)*mu(B)/hbar where\ng(e) = -2*(1-a(e)) and mu(B) = e*hbar/(2*m(e))',
                   _key='gammae')
     
     GummyConstant(_ge*_muB/2,
@@ -352,7 +352,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\mu_{' + norm('e') + '}',
                   ascii_symbol = 'mu(e)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as g(e)*mu(B)/2 where\ng(e) = -2*(1-a(e)) and mu(B) = e*hbar/(2*m(e))',
+                  description='electron magnetic moment, calculated from CODATA 2022 values as g(e)*mu(B)/2 where\ng(e) = -2*(1-a(e)) and mu(B) = e*hbar/(2*m(e))',
                   _key='muem'
                   ).unit = 'J/T'
                   
@@ -362,16 +362,16 @@ with GummyConstant._builtin():
                   html_symbol='<i>G</i><sub>0</sub>',
                   latex_symbol='G_{0}',
                   add_symbol=True,
-                  description='calculated from SI Brochure 9th ed. values as 2*e**2/h',
+                  description='conductance quantum, calculated from SI Brochure 9th ed. values as 2*e**2/h',
                   _key='conqu2e2sh'
                   ).unit = 'S'
                   
                   
     (
-     _angstar,
-     _copperx,
-     _molyx,
-     _a
+     _angstar, # Angstrom star (m)
+     _copperx, # Copper x unit (m)
+     _molyx, # Molybdenum x unit (m)
+     _a # lattice parameter of silicon
      ) = gummy.create([1.00001495e-10,
                        1.00207697e-13,
                        1.00209952e-13,
@@ -391,7 +391,7 @@ with GummyConstant._builtin():
                   latex_symbol='\u212B^{*}',
                   ascii_symbol='A*',
                   add_symbol=True,
-                  description='CODATA 2018',
+                  description='Angstrom star, CODATA 2022',
                   _key='angstar')
     
     GummyConstant(_copperx*unit('m'),
@@ -402,7 +402,7 @@ with GummyConstant._builtin():
                   ascii_symbol='xu(CuKalpha1)',
                   short_name='xu(Cu)',
                   add_symbol=True,
-                  description='CODATA 2018',
+                  description='copper x unit, CODATA 2022',
                   _key='xucukalph1'
                   )
     
@@ -414,14 +414,14 @@ with GummyConstant._builtin():
                   ascii_symbol='xu(MoKalpha1)',
                   short_name='xu(Mo)',
                   add_symbol=True,
-                  description='CODATA 2018',
+                  description='molybdenum x unit, CODATA 2022',
                   _key='xumokalph1')
     
     GummyConstant(_a*unit('m'),
                   name='lattice parameter of silicon',
                   symbol='a',
                   add_symbol=True,
-                  description='CODATA 2018',
+                  description='lattice parameter of silicon, CODATA 2022',
                   _key='asil')
     
     GummyConstant((_a/sqrt(8))*unit('m'),
@@ -430,7 +430,7 @@ with GummyConstant._builtin():
                   html_symbol='d<sub>220</sub>)',
                   latex_symbol='d_{220}',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as a/sqrt(8)',
+                  description='lattice spacing of ideal Si (220), calculated from CODATA 2022 values as a/sqrt(8)',
                   _key='d220sil')
     
     GummyConstant(_mu*ard,
@@ -439,7 +439,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>m</i><sub>d</sub>',
                   latex_symbol='m_{' + norm('d') + '}',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as m(u)*Ar(d)',
+                  description='deuteron mass, calculated from CODATA 2022 values as m(u)*Ar(d)',
                   _key='md')
     
     GummyConstant(gdn,
@@ -448,7 +448,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>g</i><sub>d</sub>',
                   latex_symbol='g_{' + norm('d') + '}',
                   add_symbol=True,
-                  description='CODATA 2018',
+                  description='deuteron g factor, CODATA 2022',
                   _key='gdn')   
     
     _muN = GummyConstant(_e*_hbar/(2*_mp),
@@ -458,7 +458,7 @@ with GummyConstant._builtin():
                          latex_symbol='\\mu_{' + norm('N') + '}',
                          ascii_symbol='mu(N)',
                          add_symbol=True,
-                         description='calculated from CODATA 2018 values as e*hbar/(2*m(p))',
+                         description='nuclear magneton, calculated from CODATA 2022 values as e*hbar/(2*m(p))',
                          _key='mun')
     _muN.unit = 'J/T'
 
@@ -469,7 +469,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\mu_{' + norm('d') + '}',
                   ascii_symbol='mu(d)',
                   add_symbol=True,
-                  description='calculate from CODATA 2018 values as g(d)*mu(N)',
+                  description='deuteron magnetic moment, calculated from CODATA 2022 values as g(d)*mu(N)',
                   _key='mud') 
     
     GummyConstant(rd,
@@ -478,13 +478,14 @@ with GummyConstant._builtin():
                   html_symbol='<i>r</i><sub>d</sub>',
                   latex_symbol='r_{' + norm('d') + '}',
                   add_symbol=True,
+                  description='deuteron rms charge radius',
                   _key='rd'
                   )
     
     _G =  GummyConstant(G*unit('m**3 kg**-1 s**-2'),
                         name='Newtonian constant of gravitation',symbol='G',
                         add_symbol=True,short_name='constant of gravitation',
-                        description='CODATA 2018, gravity',
+                        description='Newtonian constant of gravitation, CODATA 2022',
                         _key='bg')
     
     GummyConstant(_e*_NA,
@@ -492,7 +493,7 @@ with GummyConstant._builtin():
                   symbol='F',
                   html_symbol='<i>F</i>',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as e*N(A)',
+                  description='Faraday constant, calculated from CODATA 2022 values as e*N(A)',
                   _key='f')
     
     GummyConstant(2*_h*_c**2,
@@ -501,7 +502,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>c</i><sub>1L</sub>',
                   latex_symbol='c_{1' + norm('L') + '}',
                   add_symbol=True,
-                  description='calculated from SI Brochure 9th ed. values as 2*h*c**2',
+                  description='first radiation constant for spectral radiance, calculated from SI Brochure 9th ed. values as 2*h*c**2',
                   _key='c1l'
                   ).unit = 'W m**2/sr'
     
@@ -511,7 +512,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>c</i><sub>1</sub>',
                   latex_symbol='c_{1}',
                   add_symbol=True,
-                  description='calculated from SI Brochure 9th ed. values as 2*pi*h*c**2',
+                  description='first radiation constant, calculated from SI Brochure 9th ed. values as 2*pi*h*c**2',
                   _key='eqc11strc'
                   ).unit = 'W m**2'
     
@@ -521,7 +522,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>c</i><sub>2</sub>',
                   latex_symbol='c_{2}',
                   add_symbol=True,
-                  description='calculated from SI Brochure 9th ed. values as h*c/k',
+                  description='second radiation constant, calculated from SI Brochure 9th ed. values as h*c/k',
                   _key='c22ndrc'
                   ).unit = 'm K'
                   
@@ -531,7 +532,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>E</i><sub>h</sub>',
                   latex_symbol='E_{' + norm('h') + '}',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as m(e)*c**2*alpha**2\nwhere m(e) = m(u)*Ar(e) and m(u) = 2*R(inf)*h/(Ar(e)*c*alpha**2)',
+                  description='Hartree energy, calculated from CODATA 2022 values as m(e)*c**2*alpha**2\nwhere m(e) = m(u)*Ar(e) and m(u) = 2*R(inf)*h/(Ar(e)*c*alpha**2)',
                   _key='hr'
                   ).unit = 'J'
     
@@ -541,7 +542,7 @@ with GummyConstant._builtin():
                         html_symbol='<i>g</i><sub>h</sub>',
                         latex_symbol='g_{' + norm('h') + '}',
                         add_symbol=True,
-                        description='CODATA 2018',
+                        description='helion g factor, CODATA 2022',
                         _key='ghn'
                         )
     
@@ -552,7 +553,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\mu_{' + norm('h') + '}',
                   ascii_symbol = 'mu(h)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as g(h)*mu(B)/2 where\nmu(B) = e*hbar/(2*m(e))',
+                  description='helion magnetic moment, calculated from CODATA 2022 values as g(h)*mu(B)/2 where\nmu(B) = e*hbar/(2*m(e))',
                   _key='muh'
                   ).unit = 'J/T'
     
@@ -562,7 +563,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>m</i><sub>h</sub>',
                   latex_symbol='m_{' + norm('h') + '}',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as m(u)*Ar(h) where\nm(u) = 2*R(inf)*h/(Ar(e)*c*alpha**2)',
+                  description='helion mass, calculated from CODATA 2022 values as m(u)*Ar(h) where\nm(u) = 2*R(inf)*h/(Ar(e)*c*alpha**2)',
                   _key='mh'
                   )
     
@@ -573,7 +574,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\sigma_{' + norm('h') + '}',
                   ascii_symbol='sigma(h)',
                   add_symbol=True,
-                  description='CODATA 2018',
+                  description='helion shielding shift, CODATA 2022',
                   _key='sigmah'
                   )
     
@@ -583,7 +584,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>M</i><sub>u</sub>',
                   latex_symbol='M_{' + norm('u') + '}',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as m(u)*N(A)',
+                  description='molar mass constant, calculated from CODATA 2022 values as m(u)*N(A)',
                   _key='mu'
                   )
     
@@ -593,7 +594,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>R</i>',
                   latex_symbol='R',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as N(A)*k',
+                  description='molar gas constant, calculated from CODATA 2022 values as N(A)*k',
                   _key='r'
                   )
     
@@ -603,7 +604,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>M</i>(<sup>12</sup>C)',
                   latex_symbol='M(^{12}' + norm('C') + ')',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as 12*m(u)',
+                  description='molar mass of carbon-12, calculated from CODATA 2022 values as 12*m(u)',
                   _key='mm12c'
                   )
     
@@ -613,7 +614,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>V</i><sub>m</sub>(Si)',
                   latex_symbol='V_{' + norm('m') + '}(' + norm('Si') + ')',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as N(A)*a**3/8',
+                  description='molar volume of silicon, calculated from CODATA 2022 values as N(A)*a**3/8',
                   _key='mvolsil'
                   )
     
@@ -621,7 +622,7 @@ with GummyConstant._builtin():
                   name='standard-state pressure',
                   symbol='ssp',
                   add_symbol=True,
-                  description='CODATA 2018',
+                  description='standard-state pressure, CODATA 2022',
                   _key='stdspr'
                   )
     
@@ -629,7 +630,7 @@ with GummyConstant._builtin():
                   name='standard atmosphere',
                   symbol='atm',
                   add_symbol=True,
-                  description='CODATA 2018',
+                  description='standard atmosphere, CODATA 2022',
                   _key='stdatm'
                   )
         
@@ -640,7 +641,7 @@ with GummyConstant._builtin():
                          latex_symbol='m_{' + norm('\u03bc') + '}',
                          ascii_symbol='m(mu)',
                          add_symbol=True,
-                         description='CODATA 2018',
+                         description='muon mass, CODATA 2022',
                          _key='mmu'
                          )
     
@@ -651,7 +652,7 @@ with GummyConstant._builtin():
                   latex_symbol='a_{' + norm('\u03bc') + '}',
                   ascii_symbol='a(mu)',
                   add_symbol=True,
-                  description='CODATA 2018',
+                  description='muon magnetic moment anomaly, CODATA 2022',
                   _key='amu'
                   )
     
@@ -662,7 +663,7 @@ with GummyConstant._builtin():
                   latex_symbol='g_{' + norm('\u03bc') + '^-}',
                   ascii_symbol='g(mu-)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as -2*(1 + a(mu))',
+                  description='muon g factor, calculated from CODATA 2022 values as -2*(1 + a(mu))',
                   _key='gmum'
                   )
     
@@ -673,7 +674,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\mu_{' + norm('\u03bc') + '}',
                   ascii_symbol = 'mu(mu)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as g(mu-)*e*hbar/(4*m(mu)))',
+                  description='muon magnetic moment, calculated from CODATA 2022 values as g(mu-)*e*hbar/(4*m(mu)))',
                   _key='mumum'
                   ).unit = 'J/T'
     
@@ -684,7 +685,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\lambda_{' + norm('\u03bc') + '}',
                   ascii_symbol = 'lambda(mu)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as\nh/(m(mu)*c)',
+                  description='muon Compton wavelength, calculated from CODATA 2022 values as\nh/(m(mu)*c)',
                   _key='mcomwl'
                   ).unit = 'm'
     
@@ -694,7 +695,7 @@ with GummyConstant._builtin():
                         html_symbol='<i>m</i><sub>n</sub>',
                         latex_symbol='m_{' + norm('n') + '}',
                         add_symbol=True,
-                        description='CODATA 2018 calculated from CODATA 2018 values as Ar(n)*m(u) where\nm(u) = 2*R(inf)*h/(Ar(e)*c*alpha**2)',
+                        description='neutron mass, CODATA 2022 calculated from CODATA 2018 values as Ar(n)*m(u) where\nm(u) = 2*R(inf)*h/(Ar(e)*c*alpha**2)',
                         _key='mn'
                         )
     
@@ -704,7 +705,7 @@ with GummyConstant._builtin():
                         html_symbol='<i>g</i><sub>n</sub>',
                         latex_symbol='g_{' + norm('g') + '}',
                         add_symbol=True,
-                        description='CODATA 2018',
+                        description='neutron g factor, CODATA 2022',
                         _key='gnn'
                         )
         
@@ -715,7 +716,7 @@ with GummyConstant._builtin():
                          latex_symbol='\\mu_{' + norm('n') + '}',
                          ascii_symbol = 'mu(n)',
                          add_symbol=True,
-                         description='calculated from CODATA 2018 values as g(n)*mu(N)/2 where\nmu(N) = e*hbar/(2*m(p))',
+                         description='neutron magnetic moment, calculated from CODATA 2022 values as g(n)*mu(N)/2 where\nmu(N) = e*hbar/(2*m(p))',
                          _key='munn'
                          )
     _mun.unit = 'J/T'
@@ -727,7 +728,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\gamma_{' + norm('n') + '}',
                   ascii_symbol = 'gamma(n)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as -2*mu(n)/hbar where\nmu(n) =  g(n)*mu(N)/2 and mu(N) = e*hbar/(2*m(p))',
+                  description='neutron gyromagnetic ratio, calculated from CODATA 2022 values as -2*mu(n)/hbar where\nmu(n) =  g(n)*mu(N)/2 and mu(N) = e*hbar/(2*m(p))',
                   _key='gamman'
                   )
     
@@ -738,7 +739,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\lambda_{' + norm('n') + '}',
                   ascii_symbol = 'lambda(n)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as\nh/(m(n)*c) where m(e) = Ar(n)*m(u)',
+                  description='neutron Compton wavelength, calculated from CODATA 2022 values as\nh/(m(n)*c) where m(e) = Ar(n)*m(u)',
                   _key='ncomwl'
                   ).unit = 'm'
     
@@ -748,7 +749,7 @@ with GummyConstant._builtin():
                         html_symbol='<i>g</i><sub>p</sub>',
                         latex_symbol='g_{' + norm('p') + '}',
                         add_symbol=True,
-                        description='CODATA 2018',
+                        description='proton g factor, CODATA 2022',
                         _key='gp'
                         )
     
@@ -759,7 +760,7 @@ with GummyConstant._builtin():
                          latex_symbol='\\mu_{' + norm('p') + '}',
                          ascii_symbol = 'mu(p)',
                          add_symbol=True,
-                         description='calculated from CODATA 2018 values as g(p)*mu(N)/2 where\nmu(N) = e*hbar/(2*m(p))',
+                         description='proton magnetic moment, calculated from CODATA 2022 values as g(p)*mu(N)/2 where\nmu(N) = e*hbar/(2*m(p))',
                          _key='mup'
                          )
     _mup.unit = 'J/T'
@@ -771,7 +772,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\gamma_{' + norm('p') + '}',
                   ascii_symbol = 'gamma(p)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as 2*mu(p)/hbar where\nmu(p) =  g(p)*mu(N)/2 and mu(N) = e*hbar/(2*m(p))',
+                  description='proton gyromagnetic ratio, calculated from CODATA 2022 values as 2*mu(p)/hbar where\nmu(p) =  g(p)*mu(N)/2 and mu(N) = e*hbar/(2*m(p))',
                   _key='gammap'
                   )
     
@@ -782,6 +783,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\sigma\'_{' + norm('p') + '}',
                   ascii_symbol='sigma\'(p)',
                   add_symbol=True,
+                  description='proton magnetic shielding correction, CODATA 2022',
                   _key='sigmapp'
                   )
     
@@ -791,7 +793,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>m</i><sub>t</sub>',
                   latex_symbol='m_{' + norm('t') + '}',
                   add_symbol=True,
-                  description='CODATA 2018 calculated from CODATA 2018 values as Ar(t)*m(u) where\nm(u) = 2*R(inf)*h/(Ar(e)*c*alpha**2)',
+                  description='triton mass, calculated from CODATA 2022 values as Ar(t)*m(u) where\nm(u) = 2*R(inf)*h/(Ar(e)*c*alpha**2)',
                   _key='mt'
                   )
     
@@ -801,6 +803,7 @@ with GummyConstant._builtin():
                          html_symbol='<i>g</i><sub>t</sub>',
                          latex_symbol='g_{' + norm('t') + '}',
                          add_symbol=True,
+                         description='triton g factor, CODATA 2022',
                          _key='gtn'
                          )
     
@@ -811,7 +814,7 @@ with GummyConstant._builtin():
                          latex_symbol='\\mu_{' + norm('t') + '}',
                          ascii_symbol = 'mu(t)',
                          add_symbol=True,
-                         description='calculated from CODATA 2018 values as g(t)*mu(N)/2 where\nmu(N) = e*hbar/(2*m(t))',
+                         description='triton magnetic moment, calculated from CODATA 2022 values as g(t)*mu(N)/2 where\nmu(N) = e*hbar/(2*m(t))',
                          _key='mut'
                          )
     _mut.unit = 'J/T'
@@ -823,16 +826,17 @@ with GummyConstant._builtin():
                   latex_symbol='\\sigma_{' + norm('e') + '}',
                   ascii_symbol = 'sigma(e)',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as (8*pi/3)*alpha**4*a0**2',
+                  description='Thomson cross section, calculated from CODATA 2022 values as (8*pi/3)*alpha**4*a0**2',
                   _key='eqsigmae'
                   ).unit = 'm**2'
     
-    _wm =  GummyConstant(0.22290,0.00030,
+    _wm =  GummyConstant(0.22305,0.00023,
                          name='weak mixing angle',
                          symbol='sin2(\u03f4(W))',
                          html_symbol='sin<sup>2</sup> <i>&Theta;</i><sub>W</sub>',
                          latex_symbol='sin^{2}\\Theta_{' + norm('W') + '}',
                          ascii_symbol='sin2(Theta(W))',
+                         description='weak mixing angle, CODATA 2022',
                          add_symbol=True,
                          _key='sin2th'
                          )
@@ -843,7 +847,7 @@ with GummyConstant._builtin():
                   html_symbol='<i>m</i><sub>W</sub>/<i>m</i><sub>Z</sub>',
                   latex_symbol='m_{' + norm('W') + '}/m_{' + norm('Z') + '}',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as sqrt(1 - sin2(Theta(W)))',
+                  description='W to Z mass ratio, calculated from CODATA 2022 values as sqrt(1 - sin2(Theta(W)))',
                   _key='rmwmz'
                   )
     
@@ -854,7 +858,7 @@ with GummyConstant._builtin():
                   latex_symbol='\\sigma',
                   ascii_symbol = 'sigma',
                   add_symbol=True,
-                  description='calculated from CODATA 2018 values as 2*pi*5*k**4/(15*h**3*c**2)',
+                  description='Stefan-Boltzmann constant, calculated from CODATA 2022 values as 2*pi*5*k**4/(15*h**3*c**2)',
                   _key='sigma'
                   ).unit = 'W m**-2 K**-4'
 
@@ -864,5 +868,36 @@ with GummyConstant._builtin():
                   html_symbol='<i>G</i><sub>F</sub>/(&hbar;c)<sup>3</sup>',
                   latex_symbol='G_{' + norm('F') + '}/(\\hbar c)^{3}',
                   add_symbol=True,
+                  description='Fermi coupling constant, CODATA 2022',
                   _key='gf'
+                  )
+    
+    GummyConstant(earth_mass,unit='kg',
+                  name='mass of the earth',
+                  symbol='M(E)',
+                  html_symbol='<i>M</i><sub>E</sub>',
+                  latex_symbol='M_E',
+                  add_symbol=True,
+                  description='mass of the earth, IAU 2009 GM(E) divided by G from CODATA 2022',
+                  _key='mearth'
+                  )
+    
+    GummyConstant(jupiter_mass,unit='kg',
+                  name='mass of Jupiter',
+                  symbol='M(J)',
+                  html_symbol='<i>M</i><sub>J</sub>',
+                  latex_symbol='M_J',
+                  add_symbol=True,
+                  description='mass of Jupiter, IAU 2009 GM(J) divided by G from CODATA 2022',
+                  _key='mjupiter'
+                  )
+    
+    GummyConstant(solar_mass,unit='kg',
+                  name='mass of the sun',
+                  symbol='M(S)',
+                  html_symbol='<i>M</i><sub>S</sub>',
+                  latex_symbol='M_S',
+                  add_symbol=True,
+                  description='mass of the sun, IAU 2009 GM(S) divided by G from CODATA 2022',
+                  _key='msun'
                   )

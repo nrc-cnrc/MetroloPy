@@ -24,8 +24,7 @@
 This module is loaded by the gummy.units module and is not intended be be
 imported directly.  Dimensionless units are defined here.
 """
-from .unit import Unit,Conversion,one
-from .ummy import MFraction
+from .unit import Unit,Conversion,one,MFraction
 
 class RatioUnit(Unit):
     """RatioUnit is used for dimensionless units like % where powers, e.g. %**2,

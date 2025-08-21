@@ -2,7 +2,7 @@
 
 # module constant
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -34,10 +34,11 @@ from .printing import _latex_math
 
 class GummyConstant(gummy,Indexed):
     
+    _case_sensitive = False
     return_toummy = False
     return_splonk = False
     
-    _builtins_to_import = ['..codata2018']
+    _builtins_to_import = ['..builtin_constants']
     
     _builtin_lib = {}
     _lib = {}
@@ -133,7 +134,7 @@ class GummyConstant(gummy,Indexed):
         self.name = name
     
 class JummyConstant(jummy,Indexed):
-    _builtins_to_import = ['..codata2018']
+    _builtins_to_import = ['..builtin_constants']
     
     _builtin_lib = {}
     _lib = {}
@@ -268,21 +269,22 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
             import_module(GummyConstant._builtins_to_import.pop(),
                           GummyConstant.__module__)
             
-        constants = {id(c):c for c in GummyConstant._builtin_lib.values()}
-        constants.update({id(c):c for c in GummyConstant._lib.values()})
-        constants.update({id(c):c for c in JummyConstant._builtin_lib.values()})
-        constants.update({id(c):c for c in JummyConstant._lib.values()})
-        constants = constants.values()
+        iconstants = {id(c):c for c in GummyConstant._builtin_lib.values()}
+        iconstants.update({id(c):c for c in GummyConstant._lib.values()})
+        iconstants.update({id(c):c for c in JummyConstant._builtin_lib.values()})
+        iconstants.update({id(c):c for c in JummyConstant._lib.values()})
+        iconstants = iconstants.values()
         
         if search is None:
+            constants = iconstants
             if len(constants) == 0:
                 if prnt:
                     print('no constants are loaded')
                     return
-                return ''
+                return 'no constants are loaded'
         else:
-            uf = set()
-            for u in constants:
+            constants = []
+            for u in iconstants:
                 s = set()
                 for a in u.aliases:
                     s = s.union(set(a.lower().split()))
@@ -300,19 +302,19 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
                 
                 srch = search.lower().split()
                 ad = True
+                
                 for a in srch:
                     if a.strip(',.;') not in s:
                         ad = False
                         break
                 if ad:
-                    uf.add(u)
+                    constants.append(u)
                     
-            constants = uf
             if len(constants) == 0:
                 if prnt:
                     print('no constants found matching "' + search + '"')
                     return
-                return ''
+                return 'no constants found matching "' + search + '"'
             
         uf = []
         for u in constants:
@@ -393,8 +395,8 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
 def shadowed_constants(fmt=None,prnt=True):
     """
     Lists any constants which have a shadowed name or alias.  Constants may be 
-    shadowed if the user has defined a new unit with the same name or alias as 
-    an existing unit.
+    shadowed if the user has defined a new constant with the same name or alias
+    as an existing constant.
     
     Parameters
     ---------

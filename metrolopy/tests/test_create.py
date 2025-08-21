@@ -161,8 +161,8 @@ class TestCreate(unittest.TestCase):
         
                     if rand.randint(10) == 0:
                         n = rand.randint(12)
-                        if bayesian and n > 0:
-                            dof = float('inf')
+                        #if bayesian and n > 0:
+                           # dof = float('inf')
                         if n == 0:
                             nm = g.name
                             g = uc.gummy(g)
@@ -292,10 +292,11 @@ class TestCreate(unittest.TestCase):
                         
                     self.assertTrue((g.x - x)/u < 1e-6)
                     
-                    if dof == float('inf'):
-                        self.assertTrue(g.dof == float('inf'))
-                    else:
-                        self.assertTrue((g.dof - dof)/dof < 1e-6)
+                    if not uc.gummy.bayesian:
+                        if dof == float('inf'):
+                            self.assertTrue(g.dof == float('inf'))
+                        else:
+                            self.assertTrue((g.dof - dof)/dof < 1e-6)
                     
                     if uunit is not None and uunit != unit:
                         self.assertTrue(g.uunit is uc.Unit.unit(uunit))

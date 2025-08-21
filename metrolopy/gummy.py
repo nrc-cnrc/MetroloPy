@@ -2,7 +2,7 @@
 
 # module gummy
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -31,16 +31,15 @@ module.  The gummy object, in turn, inherits from the nummy object.
 """
 
 import numpy as np
-from .ummy import ummy,immy,_isscalar,_floor,_format_exp
-from .nummy import nummy
-from .exceptions import IncompatibleUnitsError,NoUnitConversionFoundError
-from .unit import Unit,one,Quantity
+from .ummy import ummy,immy,_isscalar,_format_exp,_to_decimal,_decimal_str
+from .nummy import nummy,get_name
+from .exceptions import IncompatibleUnitsError
+from .unit import Unit,one,Quantity,MetaQuantity,MFraction
 from .distributions import Distribution,MultivariateDistribution
 from .pmethod import _Pmthd,loc_from_k
-from .printing import MetaPrettyPrinter
-from math import isnan, isinf,log10
-from fractions import Fraction
+from math import isnan, isinf
 from numbers import Integral,Rational,Real,Complex
+from decimal import Decimal,localcontext,InvalidOperation
 
 
 try:
@@ -52,21 +51,77 @@ def _ku(k,u):
     try:
         return k*u
     except:
-        return type(u)(k)*u # in case gummy.u is a decimal.Decimal 
-    
-def _lg10(x):
-    if mp is not None and isinstance(x,mp.mpf):
-        return mp.log10(x)
-    try:
-        return x.log10() # in case x is a decimal.Decimal
-    except:
         try:
-            return np.log10(x)
+            if isinstance(u,Integral):
+                raise
+            return type(u)(k)*u # in case gummy.u is a decimal.Decimal 
         except:
-            return log10(float(x)) # in case x is a fraction.Fraction
+            return float(k)*float(u)
+        
+def _add_unit_sp(fmt,unit):
+    if unit is None or unit is one:
+        return ''
+        
+    if unit == '':
+        return ''
+        
+    if unit.startswith('\t'):
+        unit = unit[1:]
+    else:
+        if fmt == 'latex':
+            unit = r'\:' + unit
+        elif fmt == 'html':
+            unit = '&nbsp;' + unit
+        else:
+            unit = ' ' + unit
+        
+    return unit
     
+def _p_to_str(fmt,p):
+    if fmt == 'latex':
+        pct = '\\%'
+    else:
+        pct = '%'
+        
+    x = 100*Decimal(p)
+    if x <= 90:
+        return '{:.0f}'.format(x) + pct
     
-class MetaGummy(MetaPrettyPrinter):
+    y = 100 - x
+    y = round(y,1-y.adjusted()-1)
+    y = round(y,1-y.adjusted()-1)
+    x = x.quantize(y)
+    return '{:f}'.format(x) + pct
+    
+def _k_to_str(k):
+    return '{:.1f}'.format(k)
+    
+def _dof_to_str(dof,fmt=None):
+    if isinf(dof) or dof > 99:
+        if fmt == 'html':
+            return '&infin;'
+        if fmt == 'latex':
+            return r'\infty'
+        if fmt == 'ascii':
+            return 'inf'
+        return '\u221E'
+        
+    if isinstance(dof,Integral):
+        return str(dof)
+    return '{:.1f}'.format(dof)
+    
+def _set_covariance_matrix(gummys, matrix):
+    nummys = [g.value for g in gummys]
+    nummy._set_covariance_matrix(nummys, matrix)
+    for g in gummys:
+        g._set_U(None,None)
+        
+def _set_correlation_matrix(gummys, matrix):
+    nummys = [g.value for g in gummys]
+    nummy._set_correlation_matrix(nummys, matrix)
+        
+
+class MetaGummy(MetaQuantity):
     # A metaclass to define some "classproperties" for gummy
     
     @property
@@ -320,6 +375,8 @@ class MetaGummy(MetaPrettyPrinter):
         return ummy.sci_notation
     @sci_notation.setter
     def sci_notation(cls,v):
+        if v is not None:
+            v = bool(v)
         ummy.sci_notation = v
         
     @property
@@ -330,7 +387,7 @@ class MetaGummy(MetaPrettyPrinter):
         return ummy.sci_notation_high
     @sci_notation_high.setter
     def sci_notation_high(cls,v):
-        ummy.sci_notation_high = v
+        ummy.sci_notation_high = int(v)
         
     @property
     def sci_notation_low(cls):
@@ -340,7 +397,7 @@ class MetaGummy(MetaPrettyPrinter):
         return ummy.sci_notation_low
     @sci_notation_low.setter
     def sci_notation_low(cls,v):
-        ummy.sci_notation_low = v
+        ummy.sci_notation_low = int(v)
     
     @property
     def rounding_u(cls):
@@ -366,6 +423,9 @@ class MetaGummy(MetaPrettyPrinter):
         return ummy.max_digits
     @max_digits.setter
     def max_digits(cls,v):
+        v = int(v)
+        if v < 0:
+            raise ValueError('max_digits must be >= 0')
         ummy.max_digits = v
         
     @property
@@ -503,7 +563,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             self._value = nummy(x.value)
             self._value._fp = self._get_p
             self._unit = x._unit
-            self._U = self._value._u
+            self._U = self._value.u
             self._value._name = x._value._name
             self._k = 1
             self._pm = None
@@ -521,7 +581,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         if isinstance(x,ummy):
             self._value = nummy(x)
             self._value._fp = self._get_p
-            self._U = self._value._u
+            self._U = self._value.u
             self._k = 1
             self._pm = None
             self._set_k = True
@@ -575,7 +635,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                 u = unit.from_uunit(u,uunit)
             elif unit.is_dimensionless:
                 if not uunit.is_dimensionless:
-                    raise NoUnitConversionFoundError('no conversion found for unit ' + str(uunit) + ' to one')
+                    raise IncompatibleUnitsError('no conversion found for unit ' + str(uunit) + ' to one')
                 if uunit is one:
                     u = U.convert(unit).value
                 else:
@@ -583,7 +643,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             else:
                 try:
                     u = U.convert(unit).value
-                except NoUnitConversionFoundError:
+                except IncompatibleUnitsError:
                     # If no conversion was found for uunit to unit, see
                     # if unit can be converted to one.  In this case the u
                     # passed to the intializer was a relative uncertainty.
@@ -592,8 +652,11 @@ class gummy(Quantity,metaclass=MetaGummy):
         if self._k != 1:
             try:
                 u = u/self._k
-            except:
-                u = u/type(u)(self._k)
+            except TypeError:
+                if isinstance(u,Integral):
+                    u = u/MFraction(self._k)
+                else:
+                    u = u/type(u)(self._k)
 
         self._value = nummy(x,u=u,dof=dof,utype=utype,name=name)
         self._value._fp = self._get_p
@@ -617,7 +680,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         sometimes called the "1-sigma" uncertainty.  The This property is read-only
         and returns a float.
         """
-        return self._value._u
+        return self._value.u
     
     @property
     def dof(self):
@@ -628,15 +691,23 @@ class gummy(Quantity,metaclass=MetaGummy):
         gummy is based on.  If the gummy was created as the result of an 
         operation between two or more other gummys, then the dof is the effective
         number of degrees of freedom calculated using the Welch-Satterthwaite 
-        approximation.  Caution:  A variation of the the  Welch-Satterthwaite
-        approximation is used that takes into account correlations, see
-        [R. Willink, Metrologia, 44, 340 (2007)].  However correlations are
-        not handled perfectly.  So if accurate dof calculations are need, care
-        should be taken to ensure that correlations are not generated in
-        intermediate calculations.
+        approximation.
         """
 
         return self.value.dof
+    
+    @property
+    def isindependent(self):
+        """
+        `bool`, read-only
+
+        Returns `True` if the gummy is an independent variable.  That is the 
+        ummy has u > 0 and was not correlated with any other gummy's when it was 
+        created or is perfectly correlated or anti-correlated (correlation 
+        coefficeint 1 or -1) with such an ummy.'
+        """
+        
+        return self.value.isindependent
         
     @property
     def U(self):
@@ -735,16 +806,22 @@ class gummy(Quantity,metaclass=MetaGummy):
             if self._unit.linear:
                 try:
                     if self.unit.is_dimensionless:
-                        raise NoUnitConversionFoundError()
+                        raise IncompatibleUnitsError()
                     return Quantity(_ku(k,u),unit=self.unit).convert(unit)
                     
-                except NoUnitConversionFoundError:
+                except IncompatibleUnitsError:
                     try:
-                        r = abs(_ku(k,u)/self.x)
+                        try:
+                            r = abs(_ku(k,u)/self.x)
+                        except TypeError:
+                            if isinstance(self.x,Integral):
+                                r = abs(MFraction.fromnum(_ku(k,u))/self.x)
+                            else:
+                                r = abs(type(self.x)(_ku(k,u))/self.x)
                         return Quantity(r).convert(unit)
                     except ZeroDivisionError:
                         if not Unit.unit(unit).is_dimensionless:
-                            raise NoUnitConversionFoundError('no conversion found from unit ' + str(unit) + ' to one')
+                            raise IncompatibleUnitsError('no conversion found from unit ' + str(unit) + ' to one')
                         return Quantity(float('inf'),unit=unit)
             else:
                 return Quantity(self.unit.to_uunit(_ku(k,u),unit),unit)
@@ -896,7 +973,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         Returns `False` if the owning gummy was created from a operation involving
         other gummys or has zero uncertainty and `True` otherwise.
         """
-        return self.value.independent
+        return self.value.isindependent
             
     @property
     def name(self):
@@ -1240,34 +1317,17 @@ class gummy(Quantity,metaclass=MetaGummy):
         return self.value.finfo
     
     @property
-    def real(self):
-        """
-        returns a copy of the gummy
-        """
-        return self.copy(formatting=False)
-    
-    def conjugate(self):
-        """
-        returns a copy of the gummy
-        """
-        return self.copy(formatting=False)
-    
-    def angle(self):
-        if self.x >= 0:
-            return type(self)(0)
-        else:
-            return type(self)(np.pi)
-    
-    @property
     def utype(self):
         """
-        `str` or `None`
-
-        An arbitrary string value labeling the uncertainty type.
+        `str`, `None` or a list containing strings and possibly `None`
+    
+        An arbitrary string value labeling the uncertainty type or or a 
+        list of types if the gummy was constructed from independent
+        variables with different utypes.
         """
         return self.value.utype
         
-    def ufrom(self,x,sim=False):
+    def ufrom(self,x):
         """
         Gets the standard uncertainty contributed from particular gummys
         or utypes if all other free variables are held fixed.
@@ -1291,18 +1351,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         >>>  d.ufrom('A')
         0.53851648071345048
         """
-
-        try:
-            if isinstance(x,str):
-                x = [x]
-            x = [i.value if isinstance(i,Quantity) else i for i in x]
-        except TypeError:
-            # x is probably a gummy and not iterable
-            if isinstance(x,Quantity):
-                x = [x.value]
-            else:
-                raise
-        return self.value.ufrom(x,sim)
+        return self.value.ufrom(x)
     
     def doffrom(self,x):
         """
@@ -1329,15 +1378,68 @@ class gummy(Quantity,metaclass=MetaGummy):
         >>>  d.doffrom('A')
         9.0932962619709627
         """
-        try:
-            x = [i.value if isinstance(i,Quantity) else i for i in x]
-        except TypeError:
-            # x is probably a gummy not iterable
-            if isinstance(x,Quantity):
-                x = [x.value]
-            else:
-                raise
         return self.value.doffrom(x)
+    
+    def ufromsim(self,x):
+        """
+        Gets the standard deviation of the Monte-Carlo data only allowing the
+        independent variables in `x` to vary.  Independent istributions not in 
+        `x` are held fixed.  `sim` or `simulate` must be called to generate
+        Monte-Carlo data before calling this method.
+        
+        Parameters
+        ----------
+        x:  `gummy`, `str`, or array_like
+            A gummy, a string referencing a utype or a list containing
+            gummys and strings.
+            
+        Returns
+        -------
+        `float`
+        """
+        if _isscalar(x):
+            x = [x]
+        x = [i.value if isinstance(i,Quantity) else i for i in x]
+        
+        return self.value.ufromsim(x)
+    
+    def datafrom(self,x,save=True):
+        """
+        Recomputes the Monte-Carlo `simdata `with only the varaibles in `x` 
+        allowed to vary.  `sim` or `simulate` must be called to generate
+        Monte-Carlo data before calling this method.  This method cannot be 
+        called with save == `True` from from a gummy representing an independent 
+        variable (that is from a gummy not created by by mathematical operations
+        between two or more other gummy's).
+        
+        Parameters
+        ----------
+        ufrom:  list containing `gummy` or `str`
+            all independent gummys not in the list or having a utype
+            not in the list are held fixed at their `.x` value
+            
+        save:  If `save` is `True` the recomputed data is stored in the `simdata`
+            attribute and `None` is returned.  If `save` is `False` then the
+            recomputed data is returned and the `simdata` attribute is not
+            overwritten.
+        
+        Returns
+        -------
+        'numpy.array' if `save` is `False`, otherwise returns `None`
+
+        Raises
+        ------
+        `NoSimulatedDataError`:
+            if no simulated data is available from a call to
+            `Distribution.simulate`.
+        `RuntimeError`:  
+            if this method is called from an independent `gummy` 
+        """
+        if _isscalar(x):
+            x = [x]
+        x = [i.value if isinstance(i,Quantity) else x for i in x]
+        
+        return self.value.datafrom(x,save=save)
         
     @property
     def style(self):
@@ -1570,20 +1672,23 @@ class gummy(Quantity,metaclass=MetaGummy):
         return self.value.max_digits
     @max_digits.setter
     def max_digits(self,v):
+        v = int(v)
+        if v < 0:
+            raise ValueError('max_digits must be >= 0')
         self.value.max_digits = v
         
             
-    def copy(self,formatting=True,tofloat=False):
+    def copy(self,formatting=True,totype=None):
         """
         Returns a copy of the gummy.  If the `formatting` parameter is
         `True` the display formatting information will be copied and if
         `False` the display formatting will be set to the default for a
-        new gummy.  The default for `formatting` is `True`.  If tofloat
-        is true the x and u properties will be converted to float values
+        new gummy.  The default for `formatting` is `True`.  If 'totype`
+        is defined the x and u properties will be converted to type `totype`
         before copying.
         """
         
-        r = type(self)(self._value.copy(formatting=formatting,tofloat=tofloat),
+        r = type(self)(self._value.copy(formatting=formatting,totype=totype),
                        unit = self._unit)
         r._old = self._old
                 
@@ -1603,7 +1708,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             r._k = self._k
             r._pm = self._pm
             r._set_k = self._set_k
-            if tofloat:
+            if totype is not None:
                 r._set_U(unit=self.uunit)
             else:
                 r._U = self._U
@@ -1632,7 +1737,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             instance `one`.
         """     
         return self*Unit.unit(unit)/self.unit
-
+        
     @staticmethod
     def simulate(gummys,n=100000,ufrom=None):
         """
@@ -1644,6 +1749,9 @@ class gummy(Quantity,metaclass=MetaGummy):
         ----------
         n:  `int` > 0, optional
             The number of samples to generate.  The default value is 100000.
+            
+        gummys: A list or array of `gummy` for which to generate the Monte-Carlo
+            data.
 
         ufrom: `None`, `gummy`, `str` or array_like
             If this is not `None`, then only the gummys referenced here will be
@@ -1652,15 +1760,17 @@ class gummy(Quantity,metaclass=MetaGummy):
             a list containing  gummys and strings.  The default value is `None`.
         """
         if ufrom is not None:
-            ufrom = ummy._toummylist(ufrom)
+            if isinstance(ufrom,(Quantity,ummy,str,Distribution)):
+                ufrom = [ufrom]
+            ufrom = [g.value if isinstance(g,Quantity) else g for g in ufrom]
         gummys = [g.value if isinstance(g,Quantity) else g for g in gummys]
-        gummys = ummy._toummylist(gummys)
-        return nummy.simulate(gummys,n,ufrom)
+        return nummy.simulate(gummys,n=n,ufrom=ufrom)
     
     def sim(self,n=100000,ufrom=None):
         """
-        Generates Monte-Carlo data for this gummy.  Calling this method
-        erases previously generated Monte-Carlo data for all gummys, so use the 
+        Generates Monte-Carlo data for this gummy (as well as for any gummys 
+        that this gummy depends on).  Calling this method erases previously 
+        generated Monte-Carlo data for all gummys, so use the 
         `gummy.simulate()` staticmethod if you need Monte-Carlo data for
         several gummys simultaneously.
         
@@ -1675,9 +1785,20 @@ class gummy(Quantity,metaclass=MetaGummy):
             mean values.  This can be a gummy, a string referencing a utype or
             a list containing  gummys and strings.  The default value is `None`.
         """
-        if ufrom is not None:
-            ufrom = ummy._toummylist(ufrom)
         return gummy.simulate([self],n,ufrom)
+    
+    @staticmethod
+    def clear_all():
+        """
+        Clears Monte-Carlo data from all existing gummys.
+        """
+        Distribution.clear_all()
+        
+    def clear(self):
+        """
+        Clears the gummys Monte-Carlo data.
+        """
+        self.value.clear()
         
     @classmethod
     def _plotlabel(cls,g,symbol=None,exponent=0,math=None,norm=None,
@@ -1695,13 +1816,17 @@ class gummy(Quantity,metaclass=MetaGummy):
             else:
                 slashaxis = gummy.slashaxis
             
-        try:
-            name = g.name
-        except:
-            name = None
-
-        if name == '':
-            name = None
+        if g is None:
+            name = ''
+        else:
+            try:
+                name = g.get_name(fmt='latex',norm=norm)
+                if name is None:
+                    name = norm('value')
+            except:
+                name = str(g)
+                if len(name) > 1:
+                    name = norm(name.strip())
             
         if symbol is None and isinstance(g,gummy) and g.unit is not one:
             unit = g.unit
@@ -1713,16 +1838,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         if symbol == '':
             symbol = None
             
-        xl = ''
-        if name is not None:
-            if isinstance(name,str) and len(name) > 1:
-                name = str(name).replace(' ','\\,').strip()
-                xl += norm(name)
-            else:
-                try:
-                    xl += name.tolatex()
-                except:
-                    xl += str(name).strip()
+        xl = name
         if symbol is not None:
             if xl != '':
                 if slashaxis:
@@ -1847,8 +1963,19 @@ class gummy(Quantity,metaclass=MetaGummy):
             title1  += self.tostring(fmt='latex',style='usim',norm=norm)
             title1 = math(title1)
             title = title0 + '\n' + title1
+            
+        if xlabel is not None:
+            plot_options['xlabel'] = xlabel
+        if title is not None:
+            plot_options['title'] = title
+            
+        ci = None
+        if 'range' not in plot_options and ci_marker:
+            ci = g.cisim
+            a = (ci[1] - ci[0])/3
+            plot_options['range'] = (ci[0] - a,ci[1] + a)
         
-        self.value.hist(xlabel=xlabel,title=title,hold=True,**plot_options)
+        self.value.hist(hold=True,**plot_options)
         
         if mean_marker:
             if 'linewidth' not in mean_marker_options and 'lw' not in mean_marker_options:
@@ -1869,7 +1996,8 @@ class gummy(Quantity,metaclass=MetaGummy):
             if 'zorder' not in ci_marker_options:
                 ci_marker_options['zorder'] = 3
                 
-            ci = g.cisim
+            if ci is None:
+                ci = g.cisim
             plt.axvline(ci[0],**ci_marker_options)
             plt.axvline(ci[1],**ci_marker_options)
         
@@ -2229,16 +2357,16 @@ class gummy(Quantity,metaclass=MetaGummy):
                         return('??')
         else:
             try:
-                return(str(self.name).strip() + ' = ' + str(self.x) + '{' + str(self.u) + '}' + '??')
+                return(str(self.get_name()).strip() + ' = ' + str(self.x) + '{' + str(self.u) + '}' + '??')
             except:
                 try:
-                    return(str(self.name).strip() + ' = ' + str(self.x) + '{??}')
+                    return(str(self.get_name()).strip() + ' = ' + str(self.x) + '{??}')
                 except:
                     try:
-                        return(str(self.name).strip() + ' = ??{' + str(self.u) + '}')
+                        return(str(self.get_name()).strip() + ' = ??{' + str(self.u) + '}')
                     except:
                         try:
-                            return(str(self.name).strip() + ' = ' + '??')
+                            return(str(self.get_name()).strip() + ' = ' + '??')
                         except:
                             return('??')
         
@@ -2335,6 +2463,8 @@ class gummy(Quantity,metaclass=MetaGummy):
                 txt = txt.strip()
                 return txt
             elif style == 'uunit':
+                if len(v) < 3 or len(v[2]) < 3 or v[2][2] is None:
+                    return ''
                 return v[2][2]
             elif style == 'ueq':
                 if self._ubreakdown is None or len(self._ubreakdown) != len(v) - 2:
@@ -2357,7 +2487,16 @@ class gummy(Quantity,metaclass=MetaGummy):
                 else:
                     txt = v[1][0] + v[1][1] + v[1][2]
                     for i,t in enumerate(v[2:]):
-                        b = str(self._ubreakdown[i])
+                        b = self._ubreakdown[i]
+                        if not isinstance(b,str):
+                            if isinstance(b,gummy):
+                                nm = b.get_name(fmt=fmt,norm=norm)
+                                if nm is not None:
+                                    b = nm
+                                else:
+                                    b = str(i+1)
+                            else:
+                                b = str(i+1)
                         if fmt == 'html':
                             if i == 0:
                                 pm = ' with <i>u</i><sub>'+b+'</sub>&nbsp;=&nbsp;'
@@ -2499,9 +2638,9 @@ class gummy(Quantity,metaclass=MetaGummy):
                     else:
                         k = self.k
                     if fmt == 'html':
-                        itxt += '<i>k</i>&nbsp;=&nbsp;' + gummy._k_to_str(k)
+                        itxt += '<i>k</i>&nbsp;=&nbsp;' + _k_to_str(k)
                     else:
-                        itxt += 'k = ' + gummy._k_to_str(k)
+                        itxt += 'k = ' + _k_to_str(k)
                     
                     txt += itxt
                         
@@ -2518,7 +2657,7 @@ class gummy(Quantity,metaclass=MetaGummy):
                     else:
                         itxt0 = ' with'
                         
-                    ltxt = gummy._p_to_str(fmt,p)
+                    ltxt = _p_to_str(fmt,p)
                     if ltxt[0] == '1' or ltxt[0] == '8':
                         itxt0 += ' an ' 
                         itxt1 = ' ' + self._p_method.text
@@ -2541,12 +2680,12 @@ class gummy(Quantity,metaclass=MetaGummy):
                         itxt = ' with '
                         
                     if fmt == 'html':
-                        itxt += '<i>&nu;</i>&nbsp;=&nbsp;' + gummy._dof_to_str(self.dof,fmt)
+                        itxt += '<i>&nu;</i>&nbsp;=&nbsp;' + _dof_to_str(self.dof,fmt)
                     elif fmt == 'latex':
                         itxt = norm(itxt)
-                        itxt += r'\nu = ' + gummy._dof_to_str(self.dof,fmt)
+                        itxt += r'\nu = ' + _dof_to_str(self.dof,fmt)
                     else:
-                        itxt += gummy._dof_to_str(self.dof) + ' degrees of freedom'
+                        itxt += _dof_to_str(self.dof) + ' degrees of freedom'
                     
                     txt += itxt
                     
@@ -2562,15 +2701,31 @@ class gummy(Quantity,metaclass=MetaGummy):
     def _format_xu(self,fmt,style,norm,nsig,xsig=None,solidus=None,mulsep=None):
         if style is None:
             style = self.style
-        
+            
         if nsig is None:
             nsig = self.nsig
+        if nsig > self.max_digits - 2:
+            nsig = self.max_digits - 2
+        if nsig < 1:
+            nsig = 1
             
         if solidus is None:
             solidus = self.solidus
             
         if mulsep is None:
             mulsep = self.mulsep 
+            
+        if style in  ['u','uf']:
+            if isinstance(self._U,Quantity):
+                un = self._U.unit
+                u = self._U.value
+            else:
+                un = self.unit
+                u = self._U
+            if style == 'uf':
+                un = 1
+            uret =  gummy(u,unit=un)._format_xu(fmt,'x',norm,nsig,xsig=nsig,solidus=solidus,mulsep=mulsep)[1]
+            return (style,('','',''),uret)
             
         if style in ['pmsim','cisim','pmsimi','mcisim','xsim','xfsim','usim','ufsim']:
             sim = True
@@ -2582,318 +2737,262 @@ class gummy(Quantity,metaclass=MetaGummy):
         else:
             sim = False
             u = self.u
-                
-        if u == 0 and style in ['u','uf','usim','ufsim']:
-            return (style,('','',''),('0','',''))
+            
+        if style in  ['usim','ufsim']:
+            if isinstance(self._U,Quantity):
+                un = self._U.unit
+            else:
+                un = self.unit
+            u = self.usim
+            if style == 'ufsim':
+                un = 1
+            uret =  gummy(u,unit=un)._format_xu(fmt,'x',norm,nsig,xsig=nsig,solidus=solidus,mulsep=mulsep)[1]
+            return (style,('','',''),uret)
         
-        if xsig is None and nsig <= 0:
-            style = 'x'
-            nsig = 1
-        
-        xsym = gummy._add_unit_sp(fmt,self.unit.tostring(fmt=fmt,solidus=solidus,mulsep=mulsep))
+        xsym = _add_unit_sp(fmt,self.unit.tostring(fmt=fmt,solidus=solidus,mulsep=mulsep,strip=False))
 
         if sim:
             x = self.xsim
         else:
             x = self.x
-                
-        xabs = abs(x)
             
-        if xabs != 0 and not isinf(xabs) and not isnan(xabs):
-            lgx = _lg10(xabs)
-            if lgx < 0 and int(lgx) == lgx:
-                xexp = _floor(lgx) + 1
-            else:
-                xexp = _floor(lgx)
-            oexp = xexp
-        else:
-            xexp = None
-            oexp = 0
-            
-        if u == 0 or isnan(u) or isinf(u) or (style=='x' and xsig is not None):
-            if isinstance(x,Rational) and not isinstance(x,Integral):
-                ffstr = str(x)
-                fstr = ffstr.split('/')[-1]
-                dstr = str(float(x)).split('e')[0].split('E')[0].split('.')[-1]
-                dstr.strip().strip('0')
-                if len(dstr) > 3 and len(dstr) > len(fstr) and len(ffstr) < (self.max_digits + 10):
-                    return ('x',(str(x),'',xsym))
-            if xexp is None:
-                return ('x',(self.value._format_mantissa(fmt,x,None),'',xsym))
-            if xsig is not None:
-                if xabs > 10**(xexp+1) - 10**(xexp-xsig)/2:
-                    xexp += 1
-            if (xexp is not None and
-                    ((self.sci_notation is None and (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
-                    or self.sci_notation)):
-                if isinstance(x,Rational) and xexp > 0:
-                    x = Fraction(x,10**xexp)
-                else:
-                    x = x*10**(-xexp)
-                if xsig is not None:
-                    xsig = xsig - 1
-                return ('x',(self.value._format_mantissa(fmt,x,xsig),
-                         _format_exp(fmt,xexp),
-                         xsym))
-            else:
-                if xsig is not None:
-                    xsig = -xexp + xsig - 1
-                return ('x',(self.value._format_mantissa(fmt,x,xsig),'',xsym))
-        else:
-            # lgadd makes sure the sig figs are displayed correctly if a leading
-            # 9 is rounded to a 10.
-            lgadd = _lg10(1/(1-10**-nsig/2))+10**-16
-            if sim and abs(self.cisim[1]-self.cisim[0]) != 0 and not isinf(self.cisim[0]) and not isinf(self.cisim[1]) and not isnan(self.cisim[0]) and not isnan(self.cisim[1]):
-                xcnt = _floor(_lg10(abs((self.cisim[1]-self.cisim[0])/2))+lgadd)
-            try:
-                xcnt = _floor(_lg10(abs(_ku(self._k,u)))+lgadd)
-            except:
-                xcnt = _floor(_lg10(abs(_ku(self._k,u)))+type(u)(lgadd))
-            uuexp = xcnt - nsig + 1
-                    
-            if xexp is not None and xexp - uuexp > self.max_digits and style in ['pm','concise']:
-                style = 'pmi'
-                
-            # Round x to zero if it is smaller that one count in the last
-            # digit of the expanded uncertainty.
-            if xabs < 10**uuexp/2:
-                x = 0
-                    
-            if xabs < 10**xcnt or xexp is None:
-                xexp = xcnt
-                
-            if xabs > 10**(xexp+1) - 10**uuexp/2:
-                # If a leading 9 will be rounded to a 10, increment xexp by 1
-                xexp += 1
-                        
-            ugummy = isinstance(self._U,Quantity) or (self._Ubr is not None and isinstance(self._Ubr[0],Quantity))
-            if ugummy and not sim:
-                if self._Ubr is None:
-                    uret = [gummy(self._U)._format_xu(fmt,'x',norm,nsig,xsig=nsig)[1]]
-                else:
-                    uret = [gummy(i)._format_xu(fmt,'x',norm,nsig,xsig=nsig)[1] for i in self._Ubr]
-                if style == 'pm' or style == 'concise':
-                    style = 'pmi'
+        xd = _to_decimal(x,max_digits=self.max_digits)
+        with localcontext(prec=nsig + 2):
+            ud = _to_decimal(u)*_to_decimal(self._k)
         
-                if (((self.sci_notation is None and 
-                        (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
-                        or self.sci_notation)):
-                    x = x*10**(-xexp)
-                    xret = (self.value._format_mantissa(fmt,x,xexp-uuexp),
-                            _format_exp(fmt,xexp),
-                            xsym)
-                    return tuple([style,xret] + uret)
+        elip = ''
+        uexp = 0
+        xexp = 0
+        dp = 0
+        with localcontext(prec=self.max_digits):
+            if ud == 0 or not ud.is_finite():
+                if style != 'xf':
+                    style = 'x'
+                    
+                if xd.is_finite():
+                    nm = None
+                    if xsig is None:
+                        xsig = self.max_digits
+                        if self.finfo is not None and self.finfo.precision > 0 and self.finfo.precision <= xsig:
+                            xsig = self.finfo.precision
+                            nm = True
+                    else:
+                        nm = False
+                        
+                    xd = round(xd,xsig-xd.adjusted()-1)
+                    xd = round(xd,xsig-xd.adjusted()-1) # round again in case 9 round up to 10 in the last line
+                    
+                    if xd == 0:
+                        xexp = 0
+                    else:
+                        xexp = xd.adjusted()
+                    
+                    if isinstance(x,Rational) and not isinstance(x,Integral) and x != xd:
+                        fstr = str(x.numerator) + '/' + str(x.denominator)
+                        if len(fstr) < self.max_digits + 1:
+                            return (style,(fstr,'',xsym))
+                        
+                    if (nm is None and x == xd) or nm:
+                        xd = xd.normalize()
+                    elif nm is None:
+                        elip = '...'
+                
+            else:
+                ud = round(ud,nsig-ud.adjusted()-1)
+                ud = round(ud,nsig-ud.adjusted()-1) 
+                uexp = ud.adjusted()
+    
+                if xd.is_finite():
+                    try:
+                        if xsig is None:
+                            xd = xd.quantize(ud)
+                        else:
+                            xd = round(xd,xsig-xd.adjusted()-1)
+                    except InvalidOperation:
+                        xd = round(xd,self.max_digits-xd.adjusted()-1)
+                        xexp = xd.adjusted()
+                        elip = '...'
+                        if style not in ['x','xf','xsim','xfsim','ueq','u equals']:
+                            style = 'pmi'
+                            
+                    if abs(xd) < abs(ud) and style not in ['x','xf','xsim','xfsim']:
+                        dp = xd.adjusted() - uexp
+                        xexp = uexp
+                    else:
+                        xexp = xd.adjusted()
                 else:
-                    xret = (self.value._format_mantissa(fmt,x,-uuexp),'',xsym)
-                    return tuple([style,xret] + uret)
-            elif ugummy and style in ['pmsim','pmsimi']:
+                    if style in ['concise','pm']:
+                        style = 'pmi'
+                    elif style == 'pmsim':
+                        style == 'pmsimi'
+                    
+        scin = False
+        if self.sci_notation is None:
+            if xexp > self.sci_notation_high or xexp < self.sci_notation_low:
+                scin = True
+        else:
+            scin = self.sci_notation
+        if xexp > self.max_digits - 1:
+            scin = True
+        elif xexp < 0 and len(xd.as_tuple().digits) + self.sci_notation_low > self.max_digits - 1:
+            scin = True
+        elif style == 'concise' and xd.is_finite() and (xd.as_tuple()[2] > 0 or len(xd.as_tuple()[1]) < nsig):
+            scin = True
+            
+        if not scin:
+            xexp = 0
+            
+        if xexp == 0:
+            fstr =_decimal_str(xd,dalign=0,fmt=fmt)
+        else:
+            fstr = _decimal_str(xd,dplace=dp,fmt=fmt)
+            
+        xret = (fstr + elip,_format_exp(fmt,xexp),xsym)
+                    
+        if style in ['x','xf','xsim','xfsim']:
+            return (style,xret)
+                
+        ugummy = isinstance(self._U,Quantity) or (self._Ubr is not None and isinstance(self._Ubr[0],Quantity))
+        if ugummy:
+            if sim:
                 usm = self.Usim
                 uret0 = gummy(usm[0],unit=self._U.unit)._format_xu(fmt,'x',norm,nsig,xsig=nsig,solidus=solidus,mulsep=mulsep)[1]
                 uret1 = gummy(usm[1],unit=self._U.unit)._format_xu(fmt,'x',norm,nsig,xsig=nsig,solidus=solidus,mulsep=mulsep)[1]
-                if style == 'pmsim':
-                    style = 'pmsimi'
-        
-                if (((self.sci_notation is None and 
-                        (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
-                        or self.sci_notation)):
-                    x = x*10**(-xexp)
-                    xret = (self.value._format_mantissa(fmt,x,xexp-uuexp),
-                            _format_exp(fmt,xexp),
-                            xsym)
-                    return (style,xret,uret0,uret1)
-                else:
-                    xret = (self.value._format_mantissa(fmt,x,-uuexp),'',xsym)
-                    return (style,xret,uret0,uret1)
+                style = 'pmsimi'
+                return (style,xret,uret0,uret1)
             else:
-                if sim:
-                    if style in ['usim','ufsim']:
-                        u = self.usim
+                if self._Ubr is None:
+                    uret = [gummy(self._U)._format_xu(fmt,'x',norm,nsig,xsig=nsig,solidus=solidus,mulsep=mulsep)[1]]
+                else:
+                    uret = [gummy(i)._format_xu(fmt,'x',norm,nsig,xsig=nsig,solidus=solidus,mulsep=mulsep)[1] for i in self._Ubr]
+                if style == 'pm' or style == 'concise':
+                    style = 'pmi'
+                return tuple([style,xret] + uret)
+
+        with localcontext(prec=nsig + 2):
+            if sim:
+                u = abs(_to_decimal(self.cisim[1] - self.cisim[0]))
+            else:
+                u = abs(_to_decimal(self._U))
+            
+            if u.is_finite():
+                if xd.is_finite():
+                    uu = u.quantize(xd)
+                    if uu == 0:
+                        u = round(u,nsig-u.adjusted()-1)
+                        u = round(u,nsig-u.adjusted()-1)
                     else:
-                        u = (self.cisim[1] - self.cisim[0])
-                    ub = [u]
-                elif self._ubreakdown is None:
-                    u = self._U
-                    ub = [u]
+                        u = uu
                 else:
-                    u = self._U
-                    ub = self._Ubr
+                    u = round(u,nsig-u.adjusted()-1)
+                    u = round(u,nsig-u.adjusted()-1)
+            
+            if self._ubreakdown is None:
+                ub = [u]
+            else:
+                ub = []
+                for b in self._Ubr:
+                    bb = abs(_to_decimal(b))
+                    if bb.is_finite():
+                        if xd.is_finite():
+                            bb = bb.quantize(xd)
+                        else:
+                            bb = round(bb,nsig-bb.adjusted()-1)
+                            bb = round(bb,nsig-bb.adjusted()-1)
+                    ub.append(bb)
 
-
-                uabs = abs(u)     
-                if style == 'pm' or style == 'pmsim' or uabs == 0 or isinf(uabs) or isnan(uabs):
-                    uexp = xexp
-                else:
-                    try:
-                        uexp = _floor(_lg10(uabs)+lgadd)
-                    except:
-                        uexp = _floor(_lg10(uabs)+type(uabs)(lgadd))
-                    
-                psn = False
-                if style == 'concise':
-                    if uexp - nsig + 1 > 0 or (uexp > oexp and oexp == 0):
-                        psn = True
-                if style == 'x' and uuexp - nsig + 1 > 0:
-                    psn = True
+            
+        uret = []
+        if style == 'concise':
+            for ue in ub:
+                utxt = _decimal_str(ue,dplace=None,fmt=fmt)
+                uret.append((utxt,'',xsym))
+        elif style == 'pm':
+            for ue in ub:
+                utxt = _decimal_str(ue,fmt=fmt,dalign=xexp)
+                uret.append((utxt,_format_exp(fmt,ue),xsym))
+        else:
+            if style == 'pmsim' or u == 0 or not u.is_finite():
+                uexp = xexp
+            else:
+                uexp = u.adjusted()
                 
-                if (((self.sci_notation is None and 
-                        (xexp > self.sci_notation_high or xexp < self.sci_notation_low)) 
-                        or self.sci_notation) or psn):
-                    xtxt = self.value._format_mantissa(fmt,x*10**(-xexp),xexp-uuexp)
-                    xetxt = _format_exp(fmt,xexp)
-                    xret = (xtxt,xetxt,xsym)
-                else:
-                    xtxt = self.value._format_mantissa(fmt,x,-uuexp)
-                    xret = (xtxt,'',xsym)
-                    
-                uret = []
-                if style == 'concise':
-                    for ue in ub:
-                        utxt = self.value._format_mantissa(fmt,ue*10**(-uexp),nsig-1,parenth=True)
-                        uret.append((utxt,'',xsym))
-                elif style in ['pmsim','pmsimi']:
-                    if (((self.sci_notation is None and 
-                            (uexp > self.sci_notation_high or uexp < self.sci_notation_low)) 
-                            or self.sci_notation)):
-                        utxt0 = self.value._format_mantissa(fmt,self.Usim[0]*10**(-uexp),uexp-uuexp)
-                        utxt1 = self.value._format_mantissa(fmt,self.Usim[1]*10**(-uexp),uexp-uuexp)
-                        uetxt = _format_exp(fmt,uexp)
-                        if utxt0 == utxt1:
-                            if style == 'pmsim':
-                                style = 'pm'
-                            else:
-                                style = 'pmi'
-                            uret.append((utxt0,uetxt,xsym))
-                        else:
-                            uret.append((utxt0,uetxt,xsym))
-                            uret.append((utxt1,uetxt,xsym))
-                    else:
-                        utxt0 = self.value._format_mantissa(fmt,self.Usim[0],-uuexp)
-                        utxt1 = self.value._format_mantissa(fmt,self.Usim[1],-uuexp)
-                        if utxt0 == utxt1:
-                            if style == 'pmsim':
-                                style = 'pm'
-                            else:
-                                style = 'pmi'
-                            uret.append((utxt0,'',xsym))
-                        else:
-                            uret.append((utxt0,'',xsym))
-                            uret.append((utxt1,'',xsym))
-                elif style in ['cisim','mcisim']:
-                    if self.cisim[0] != 0 and not isinf(self.cisim[0]) and not isnan(self.cisim[0]):
-                        x0exp = _floor(_lg10(abs(self.cisim[0])))
-                    else:
-                        x0exp = 0
-                    if (((self.sci_notation is None and 
-                            (x0exp > self.sci_notation_high or x0exp < self.sci_notation_low)) 
-                            or self.sci_notation)):
-                        ci0 = self.value._format_mantissa(fmt,self.cisim[0]*10**(-x0exp),x0exp-uuexp)
-                        xe0txt = _format_exp(fmt,x0exp)
-                        uret.append((ci0,xe0txt,xsym))                 
-                    else:
-                        uret.append((self.value._format_mantissa(fmt,self.cisim[0],-uuexp),'',xsym))
-                    
-                    if self.cisim[1] != 0 and not isinf(self.cisim[1]) and not isnan(self.cisim[1]):
-                        x1exp = _floor(_lg10(abs(self.cisim[1])))
-                    else:
-                        x1exp = 0
-                    if (((self.sci_notation is None and 
-                            (x1exp > self.sci_notation_high or x1exp < self.sci_notation_low)) 
-                            or self.sci_notation)):
-                        ci1 = self.value._format_mantissa(fmt,self.cisim[1]*10**(-x1exp),x1exp-uuexp)
-                        xe1txt = _format_exp(fmt,x1exp)
-                        uret.append((ci1,xe1txt,xsym))
-                    else:
-                        uret.append((self.value._format_mantissa(fmt,self.cisim[1],-uuexp),'',xsym))
-                else:
-                    if style == 'ueq':
-                        uxp = uexp - nsig + 1
-                    else:
-                        uxp = uuexp
-                    if (((self.sci_notation is None and 
-                            (uexp > self.sci_notation_high or uexp < self.sci_notation_low)) 
-                            or self.sci_notation)):
-                        for ue in ub:
-                            utxt = self.value._format_mantissa(fmt,ue*10**(-uexp),uexp-uxp)
-                            uetxt = _format_exp(fmt,uexp)
-                            uret.append((utxt,uetxt,xsym))
-                    else:
-                        for ue in ub:
-                            utxt = self.value._format_mantissa(fmt,ue,-uxp)
-                            uret.append((utxt,'',xsym))
-                    
-                return tuple([style,xret]+uret)
-        
-    @staticmethod
-    def _add_unit_sp(fmt,unit):
-        if unit is None or unit is one:
-            return ''
-            
-        if unit == '':
-            return ''
-            
-        if unit.startswith('\t'):
-            unit = unit[1:]
-        else:
-            if fmt == 'latex':
-                unit = r'\:' + unit
-            elif fmt == 'html':
-                unit = '&nbsp;' + unit
+            if self.sci_notation is None:
+                if uexp > self.sci_notation_high or uexp < self.sci_notation_low:
+                    scin = True
             else:
-                unit = ' ' + unit
-            
-        return unit
-        
-    @staticmethod
-    def _p_to_str(fmt,p):
-        x = p*100
-        if fmt == 'latex':
-            pct = '\\%'
-        else:
-            pct = '%'
-        if x < 96:
-            return '{:.0f}'.format(x) + pct
-        if x < 98:
-            return '{:.1f}'.format(x) + pct
-        if x < 99.9:
-            return '{:.2f}'.format(x) + pct
-        if x < 99.99:
-            return '{:.3f}'.format(x) + pct
-        if x < 99.999:
-            return '{:.4f}'.format(x) + pct
-        if x < 99.9999:
-            return '{:.5f}'.format(x) + pct
-        return str(x) + pct
-        
-    @staticmethod
-    def _k_to_str(k):
-        return '{:.1f}'.format(k)
-        
-    @staticmethod
-    def _dof_to_str(dof,fmt=None):
-        if isinf(dof) or dof > 99:
-            if fmt == 'html':
-                return '&infin;'
-            if fmt == 'latex':
-                return r'\infty'
-            if fmt == 'ascii':
-                return 'inf'
-            return '\u221E'
-            
-        if isinstance(dof,Integral):
-            return str(dof)
-        return '{:.1f}'.format(dof)
-        
-    @staticmethod
-    def _set_covariance_matrix(gummys, matrix):
-        nummys = [g.value for g in gummys]
-        nummy._set_covariance_matrix(nummys, matrix)
-        for g in gummys:
-            g._set_U(None,None)
-            
-    @staticmethod
-    def _set_correlation_matrix(gummys, matrix):
-        nummys = [g.value for g in gummys]
-        nummy._set_correlation_matrix(nummys, matrix)
+                scin = self.sci_notation
+            if uexp > self.max_digits - 1:
+                scin = True
+            elif uexp < 0 and nsig + self.sci_notation_low > self.max_digits - 1:
+                scin = True
+                
+            if not scin:
+                uexp = 0
+                
+            if style in ['ueq','pmi']:
+                if uexp == 0:
+                    for ue in ub:
+                        utxt = _decimal_str(ue,fmt=fmt,dalign=0)
+                        uret.append((utxt,_format_exp(fmt,uexp),xsym))
+                else:
+                    for ue in ub:
+                        utxt = _decimal_str(ue,fmt=fmt,dalign=uexp)
+                        uret.append((utxt,_format_exp(fmt,uexp),xsym))
+            elif style in ['pmsim','pmsimi']:
+                u0 = _to_decimal(self.Usim[0]).quantize(u)
+                u1 = _to_decimal(self.Usim[1]).quantize(u)
+                if uexp == 0:
+                    utxt0 = _decimal_str(u0,fmt=fmt,dalign=0)
+                    utxt1 = _decimal_str(u1,fmt=fmt,dalign=0)
+                    if utxt0 == utxt1:
+                        if style == 'pmsim':
+                            style = 'pm'
+                        else:
+                            style = 'pmi'
+                        uret.append((utxt0,'',xsym))
+                    else:
+                        uret.append((utxt0,'',xsym))
+                        uret.append((utxt1,'',xsym))
+                else:
+                    utxt0 = _decimal_str(u0,fmt=fmt,dalign=uexp)
+                    utxt1 = _decimal_str(u1,fmt=fmt,dalign=uexp)
+                    uetxt = _format_exp(fmt,uexp)
+                    if utxt0 == utxt1:
+                        if style == 'pmsim':
+                            style = 'pm'
+                        else:
+                            style = 'pmi'
+                        uret.append((utxt0,uetxt,xsym))
+                    else:
+                        uret.append((utxt0,uetxt,xsym))
+                        uret.append((utxt1,uetxt,xsym))
+                
+            elif style in ['cisim','mcisim']:
+                for ci in self.cisim:
+                    cin = _to_decimal(ci).quantize(u)
+                    dp = 0
+                    if cin.is_finite():
+                        xnexp = cin.adjusted()
+                        if cin == 0:
+                            xnexp += nsig - 1
+                            dp = -nsig + 1
+                    else:
+                        xnexp = 0
+                    if self.sci_notation is None:
+                        scin = (xnexp > self.sci_notation_high or xnexp < self.sci_notation_low)
+                    else:
+                        scin = self.sci_notation
+                    if cin == 0 and xnexp > nsig-1:
+                        scin = True
+                    if scin:
+                        cin = _decimal_str(cin,fmt=fmt,dplace=dp)
+                        xentxt = _format_exp(fmt,xnexp)
+                        uret.append((cin,xentxt,xsym))                 
+                    else:
+                        uret.append(( _decimal_str(cin,fmt=fmt,dalign=0),'',xsym))
+                    
+        return tuple([style,xret]+uret)
         
     @classmethod
     def create(cls,x,u=0,unit=one,dof=float('inf'),k=1,p=None,uunit=None,
@@ -2974,10 +3073,15 @@ class gummy(Quantity,metaclass=MetaGummy):
                 
             return ret
                 
-        if any([isinstance(v,Distribution) for v in x]):
-            if correlation_matrix is not None or covariance_matrix is not None:
+        if correlation_matrix is not None or covariance_matrix is not None:
+            if any([isinstance(v,Distribution) for v in x]):
                 raise TypeError('Distribtuion instances may not be used in x if a correlation_matrix nor a covariance_matrix is defined')
-            
+            if dof is not None and not _isscalar(dof):
+                raise TypeError('dof cannot be set individually of a correlation of covariance matrix is specified')
+            if utype is not None and not isinstance(utype,str):
+                raise TypeError('utype cannot be set individually of a correlation of covariance matrix is specified')
+
+
         if covariance_matrix is not None:
             if correlation_matrix is not None:
                 raise TypeError('correlation_matrix and covariance_matrix cannot both be specified')
@@ -3023,11 +3127,15 @@ class gummy(Quantity,metaclass=MetaGummy):
         ret = [cls(x[i],u=u[i],unit=unit[i],dof=dof[i],k=k[i],p=p[i],
                    uunit=uunit[i],utype=utype[i],name=name[i]) for i in range(n)]
             
-        if correlation_matrix is not None:
-            cls._set_correlation_matrix(ret, correlation_matrix)
-        
-        if covariance_matrix is not None:
-            cls._set_covariance_matrix(ret, covariance_matrix)
+        if correlation_matrix is not None or covariance_matrix is not None:
+            x = [r.x for r in ret]
+            u = [r.u for r in ret]
+            nret = nummy.create(x,u=u,dof=dof[0],utype=utype[0],name=name,
+                                correlation_matrix=correlation_matrix,
+                                covariance_matrix=covariance_matrix)
+            
+            for n,r in zip(nret,ret):
+                r._value = n
             
         return ret
     
@@ -3319,87 +3427,35 @@ class gummy(Quantity,metaclass=MetaGummy):
             return v % np.array(self)
         
         return super().__rmod__(v)
-        
-    def __eq__(self, v):
-        if isinstance(v,gummy):
-            try:
-                s = self.convert(v._unit)
-            except NoUnitConversionFoundError:
-                return False
-            return self.value == v.value
-        
-        try:
-            s = self.convert(one).value
-        except NoUnitConversionFoundError:
-            return False
-
-        return s == v
     
-    def __ne__(self, v):
-        try:
-            return self < v or self > v
-        except IncompatibleUnitsError:
-            return True
-        
-    def __lt__(self, v):
-        if isinstance(v,gummy):
-            try:
-                s = self.convert(v.unit)
-            except NoUnitConversionFoundError:
-                raise IncompatibleUnitsError('values with incompatible units cannot be compared')
-        else:
-            if self.unit is not one:
-                try:
-                    s = self.convert(one)
-                except NoUnitConversionFoundError:
-                    raise IncompatibleUnitsError('values with incompatible units cannot be compared ')
-            else:
-                s = self
-            
-        df = s - v
-        if self._cmp_k is None:
-            k = self._p_method.fptok(self._cmp_p,df.dof,df.bayesian)
-        else:
-            k = self._cmp_k
-            
-        return (df.x < -k*df.u)
-        
-    def __le__(self, v):
-        return self == v or self < v
-        
-    def __gt__(self, v):
-        if isinstance(v,gummy):
-            try:
-                s = self.convert(v._unit)
-            except NoUnitConversionFoundError:
-                raise IncompatibleUnitsError('values with incompatible units cannot be compared')
-        else:
-            if self._unit is not one:
-                try:
-                    s = self.convert(one)
-                except NoUnitConversionFoundError:
-                    raise IncompatibleUnitsError('values with incompatible units cannot be compared')
-            else:
-                s = self
-            
-        df = s - v
-        if self._cmp_k is None:
-            k = self._p_method.fptok(self._cmp_p,df.dof,df.bayesian)
-        else:
-            k = self._cmp_k
-            
-        return (df.x > k*df.u)
-        
-    def __ge__(self, v):
-        return self == v or self > v
+    @property
+    def real(self):
+        """
+        returns a copy of the gummy
+        """
+        return self.copy(formatting=False)
     
     @property
     def imag(self):
-        if self._unit.linear:
-            return type(self)(0,unit=self._unit)
+        if self.unit.linear:
+            s = self
+        else:
+            s = self.tobaseunit()
         
-        return type(self)(self._unit.zero(),unit=self._unit)     
+        return type(self)(0,unit=s.unit)
     
+    def conjugate(self):
+        """
+        returns a copy of the gummy
+        """
+        return self.copy(formatting=False)
+    
+    def angle(self):
+        if self.x >= 0:
+            return type(self)(0)
+        else:
+            return type(self)(np.pi)
+        
 
 class jummy(immy):
     
@@ -3570,27 +3626,7 @@ class jummy(immy):
             raise ValueError('the name must be a string or a length 4 tuple of str')
             
     def get_name(self,fmt='unicode',norm=None):
-        if self._name is None:
-            return None
-        
-        if isinstance(self._name,str):
-            name = str(self._name).strip()
-            if fmt == 'html' and len(name) == 1:
-                return '<i>' + name + '</i>'
-            if fmt == 'latex' and len(name) > 1:
-                if norm is None:
-                    norm = type(self).latex_norm
-                return norm(self.name)
-            return self._name
-        
-        fmt = fmt.strip().lower()
-        if fmt == 'unicode':
-            return self._name[0]
-        if fmt == 'html':
-            return self._name[1]
-        if fmt == 'latex':
-            return self._name[2]
-        if fmt == 'ascii':
-            return self._name[0]
-        raise ValueError('fmt "' + str(fmt) + '" is not recognized')
+        if norm is None:
+            norm = type(self).latex_norm
+        return get_name(self._name,fmt,norm)
     
