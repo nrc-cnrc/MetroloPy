@@ -161,7 +161,7 @@ with Unit._builtin():
                add_symbol=True,html_symbol='<i>E</i><sub>h</sub>',latex_symbol='\t\tE_{\\mathrm{h}}',
                description='natural, atomic unit of energy')
     Unit.alias('Ha',_Eh)
-    Unit('reduced compton wavelength','\u019b(C)',
+    Unit('reduced Compton wavelength','\u019b(C)',
          Conversion(_hbar*_me**-1*_c**-1,1),order=0,add_symbol=True,
          html_symbol='\u019b<sub>C</sub>',latex_symbol='\t\t\u019b_{\\mathrm{C}}',
          ascii_symbol='lambda(C)',

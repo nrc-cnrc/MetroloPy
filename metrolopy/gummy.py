@@ -3136,6 +3136,10 @@ class gummy(Quantity,metaclass=MetaGummy):
             
             for n,r in zip(nret,ret):
                 r._value = n
+                if r.uunit is None:
+                    r._U = _ku(r._k,r._value.u)
+                else:
+                    r._set_U(r._k,r.uunit)
             
         return ret
     

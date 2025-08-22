@@ -2,7 +2,7 @@
 
 # module mean
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -26,7 +26,6 @@ Some miscellaneous functions that are useful for uncertainty analysis.
 
 import numpy as np
 from .gummy import gummy
-from .distributions import TDist
 import datetime
 
 def autocorrelation(x):
@@ -182,7 +181,7 @@ def wmean(x,chi_correct=False):
         
     return ret
     
-def mean(x,n_sigma_trim=3,unit=1,ignore_nan=True,use_n_eff=None):
+def mean(x,n_sigma_trim=3,unit=1,ignore_nan=True,use_n_eff=None,utype=None):
     """
     Returns a gummy representing the mean of a float array.
     
@@ -232,11 +231,11 @@ def mean(x,n_sigma_trim=3,unit=1,ignore_nan=True,use_n_eff=None):
     if dof < 1:
         dof = 1
         
-    u = float(np.std(x,ddof=1))/np.sqrt(n)
+    u = float(np.std(x,ddof=1)/np.sqrt(n))
     if gummy.bayesian:
         u *= np.sqrt(dof/(dof-2))
 
-    return gummy(m,u,dof=dof,unit=unit)
+    return gummy(m,u,dof=dof,unit=unit,utype=utype)
     
 def sigma_trim(x, n_sigma = 3):
     """
@@ -284,7 +283,7 @@ def delta_diff(x):
     z[0::2] = -z[0::2]
     return z
 
-def delta_diff_mean(x,n_sigma=None,unit=1):
+def delta_diff_mean(x,n_sigma=None,unit=1,utype=None):
     """
     Returns a gummy representing the mean value and uncertainty of a delta 
     type difference taken on the data.  A delta type difference removes a 
@@ -334,7 +333,7 @@ def delta_diff_mean(x,n_sigma=None,unit=1):
     if gummy.bayesian:
         u *= np.sqrt(dof/(dof-2))
     
-    return gummy(mn,u,dof=dof,unit=unit)
+    return gummy(float(mn),u=float(u),dof=dof,unit=unit,utype=utype)
     
 def delta_sum(x):
     """Returns a list containing differences of the type:
@@ -354,7 +353,7 @@ def delta_sum(x):
     z[0::2] = -z[0::2]
     return delta_diff(z)/2.0
     
-def delta_sum_mean(x,n_sigma=None,unit=1):
+def delta_sum_mean(x,n_sigma=None,unit=1,utype=None):
     """
     Returns a gummy representing the mean value
     and uncertainty of a delta type difference taken on the data.  A delta type 
@@ -383,7 +382,7 @@ def delta_sum_mean(x,n_sigma=None,unit=1):
     """
     z = np.asanyarray(x)
     z[0::2] = -z[0::2]
-    return delta_diff_mean(z,n_sigma,unit)/2.0
+    return delta_diff_mean(z,n_sigma,unit=unit,utype=utype)/2.0
     
 def mean_datetime(*params):
     if len(params) == 1:

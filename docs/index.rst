@@ -73,9 +73,9 @@ further reading
 ===============
 
 * `a tutorial <_static/tutorial.html>`_ (or  :download:`download the tutorial as a Jupyter notebook <tutorial.ipynb>`)
-* :ref:`the API documentation <hand_made_doc>` (see the auto-generated docs below for an alternative set of documentation)
+* :ref:`the documentation <hand_made_doc>` (see the auto-generated docs below for an alternative set of documentation)
 * `a list of the measurement units built into MetroloPy <_static/units.html>`_
-* `a list of the physical constants built into MetroloPy <https://nrc-cnrc.github.io/MetroloPy/_static/constants.html>`_
+* `a list of the physical constants built into MetroloPy <_static/constants.html>`_
 * :ref:`package development and to do <todo>`
 * `the issues page on GitHub <https://github.com/nrc-cnrc/Metrolopy/issues>`_
 * `the source code on GitHub <https://github.com/nrc-cnrc/Metrolopy/>`_
@@ -86,7 +86,7 @@ the auto-generated docs (indices and tables)
 
 These pages were automatically generated from the doc strings in the source
 code.  They are slightly more comprehensive but perhaps slightly more confusing
-than the handmade API docs referenced in the further reading section above.
+than the handmade docs referenced in the further reading section above.
 
 * :ref:`genindex`
 * :ref:`modindex`
@@ -136,7 +136,7 @@ version history
 * Version 0.6.3 built 13 May 2022, bug fixes
 * Version 0.6.4 built 28 May 2025, bug fixes
 * Version 0.6.5 built 04 June 2025, bug fixes
-* Version 1.0.0 built xx xxxx 2025, improved dof calculations other fixes
+* Version 1.0.0 built 25 August 2025, improved dof calculations other fixes
 
 
 author

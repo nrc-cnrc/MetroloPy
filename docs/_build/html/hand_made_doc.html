@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>MetroloPy &#8212; metrolopy 0.6.5 documentation</title>
+    <title>MetroloPy &#8212; metrolopy 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
-    <script src="_static/documentation_options.js?v=d7a12d57"></script>
+    <script src="_static/documentation_options.js?v=8d563738"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -23,7 +23,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">MetroloPy</a></li> 
       </ul>
     </div>  
@@ -394,7 +394,7 @@ Budget.df_latex return DataFrames with formatted strings as entries
 rather than numerical values.</p>
 <p><strong>metrolopy.gummy.budget parameters</strong> (<em>xlist</em> is required, all others are
 optional):</p>
-<ul class="simple">
+<ul>
 <li><p><strong>xlist</strong>: (list of gummy) The independent variables.
 Warnings will be generated if the gummys in this list over
 determine <code class="docutils literal notranslate"><span class="pre">self</span></code> (that is if not all variables in this list can
@@ -430,7 +430,12 @@ default if any uncertainty has finite degrees of freedom</p></li>
 <li><p>“type”: the uncertainty type, displayed by default if any gummy
 has a <a class="reference internal" href="#utype">utype</a> defined</p></li>
 <li><p>“s” or “significance”: the sensitivity coefficient (below)
-multiplied by the standard uncertainty, displayed by default</p></li>
+multiplied by the standard uncertainty for the component</p>
+<blockquote>
+<div><p>and divided by the combined standard uncertainty all squared,
+displayed by default</p>
+</div></blockquote>
+</li>
 <li><p>“d”, “derivative” or “partial”: the partial derivative of
 <code class="docutils literal notranslate"><span class="pre">self</span></code> with respect to the gummy in that row</p></li>
 <li><p>“c” or “sensitivity coefficient”: the absolute value of “d”</p></li>
@@ -2094,7 +2099,7 @@ this class.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">MetroloPy</a></li> 
       </ul>
     </div>
