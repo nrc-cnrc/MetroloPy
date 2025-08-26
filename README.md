@@ -42,7 +42,7 @@ MetroloPy can do much more including Monte-Carlo uncertainty propagation, genera
   previous versions, in a multi-step calculation, the effective degree of freedom 
   were calculated at each step based on the degrees of freedom calculated for the 
   previous step (using a modified Welch-Satterthwaite approximation).  Now 
-  effective degrees of freedom are alway calculated directly from the independent 
+  effective degrees of freedom are always calculated directly from the independent 
   variables using the Welch-Satterthwaite equation.
 
 * CODATA 2022 values instead of 2018 values are used in the Constants module.
