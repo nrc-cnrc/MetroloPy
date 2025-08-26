@@ -31,7 +31,7 @@ Physical quantities can then be represented in Python as `gummy` objects with an
 MetroloPy can do much more including Monte-Carlo uncertainty propagation, generating uncertainty budget tables, and curve fitting.  It can also handle expanded uncertainties, degrees of freedom, correlated quantities, and complex valued quantities. See:
 
 * [a tutorial](https://nrc-cnrc.github.io/MetroloPy/_build/html/_static/tutorial.html) (or  <a href="https://nrc-cnrc.github.io/MetroloPy/_build/html/_downloads/tutorial.ipynb" download> download the tutorial as Jupyter notebook</a>)
-* [the documentation](https://nrc-cnrc.github.io/MetroloPy/)
+* [the documentation](https://nrc-cnrc.github.io/MetroloPy/_build/html/index.html)
 * [the issues page on GitHub](https://github.com/nrc-cnrc/Metrolopy/issues)
 * [a list of the units built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/units.html)
 * [a list of the physical constants built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/constants.html)
