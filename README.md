@@ -49,7 +49,7 @@ MetroloPy can do much more including Monte-Carlo uncertainty propagation, genera
 
 * The significance value in budget table has been redefined from
   (sensitivity coefficient * standard uncertainty/combined uncertainty) to the 
-  square of that value so that the significance value sum to one.
+  square of that value so that the significance values in a budget sum to one.
   
 * Units can now be raised to a fractional power and many other bug fixes.
   
