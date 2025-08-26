@@ -4,7 +4,7 @@ tools for dealing with physical quantities:  uncertainty propagation and unit co
 
 ---
 
-MetroloPy is a pure python package and requires Python 3.5 or later and the SciPy stack (NumPy, SciPy and Pandas).  It looks best in a Jupyter Notebook.
+MetroloPy is a pure python package and requires Python 3.6 or later and the SciPy stack (NumPy, SciPy and Pandas).  It looks best in a Jupyter Notebook.
 
 Install MetroloPy with `pip install metrolopy`  or 
 `conda install -c conda-forge metrolopy`.
