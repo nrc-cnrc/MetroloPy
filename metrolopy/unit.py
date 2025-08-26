@@ -2,7 +2,7 @@
 
 # module unit
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -29,12 +29,20 @@ import numpy as np
 import weakref
 import warnings
 from .exceptions import (UnitLibError,CircularUnitConversionError,
-                         NoUnitConversionFoundError,UnitNotFoundError,
-                         IncompatibleUnitsError,UnitLibNotFoundError,
-                         UnitWarning)
-from .printing import PrettyPrinter
+                         UnitNotFoundError,IncompatibleUnitsError,
+                         UnitLibNotFoundError,UnitWarning)
+from .printing import PrettyPrinter,MetaPrettyPrinter
 from .indexed import Indexed
 from .unitparser import _UnitParser
+from numbers import Rational,Integral,Number
+from abc import ABCMeta
+from fractions import Fraction
+from decimal import Decimal
+
+try:
+    from mpmath import mp,mpf,rational
+except:
+    mp = mpf = rational = None
 
 def unit(name,exception=True):
     """
@@ -106,6 +114,8 @@ class Conversion:
     
     def __init__(self,unit,factor=1):
         self._unit = unit
+        if isinstance(factor,Fraction):
+            factor = MFraction(factor)
         self.factor = factor
         
     def to(self,g):
@@ -455,24 +465,31 @@ class Unit(PrettyPrinter,Indexed):
         self._conversion = c
         if c is not None:
             c.parent = self
-
-    def _convs(self,d,c,h):          
-        if c is None:
-            c = self._conversion.copy()
-        else:
-            if self in h:
-                if self is d:
-                    raise CircularUnitConversionError('a circular conversion chain was found starting with unit ' + d.name + ' in library ' + d.library)
-                else:
-                    raise CircularUnitConversionError('a circular conversion chain was found;\nstarted search with unit ' + d.name + ' in library ' + d.library + ' and the loop started with unit ' + self.name + ' in library ' + self.library)
-            h.add(self)
-            d._gconv = c
-            if self._conversion is None:
-                return
-            c = c.chain(self._conversion)
             
+    def _convs(self,h):
+        if self in h:
+            raise CircularUnitConversionError('a circular conversion chain was found nwith unit ' + self.name)
+        h.add(self)
+        
         try:
-             u = self._conversion.unit
+            c = self._conversion
+            u = c.unit
+            if isinstance(u,_CompositeUnit):
+                una = u._units
+                unb = {}
+                for k,v in una:
+                    if k in unb:
+                        unb[k] += v
+                    else:
+                        unb[k] = v
+                unb = {k:v for k,v in unb.items() if v != 0 and k is not one}
+                if len(unb) == 0:
+                    u = one
+                else:
+                    u = _CompositeUnit([(k,v) for k,v in unb.items()])
+                    u._find_conv()
+                c = c.chain(Conversion(u,1))
+                     
         except UnitNotFoundError:
             warnings.warn('while searching conversions:  unit ' + self.name + ' should have a conversion to ' + self._conversion.unit_name + ' in library ' + str(self._conversion.unit_library) + ' but the second unit was not found',UnitWarning,stacklevel=3)
             return
@@ -480,7 +497,13 @@ class Unit(PrettyPrinter,Indexed):
             warnings.warn('while searching conversions:  unit ' + self.name + ' should have a conversion to ' + self._conversion.unit_name + ' in library ' + str(self._conversion.unit_library) + ' but the library containing the second unit has not been loaded',UnitWarning,stacklevel=3)
             return
         
-        u._convs(d,c,h)
+        if u._conversion is None:
+            self._gconv = c
+        else:
+            r = u._convs(h)
+            self._gconv = c.chain(r)
+            
+        return self._gconv
         
     @property
     def linear(self):
@@ -496,18 +519,18 @@ class Unit(PrettyPrinter,Indexed):
         return self._linear
                 
     def _convtree(self):
-        if self._conversion is not None:
-            self._convs(self,None,set([self]))
+        if self.conversion is not None and self._gconv is None:
+            self._convs(set())
             
     def _convert(self,g,un):
-        if self._conversion is not None and self._conversion.unit is un:
-            return self._conversion.to(g)
+        if self.conversion is not None and self.conversion.unit is un:
+            return self.conversion.to(g)
             
         if self._gconv is not None and self._gconv._unit is un:
             return self._gconv.to(g)
             
-        if un._conversion is not None and un._conversion.unit is self:
-            return un._conversion.frm(g)
+        if un.conversion is not None and un.conversion.unit is self:
+            return un.conversion.frm(g)
                 
         if un._gconv is not None and un._gconv._unit is self:
             return un._gconv.frm(g)
@@ -536,7 +559,7 @@ class Unit(PrettyPrinter,Indexed):
 
         unm = unit.short_name
         if ret is None:
-            raise NoUnitConversionFoundError('no conversion found from unit ' + self.short_name + ' to unit ' + unm)
+            raise  IncompatibleUnitsError('no conversion found from unit ' + self.short_name + ' to unit ' + unm)
         return ret
     
     @property
@@ -562,6 +585,20 @@ class Unit(PrettyPrinter,Indexed):
         """
         return [(self,1)]
     
+    @property
+    def base(self):
+        """read-only
+        
+        Returns the base unit.  That is we follow the chain of conversions
+        starting with this units `Conversion` instance until we get to a unit
+        that has no `Conversion` instance.  If this unit has no `Conversion`
+        instance `self` is returned.
+        """
+        if self.conversion is None:
+            return self
+        self._convtree()
+        return self._gconv._unit
+    
     @staticmethod
     def _cancel(a,b=[],asign=1,bsign=1):
         # Takes .units lists a**asign and b**bsign and attempts to convert 
@@ -586,7 +623,7 @@ class Unit(PrettyPrinter,Indexed):
                             b[f] += v
                             converted = True
                             break
-                        except NoUnitConversionFoundError:
+                        except  IncompatibleUnitsError:
                             pass
                 if not converted:
                     b[k] = v
@@ -770,7 +807,7 @@ class Unit(PrettyPrinter,Indexed):
             if aconv:
                 return (self.convert(a,bunit) % b,bunit)
             return (a % bunit.convert(b,self),self)
-        except NoUnitConversionFoundError:
+        except IncompatibleUnitsError:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be added to a quantity with unit ' + bunit.tostring())
 
     def _rmod(self,a,bunit,b,aconv):
@@ -784,7 +821,7 @@ class Unit(PrettyPrinter,Indexed):
             if aconv:
                 return (b % self.convert(a,bunit),bunit)
             return (bunit.convert(b,self) % a,self)
-        except NoUnitConversionFoundError:
+        except IncompatibleUnitsError:
             raise IncompatibleUnitsError('a quantity with unit ' + self.tostring() + ' may not be added to a quantity with unit ' + bunit.tostring())
 
     def _cpow(self,v):
@@ -801,30 +838,12 @@ class Unit(PrettyPrinter,Indexed):
         if bunit is not one:
             try:
                 b = bunit.convert(b,one)
-            except NoUnitConversionFoundError:
+            except IncompatibleUnitsError:
                 raise IncompatibleUnitsError('the exponent is not dimensionless')
                 
         un,c = self._cpow(b)
         un = _CompositeUnit(un)
         return ((a**b)*c,un)
-        #bb = float(b)
-        #if bb != b:
-            #try:
-                #a = self.convert(a,one)
-            #except NoUnitConversionFoundError:
-                #raise IncompatibleUnitsError('a gummy that is not dimensonless may not be raised to a power with an uncertainty')
-            #return (a**b,one)
-        #b = bb
-        #if int(b) == b:
-            #b = int(b)
-        
-        #if b == 0:
-            #return (a**0,one)
-        
-        #un,c = self._cpow(b)
-        #un = _CompositeUnit(un)
-        
-        #return ((a**b)*c,un)
     
     def _rpow(self,a,bunit,b,aconv):
         if isinstance(b,Unit):
@@ -834,28 +853,11 @@ class Unit(PrettyPrinter,Indexed):
         if self is not one:
             try:
                 a = self.convert(a,one)
-            except NoUnitConversionFoundError:
+            except IncompatibleUnitsError:
                 raise IncompatibleUnitsError('the exponent is not dimensionless')
         un,c = bunit._cpow(a)
         un = _CompositeUnit(un)
         return ((b**a)*c,un)
-        #aa = float(a)
-        #if aa != a:
-            #try:
-                #b = self.convert(b,one)
-            #except NoUnitConversionFoundError:
-                #raise IncompatibleUnitsError('a gummy that is not dimensonless may not be raised to a power with an uncertainty')
-            #return (b**a,one)
-        #a = float(a)
-        #if int(a) == a:
-            #va = int(a)
-        
-        #if a == 0:
-            #return (b**0,one)
-        
-        #un,c = _CompositeUnit(bunit._cpow(a))
-        
-        #return ((b**a)*c,un)
     
     def _ufunc(self,func,*args,**kwds):
         if self.linear:
@@ -919,10 +921,10 @@ class Unit(PrettyPrinter,Indexed):
         return _CompositeUnit(self.units + vi)
 
     def __rtruediv__(self,v):
-        return Quantity._make(1/v,unit=self)
-        
         if v is one or v == 1:
             return _CompositeUnit([(e[0],-e[1]) for e in self.units])
+        
+        return Quantity._make(v,unit=self**-1)
         
     def __pow__(self,v):
         if v == -1:
@@ -939,42 +941,6 @@ class Unit(PrettyPrinter,Indexed):
 
         return _CompositeUnit([(e[0],v*e[1]) for e in self.units])
         
-    # Define comparison operators and a hash function so, for the 
-    # _CompositeUnit subclass we can sort the Unit order and store them as keys 
-    # in a unique OrderedDict.
-    def __lt__(self, b):
-        if self.order == b.order:
-            return self.name < b.name
-        return self.order < b.order
-
-    def __le__(self, b):
-        if self.__eq__(b):
-            return True
-        if self.order == b.order:
-            return self.name < b.name
-        return self.order < b.order
-
-    def __eq__(self, b):
-       return (self is b)
-
-    def __ge__(self, b):
-        if self.__eq__(b):
-            return True
-        if self.order == b.order:
-            return self.name > b.name
-        return self.order > b.order
-
-    def __gt__(self, b):
-        if self.order == b.order:
-            return self.name > b.name
-        return self.order > b.order
-
-    def __ne__(self, b):
-        return not (self is b)
-        
-    def __hash__(self):
-        return id(self)
-        
     
 class _CompositeUnit(Unit):
     # Instances of this class represent composite derived unit.
@@ -985,7 +951,7 @@ class _CompositeUnit(Unit):
     
     @staticmethod
     def _unicode_super(e):
-        if np.modf(e)[0] == 0:
+        if int(e) == e:
             se = str(int(e))
             so = ''
             for s in se:
@@ -1012,10 +978,15 @@ class _CompositeUnit(Unit):
                 if s == '9':
                     so += '\u2079'
             return so
-        return '**' + '{:.2f}'.format(e).rstrip('0')
+        return '**' + _CompositeUnit._format_sscript(e,parenth=True)
     
     @staticmethod
-    def _format_sscript(e):
+    def _format_sscript(e,parenth=False):
+        if isinstance(e,Rational) and not isinstance(e,Integral):
+            ret = str(e.numerator) + '/' + str(e.denominator)
+            if parenth:
+                ret = '(' + ret + ')'
+            return ret
         mf = np.modf(e)
         if mf[0] == 0:
             return '{:.0f}'.format(e)
@@ -1023,9 +994,7 @@ class _CompositeUnit(Unit):
             return '{:.0f}'.format(2*e) + '/2'
         if mf[0] == 0.25:
             return '{:.0f}'.format(4*e) + '/4'
-        if np.modf(3*e)[0] < 0.01:
-            return '{:.0f}'.format(3*e) + '/3'
-        return '{:.2f}'.format(e).rstrip('0')
+        return str(e).rstrip('0.')
         
     @staticmethod
     def _iaddsym(txt,s,e,fmt,f):
@@ -1057,7 +1026,7 @@ class _CompositeUnit(Unit):
                 txt += '*'
             txt += s
             if e != 1:
-                txt += '**' + '{:.2f}'.format(e).rstrip('0').rstrip('.')
+                txt += '**' + _CompositeUnit._format_sscript(e,parenth=True)
         else:
             if txt != '':
                 txt += ' '
@@ -1071,7 +1040,10 @@ class _CompositeUnit(Unit):
         return _CompositeUnit._iaddsym(txt,u[0].tostring(fmt=fmt),u[1],fmt,f)
     
     def __new__(cls,ul):
-        ul = list(ul)
+        
+        # ul is a list of tupels in each tuple a (non _CompositeUnit) Unit
+        # instance followed by an exponent.
+        ul = [u for u in ul if u[0] is not one and u[1] != 0]
         
         if len(ul) == 0:
             return one
@@ -1079,7 +1051,7 @@ class _CompositeUnit(Unit):
         if len(ul) == 1 and ul[0][1] == 1:
             return ul[0][0]
         
-        ul = sorted(ul,key = lambda x: (x[0],-x[1]))
+        ul = sorted(ul,key = lambda x: (x[0].order,-x[1]))
         
         uid = tuple([(id(u[0]),u[1]) for u in ul])
         ret = _CompositeUnit.living_units.get(uid)
@@ -1262,28 +1234,9 @@ class _CompositeUnit(Unit):
         return ret
         
     def _find_conv(self):    
-        c = None
-        cun = {}
         cg = None
         cgun = {}
         for un,e in self._units:
-            if un.conversion is None:
-                if un in cun:
-                    cun[un] += e
-                else:
-                    cun[un] = e
-            else:
-                p = un.conversion.pow(e)
-                if c is None:
-                    c = p
-                else:
-                    c = c.chain(p)
-                for t in p.unit.units:
-                    if t[0] in cun:
-                        cun[t[0]] += t[1]
-                    else:
-                        cun[t[0]] = t[1]
-                    
             un._convtree()
                     
             if un._gconv is None:
@@ -1296,26 +1249,14 @@ class _CompositeUnit(Unit):
                 if cg is None:
                     cg = p
                 else:
-                    cg = c.chain(p)
+                    cg = cg.chain(p)
                 for t in p.unit.units:
                     if t[0] in cgun:
                         cgun[t[0]] += t[1]
                     else:
                         cgun[t[0]] = t[1]
                         
-        cun = [(k,v) for k,v in cun.items() if v != 0]
         cgun = [(k,v) for k,v in cgun.items() if v != 0]
-        
-        cun = _CompositeUnit(cun)
-        if cun is not self:
-            if c is None:
-                c = Conversion(cun,1)
-            else:
-                c._unit = cun
-            c.parent = self
-            self._conversion = c
-        else:
-            self._conversion = None
         
         cgun = _CompositeUnit(cgun)
         if cgun is not self:
@@ -1324,9 +1265,9 @@ class _CompositeUnit(Unit):
             else:
                 cg._unit = cgun
             cg.parent = self
-            self._gconv = cg
+            self._gconv = self._conversion = cg
         else:
-            self._gconv = None
+            self._gconv = self._conversion = None
 
         self._have_conversion = True
 
@@ -1368,17 +1309,6 @@ class _CompositeUnit(Unit):
         """
         sha = {a for a in self._aliases if Unit.unit('[' + a + ']',exception=False) is not self}
         return sha
-        
-    def _convtree(self):
-        if not self._have_conversion:
-            self._find_conv()
-        Unit._convtree(self)
-        
-    def _convs(self,d,c,h):
-        if not self._have_conversion:
-            self._find_conv()
-        Unit._convs(self,d,c,h)
-
     
 class _One(Unit):
     """
@@ -1423,9 +1353,11 @@ class _One(Unit):
     
 with Unit._builtin():
     one = _One('1','',add_symbol=False)
-    
 
-class Quantity(PrettyPrinter):
+class MetaQuantity(MetaPrettyPrinter,ABCMeta):
+    pass
+
+class Quantity(PrettyPrinter,Number,metaclass=MetaQuantity):
     """
     Instances of this class represent a quantity with a value and a unit.
     The behavior of Quantity instances under mathematical operations with
@@ -1445,7 +1377,7 @@ class Quantity(PrettyPrinter):
     Parameters
     ----------
 
-    value: number like including `ummy`
+    value: numeric (including `ummy`)
         the value of the Quantity
 
     unit:  `str` or `Unit`
@@ -1486,6 +1418,10 @@ class Quantity(PrettyPrinter):
         return unit
     
     def __init__(self,value,unit=one):
+        try:
+            hash(value)
+        except TypeError:
+            raise TypeError('value is unhashable')
         self._value = value
         if isinstance(unit,Unit):
             self._unit = unit
@@ -1606,6 +1542,12 @@ class Quantity(PrettyPrinter):
         return c
  
     def tostring(self,fmt=None,**kwds):
+        """
+        tostring(fmt='unicode')
+        
+        returns a string representation of the Quantity.  fmt may be "unicode",
+        "html","latex" or "ascii".  The default is "unicode".
+        """
         unit = self._unit.tostring(fmt=fmt,**kwds)
         unit = self._add_unit_sp(fmt,unit)
         if isinstance(self.value,PrettyPrinter):
@@ -1615,6 +1557,12 @@ class Quantity(PrettyPrinter):
         return value + unit
     
     def copy(self,tofloat=False):
+        """
+        copy(tofloat=False)
+        
+        returns a copy of self.  If tofloat is True, the self.value will be
+        converted to float.  The default is False.
+        """
         if tofloat:
             try:
                 return type(self)(self.value.tofloat(),unit=self.unit)
@@ -1627,10 +1575,23 @@ class Quantity(PrettyPrinter):
             return type(self)(self.value,self.unit)
         
     def tofloat(self):
+        """
+        returns a copy of self with value float(self.value) equivalent to 
+        copy(tofloat=True)
+        """
         return self.copy(tofloat=True)
     
     def totuple(self):
+        """
+        returns the tuple (self.value,self.unit)
+        """
         return (self.value,self.unit)
+    
+    def tobaseunit(self):
+        """
+        Returns a Quantity equal to self converted to unit self.unit.base
+        """
+        return self.convert(self.unit.base)
     
     def splonk(self):
         """
@@ -1720,21 +1681,27 @@ class Quantity(PrettyPrinter):
             if self._unit is not v.unit:
                 try:
                     v = v.convert(self.unit)
-                    return f(self.value,v.value)
-                except:
-                    raise IncompatibleUnitsError('Quantities with incompatible units cannot be compared ')
+                except IncompatibleUnitsError:
+                    raise IncompatibleUnitsError('Quantities with incompatible units cannot be ordered')
+            return f(self.value,v.value)
         else:
             try:
                 s = self.convert(one)
                 return f(s.value,v)
-            except:
-                raise IncompatibleUnitsError('Quantities with incompatible units cannot be compared')
+            except IncompatibleUnitsError:
+                raise IncompatibleUnitsError('Quantities with incompatible units cannot be ordered')
         
     def __eq__(self, v):
-        return self._cmp(v,lambda x,y: x == y)
+        try:
+            return self._cmp(v,lambda x,y: x == y)
+        except IncompatibleUnitsError:
+            return False
     
     def __ne__(self, v):
-        return self._cmp(v,lambda x,y: x != y)
+        try:
+            return self._cmp(v,lambda x,y: x != y)
+        except IncompatibleUnitsError:
+            return True
         
     def __lt__(self, v):
         return self._cmp(v,lambda x,y: x < y)
@@ -1767,7 +1734,7 @@ class Quantity(PrettyPrinter):
                 if self.splonk_func_ret:
                     return func(*x,**kwds)
                 return make(func(*x,**kwds))
-            except NoUnitConversionFoundError:
+            except IncompatibleUnitsError:
                 raise NotImplementedError()
       
     def __array_ufunc__(self,ufunc,method,*args,**kwds):
@@ -1780,22 +1747,55 @@ class Quantity(PrettyPrinter):
     def __array_function__(self,func,method,*args,**kwds):        
         return self._ufunc(func,*args,**kwds)
     
-    #def __float__(self):
-        #return float(self.value)
-    
-    #def __int__(self):
-        #return int(self.value)
+    def __float__(self):
+        s = self.convert(1)
+        return float(s.value)
 
-    #def __complex__(self):
-        #return complex(self.value)
+    def __complex__(self):
+        s = self.convert(1)
+        return complex(s.value)
+    
+    def __bool__(self):
+        return self != 0
     
     @property
     def real(self):
-        return self.copy()
-    
+        if self.unit.linear:
+            s = self
+        else:
+            s = self.tobaseunit()
+         
+        try:
+            v = s.value.real
+        except:
+            v = float(s.value)
+        return type(self)(v,unit=s.unit)
+     
     @property
     def imag(self):
-        return type(self)(0,unit=self.unit)
+        if self.unit.linear:
+            s = self
+        else:
+            s = self.tobaseunit()
+        
+        try:
+            v = s.value.imag
+        except:
+            v = 0
+        return type(self)(v,unit=s.unit)
+    
+    def __hash__(self):
+        r = self.tobaseunit().totuple()
+        if r[1] is one:
+            return hash(r[0])
+        return hash(r)
+    
+    def conjugate(self):
+        try:
+            v = self.value.conjugate()
+        except:
+            v = complex(float(self.value))
+        return type(self)(v,unit=self.unit)
 
 
 class QuantityArray(Quantity):
@@ -1849,5 +1849,110 @@ class QuantityArray(Quantity):
     
     
 Quantity._arraytype = QuantityArray
+
         
+class MFraction(Fraction):
+    """
+    A fraction.Fraction sub-class that works with Decimal and mpmath.mpf objects
+    """
+    
+    @classmethod
+    def fromnum(cls,x):
+        return MFraction(Fraction(x))
+    
+    def __new__(cls, *args, **kwargs):
+        if len(args) == 1 and not (isinstance(args[0],str) 
+                                   or isinstance(args[0],Fraction)):
+            return args[0]
+        ret = super(MFraction, cls).__new__(cls, *args, **kwargs)
+        if ret.denominator == 1:
+            return ret.numerator
+        return ret
+    
+    def _mpmath_(self,p,r):
+        return rational.mpq(self.numerator,self.denominator)
+    
+    def todecimal(self):
+        return Decimal(self.numerator)/Decimal(self.denominator)
+    
+    def __add__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__add__(v)
+        return MFraction(super().__add__(v))
+    
+    def __radd__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__radd__(v)
+        return MFraction(super().__radd__(v))
+    
+    def __sub__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__sub__(v)
+        return MFraction(super().__sub__(v))
+    
+    def __rsub__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__rsub__(v)
+        return MFraction(super().__rsub__(v))
+    
+    def __mul__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__mul__(v)
+        return MFraction(super().__mul__(v))
+    
+    def __rmul__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__rmul__(v)
+        return MFraction(super().__rmul__(v))
+    
+    def __truediv__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__truediv__(v)
+        return MFraction(super().__truediv__(v))
+    
+    def __rtruediv__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__rtruediv__(v)
+        return MFraction(super().__rtruediv__(v))
+        
+    def __pow__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__pow__(v)
+        return MFraction(super().__pow__(v))
+    
+    def __rpow__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__rpow__(v)
+        if isinstance(v,Fraction):
+            return MFraction(v).__pow__(self)
+        return MFraction(super().__rpow__(v))
+        
+    def __floordiv__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__floordiv__(v)
+        return MFraction(super().__floordiv__(v))
+        
+    def __rfloordiv__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__rfloordiv__(v)
+        return MFraction(super().__rfloordiv__(v))
+        
+    def __mod__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__mod__(v)
+        return MFraction(super().__mod__(v))
+    
+    def __rmod__(self,v):
+        if isinstance(v,Decimal):
+            return self.todecimal().__rmod__(v)
+        return MFraction(super().__rmod__(v))
+    
+    def __abs__(self):
+        return MFraction(super().__abs__())
+    
+    def __neg__(self):
+        return MFraction(super().__neg__())
+    
+    def __pos__(self):
+        return MFraction(super().__pos__())
 

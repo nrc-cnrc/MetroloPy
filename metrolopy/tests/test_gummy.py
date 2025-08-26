@@ -35,18 +35,6 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(_ku(2.1,3.3) == 2.1*3.3)
         self.assertTrue(_ku(2.1,Decimal(3.3)) == Decimal(float(2.1))*Decimal(3.3))
         
-    def test_lg10(self):
-        from metrolopy.gummy import _lg10
-        from mpmath import mpf,log10
-        from decimal import Decimal
-        from fractions import Fraction
-        import math
-        
-        self.assertTrue(_lg10(mpf(2.2)) == log10(mpf(2.2)))
-        self.assertTrue(_lg10(Decimal(2.2)) == Decimal(2.2).log10())
-        self.assertTrue(_lg10(2.2) == np.log10(2.2))
-        self.assertTrue(_lg10(Fraction(2,3)) == math.log10(float(Fraction(2,3))))
-        
     def test_meta_properties(self):
         a = uc.gummy.cimethod
         self.assertTrue(isinstance(a,str))
@@ -217,7 +205,7 @@ class TestGummy(unittest.TestCase):
         try:
             uc.gummy(3.3,1.3,unit='%',uunit='m')
             self.assertTrue(False)
-        except uc.NoUnitConversionFoundError:
+        except uc.IncompatibleUnitsError:
             pass
         
         gg = uc.gummy(3.3,1.4,unit='%',uunit=uc.one)
@@ -252,7 +240,7 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(abs(c.U[1] - 4.4*1.1/3**2) < 1e-12)
         
     def test_set_U(self):
-        g = uc.gummy(1,1,k=2,unit='cm',uunit='mm')
+        g = uc.gummy(1.0,1.0,k=2,unit='cm',uunit='mm')
         self.assertTrue(g.U == 1)
         self.assertTrue(g.uunit is uc.unit('mm'))
         g.unit = 'm'
@@ -285,7 +273,7 @@ class TestGummy(unittest.TestCase):
         try:
             self.assertTrue(g._iset_U(unit='kg'))
             self.assertTrue(False)
-        except uc.NoUnitConversionFoundError:
+        except uc.IncompatibleUnitsError:
             pass
         
         g = uc.gummy(0,1,unit='m')
@@ -534,32 +522,6 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(a.covariance(a) == 1)
         self.assertTrue(b.covariance(b) == 4)
         
-    def test_correlation_matrix(self):
-        a = uc.gummy(1,1)
-        b = uc.gummy(1,2)
-        c = a + b
-        m = uc.gummy.correlation_matrix([a,b,c])
-        self.assertTrue(m[0][0] == m[1][1] == m[2,2] == 1)
-        self.assertTrue(m[0][1] == m[1][0] == 0)
-        self.assertTrue(abs(m[2][0] - 1/c.u) < 1e-4)
-        self.assertTrue(abs(m[0][2] - 1/c.u) < 1e-4)
-        self.assertTrue(abs(m[2][1] - 2/c.u) < 1e-4)
-        self.assertTrue(abs(m[1][2] - 2/c.u) < 1e-4)
-        
-    def test_covariance_matrix(self):
-        a = uc.gummy(1,1)
-        b = uc.gummy(1,2)
-        c = a + b
-        m = uc.gummy.covariance_matrix([a,b,c])
-        self.assertTrue(m[0][0] == 1)
-        self.assertTrue(m[1][1] == 4)
-        self.assertTrue(abs(m[2][2] - 5) < 1e-4)
-        self.assertTrue(m[0][1] == m[1][0] == 0)
-        self.assertTrue(abs(m[2][0] - 1) < 1e-4)
-        self.assertTrue(abs(m[0][2] - 1) < 1e-4)
-        self.assertTrue(abs(m[2][1] - 4) < 1e-4)
-        self.assertTrue(abs(m[1][2] - 4) < 1e-4)
-        
     def test_correlation_sim(self):
         a = uc.gummy(1,1)
         b = uc.gummy(1,2)
@@ -653,8 +615,8 @@ class TestGummy(unittest.TestCase):
         c = uc.gummy(0.9,0.2,utype='B')
         d = a + b + c
         self.assertTrue(abs(d.ufrom('A') - np.sqrt(0.2**2+0.5**2)) < 1e-8)
-        uc.gummy.simulate([d,'A'])
-        self.assertTrue(abs(d.ufrom('A',sim=True) - np.sqrt(0.2**2+0.5**2)) < 1e-2)
+        uc.gummy.simulate([d,b])
+        self.assertTrue(abs(d.ufromsim('A') - np.sqrt(0.2**2+0.5**2)) < 1e-2)
         self.assertTrue(d.ufrom(c) == 0.2)
         
     def test_dof_from(self):

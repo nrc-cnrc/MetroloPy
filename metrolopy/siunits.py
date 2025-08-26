@@ -28,8 +28,8 @@ The most of the units here are from the SI Brochure, 9th edition.
 """
 
 from numpy import pi
-from .ummy import ummy,MFraction
-from .unit import Conversion,Unit
+from .ummy import ummy
+from .unit import Conversion,Unit,MFraction
 from .prefixedunit import PrefixedUnit
 from .offsetunit import OffsetUnit,OffsetConversion
 
@@ -112,8 +112,9 @@ with Unit._builtin():
     _degC = OffsetUnit('degree Celsius','\u00B0C',OffsetConversion(_K,273.15),
                latex_symbol='^{\\circ}C',ascii_symbol = 'degC',add_symbol=True,order=0,
                description='unit of temperature')
-    Unit.alias('degree C',_degC)
-    Unit.alias('deg C',_degC)
+    Unit.alias('degreeC',_degC)
+    Unit.alias('degree-C',_degC)
+    Unit.alias('deg-C',_degC)
     
     _lm = PrefixedUnit('lumen','lm',Conversion(_cd*_sr,1),add_symbol=True,order=0,
                        description='SI derived unit for luminous flux')
@@ -152,3 +153,4 @@ with Unit._builtin():
                                     'giga','tera','peta','exa','zetta','yotta'],
                           description='unit of mass')
     Unit.alias('metric ton',_tonne)
+    Unit.alias('metric-ton',_tonne)

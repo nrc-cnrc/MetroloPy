@@ -2,7 +2,7 @@
 
 # module unitparser
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -26,6 +26,36 @@ unit parser
 
 from .exceptions import UnitLibError
 import numpy as np
+from fractions import Fraction
+
+def _get_num(txt):
+    s = 1
+    txt = txt.strip()
+    if txt.startswith('-'):
+        s = -s
+        txt = txt[1:]
+    elif txt.startswith('+'):
+        txt = txt[1:]
+    txt = txt.lstrip(' (').rstrip(' )')
+    if txt.startswith('-'):
+        s = -s
+        txt = txt[1:]
+    elif txt.startswith('+'):
+        txt = txt[1:]
+    f = float(txt)
+    if np.modf(f)[0] == 0:
+        return s*int(f)
+    else:
+        return s*f
+    
+def _get_exp(txt):
+    txt = txt.split('/')
+    if len(txt) == 1:
+        return _get_num(txt[0])
+    elif len(txt) == 2:
+        return Fraction(_get_num(txt[0]),_get_num(txt[1]))
+    else:
+        raise UnitLibError('syntax error in exponent: ' + txt)
 
 class _UnitParser:
     def __init__(self,txt):  
@@ -135,11 +165,7 @@ class _UnitParser:
                     if c == '(':
                         if par == 0:
                             if cl.isspace() or cl == '*':
-                                f =  float(et)
-                                if np.modf(f)[0] == 0:
-                                    return int(f)
-                                else:
-                                    return f
+                                return _get_exp(et)
                             raise UnitLibError('syntax error in: ' + self.txt)
                         else:
                             if par == -1:
@@ -148,39 +174,23 @@ class _UnitParser:
                                 par += 1
                     elif c == '[':
                         if cl.isspace() or cl == '*':
-                            f =  float(et)
-                            if np.modf(f)[0] == 0:
-                                return int(f)
-                            else:
-                                return f
+                            return _get_exp(et)
                         raise UnitLibError('syntax error in: ' + self.txt )
                     elif c == ']':
                         raise UnitLibError('unmatched bracket: ' + self.txt)
                     elif c.isalpha():
                         if par > 0:
                             raise UnitLibError('syntax error in: ' + self.txt)
-                        f =  float(et)
-                        if np.modf(f)[0] == 0:
-                            return int(f)
-                        else:
-                            return f
+                        return _get_exp(et)
                     elif c == '/':
                         if par <= 0:
-                            f =  float(et)
-                            if np.modf(f)[0] == 0:
-                                return int(f)
-                            else:
-                                return f
+                            return _get_exp(et)
                     elif c == ')':
                         if par <= 0:
-                            f =  float(et)
-                            if np.modf(f)[0] == 0:
-                                return int(f)
-                            else:
-                                return f
+                            return _get_exp(et)
                         else:
                             par -= 1
-                    elif c.isnumeric():
+                    elif c.isnumeric() or c =='.':
                         stnum = True
                     elif c == '+'  or c == '-':
                         if stnum and par <= 0:
@@ -190,30 +200,18 @@ class _UnitParser:
                             raise UnitLibError('syntax error in: ' + self.txt)
                         if par <= 0 and cl != '*' and self.txt[self.i+1] != '*':
                             self.i += 1
-                            f =  float(et)
-                            if np.modf(f)[0] == 0:
-                                return int(f)
-                            else:
-                                return f
+                            return _get_exp(et)
                     elif c.isspace():
                         if stnum and par <= 0:
                             self.i += 1
-                            f =  float(et)
-                            if np.modf(f)[0] == 0:
-                                return int(f)
-                            else:
-                                return f
+                            return _get_exp(et)
                     else:
                         if par <= 0:
                             raise UnitLibError('syntax error in: ' + self.txt)
                     self.i += 1
                     cl = c
                     et += c
-                f = float(et)
-                if np.modf(f)[0] == 0:
-                    return int(f)
-                else:
-                    return f
+                return _get_exp(et)
     
             elif not c.isspace():
                 return 1

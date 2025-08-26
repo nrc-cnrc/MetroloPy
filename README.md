@@ -4,7 +4,7 @@ tools for dealing with physical quantities:  uncertainty propagation and unit co
 
 ---
 
-MetroloPy is a pure python package and requires Python 3.5 or later and the SciPy stack (NumPy, SciPy and Pandas).  It looks best in a Jupyter Notebook.
+MetroloPy is a pure python package and requires Python 3.6 or later and the SciPy stack (NumPy, SciPy and Pandas).  It looks best in a Jupyter Notebook.
 
 Install MetroloPy with `pip install metrolopy`  or 
 `conda install -c conda-forge metrolopy`.
@@ -36,6 +36,24 @@ MetroloPy can do much more including Monte-Carlo uncertainty propagation, genera
 * [a list of the units built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/units.html)
 * [a list of the physical constants built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/constants.html)
 
+## new in version 1.0.0
+
+* The calculation of effective degrees of freedom has been improved. In
+  previous versions, in a multi-step calculation, the effective degree of freedom 
+  were calculated at each step based on the degrees of freedom calculated for the 
+  previous step (using a modified Welch-Satterthwaite approximation).  Now 
+  effective degrees of freedom are alway calculated directly from the independent 
+  variables using the Welch-Satterthwaite equation.
+
+* CODATA 2022 values instead of 2018 values are used in the Constants module.
+
+* The significance value in budget table has been redefined from
+  (sensitivity coefficient * standard uncertainty/combined uncertainty) to the 
+  square of that value so that the significance value sum to one.
+  
+* Units can now be raised to a fractional power and many other bug fixes.
+  
+  
 ## new in version 0.6.0
 
 * A constant library has been added with physical constants that can be accessed

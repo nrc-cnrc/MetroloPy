@@ -103,6 +103,7 @@ class TestMisc(unittest.TestCase):
             return t.ppf(1-(1-con)/2, len(x)-1)*x.std(ddof=1)/np.sqrt(len(x))
     
         x = np.random.rand(5)
+        uc.gummy.bayesian = False
         g = uc.mean(x)
         g.p = 'ssd'
         self.assertTrue(abs(con-g.p) < 1e-6)

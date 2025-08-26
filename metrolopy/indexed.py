@@ -2,7 +2,7 @@
 
 # module indexed
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -21,10 +21,11 @@
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
 """
-indexed
+A base class for the Unit and GummyConstant classes.
 """
 
 from importlib import import_module
+from html import escape
 
 
 class _Builtin:
@@ -51,6 +52,8 @@ class Indexed:
     # _lib = {}
     # _open_lib = _builtin_lib
     
+    _case_sensitive = True
+    
     @classmethod
     def alias(cls,alias,inst):
         """
@@ -65,6 +68,10 @@ class Indexed:
             A string referencing the `Indexed` instance that will be assigned
             the alias or the `Indexed` instance its self.
         """
+        if isinstance(alias,str):
+            if not cls._case_sensitive and ' ' in alias:
+                alias = alias.lower()
+            alias = alias.strip()
         inst = cls.get(inst)
         cls._open_lib[alias] = inst
         inst._add_alias(alias)
@@ -77,6 +84,10 @@ class Indexed:
     def get(cls,name,exception=True):
         if isinstance(name,cls):
             return name
+        if isinstance(name,str):
+            if not cls._case_sensitive and ' ' in name:
+                name = name.lower()
+            name = name.strip()
         c = cls._lib.get(name)
         if c is None:
             c = cls._builtin_lib.get(name)
@@ -116,7 +127,13 @@ class Indexed:
     
     def __init__(self,name,symbol=None,short_name=None,add_symbol=False,
                  html_symbol=None,latex_symbol=None,ascii_symbol=None,
-                 description=None):
+                 description=None,case_sensitive=True):
+        
+        tolower = False
+        if isinstance(name,str):
+            if not self._case_sensitive and ' ' in name:
+                tolower = True
+            name = name.strip()
         self.name = name
         self.description=description
         
@@ -126,21 +143,42 @@ class Indexed:
             self.symbol = symbol
             
         if html_symbol is None:
-            self.html_symbol = symbol
+            self.html_symbol = escape(symbol)
         else:
-            self.html_symbol=html_symbol
+            self.html_symbol = html_symbol
         if latex_symbol is None:
-            self.latex_symbol = self.format_latex(symbol)
+            sb = symbol.strip()
+            sc = {
+                '&': r'\&',
+                '%': r'\%',
+                '$': r'\$',
+                '#': r'\#',
+                '_': r'\_',
+                '{': r'\{',
+                '}': r'\}',
+                '~': r'\textasciitilde{}',
+                '^': r'\wedge{}',
+                '\\': r'\textbackslash{}',
+                '<': r'\textless{}',
+                '>': r'\textgreater{}',
+                ' ': r' \ '
+                }
+            self.latex_symbol = self.format_latex(''.join(sc[c] if c in sc 
+                                                          else c 
+                                                          for c in sb))
         else:
             self.latex_symbol = self.format_latex(latex_symbol)
         if ascii_symbol is None:
-            self.ascii_symbol=symbol
+            self.ascii_symbol = ''.join(i if ord(i) < 128 else '_' for i in symbol)
         else:
             self.ascii_symbol=ascii_symbol
             
         self._aliases = set()
         
-        self._open_lib[name] = self
+        if tolower:
+            self._open_lib[name.lower()] = self
+        else:
+            self._open_lib[name] = self
         if add_symbol:
             if symbol.strip() != name:
                 self._open_lib[symbol.strip()] = self
@@ -150,8 +188,15 @@ class Indexed:
                 self._open_lib[ascii_symbol.strip()] = self
                 self._aliases.add(ascii_symbol.strip())
         if short_name is not None:
-            self._open_lib[short_name] = self
+            tolower = False
+            if isinstance(short_name,str):
+                if not self._case_sensitive and ' ' in short_name:
+                    tolower = True
+                short_name = short_name.strip()
             self.short_name = short_name
+            if tolower:
+                short_name = short_name.lower()
+            self._open_lib[short_name] = self
             self._aliases.add(short_name)
         else:
             if add_symbol:
@@ -185,22 +230,26 @@ class Indexed:
     def _add_alias(self,alias):
         self._aliases.add(alias)
         
-    def tostring(self,fmt=None,**kwds):
+    def tostring(self,fmt=None,strip=True,**kwds):
         """
         Returns a string containing the symbol for the instance in the format
         given by the keyword `fmt` which may be set to a string the values 
         'html', 'latex', 'ascii' or 'unicode'.  
         """
         if fmt is None or fmt == 'unicode':
-            return self.symbol
-        if fmt is None:
-            return self.symbol
-        if fmt == 'html':
-            return self.html_symbol
-        if fmt == 'latex':
-            return self.latex_symbol
-        if fmt == 'ascii':
-            return self.ascii_symbol
-        raise ValueError('format ' + str(fmt) + ' is not recognized')
+            ret = self.symbol
+        elif fmt is None:
+            ret = self.symbol
+        elif fmt == 'html':
+            ret = self.html_symbol
+        elif fmt == 'latex':
+            ret = self.latex_symbol
+        elif fmt == 'ascii':
+            ret =  self.ascii_symbol
+        else:
+            raise ValueError('format ' + str(fmt) + ' is not recognized')
+        if strip:
+            ret = ret.strip()
+        return ret
 
     

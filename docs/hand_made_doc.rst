@@ -443,7 +443,9 @@ basic gummy methods
          has a utype_ defined
 
       -  "s" or "significance": the sensitivity coefficient (below)
-         multiplied by the standard uncertainty, displayed by default
+         multiplied by the standard uncertainty for the component
+		 and divided by the combined standard uncertainty all squared, 
+		 displayed by default
 
       -  "d", "derivative" or "partial": the partial derivative of
          ``self`` with respect to the gummy in that row

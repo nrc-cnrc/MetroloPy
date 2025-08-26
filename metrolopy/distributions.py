@@ -29,6 +29,7 @@ from .exceptions import NoSimulatedDataError
 #from .unit import Unit
 import numpy as np
 
+
 class Distribution:
     """
     Abstract base class for distributions used for Monte-Carlo uncertainty
@@ -75,7 +76,7 @@ class Distribution:
     _random_state = None
     simdata = None
     
-    isindependent = True
+    utype = None
     
     _called = []
     _mean = None
@@ -128,6 +129,15 @@ class Distribution:
         if not any([isinstance(v,Distribution) for v in d]):
             return f(*d)
         return Convolution(f,*d)
+    
+    @staticmethod
+    def clear_all():
+        """
+        Clears the Monte-Carlo data from all existing Distribution instances.
+        """
+        for d in Distribution._called:
+            d.clear()
+        Distribution._called = []
         
     @staticmethod
     def simulate(distributions,n=100000,ufrom=None):
@@ -150,18 +160,23 @@ class Distribution:
             by distributions in this list will be allowed to vary.  All other
             variables will be held fixed at the distribution x value.
         """
-        for d in Distribution._called:
-            d.clear()
-        Distribution._called = []
-
+        Distribution.clear_all()
+        
+        if ufrom is not None and any(isinstance(i,Convolution) for i in ufrom):
+            raise TypeError('Distributions in ufrom must be independent')
+        
         for d in distributions:
             if isinstance(d,Distribution):
                 d._simulate(int(n),ufrom)
             
-        for d in Distribution._called:
-            if d not in distributions:
-                d.clear()
-                Distribution._called.remove(d)
+        #for d in Distribution._called:
+            #if d not in distributions:
+                #d.clear()
+                #Distribution._called.remove(d)
+                
+    @property
+    def isindependent(self):
+        return True
          
     @property
     def mean(self):
@@ -301,7 +316,7 @@ class Distribution:
         self._cisym = (lower, upper)
         return (lower, upper)
         
-    def hist(self,hold=False,xlabel=None,ylabel='$ \\mathrm{probability\\:density} $',
+    def hist(self,hold=False,xlabel='$ \\mathrm{value} $',ylabel='$ \\mathrm{probability\\:density} $',
              title=None,**kwds):
         """
         Generates a histogram from the simulated data.
@@ -388,9 +403,11 @@ class Distribution:
             self._cov = {}
         if d in self._cov:
             return self._cov[d]
-        if self.simdata is None or d.simdata is None:
+        if isinstance(d,Distribution):
+            dt = d.simdata
+        if self.simdata is None or dt is None:
             raise NoSimulatedDataError('simulated data does not exist for both distributions')
-        cov = np.cov([self.simdata,d.simdata])[1][0]
+        cov = np.cov([self.simdata,dt])[1][0]
         self._cov[d] = cov
         return cov
         
@@ -405,7 +422,8 @@ class Distribution:
             if no simulated data is available from a call to
             `Distribution.simulate` for any of `d1`, `d2`, ...
         """
-        if any([(v.simdata is None) for v in d]):
+        d = [i.simdata if hasattr(i,'simdata') else i for i in d]
+        if any([(v is None) for v in d]):
             raise NoSimulatedDataError('simulated data does not exist for all distributions')
         return np.cov([v.simdata for v in d])
         
@@ -480,9 +498,10 @@ class Distribution:
             plt.show()
         
     def _simulate(self,n,ufrom):
-        if ufrom is not None and self not in ufrom:
+        if ufrom is not None and self not in ufrom and self.utype not in ufrom:
             self.simdata = np.full(n,self.x())
             return
+        
         Distribution._called.append(self)
         self.simdata = self.random(n)
         
@@ -563,9 +582,27 @@ class Distribution:
         raise NotImplementedError()
     
 
-class Convolution(Distribution):
-    isindependent = False
+def _callarg(a,n,ufrom):
+    if isinstance(a,Convolution):
+        return a.func(*(_callarg(i,n,ufrom) for i in a.args))
     
+    if isinstance(a,Distribution):
+        if n is None and a.simdata is None:
+            raise NoSimulatedDataError('no simulated data is available')
+            
+        if ufrom is not None and a not in ufrom and a.utype not in ufrom:
+            if n is None:
+                n = len(a.simdata)
+            return np.full(n,a.x())
+        
+        if a.simdata is None:
+            a._simulate(n,None)
+        return a.simdata
+    
+    return a
+        
+    
+class Convolution(Distribution):
     def __init__(self,func,*args):
         """
         Represents the distribution resulting from applying func to d1, d2, ...
@@ -580,9 +617,17 @@ class Convolution(Distribution):
         *args: `Distribution` or `float`
             arguments for `func`
         """
-        self.func = func
         self.args = args
         
+        if isinstance(func,np.ufunc):
+            self.func = func
+        else:
+            self.func = np.frompyfunc(func,len(self.args),1)
+        
+    @property
+    def isindependent(self):
+        return False
+    
     def random(self,n=None):
         raise NotImplementedError('use the simulate static method to generate data from a Convolution')
         
@@ -591,31 +636,12 @@ class Convolution(Distribution):
         return self.func(*args)
         
     def _random(self,n,ufrom):
-        for a in self.args:
-            if isinstance(a,Distribution) and (a not in Distribution._called):
-                a._simulate(n,ufrom)
-        v = [a.simdata if isinstance(a,Distribution) else a for a in self.args]
+        ret = self.func(*(_callarg(i,n,ufrom) for i in self.args))
         
-        if not isinstance(self.func,np.ufunc):
-            # If func is not a numpy ufunc, see if it broadcasts like one
-            try:
-                ntst = max(n,self.args+5)
-                vtst = [a.simdata[:ntst] if isinstance(a,Distribution) else a for a in self.args]
-                tst = self.func(*vtst)
-                if len(tst) != ntst:
-                    raise TypeError()
-                    
-                func = self.func
-            except:
-                # if it doesn't broadcast, make it broadcast with frompyfunc
-                func = np.frompyfunc(self.func,len(v),1)
-        else:
-            func = self.func
-            
-        ret = func(*v)
-
         if ret.dtype != np.float64:
             ret = np.array(ret,dtype=np.float64)
+        if n is not None and ret.shape == ():
+            ret = np.full(n,ret)
             
         return ret
                 
@@ -623,6 +649,42 @@ class Convolution(Distribution):
         Distribution._called.append(self)
         self.simdata = self._random(n,ufrom)
         
+    def datafrom(self,ufrom,save=True):
+        """
+        Recomputes the convolution with only Distributions in `ufrom` allowed to
+        vary.  `sim` or `simulate` must be called to generate
+        Monte-Carlo data before calling this method.
+        
+        Parameters
+        ----------
+        ufrom:  list containing `Distribution` (not `Convolution`) or `str`
+            all independent Distributions not in the list or having a utype
+            not in the list are held fixed at their `.x()` value
+            
+        save:  If `save` is `True` the recomputed data is stored in the `simdata`
+            attribute and `None` is returned.  If `save` is `False` then the
+            recomputed data is returned and the `simdata` attribute is not
+            overwritten.
+        
+        Returns
+        -------
+        'numpy.array' if `save` is `False`, otherwise returns `None`
+
+        Raises
+        ------
+        `NoSimulatedDataError`:
+            if no simulated data is available from a call to
+            `Distribution.simulate`.
+        """
+        if any(isinstance(i,Convolution) for i in ufrom):
+            raise TypeError('Distributions in ufrom must be independent')
+            
+        ret = self._random(None,ufrom)
+        if save:
+            self.simdata = ret
+        else:
+            return ret
+    
 
 class MultivariateDistribution:
     def __init__(self,nd):
@@ -1301,4 +1363,23 @@ class WeibullDist(Distribution):
     def u(self):
         return self.scale*np.sqrt(self._gamma(1+2/self.shape) - self._gamma(1+1/self.shape)**2)
         
+class AveragedFrom(Distribution):
+    def __init__(self,distribution,nsamples):
+        """
+        Each sample from is the average of `nsamples` drawn from `distribution`.
+        """
+        self._dist = distribution
+        self.dof = nsamples - 1
         
+    def random(self,n=None):
+        ret = self._dist.random(n)
+        for i in range(self.dof):
+            ret += self._dist.random(n)
+        return ret/self.dof
+    
+    def x(self):
+        return self._dist.x()
+    
+    def u(self):
+        return self._dist.u()/np.sqrt(self.dof + 1)
+    

@@ -2,7 +2,7 @@
 
 # module constant
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -28,16 +28,17 @@ from .indexed import Indexed
 from .gummy import gummy,jummy
 from .unitutils import _mrtxt
 from importlib import import_module
-from .printing import PrettyPrinter,print_markdown,print_html,ipython_installed
+from .printing import PrettyPrinter
 from .exceptions import ConstantNotFoundError
 from .printing import _latex_math
 
 class GummyConstant(gummy,Indexed):
     
+    _case_sensitive = False
     return_toummy = False
     return_splonk = False
     
-    _builtins_to_import = ['..codata2018']
+    _builtins_to_import = ['..builtin_constants']
     
     _builtin_lib = {}
     _lib = {}
@@ -92,7 +93,7 @@ class GummyConstant(gummy,Indexed):
             from the unicode representation of the symbol.
             
         description:  `str` or `None`, optional
-            a description of the unit
+            a description of the constant
         """
         if name is None:
             name = symbol
@@ -133,7 +134,7 @@ class GummyConstant(gummy,Indexed):
         self.name = name
     
 class JummyConstant(jummy,Indexed):
-    _builtins_to_import = ['..codata2018']
+    _builtins_to_import = ['..builtin_constants']
     
     _builtin_lib = {}
     _lib = {}
@@ -221,16 +222,85 @@ def constant(name,toummy=None,splonk=None):
         
     return ret
 
-class _search_display(PrettyPrinter):
-    def __init__(self,search,constants):
-        self.search = search
+class search_constants_result(PrettyPrinter):
+    """
+    A `search_constants_result` instance emulates a list of constants returned 
+    from a 'search_constants` function call, and pretty-prints the results to 
+    the output
+    """
+    
+    def __init__(self,constants):
         self.constants = constants
         
     def tostring(self,fmt='unicode',**kwds):
-        return search_constants(self.search,fmt=fmt,constants=self.constants,
-                                prnt=False)
+        if fmt == 'latex':
+            txt = "<ul style=\"font-family: 'Times New Roman', Times, serif;font-size:1.2em\">\n"
+        elif fmt == 'html':
+            txt = "<ul>\n"
+        else:
+            txt = ''
+        for u in self.constants:
+            if fmt in ['latex','html']:
+                txt += "<li>"
+            try:
+                txt += u.name + ' '
+                
+                if fmt == 'latex':
+                    txt += _latex_math(u.tostring(fmt=fmt,show_name=True))
+                else:
+                    txt += u.tostring(fmt=fmt,show_name=True)
+                    
+                aliases = u.aliases
+                if len(aliases) == 1:
+                    txt += ', alias: ' + _mrtxt(aliases.pop(),fmt)
+                if len(aliases) > 1:
+                    txt += ', aliases: '
+                    if u.short_name in aliases:
+                        txt += _mrtxt(u.short_name,fmt) + ', '
+                        aliases.remove(u.short_name)
+                    txt += _mrtxt(', '.join(sorted(aliases,key=str.lower)),fmt)
+                    
+                saliases = u.shadowed_aliases
+                if len(saliases) > 0:
+                    if len(aliases) > 0:
+                        txt += '; '
+                    else:
+                        txt += ', '
+                    if len(saliases) == 1:
+                        txt += 'shadowed alias: ' + _mrtxt(saliases.pop(),fmt)
+                    else:
+                        txt += 'shadowed aliases: ' + _mrtxt(', '.join(sorted(saliases,key=str.lower)),fmt)
+            except:
+                raise
+                txt += '??'
+                    
+            if fmt == 'html' or fmt == 'latex':
+                txt += '</li>\n'
+            else:
+                txt += '\n'
+                
+        txt = txt[:-1]
+        if fmt in ['latex','html']:
+            txt += '</ul>'
+        
+        return txt
+    
+    def __len__(self):
+        return len(self.constants)
+    
+    def __getitem__(self,i):
+        return self.constants[i]
+    
+    def __iter__(self):
+        return iter(self.constants)
+    
+    def __reversed__(self):
+        return reversed(self.constants)
+    
+    def __contains__(self,item):
+        return item in self.constants
 
-def search_constants(search=None,fmt=None,constants=None,prnt=True):
+def search_constants(search=None,fmt=None,constants=None):
     """
     Prints a list of all loaded constant or all constants that match the search 
     terms.
@@ -250,39 +320,38 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
     constants: `list` of `str`,optional
         A list of constants to print.  If this parameter is specified the values
         of the search and `show_all` parameters are ignored.
-
-    prnt: `bool`, optional
-        If this is `True`, the results are printed.  If it is `False` the results
-        are returned as a string.  The default is `True`.
+        
+    Returns
+    -------
+    A `search_constants_result` instance which emulates a list of the returned
+    constants and pretty-prints the results to the output or `None` if no
+    constants are found.
     """
     
-    if fmt is None and prnt:
-        return _search_display(search,constants)
-
-    fmt = fmt.lower().strip()
-    if fmt == 'utf-8':
-        fmt = 'unicode'
+    if fmt is not None:
+        fmt = fmt.lower().strip()
+        if fmt == 'utf-8':
+            fmt = 'unicode'
     
     if constants is None:
         while len(GummyConstant._builtins_to_import) > 0:
             import_module(GummyConstant._builtins_to_import.pop(),
                           GummyConstant.__module__)
             
-        constants = {id(c):c for c in GummyConstant._builtin_lib.values()}
-        constants.update({id(c):c for c in GummyConstant._lib.values()})
-        constants.update({id(c):c for c in JummyConstant._builtin_lib.values()})
-        constants.update({id(c):c for c in JummyConstant._lib.values()})
-        constants = constants.values()
+        iconstants = {id(c):c for c in GummyConstant._builtin_lib.values()}
+        iconstants.update({id(c):c for c in GummyConstant._lib.values()})
+        iconstants.update({id(c):c for c in JummyConstant._builtin_lib.values()})
+        iconstants.update({id(c):c for c in JummyConstant._lib.values()})
+        iconstants = iconstants.values()
         
         if search is None:
+            constants = iconstants
             if len(constants) == 0:
-                if prnt:
-                    print('no constants are loaded')
-                    return
-                return ''
+                print('no constants are loaded')
+                return None
         else:
-            uf = set()
-            for u in constants:
+            constants = []
+            for u in iconstants:
                 s = set()
                 for a in u.aliases:
                     s = s.union(set(a.lower().split()))
@@ -300,19 +369,17 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
                 
                 srch = search.lower().split()
                 ad = True
+                
                 for a in srch:
                     if a.strip(',.;') not in s:
                         ad = False
                         break
                 if ad:
-                    uf.add(u)
+                    constants.append(u)
                     
-            constants = uf
             if len(constants) == 0:
-                if prnt:
-                    print('no constants found matching "' + search + '"')
-                    return
-                return ''
+                print('no constants found matching "' + search + '"')
+                return None
             
         uf = []
         for u in constants:
@@ -328,73 +395,14 @@ def search_constants(search=None,fmt=None,constants=None,prnt=True):
 
     constants = sorted(constants,key=lambda u:u[0].lower())
         
-    if fmt == 'latex':
-        txt = "<ul style=\"font-family: 'Times New Roman', Times, serif;font-size:1.2em\">\n"
-    elif fmt == 'html':
-        txt = "<ul>\n"
-    else:
-        txt = ''
-    for u in constants:
-        if fmt in ['latex','html']:
-            txt += "<li>"
-        try:
-            u = u[1]
-            txt += u.name + ' '
-            
-            if fmt == 'latex':
-                txt += _latex_math(u.tostring(fmt=fmt,show_name=True))
-            else:
-                txt += u.tostring(fmt=fmt,show_name=True)
-                
-            aliases = u.aliases
-            if len(aliases) == 1:
-                txt += ', alias: ' + _mrtxt(aliases.pop(),fmt)
-            if len(aliases) > 1:
-                txt += ', aliases: '
-                if u.short_name in aliases:
-                    txt += _mrtxt(u.short_name,fmt) + ', '
-                    aliases.remove(u.short_name)
-                txt += _mrtxt(', '.join(sorted(aliases,key=str.lower)),fmt)
-                
-            saliases = u.shadowed_aliases
-            if len(saliases) > 0:
-                if len(aliases) > 0:
-                    txt += '; '
-                else:
-                    txt += ', '
-                if len(saliases) == 1:
-                    txt += 'shadowed alias: ' + _mrtxt(saliases.pop(),fmt)
-                else:
-                    txt += 'shadowed aliases: ' + _mrtxt(', '.join(sorted(saliases,key=str.lower)),fmt)
-        except:
-            raise
-            txt += '??'
-                
-        if fmt == 'html' or fmt == 'latex':
-            txt += '</li>\n'
-        else:
-            txt += '\n'
-            
-    txt = txt[:-1]
-    if fmt in ['latex','html']:
-        txt += '</ul>'
-    
-    if not prnt:
-        return txt
-    
-    if fmt == 'latex' and ipython_installed:
-            print_markdown(txt)
-    elif fmt == 'html' and ipython_installed:
-            print_html(txt)
-    else:
-        print(txt)
+    return search_constants_result([u[1] for u in constants])
         
         
 def shadowed_constants(fmt=None,prnt=True):
     """
     Lists any constants which have a shadowed name or alias.  Constants may be 
-    shadowed if the user has defined a new unit with the same name or alias as 
-    an existing unit.
+    shadowed if the user has defined a new constant with the same name or alias
+    as an existing constant.
     
     Parameters
     ---------
@@ -402,10 +410,6 @@ def shadowed_constants(fmt=None,prnt=True):
         The output format.  If `None`, then the `gummy.printer` value is used.
         If latex output is selected, Markdown is actually used with the unit
         symbols and conversion displayed using inline LaTeX.
-
-    prnt: `bool`, optional
-        If this is `True`, the results are printed.  If it is `False` the results
-        are returned as a string.  The default is `True`.
     """
     constants = {id(c):c for c in GummyConstant._builtin_lib.values()}
     constants.update({id(c):c for c in GummyConstant._lib.values()})

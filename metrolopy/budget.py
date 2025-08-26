@@ -26,7 +26,7 @@ uncertainty contributions to a gummy.
 """
 
 import numpy as np
-from .gummy import gummy
+from .gummy import gummy,_dof_to_str,_k_to_str
 from .unit import one
 from .exceptions import BudgetWarning
 from .printing import PrettyPrinter
@@ -34,6 +34,14 @@ from .printing import PrettyPrinter
 
 import warnings
 from collections import OrderedDict
+
+def append_utype(a,utype):
+    if isinstance(utype,list):
+        for i in utype:
+            append_utype(a,i)
+        return
+    if utype is not None and utype not in a:
+        a.append(utype)
 
 class Budget(PrettyPrinter):
     """
@@ -100,8 +108,9 @@ class Budget(PrettyPrinter):
         "type":  the uncertainty type, displayed by default if any gummy has
             a type defined
 
-        "s" or "significance":  the sensitivity coefficient (below) multiplied
-            by the standard uncertainty, displayed by default
+        "s" or "significance":  the sensitivity coefficient ("c" below) 
+            multiplied by the standard uncertainty for the component and divided 
+            by the combined standard uncertainty all squared, displayed by default
 
         "d", "derivative" or "partial":  the partial derivative of the y gummy
             with resect to the gummy in that row
@@ -337,33 +346,34 @@ class Budget(PrettyPrinter):
                     hxnames.append('<span><i>x</i><sub>' + str(i+1) + '</sub></span>')
                     lxnames.append('x_{' + str(i+1) + '}')
                 else:
-                    xnames.append(str(g.name).strip())
-                    if not isinstance(g.name,str) or len(g.name) > 1:
-                        hxnames.append(str(g.name).strip())
-                        lxnames.append(type(self).latex_norm(str(g.name).strip()))
-                    else:
-                        hxnames.append('<span><i>' + str(g.name).strip() + '</i></span>')
-                        lxnames.append(str(g.name).strip())
-                        
-            
+                    xnames.append(g.get_name())
+                    hxnames.append(g.get_name('html'))
+                    lxnames.append(g.get_name('latex'))
+
         if yname is None:
             if y.name is None:
-                yname = 'y'
+                self._yname = self._hyname = self._lyname = 'y'
             else:
-                yname = y.name
-        self._yname = str(yname).strip()
-        if len(yname) <= 1:
-            self._hyname = '<span><i>' + str(yname).strip() + '</i></span>'
-            self._lyname = str(yname).strip()
+                self._yname = y.get_name()
+                self._hyname = y.get_name('html')
+                self._lyname = y.get_name('latex')
         else:
-            self._hyname = str(yname).strip()
-            self._lyname = type(self).latex_norm(str(yname).strip())
+            self._yname = str(yname).strip()
+            if len(yname) <= 1:
+                self._hyname = '<span><i>' + str(yname).strip() + '</i></span>'
+                self._lyname = str(yname).strip()
+            else:
+                self._hyname = str(yname).strip()
+                self._lyname = type(self).latex_norm(str(yname).strip())
             
         
         if units_on_values is not None:
             self.units_on_values = units_on_values
         
-        self.show_subtotals = show_subtotals
+        if sim:
+            self.show_subtotals = False
+        else:
+            self.show_subtotals = show_subtotals
         self.show_expanded_u = show_expanded_u
         self.css = css
         
@@ -457,9 +467,9 @@ class Budget(PrettyPrinter):
             warnings.warn('a source of uncertainty seems to be missing from the x variables',BudgetWarning,stacklevel=2)
         
         if sim:
-            fsigs = [np.abs(i*j.usim/yu) for i,j in zip(d,x)]
+            fsigs = [(i*j.usim/yu)**2 for i,j in zip(d,x)]
         else:
-            fsigs = [np.abs(i*j.u/yu) for i,j in zip(d,x)]
+            fsigs = [(i*j.u/yu)**2 for i,j in zip(d,x)]
         fsc = list(np.abs(d))
         
         sigs = []
@@ -487,9 +497,9 @@ class Budget(PrettyPrinter):
             html_sc.append(Budget._format_float(fsc[i],fmt='html'))
             latex_sc.append(Budget._format_float(fsc[i],fmt='latex'))
             fdof.append(x[i].dof)
-            dof.append(gummy._dof_to_str(x[i].dof))
-            html_dof.append(gummy._dof_to_str(x[i].dof,fmt='html'))
-            latex_dof.append(gummy._dof_to_str(x[i].dof,fmt='latex'))
+            dof.append(_dof_to_str(x[i].dof))
+            html_dof.append(_dof_to_str(x[i].dof,fmt='html'))
+            latex_dof.append(_dof_to_str(x[i].dof,fmt='latex'))
         
         a = np.array([x,ind,xnames,hxnames,lxnames,dof,html_dof,latex_dof,fdof,
                       sigs,html_sigs,latex_sigs,fsigs,str_d,html_d,latex_d,d,sc,
@@ -503,16 +513,17 @@ class Budget(PrettyPrinter):
         if sort:
             self._dfx.sort_values(by=['fs'],inplace=True,ascending=False)
             
-        stags = set([])
+        stags = []
         for r in x:
-            if r.utype is not None:
-                stags.add(r.utype)
+            append_utype(stags,r.utype)
         self.type = OrderedDict()
         if stags:
-            lst = list(stags)
-            lst.sort()
-            for t in lst:
-                u = self._y.ufrom(t,sim=self.sim)
+            stags.sort()
+            for t in stags:
+                if self.sim:
+                    u = self._y.ufromsim(t)
+                else:
+                    u = self._y.ufrom(t)
                 g = gummy(self._y.x,u=u,unit=self._y.unit)
                 if self._y.uunit is not None:
                     g.uunit = self._y.uunit
@@ -661,9 +672,9 @@ class Budget(PrettyPrinter):
             elif c == 'c' or c == 'sensitivity coefficient' or c == 'sensitivity coefficients':
                 self._column_names['c'] = v
             elif c == 'description':
-                self._columns.names['description'] = v
+                self._column_names['description'] = v
             elif c == 'custom':
-                self._columns.names['custom'] = v
+                self._column_names['custom'] = v
             else:
                 raise ValueError('original column name ' + str(c) + ' is unrecognized')
                 
@@ -756,9 +767,9 @@ class Budget(PrettyPrinter):
                         k = self._y.ksim
                     else:
                         k = self._y.k
-                    nms.append('Uc at k = ' + gummy._k_to_str(k))
-                    hnms.append('<span><i>U<sub>c<sub></i> at <i>k</i> = ' + gummy._k_to_str(k) + '</span>')
-                    lnms.append('U_c ' + type(self).latex_norm(' at ') + ' k = ' + gummy._k_to_str(k))
+                    nms.append('Uc at k = ' + _k_to_str(k))
+                    hnms.append('<span><i>U<sub>c<sub></i> at <i>k</i> = ' + _k_to_str(k) + '</span>')
+                    lnms.append('U_c ' + type(self).latex_norm(' at ') + ' k = ' + _k_to_str(k))
                     
                 cnm = cnml = self.column_names.get(c)
                 if cnm is None:
@@ -902,7 +913,7 @@ class Budget(PrettyPrinter):
                     hu.append(g.tostring(fmt='html',style=ust_g,solidus=self.solidus,mulsep=self.mulsep,show_name=False))
                     lu.append(g.tostring(fmt='latex',style=ust_g,solidus=self.solidus,mulsep=self.mulsep,show_name=False))
                     
-                cnm = cnmh = self.column_names.get(c)
+                cnm = cnmh = cnml = self.column_names.get(c)
                 if cnm is None:
                     if self.uunit is None or self.units_on_values:
                         cnm = cnml = 'u'
@@ -929,13 +940,13 @@ class Budget(PrettyPrinter):
                 if self.show_subtotals:
                     for t in self.type.values():
                         fdof.append(t[1])
-                        dof.append(gummy._dof_to_str(t[1]))
-                        hdof.append(gummy._dof_to_str(t[1],'html'))
-                        ldof.append(gummy._dof_to_str(t[1],'latex'))
+                        dof.append(_dof_to_str(t[1]))
+                        hdof.append(_dof_to_str(t[1],'html'))
+                        ldof.append(_dof_to_str(t[1],'latex'))
                 fdof.append(self._y.dof)
-                dof.append(gummy._dof_to_str(self._y.dof))
-                hdof.append(gummy._dof_to_str(self._y.dof,fmt='html'))
-                ldof.append(gummy._dof_to_str(self._y.dof,fmt='latex'))
+                dof.append(_dof_to_str(self._y.dof))
+                hdof.append(_dof_to_str(self._y.dof,fmt='html'))
+                ldof.append(_dof_to_str(self._y.dof,fmt='latex'))
                 if show_exu:
                     fdof.append(None)
                     dof.append('')
@@ -957,7 +968,7 @@ class Budget(PrettyPrinter):
             if c == 'type':
                 tags = []
                 for r in self._dfx['x']:
-                    if r.utype is not None:
+                    if r.utype is not None and not isinstance(r.utype,list):
                         tags.append(str(r.utype))
                     else:
                         tags.append('')
@@ -990,10 +1001,10 @@ class Budget(PrettyPrinter):
                             yu = self._y.usim
                         else:
                             yu = self._y.u
-                        fs.append(v[0]/yu)
-                        s.append(Budget._formatsig(v[0]/yu))
-                        hs.append(Budget._formatsig(v[0]/yu,'html'))
-                        ls.append(Budget._formatsig(v[0]/yu,'latex'))
+                        fs.append((v[0]/yu)**2)
+                        s.append(Budget._formatsig((v[0]/yu)**2))
+                        hs.append(Budget._formatsig((v[0]/yu)**2,'html'))
+                        ls.append(Budget._formatsig((v[0]/yu)**2,'latex'))
                 fs.append(None)
                 s.append('')
                 hs.append('')

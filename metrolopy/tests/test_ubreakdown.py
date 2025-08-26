@@ -70,9 +70,10 @@ class TestUbreakdown(unittest.TestCase):
             
             ut = None
             for q in g:
-                if gr.value._ref is q.value._ref:
+                if abs(gr.correlation(q)) == 1:
                     ut = q.utype
-            self.assertTrue(gr.utype is ut)
+            if ut is not None:
+                self.assertTrue(gr.utype is ut)
             
             x = list(x)
             u = list(u)

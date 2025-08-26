@@ -26,7 +26,7 @@ the search_units, shadow_units, and convert functions are defined here
 from .gummy import gummy
 from .ummy import ummy
 from .unit import Unit,one,Quantity
-from .printing import PrettyPrinter,print_markdown,print_html,ipython_installed
+from .printing import PrettyPrinter
 
 
 def _mrtxt(txt,fmt):
@@ -36,17 +36,163 @@ def _mrtxt(txt,fmt):
         txt = txt.replace('#','\\#')
     return txt
 
-class _search_display(PrettyPrinter):
-    def __init__(self,search,show_all,units):
-        self.search = search
+class search_units_result(PrettyPrinter):
+    """
+    A `search_units_result` instance emulates a list of units returned 
+    from a 'search_units` function call, and pretty-prints the results to 
+    the output
+    """
+    
+    def __init__(self,units,show_all):
         self.show_all = show_all
-        self.units = units
+        self._units = units
+        self.units = [u[1] for u in units]
         
     def tostring(self,fmt='unicode',**kwds):
-        return search_units(self.search,fmt=fmt,show_all=self.show_all,
-                            units=self.units,prnt=False)
+        #return search_units(self.search,fmt=fmt,show_all=self.show_all,
+                            #units=self.units,converts_to=self.converts_to,
+                            #prnt=False)
+                            
+        from .prefixedunit import PrefixedUnit
+        from .nonlinearunit import NonlinearUnit
+        from .offsetunit import OffsetUnit
+        from .logunit import LogUnit
+        from .unit import _CompositeUnit
+        
+        if fmt == 'latex':
+            txt = "<ul style=\"font-family: 'Times New Roman', Times, serif;font-size:1.2em\">\n"
+        elif fmt == 'html':
+            txt = "<ul>\n"
+        else:
+            txt = ''
+        for u in self._units:
+            if fmt in ['latex','html']:
+                txt += "<li>"
+            try:
+                if u[0] != u[1].name:
+                    txt += u[0] + ', alias for: '
+                    if isinstance(u[1],_CompositeUnit):
+                        stxt = u[1].tostring(fmt=fmt)
+                        if fmt == 'latex':
+                            txt += '$ ' + stxt + ' $'
+                        else:
+                            txt += stxt
+                    else:
+                        txt += _mrtxt(u[1].name,fmt)
+                else:
+                    u = u[1]
+                    txt += u.name
+                    ttxt = ''
+                    if isinstance(u,PrefixedUnit) and not self.show_all:
+                        if not self.show_all:
+                            if len(u.prefixes) == 1:
+                                ttxt = '1 prefix'
+                            else:
+                                ttxt = str(len(u.prefixes)) + ' prefixes'
+                    elif isinstance(u,LogUnit):
+                        bse = u.conversion.log_base
+                        if isinstance(bse,Quantity):
+                            bse = bse.value
+                        if isinstance(bse,ummy):
+                            bse = bse.x
+                        if (round(bse,3) - 2.718) < 0.001:
+                            if fmt == 'latex':
+                                ttxt += ', log base ' + PrettyPrinter.latex_math('e')
+                            if fmt == 'html':
+                                ttxt += ', log base <i>e</i>'
+                            else:
+                                ttxt += ', log base e'
+                        else:
+                            ttxt += ', log base ' + str(u.conversion.log_base)
+                        ttxt += ', multiplier = ' + str(u.conversion.multiplier)
+                    elif isinstance(u,NonlinearUnit):
+                        ttxt += 'non-linear unit'
+                        
+                    if ttxt.startswith(', '):
+                        ttxt = ttxt[2:]
+                    if ttxt != '':
+                        txt += ' (' + ttxt + ')'
+                    
+                    if u.conversion is not None:
+                        try:
+                            if isinstance(u,OffsetUnit):
+                                g = gummy(0,unit=u)
+                            elif isinstance(u,LogUnit):
+                                g = gummy(u.conversion.offset,unit=u)
+                            else:
+                                g = gummy(1,unit=u)
+                            gc = g.convert(u.conversion.unit)
+                            ctxt = g.tostring(fmt=fmt)
+                            if fmt == 'html':
+                                ctxt += '&nbsp;=&nbsp;' 
+                            else:
+                                ctxt += ' = '
+                            ctxt += gc.tostring(fmt=fmt)
+                            if fmt == 'latex':
+                                txt += ', $ ' + ctxt + ' $'
+                            else:
+                                txt += ', ' + ctxt
+                        except:
+                            raise
+                            txt += ', ?? = ??'
+                    elif u is not one:
+                        if fmt == 'latex':
+                            txt += ', symbol: $ ' + u.tostring(fmt=fmt) + ' $'
+                        else:
+                            txt += ', symbol: ' + u.tostring(fmt=fmt)
+                        
+                    aliases = u.aliases
+                    if len(aliases) == 1:
+                        txt += ', alias: ' + _mrtxt(aliases.pop(),fmt)
+                    if len(aliases) > 1:
+                        txt += ', aliases: '
+                        if u.short_name in aliases:
+                            txt += _mrtxt(u.short_name,fmt) + ', '
+                            aliases.remove(u.short_name)
+                        txt += _mrtxt(', '.join(sorted(aliases,key=str.lower)),fmt)
+                        
+                    saliases = u.shadowed_aliases
+                    if len(saliases) > 0:
+                        if len(aliases) > 0:
+                            txt += '; '
+                        else:
+                            txt += ', '
+                        if len(saliases) == 1:
+                            txt += 'shadowed alias: ' + _mrtxt(saliases.pop(),fmt)
+                        else:
+                            txt += 'shadowed aliases: ' + _mrtxt(', '.join(sorted(saliases,key=str.lower)),fmt)
+            except:
+                raise
+                txt += '??'
+                    
+            if fmt == 'html' or fmt == 'latex':
+                txt += '</li>\n'
+            else:
+                txt += '\n'
+                
+        txt = txt[:-1]
+        if fmt in ['latex','html']:
+            txt += '</ul>'
+            
+        return txt
     
-def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
+    def __len__(self):
+        return len(self.units)
+    
+    def __getitem__(self,i):
+        return self.units[i]
+    
+    def __iter__(self):
+        return iter(self.units)
+    
+    def __reversed__(self):
+        return reversed(self.units)
+    
+    def __contains__(self,item):
+        return item in self.units
+    
+def search_units(search=None,fmt=None,show_all=False,units=None,
+                        converts_to=None):
     """
     Prints a list of all loaded units or all units that match the search terms.
     
@@ -72,23 +218,20 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
         A list of units to print.  If this parameter is specified the values
         of the search and `show_all` parameters are ignored.
 
-    prnt: `bool`, optional
-        If this is `True`, the results are printed.  If it is `False` the results
-        are returned as a string.  The default is `True`.
+    Returns
+    -------
+    A `search_units_result` instance which emulates a list of the returned
+    constants and pretty-prints the results to the output or `None` if no
+    units are found.
     """
     from importlib import import_module
-    from .prefixedunit import PrefixedUnit
-    from .nonlinearunit import NonlinearUnit
-    from .offsetunit import OffsetUnit
-    from .logunit import LogUnit
+
     from .unit import _CompositeUnit
     
-    if fmt is None and prnt:
-        return _search_display(search,show_all,units)
-
-    fmt = fmt.lower().strip()
-    if fmt == 'utf-8':
-        fmt = 'unicode'
+    if fmt is not None:
+        fmt = fmt.lower().strip()
+        if fmt == 'utf-8':
+            fmt = 'unicode'
     
     if units is None:
         while len(Unit._builtins_to_import) > 0:
@@ -96,12 +239,20 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
             
         units = set(Unit._builtin_lib.values()).union(set(Unit._lib.values()))
         
-        if search is None:
+        if converts_to is not None:
+            uf = set()
+            bunit = Unit.unit(converts_to)
+            if isinstance(bunit,_CompositeUnit):
+                raise TypeError('converts_to may not be a composite unit')
+            bunit = bunit.base
+            for u in units:
+                if not isinstance(u,_CompositeUnit) and u.base is bunit:
+                    uf.add(u)
+            units = uf
+        elif search is None:
             if len(units) == 0:
-                if prnt:
-                    print('no units are loaded')
-                    return
-                return ''
+                print('no units are loaded')
+                return None
         else:
             uf = set()
             for u in units:
@@ -134,10 +285,8 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
                     
             units = uf
             if len(units) == 0:
-                if prnt:
-                    print('no units found matching "' + search + '"')
-                    return
-                return ''
+                print('no units found matching "' + search + '"')
+                return None
             
         if not show_all:
             units = [u for u in units if u.parent is None or u.parent not in units]
@@ -171,133 +320,12 @@ def search_units(search=None,fmt=None,show_all=False,units=None,prnt=True):
 
     units = sorted(units,key=lambda u:u[0].lower())
         
-    if fmt == 'latex':
-        txt = "<ul style=\"font-family: 'Times New Roman', Times, serif;font-size:1.2em\">\n"
-    elif fmt == 'html':
-        txt = "<ul>\n"
-    else:
-        txt = ''
-    for u in units:
-        if fmt in ['latex','html']:
-            txt += "<li>"
-        try:
-            if u[0] != u[1].name:
-                txt += u[0] + ', alias for: '
-                if isinstance(u[1],_CompositeUnit):
-                    stxt = u[1].tostring(fmt=fmt)
-                    if fmt == 'latex':
-                        txt += '$ ' + stxt + ' $'
-                    else:
-                        txt += stxt
-                else:
-                    txt += _mrtxt(u[1].name,fmt)
-            else:
-                u = u[1]
-                txt += u.name
-                ttxt = ''
-                if isinstance(u,PrefixedUnit) and not show_all:
-                    if not show_all:
-                        if len(u.prefixes) == 1:
-                            ttxt = '1 prefix'
-                        else:
-                            ttxt = str(len(u.prefixes)) + ' prefixes'
-                elif isinstance(u,LogUnit):
-                    bse = u.conversion.log_base
-                    if isinstance(bse,Quantity):
-                        bse = bse.value
-                    if isinstance(bse,ummy):
-                        bse = bse.x
-                    if (round(bse,3) - 2.718) < 0.001:
-                        if fmt == 'latex':
-                            ttxt += ', log base ' + PrettyPrinter.latex_math('e')
-                        if fmt == 'html':
-                            ttxt += ', log base <i>e</i>'
-                        else:
-                            ttxt += ', log base e'
-                    else:
-                        ttxt += ', log base ' + str(u.conversion.log_base)
-                    ttxt += ', multiplier = ' + str(u.conversion.multiplier)
-                elif isinstance(u,NonlinearUnit):
-                    ttxt += 'non-linear unit'
-                    
-                if ttxt.startswith(', '):
-                    ttxt = ttxt[2:]
-                if ttxt != '':
-                    txt += ' (' + ttxt + ')'
-                
-                if u.conversion is not None:
-                    try:
-                        if isinstance(u,OffsetUnit):
-                            g = gummy(0,unit=u)
-                        elif isinstance(u,LogUnit):
-                            g = gummy(u.conversion.offset,unit=u)
-                        else:
-                            g = gummy(1,unit=u)
-                        gc = g.convert(u.conversion.unit)
-                        ctxt = g.tostring(fmt=fmt)
-                        if fmt == 'html':
-                            ctxt += '&nbsp;=&nbsp;' 
-                        else:
-                            ctxt += ' = '
-                        ctxt += gc.tostring(fmt=fmt)
-                        if fmt == 'latex':
-                            txt += ', $ ' + ctxt + ' $'
-                        else:
-                            txt += ', ' + ctxt
-                    except:
-                        raise
-                        txt += ', ?? = ??'
-                elif u is not one:
-                    if fmt == 'latex':
-                        txt += ', symbol: $ ' + u.tostring(fmt=fmt) + ' $'
-                    else:
-                        txt += ', symbol: ' + u.tostring(fmt=fmt)
-                    
-                aliases = u.aliases
-                if len(aliases) == 1:
-                    txt += ', alias: ' + _mrtxt(aliases.pop(),fmt)
-                if len(aliases) > 1:
-                    txt += ', aliases: '
-                    if u.short_name in aliases:
-                        txt += _mrtxt(u.short_name,fmt) + ', '
-                        aliases.remove(u.short_name)
-                    txt += _mrtxt(', '.join(sorted(aliases,key=str.lower)),fmt)
-                    
-                saliases = u.shadowed_aliases
-                if len(saliases) > 0:
-                    if len(aliases) > 0:
-                        txt += '; '
-                    else:
-                        txt += ', '
-                    if len(saliases) == 1:
-                        txt += 'shadowed alias: ' + _mrtxt(saliases.pop(),fmt)
-                    else:
-                        txt += 'shadowed aliases: ' + _mrtxt(', '.join(sorted(saliases,key=str.lower)),fmt)
-        except:
-            raise
-            txt += '??'
-                
-        if fmt == 'html' or fmt == 'latex':
-            txt += '</li>\n'
-        else:
-            txt += '\n'
-            
-    txt = txt[:-1]
-    if fmt in ['latex','html']:
-        txt += '</ul>'
+
     
-    if not prnt:
-        return txt
-    
-    if fmt == 'latex' and ipython_installed:
-            print_markdown(txt)
-    elif fmt == 'html' and ipython_installed:
-            print_html(txt)
-    else:
-        print(txt)
+    return search_units_result(units,show_all)
         
         
-def shadowed_units(fmt=None,prnt=True):
+def shadowed_units(fmt=None):
     """
     Lists any units which have a shadowed name or alias.  Units may be shadowed
     if the user has defined a new unit with the same name or alias as an
@@ -309,14 +337,10 @@ def shadowed_units(fmt=None,prnt=True):
         The output format.  If `None`, then the `gummy.printer` value is used.
         If latex output is selected, Markdown is actually used with the unit
         symbols and conversion displayed using inline LaTeX.
-
-    prnt: `bool`, optional
-        If this is `True`, the results are printed.  If it is `False` the results
-        are returned as a string.  The default is `True`.
     """
     units = set(Unit._builtin_lib.values()).union(set(Unit._lib.values()))
     units = [u for u in units if len(u.shadowed_aliases) > 0]
-    return search_units(fmt=fmt,units=units,prnt=prnt)
+    return search_units(fmt=fmt,units=units)
 
 
 def convert(amount,from_unit,to_unit):

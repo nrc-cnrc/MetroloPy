@@ -2,7 +2,7 @@
 
 # module miscunits
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -29,16 +29,31 @@ non-SI units accepted for use with the SI not in the siunits module, some
 obsolete SI units, and a few other units.
 """
 
-from numpy import sqrt,log,log2
-from .gummy import gummy,_lg10
-from .ummy import MFraction
-from .unit import Unit,Conversion
+from numpy import sqrt,log,log2,log10
+from .gummy import gummy
+from .unit import Unit,Conversion,MFraction
 from .prefixedunit import PrefixedUnit,BinaryPrefixedUnit
 from .logunit import LogUnit,LogConversion
 from .siunits import (_kg,_V,_ohm,_s,_K,_J,_m,_d,_min,_h,_W,_Hz,_C,_A,_N,_cm,
                       _Wb,_T,_Pa)
 from .constcom import (dalton,KJ,RK,KJ90,RK90,e,c,solar_mass,jupiter_mass,
                        earth_mass,hbar,a0,me,mp,G,alph,k,pi,euler)
+
+def _lg10(x):
+    try:
+        from mpmath import mpf
+        from mpmath import log10 as mlog10
+    except:
+        mlog10 = mpf = None
+        
+    if isinstance(x,mpf):
+        return mlog10(x)
+    if hasattr(x,'log10'):
+        return x.log10()
+    try:
+        return log10(x)
+    except:
+        return log10(float(x))
 
 with Unit._builtin():
     
@@ -146,7 +161,7 @@ with Unit._builtin():
                add_symbol=True,html_symbol='<i>E</i><sub>h</sub>',latex_symbol='\t\tE_{\\mathrm{h}}',
                description='natural, atomic unit of energy')
     Unit.alias('Ha',_Eh)
-    Unit('reduced compton wavelength','\u019b(C)',
+    Unit('reduced Compton wavelength','\u019b(C)',
          Conversion(_hbar*_me**-1*_c**-1,1),order=0,add_symbol=True,
          html_symbol='\u019b<sub>C</sub>',latex_symbol='\t\t\u019b_{\\mathrm{C}}',
          ascii_symbol='lambda(C)',

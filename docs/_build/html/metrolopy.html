@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>metrolopy package &#8212; metrolopy 0.6.5 documentation</title>
+    <title>metrolopy package &#8212; metrolopy 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
-    <script src="_static/documentation_options.js?v=d7a12d57"></script>
+    <script src="_static/documentation_options.js?v=8d563738"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -23,7 +23,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">metrolopy package</a></li> 
       </ul>
     </div>  
@@ -109,7 +109,8 @@ default.</p>
 </dd>
 <dt>“type”:  the uncertainty type, displayed by default if any gummy has</dt><dd><p>a type defined</p>
 </dd>
-<dt>“s” or “significance”:  the sensitivity coefficient (below) multiplied</dt><dd><p>by the standard uncertainty, displayed by default</p>
+<dt>“s” or “significance”:  the sensitivity coefficient (“c” below)</dt><dd><p>multiplied by the standard uncertainty for the component and divided
+by the combined standard uncertainty all squared, displayed by default</p>
 </dd>
 <dt>“d”, “derivative” or “partial”:  the partial derivative of the y gummy</dt><dd><p>with resect to the gummy in that row</p>
 </dd>
@@ -301,6 +302,11 @@ all values displayed as strings.</p>
 
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="metrolopy.budget.append_utype">
+<span class="sig-prename descclassname"><span class="pre">metrolopy.budget.</span></span><span class="sig-name descname"><span class="pre">append_utype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utype</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.budget.append_utype" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </section>
 <section id="module-metrolopy.dfunc">
 <span id="metrolopy-dfunc-module"></span><h2>metrolopy.dfunc module<a class="headerlink" href="#module-metrolopy.dfunc" title="Link to this heading">¶</a></h2>
@@ -476,6 +482,39 @@ get the <cite>x</cite> value of a gummy defined with the distribution.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="metrolopy.distributions.AveragedFrom">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.distributions.</span></span><span class="sig-name descname"><span class="pre">AveragedFrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsamples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.AveragedFrom" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.distributions.Distribution" title="metrolopy.distributions.Distribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">Distribution</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.distributions.AveragedFrom.random">
+<span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.AveragedFrom.random" title="Link to this definition">¶</a></dt>
+<dd><p>Override this method in a derived class</p>
+<p>Return a numpy array of n values drawn from the distribution.
+If n is None then a single scalar value should be returned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.distributions.AveragedFrom.u">
+<span class="sig-name descname"><span class="pre">u</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.AveragedFrom.u" title="Link to this definition">¶</a></dt>
+<dd><p>Override this method in a derived class</p>
+<dl class="simple">
+<dt>Return a scalar “standard uncertainty” of the distribution (usually</dt><dd><p>the standard deviation).  This is used to get the <cite>u</cite> value of a
+gummy defined with the distribution.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.distributions.AveragedFrom.x">
+<span class="sig-name descname"><span class="pre">x</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.AveragedFrom.x" title="Link to this definition">¶</a></dt>
+<dd><p>Override this method in a derived class</p>
+<p>Return a scalar “center” of the distribution.  This is used to
+get the <cite>x</cite> value of a gummy defined with the distribution.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="metrolopy.distributions.BinomialDist">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.distributions.</span></span><span class="sig-name descname"><span class="pre">BinomialDist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.BinomialDist" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#metrolopy.distributions.Distribution" title="metrolopy.distributions.Distribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">Distribution</span></code></a></p>
@@ -512,9 +551,35 @@ get the <cite>x</cite> value of a gummy defined with the distribution.</p>
 <dt class="sig sig-object py" id="metrolopy.distributions.Convolution">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.distributions.</span></span><span class="sig-name descname"><span class="pre">Convolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.Convolution" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#metrolopy.distributions.Distribution" title="metrolopy.distributions.Distribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">Distribution</span></code></a></p>
-<dl class="py attribute">
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.distributions.Convolution.datafrom">
+<span class="sig-name descname"><span class="pre">datafrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ufrom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.Convolution.datafrom" title="Link to this definition">¶</a></dt>
+<dd><p>Recomputes the convolution with only Distributions in <cite>ufrom</cite> allowed to
+vary.  <cite>sim</cite> or <cite>simulate</cite> must be called to generate
+Monte-Carlo data before calling this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ufrom</strong> (list containing <cite>Distribution</cite> (not <cite>Convolution</cite>) or <cite>str</cite>) – all independent Distributions not in the list or having a utype
+not in the list are held fixed at their <cite>.x()</cite> value</p></li>
+<li><p><strong>save</strong> (If <cite>save</cite> is <cite>True</cite> the recomputed data is stored in the <cite>simdata</cite>) – attribute and <cite>None</cite> is returned.  If <cite>save</cite> is <cite>False</cite> then the
+recomputed data is returned and the <cite>simdata</cite> attribute is not
+overwritten.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>‘numpy.array’ if <cite>save</cite> is <cite>False</cite>, otherwise returns <cite>None</cite></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#metrolopy.exceptions.NoSimulatedDataError" title="metrolopy.exceptions.NoSimulatedDataError"><strong>NoSimulatedDataError</strong></a> – if no simulated data is available from a call to
+    <cite>Distribution.simulate</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.distributions.Convolution.isindependent">
-<span class="sig-name descname"><span class="pre">isindependent</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#metrolopy.distributions.Convolution.isindependent" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">isindependent</span></span><a class="headerlink" href="#metrolopy.distributions.Convolution.isindependent" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -701,6 +766,12 @@ the interval and above the upper limit of the interval.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.distributions.Distribution.clear_all">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clear_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.Distribution.clear_all" title="Link to this definition">¶</a></dt>
+<dd><p>Clears the Monte-Carlo data from all existing Distribution instances.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.distributions.Distribution.covplot">
 <em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">covplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ko'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.Distribution.covplot" title="Link to this definition">¶</a></dt>
 <dd><p>Plots the Distribution <cite>x</cite> versus the Distribution <cite>y</cite></p>
@@ -751,7 +822,7 @@ method exits.  The default is <cite>False</cite></p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.distributions.Distribution.hist">
-<span class="sig-name descname"><span class="pre">hist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'$</span> <span class="pre">\\mathrm{probability\\:density}</span> <span class="pre">$'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.Distribution.hist" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">hist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'$</span> <span class="pre">\\mathrm{value}</span> <span class="pre">$'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'$</span> <span class="pre">\\mathrm{probability\\:density}</span> <span class="pre">$'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.distributions.Distribution.hist" title="Link to this definition">¶</a></dt>
 <dd><p>Generates a histogram from the simulated data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -773,9 +844,9 @@ that actually created the histogram</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="py property">
 <dt class="sig sig-object py" id="id0">
-<span class="sig-name descname"><span class="pre">isindependent</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">isindependent</span></span><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -877,6 +948,11 @@ gummy defined with the distribution.</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="metrolopy.distributions.Distribution.utype">
+<span class="sig-name descname"><span class="pre">utype</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#metrolopy.distributions.Distribution.utype" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.distributions.Distribution.x">
@@ -1410,21 +1486,15 @@ get the <cite>x</cite> value of a gummy defined with the distribution.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="metrolopy.exceptions.IncompatibleUnitsError">
 <em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.exceptions.</span></span><span class="sig-name descname"><span class="pre">IncompatibleUnitsError</span></span><a class="headerlink" href="#metrolopy.exceptions.IncompatibleUnitsError" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></p>
-<p>This exception is raised when an operation is attempted with gummys that
-have units that are incompatible for that operation.</p>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.exceptions.UnitError" title="metrolopy.exceptions.UnitError"><code class="xref py py-class docutils literal notranslate"><span class="pre">UnitError</span></code></a></p>
+<p>This exception is raised when an operation or conversion is attempted with
+Quantity instances that have units that are incompatible for that operation.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="metrolopy.exceptions.NoSimulatedDataError">
 <em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.exceptions.</span></span><span class="sig-name descname"><span class="pre">NoSimulatedDataError</span></span><a class="headerlink" href="#metrolopy.exceptions.NoSimulatedDataError" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-</dd></dl>
-
-<dl class="py exception">
-<dt class="sig sig-object py" id="metrolopy.exceptions.NoUnitConversionFoundError">
-<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.exceptions.</span></span><span class="sig-name descname"><span class="pre">NoUnitConversionFoundError</span></span><a class="headerlink" href="#metrolopy.exceptions.NoUnitConversionFoundError" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.exceptions.UnitError" title="metrolopy.exceptions.UnitError"><code class="xref py py-class docutils literal notranslate"><span class="pre">UnitError</span></code></a></p>
 </dd></dl>
 
 <dl class="py exception">
@@ -1436,7 +1506,7 @@ have units that are incompatible for that operation.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="metrolopy.exceptions.UnitError">
 <em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.exceptions.</span></span><span class="sig-name descname"><span class="pre">UnitError</span></span><a class="headerlink" href="#metrolopy.exceptions.UnitError" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></p>
 <p>Base class for Unit exceptions.</p>
 </dd></dl>
 
@@ -3521,8 +3591,8 @@ in the .ummy module.  The Monte-Carlo propagation machinery is defined in the
 module.  The gummy object, in turn, inherits from the nummy object.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="metrolopy.gummy.MetaGummy">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.gummy.</span></span><span class="sig-name descname"><span class="pre">MetaGummy</span></span><a class="headerlink" href="#metrolopy.gummy.MetaGummy" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.MetaPrettyPrinter" title="metrolopy.printing.MetaPrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetaPrettyPrinter</span></code></a></p>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.gummy.</span></span><span class="sig-name descname"><span class="pre">MetaGummy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.MetaGummy" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.unit.MetaQuantity" title="metrolopy.unit.MetaQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetaQuantity</span></code></a></p>
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.gummy.MetaGummy.bayesian">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bayesian</span></span><a class="headerlink" href="#metrolopy.gummy.MetaGummy.bayesian" title="Link to this definition">¶</a></dt>
@@ -4085,6 +4155,18 @@ value.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.gummy.gummy.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.clear" title="Link to this definition">¶</a></dt>
+<dd><p>Clears the gummys Monte-Carlo data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.gummy.gummy.clear_all">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clear_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.clear_all" title="Link to this definition">¶</a></dt>
+<dd><p>Clears Monte-Carlo data from all existing gummys.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.gummy.gummy.conjugate">
 <span class="sig-name descname"><span class="pre">conjugate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.conjugate" title="Link to this definition">¶</a></dt>
 <dd><p>returns a copy of the gummy</p>
@@ -4092,12 +4174,12 @@ value.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.gummy.gummy.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tofloat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.copy" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">totype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.copy" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a copy of the gummy.  If the <cite>formatting</cite> parameter is
 <cite>True</cite> the display formatting information will be copied and if
 <cite>False</cite> the display formatting will be set to the default for a
-new gummy.  The default for <cite>formatting</cite> is <cite>True</cite>.  If tofloat
-is true the x and u properties will be converted to float values
+new gummy.  The default for <cite>formatting</cite> is <cite>True</cite>.  If ‘totype`
+is defined the x and u properties will be converted to type <cite>totype</cite>
 before copying.</p>
 </dd></dl>
 
@@ -4233,6 +4315,38 @@ joint distribution for Monte-Carlo calculations (but not first-
 order calculations) will default to a multivariate normal distribution.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.gummy.gummy.datafrom">
+<span class="sig-name descname"><span class="pre">datafrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.datafrom" title="Link to this definition">¶</a></dt>
+<dd><p>Recomputes the Monte-Carlo <cite>simdata `with only the varaibles in `x</cite>
+allowed to vary.  <cite>sim</cite> or <cite>simulate</cite> must be called to generate
+Monte-Carlo data before calling this method.  This method cannot be
+called with save == <cite>True</cite> from from a gummy representing an independent
+variable (that is from a gummy not created by by mathematical operations
+between two or more other gummy’s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ufrom</strong> (list containing <cite>gummy</cite> or <cite>str</cite>) – all independent gummys not in the list or having a utype
+not in the list are held fixed at their <cite>.x</cite> value</p></li>
+<li><p><strong>save</strong> (If <cite>save</cite> is <cite>True</cite> the recomputed data is stored in the <cite>simdata</cite>) – attribute and <cite>None</cite> is returned.  If <cite>save</cite> is <cite>False</cite> then the
+recomputed data is returned and the <cite>simdata</cite> attribute is not
+overwritten.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>‘numpy.array’ if <cite>save</cite> is <cite>False</cite>, otherwise returns <cite>None</cite></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#metrolopy.exceptions.NoSimulatedDataError" title="metrolopy.exceptions.NoSimulatedDataError"><strong>NoSimulatedDataError</strong></a> – if no simulated data is available from a call to
+    <cite>Distribution.simulate</cite>.</p></li>
+<li><p><strong>RuntimeError</strong> – if this method is called from an independent <cite>gummy</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.gummy.gummy.distribution">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">distribution</span></span><a class="headerlink" href="#metrolopy.gummy.gummy.distribution" title="Link to this definition">¶</a></dt>
@@ -4248,12 +4362,7 @@ order calculations) will default to a multivariate normal distribution.</p>
 gummy is based on.  If the gummy was created as the result of an
 operation between two or more other gummys, then the dof is the effective
 number of degrees of freedom calculated using the Welch-Satterthwaite
-approximation.  Caution:  A variation of the the  Welch-Satterthwaite
-approximation is used that takes into account correlations, see
-[R. Willink, Metrologia, 44, 340 (2007)].  However correlations are
-not handled perfectly.  So if accurate dof calculations are need, care
-should be taken to ensure that correlations are not generated in
-intermediate calculations.</p>
+approximation.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -4403,6 +4512,16 @@ other gummys or has zero uncertainty and <cite>True</cite> otherwise.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="metrolopy.gummy.gummy.isindependent">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">isindependent</span></span><a class="headerlink" href="#metrolopy.gummy.gummy.isindependent" title="Link to this definition">¶</a></dt>
+<dd><p><cite>bool</cite>, read-only</p>
+<p>Returns <cite>True</cite> if the gummy is an independent variable.  That is the
+ummy has u &gt; 0 and was not correlated with any other gummy’s when it was
+created or is perfectly correlated or anti-correlated (correlation
+coefficeint 1 or -1) with such an ummy.’</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.gummy.gummy.k">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">k</span></span><a class="headerlink" href="#metrolopy.gummy.gummy.k" title="Link to this definition">¶</a></dt>
 <dd><p>Get or set the coverage factor; must be &gt; 0.</p>
@@ -4453,7 +4572,7 @@ attributes of the calling gummy.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="metrolopy.gummy.gummy.max_digits">
-<span class="sig-name descname"><span class="pre">max_digits</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">15</span></em><a class="headerlink" href="#metrolopy.gummy.gummy.max_digits" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">max_digits</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></em><a class="headerlink" href="#metrolopy.gummy.gummy.max_digits" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -4603,8 +4722,9 @@ infinite or a Student’s t distribution otherwise.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.gummy.gummy.sim">
 <span class="sig-name descname"><span class="pre">sim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ufrom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.sim" title="Link to this definition">¶</a></dt>
-<dd><p>Generates Monte-Carlo data for this gummy.  Calling this method
-erases previously generated Monte-Carlo data for all gummys, so use the
+<dd><p>Generates Monte-Carlo data for this gummy (as well as for any gummys
+that this gummy depends on).  Calling this method erases previously
+generated Monte-Carlo data for all gummys, so use the
 <cite>gummy.simulate()</cite> staticmethod if you need Monte-Carlo data for
 several gummys simultaneously.</p>
 <dl class="field-list simple">
@@ -4646,6 +4766,7 @@ the <cite>gummy.sim()</cite> method to generate data for one gummy only.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n</strong> (<cite>int</cite> &gt; 0, optional) – The number of samples to generate.  The default value is 100000.</p></li>
+<li><p><strong>gummys</strong> (A list or array of <cite>gummy</cite> for which to generate the Monte-Carlo) – data.</p></li>
 <li><p><strong>ufrom</strong> (<cite>None</cite>, <cite>gummy</cite>, <cite>str</cite> or array_like) – If this is not <cite>None</cite>, then only the gummys referenced here will be
 allowed to vary, and all other gummys will be held fixed at their
 mean values.  This can be a gummy, a string referencing a utype or
@@ -4761,7 +4882,7 @@ displayed separately.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.gummy.gummy.ufrom">
-<span class="sig-name descname"><span class="pre">ufrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.ufrom" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ufrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.ufrom" title="Link to this definition">¶</a></dt>
 <dd><p>Gets the standard uncertainty contributed from particular gummys
 or utypes if all other free variables are held fixed.</p>
 <dl class="field-list simple">
@@ -4782,6 +4903,24 @@ gummys and strings.</p>
 <span class="go">0.53851648071345048</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.gummy.gummy.ufromsim">
+<span class="sig-name descname"><span class="pre">ufromsim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.gummy.gummy.ufromsim" title="Link to this definition">¶</a></dt>
+<dd><p>Gets the standard deviation of the Monte-Carlo data only allowing the
+independent variables in <cite>x</cite> to vary.  Independent istributions not in
+<cite>x</cite> are held fixed.  <cite>sim</cite> or <cite>simulate</cite> must be called to generate
+Monte-Carlo data before calling this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<cite>gummy</cite>, <cite>str</cite>, or array_like) – A gummy, a string referencing a utype or a list containing
+gummys and strings.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><cite>float</cite></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -4823,8 +4962,10 @@ is called; see the sim and simulate methods.  This property is read-only.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.gummy.gummy.utype">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">utype</span></span><a class="headerlink" href="#metrolopy.gummy.gummy.utype" title="Link to this definition">¶</a></dt>
-<dd><p><cite>str</cite> or <cite>None</cite></p>
-<p>An arbitrary string value labeling the uncertainty type.</p>
+<dd><p><cite>str</cite>, <cite>None</cite> or a list containing strings and possibly <cite>None</cite></p>
+<p>An arbitrary string value labeling the uncertainty type or or a
+list of types if the gummy was constructed from independent
+variables with different utypes.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -5017,7 +5158,7 @@ element (array index 0 and all elements with even indices).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="metrolopy.mean.delta_diff_mean">
-<span class="sig-prename descclassname"><span class="pre">metrolopy.mean.</span></span><span class="sig-name descname"><span class="pre">delta_diff_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.mean.delta_diff_mean" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">metrolopy.mean.</span></span><span class="sig-name descname"><span class="pre">delta_diff_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.mean.delta_diff_mean" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a gummy representing the mean value and uncertainty of a delta
 type difference taken on the data.  A delta type difference removes a
 linear drift from the data by taking differences:</p>
@@ -5065,7 +5206,7 @@ uncertainty and effective degrees of freedom.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="metrolopy.mean.delta_sum_mean">
-<span class="sig-prename descclassname"><span class="pre">metrolopy.mean.</span></span><span class="sig-name descname"><span class="pre">delta_sum_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.mean.delta_sum_mean" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">metrolopy.mean.</span></span><span class="sig-name descname"><span class="pre">delta_sum_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.mean.delta_sum_mean" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a gummy representing the mean value
 and uncertainty of a delta type difference taken on the data.  A delta type
 difference removes a linear drift from the data by taking differences:</p>
@@ -5092,7 +5233,7 @@ effective degrees of freedom.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="metrolopy.mean.mean">
-<span class="sig-prename descclassname"><span class="pre">metrolopy.mean.</span></span><span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sigma_trim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_n_eff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.mean.mean" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">metrolopy.mean.</span></span><span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sigma_trim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_n_eff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.mean.mean" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a gummy representing the mean of a float array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -5276,6 +5417,11 @@ classes that are the base class for the LogUnit and OffsetUnit classes.</p>
 propagation code in the distributions module with the ummy object.  The nummy
 class is not intended to be used directly; rather it is utilized by the gummy
 class.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="metrolopy.nummy.get_name">
+<span class="sig-prename descclassname"><span class="pre">metrolopy.nummy.</span></span><span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.get_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="metrolopy.nummy.nummy">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.nummy.</span></span><span class="sig-name descname"><span class="pre">nummy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy" title="Link to this definition">¶</a></dt>
@@ -5348,6 +5494,11 @@ interval.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.nummy.nummy.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.clear" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.nummy.nummy.correlation_matrix_sim">
 <em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">correlation_matrix_sim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gummys</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.correlation_matrix_sim" title="Link to this definition">¶</a></dt>
 <dd><p>The staticmethod takes a list of gummys an returns the correlation
@@ -5392,7 +5543,7 @@ on first order error propagation.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.nummy.nummy.create">
-<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correlation_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariance_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.create" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correlation_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariance_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.create" title="Link to this definition">¶</a></dt>
 <dd><p>A class method that creates a list of (possibly) correlated ummys.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -5422,26 +5573,43 @@ will be uncorrelated.</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.nummy.nummy.datafrom">
+<span class="sig-name descname"><span class="pre">datafrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.datafrom" title="Link to this definition">¶</a></dt>
+<dd><p>Recomputes the convolution with only the varaibles in <cite>x</cite> allowed to
+vary.  <cite>sim</cite> or <cite>simulate</cite> must be called to generate
+Monte-Carlo data before calling this method.  This method cannot be
+called with save == <cite>True</cite> from from a nummy representing an independent
+variable (that is from a nummy not created by by mathematical operations
+between two or more other nummy’s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (list containing <cite>nummy</cite> or <cite>str</cite>) – all independent Distributions not in the list or having a utype
+not in the list are held fixed at their <cite>.x()</cite> value</p></li>
+<li><p><strong>save</strong> (If <cite>save</cite> is <cite>True</cite> the recomputed data is stored in the <cite>simdata</cite>) – attribute and <cite>None</cite> is returned.  If <cite>save</cite> is <cite>False</cite> then the
+recomputed data is returned and the <cite>simdata</cite> attribute is not
+overwritten.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>‘numpy.array’ if <cite>save</cite> is <cite>False</cite>, otherwise returns <cite>None</cite></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#metrolopy.exceptions.NoSimulatedDataError" title="metrolopy.exceptions.NoSimulatedDataError"><strong>NoSimulatedDataError</strong></a> – if no simulated data is available from a call to
+    <cite>Distribution.simulate</cite>.</p></li>
+<li><p><strong>RuntimeError</strong> – if this method is called from an independent <cite>nummy</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.nummy.nummy.distribution">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">distribution</span></span><a class="headerlink" href="#metrolopy.nummy.nummy.distribution" title="Link to this definition">¶</a></dt>
 <dd><p>read-only</p>
 <p>Returns ths <cite>Distribution</cite> instance associated with the gummy.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="metrolopy.nummy.nummy.dof">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#metrolopy.nummy.nummy.dof" title="Link to this definition">¶</a></dt>
-<dd><p>float, read-only</p>
-<p>Returns the number or degrees of freedom that the uncertainty of the
-gummy is based on.  If <cite>gummy.bayesian</cite> is set to <cite>False</cite>, then the Welch-
-Satterthwaite approximation is used to calculate the effective number
-of degrees of freedom for gummys that result from an operation between
-two or more other gummys.  A version of the Welch-Satterthwaite
-approximation that takes into account correlations is used here, see
-[R. Willink, Metrologia, 44, 340 (2007)].  If <cite>gummy.bayesian</cite> is <cite>True</cite>
-then gummys that are the result from an opertaion between other gummys
-will always have dof = float(‘inf’).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -5451,12 +5619,12 @@ will always have dof = float(‘inf’).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.nummy.nummy.hist">
-<span class="sig-name descname"><span class="pre">hist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.hist" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">hist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.hist" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="metrolopy.nummy.nummy.independent">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">independent</span></span><a class="headerlink" href="#metrolopy.nummy.nummy.independent" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="metrolopy.nummy.nummy.isindependent">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">isindependent</span></span><a class="headerlink" href="#metrolopy.nummy.nummy.isindependent" title="Link to this definition">¶</a></dt>
 <dd><p><cite>bool</cite>, read-only</p>
 <p>Returns <cite>False</cite> if the owning gummy was created from a operation involving
 other gummys and <cite>True</cite> otherwise.</p>
@@ -5485,6 +5653,11 @@ other gummys and <cite>True</cite> otherwise.</p>
 <dd><p>Sets the seed for the numpy.random.RandomState object shared by all
 <cite>Distribution</cite> instances.</p>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.nummy.nummy.sim">
+<span class="sig-name descname"><span class="pre">sim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ufrom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.sim" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.nummy.nummy.simdata">
@@ -5520,28 +5693,21 @@ other gummys and <cite>True</cite> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="metrolopy.nummy.nummy.ufrom">
-<span class="sig-name descname"><span class="pre">ufrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.ufrom" title="Link to this definition">¶</a></dt>
-<dd><p>Gets the standard uncertainty contributed from particular gummys
-or utypes if all other free variables are held fixed.</p>
+<dt class="sig sig-object py" id="metrolopy.nummy.nummy.ufromsim">
+<span class="sig-name descname"><span class="pre">ufromsim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.ufromsim" title="Link to this definition">¶</a></dt>
+<dd><p>Gets the standard deviation of the Monte-Carlo data only allowing the
+independent variables in <cite>x</cite> to vary.  Independent istributions not in
+<cite>x</cite> are held fixed.  <cite>sim</cite> or <cite>simulate</cite> must be called to generate
+Monte-Carlo data before calling this method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<cite>gummy</cite>, <cite>str</cite>, or array_like) – A gummy, a string referencing a utype or a list containing
-gummys and strings.</p>
+<dd class="field-odd"><p><strong>x</strong> (<cite>nummy</cite>, <cite>str</cite>, or array_like) – A nummy, a string referencing a utype or a list containing
+nummys and strings.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><cite>float</cite></p>
 </dd>
 </dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">a</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span> <span class="n">b</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.2</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span> <span class="n">c</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="n">utype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
-<span class="gp">&gt;&gt;&gt; </span> <span class="n">d</span><span class="o">.</span><span class="n">ufrom</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
-<span class="go">0.53851648071345048</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="py property">
@@ -5680,7 +5846,7 @@ be generated:  kibi, mebi, gibi, tebi, pebi, exbi, zibi, yobi, kilo, mega,
 giga, tera, peta, exa, zetta and yotta.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="metrolopy.prefixedunit.BinaryPrefixedUnit.prefix_definitions">
-<span class="sig-name descname"><span class="pre">prefix_definitions</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'exa':</span> <span class="pre">[1e+18,</span> <span class="pre">'E',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'exbi':</span> <span class="pre">[1152921504606846976,</span> <span class="pre">'Ei',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'gibi':</span> <span class="pre">[1073741824,</span> <span class="pre">'Gi',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'giga':</span> <span class="pre">[1000000000.0,</span> <span class="pre">'G',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'kibi':</span> <span class="pre">[1024,</span> <span class="pre">'Ki',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'kilo':</span> <span class="pre">[1000,</span> <span class="pre">'k',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'mebi':</span> <span class="pre">[1048576,</span> <span class="pre">'Mi',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'mega':</span> <span class="pre">[1000000.0,</span> <span class="pre">'M',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'pebi':</span> <span class="pre">[1125899906842624,</span> <span class="pre">'Pi',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'peta':</span> <span class="pre">[1000000000000000.0,</span> <span class="pre">'P',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'tebi':</span> <span class="pre">[1099511627776,</span> <span class="pre">'Ti',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'tera':</span> <span class="pre">[1000000000000.0,</span> <span class="pre">'T',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'yobi':</span> <span class="pre">[1208925819614629174706176,</span> <span class="pre">'Yi',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'yotta':</span> <span class="pre">[1e+24,</span> <span class="pre">'Y',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'zetta':</span> <span class="pre">[1e+21,</span> <span class="pre">'Z',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'zibi':</span> <span class="pre">[1180591620717411303424,</span> <span class="pre">'Zi',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None]}</span></em><a class="headerlink" href="#metrolopy.prefixedunit.BinaryPrefixedUnit.prefix_definitions" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">prefix_definitions</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'exa':</span> <span class="pre">[1000000000000000000,</span> <span class="pre">'E',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'exbi':</span> <span class="pre">[1152921504606846976,</span> <span class="pre">'Ei',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'gibi':</span> <span class="pre">[1073741824,</span> <span class="pre">'Gi',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'giga':</span> <span class="pre">[1000000000,</span> <span class="pre">'G',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'kibi':</span> <span class="pre">[1024,</span> <span class="pre">'Ki',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'kilo':</span> <span class="pre">[1000,</span> <span class="pre">'k',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'mebi':</span> <span class="pre">[1048576,</span> <span class="pre">'Mi',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'mega':</span> <span class="pre">[1000000,</span> <span class="pre">'M',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'pebi':</span> <span class="pre">[1125899906842624,</span> <span class="pre">'Pi',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'peta':</span> <span class="pre">[1000000000000000,</span> <span class="pre">'P',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'tebi':</span> <span class="pre">[1099511627776,</span> <span class="pre">'Ti',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'tera':</span> <span class="pre">[1000000000000,</span> <span class="pre">'T',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'yobi':</span> <span class="pre">[1208925819614629174706176,</span> <span class="pre">'Yi',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'yotta':</span> <span class="pre">[1000000000000000000000000,</span> <span class="pre">'Y',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'zetta':</span> <span class="pre">[1000000000000000000000,</span> <span class="pre">'Z',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'zibi':</span> <span class="pre">[1180591620717411303424,</span> <span class="pre">'Zi',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None]}</span></em><a class="headerlink" href="#metrolopy.prefixedunit.BinaryPrefixedUnit.prefix_definitions" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -5702,7 +5868,7 @@ adds units with with a set of prefixes to the unit library.</p>
 will be generated.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="metrolopy.prefixedunit.PrefixedUnit.prefix_definitions">
-<span class="sig-name descname"><span class="pre">prefix_definitions</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'atto':</span> <span class="pre">[1e-18,</span> <span class="pre">'a',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'centi':</span> <span class="pre">[0.01,</span> <span class="pre">'c',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'deca':</span> <span class="pre">[10,</span> <span class="pre">'da',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'deci':</span> <span class="pre">[0.1,</span> <span class="pre">'d',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'exa':</span> <span class="pre">[1e+18,</span> <span class="pre">'E',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'femto':</span> <span class="pre">[1e-15,</span> <span class="pre">'f',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'giga':</span> <span class="pre">[1000000000.0,</span> <span class="pre">'G',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'hecto':</span> <span class="pre">[100,</span> <span class="pre">'h',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'kilo':</span> <span class="pre">[1000,</span> <span class="pre">'k',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'mega':</span> <span class="pre">[1000000,</span> <span class="pre">'M',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'micro':</span> <span class="pre">[1e-06,</span> <span class="pre">'μ',</span> <span class="pre">'&amp;mu;',</span> <span class="pre">None,</span> <span class="pre">'u'],</span> <span class="pre">'milli':</span> <span class="pre">[0.001,</span> <span class="pre">'m',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'nano':</span> <span class="pre">[1e-09,</span> <span class="pre">'n',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'peta':</span> <span class="pre">[1000000000000000.0,</span> <span class="pre">'P',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'pico':</span> <span class="pre">[1e-12,</span> <span class="pre">'p',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'tera':</span> <span class="pre">[1000000000000.0,</span> <span class="pre">'T',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'yocto':</span> <span class="pre">[1e-24,</span> <span class="pre">'y',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'yotta':</span> <span class="pre">[1e+24,</span> <span class="pre">'Y',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'zepto':</span> <span class="pre">[1e-21,</span> <span class="pre">'z',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'zetta':</span> <span class="pre">[1e+21,</span> <span class="pre">'Z',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None]}</span></em><a class="headerlink" href="#metrolopy.prefixedunit.PrefixedUnit.prefix_definitions" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">prefix_definitions</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'atto':</span> <span class="pre">[MFraction(1,</span> <span class="pre">1000000000000000000),</span> <span class="pre">'a',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'centi':</span> <span class="pre">[MFraction(1,</span> <span class="pre">100),</span> <span class="pre">'c',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'deca':</span> <span class="pre">[10,</span> <span class="pre">'da',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'deci':</span> <span class="pre">[MFraction(1,</span> <span class="pre">10),</span> <span class="pre">'d',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'exa':</span> <span class="pre">[1000000000000000000,</span> <span class="pre">'E',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'femto':</span> <span class="pre">[MFraction(1,</span> <span class="pre">1000000000000000),</span> <span class="pre">'f',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'giga':</span> <span class="pre">[1000000000,</span> <span class="pre">'G',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'hecto':</span> <span class="pre">[100,</span> <span class="pre">'h',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'kilo':</span> <span class="pre">[1000,</span> <span class="pre">'k',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'mega':</span> <span class="pre">[1000000,</span> <span class="pre">'M',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'micro':</span> <span class="pre">[MFraction(1,</span> <span class="pre">1000000),</span> <span class="pre">'μ',</span> <span class="pre">'&amp;mu;',</span> <span class="pre">None,</span> <span class="pre">'u'],</span> <span class="pre">'milli':</span> <span class="pre">[MFraction(1,</span> <span class="pre">1000),</span> <span class="pre">'m',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'nano':</span> <span class="pre">[MFraction(1,</span> <span class="pre">1000000000),</span> <span class="pre">'n',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'peta':</span> <span class="pre">[1000000000000000,</span> <span class="pre">'P',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'pico':</span> <span class="pre">[MFraction(1,</span> <span class="pre">1000000000000),</span> <span class="pre">'p',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'tera':</span> <span class="pre">[1000000000000,</span> <span class="pre">'T',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'yocto':</span> <span class="pre">[MFraction(1,</span> <span class="pre">1000000000000000000000000),</span> <span class="pre">'y',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'yotta':</span> <span class="pre">[1000000000000000000000000,</span> <span class="pre">'Y',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'zepto':</span> <span class="pre">[MFraction(1,</span> <span class="pre">1000000000000000000000),</span> <span class="pre">'z',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None],</span> <span class="pre">'zetta':</span> <span class="pre">[1000000000000000000000,</span> <span class="pre">'Z',</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None]}</span></em><a class="headerlink" href="#metrolopy.prefixedunit.PrefixedUnit.prefix_definitions" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -5884,37 +6050,9 @@ But the ummy object can be used as a stripped down verison of gummy without the
 Monte-Carlo uncertainty propagation, unit, and pretty printing functionality
 of gummy.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="metrolopy.ummy.GummyTag">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.ummy.</span></span><span class="sig-name descname"><span class="pre">GummyTag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.GummyTag" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="metrolopy.ummy.GummyTag.get_values">
-<span class="sig-name descname"><span class="pre">get_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.GummyTag.get_values" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="metrolopy.ummy.GummyTag.set_tag">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_tag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.GummyTag.set_tag" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="metrolopy.ummy.GummyTag.tags">
-<span class="sig-name descname"><span class="pre">tags</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;WeakValueDictionary&gt;</span></em><a class="headerlink" href="#metrolopy.ummy.GummyTag.tags" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="metrolopy.ummy.MFraction">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.ummy.</span></span><span class="sig-name descname"><span class="pre">MFraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.MFraction" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Fraction</span></code></p>
-<p>A fraction.Fraction sub-class that works with mpmath.mpf objects</p>
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="metrolopy.ummy.MetaImmy">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.ummy.</span></span><span class="sig-name descname"><span class="pre">MetaImmy</span></span><a class="headerlink" href="#metrolopy.ummy.MetaImmy" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.MetaPrettyPrinter" title="metrolopy.printing.MetaPrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetaPrettyPrinter</span></code></a></p>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.ummy.</span></span><span class="sig-name descname"><span class="pre">MetaImmy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.MetaImmy" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.MetaPrettyPrinter" title="metrolopy.printing.MetaPrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetaPrettyPrinter</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ABCMeta</span></code></p>
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.ummy.MetaImmy.imag_symbol">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">imag_symbol</span></span><a class="headerlink" href="#metrolopy.ummy.MetaImmy.imag_symbol" title="Link to this definition">¶</a></dt>
@@ -5934,13 +6072,20 @@ level.  The default is ‘cartesian’.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="metrolopy.ummy.MetaUmmy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.ummy.</span></span><span class="sig-name descname"><span class="pre">MetaUmmy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.MetaUmmy" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.MetaPrettyPrinter" title="metrolopy.printing.MetaPrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetaPrettyPrinter</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ABCMeta</span></code></p>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="metrolopy.ummy.immy">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.ummy.</span></span><span class="sig-name descname"><span class="pre">immy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.immy" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrettyPrinter</span></code></a>, <a class="reference internal" href="#metrolopy.dfunc.Dfunc" title="metrolopy.dfunc.Dfunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dfunc</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrettyPrinter</span></code></a>, <a class="reference internal" href="#metrolopy.dfunc.Dfunc" title="metrolopy.dfunc.Dfunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dfunc</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Number</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.ummy.immy.angle">
 <span class="sig-name descname"><span class="pre">angle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.immy.angle" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the polar angle in radians.</p>
+<dd><p>Returns the polar angle in radians (which is also the phi read-only
+property value).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -5951,7 +6096,7 @@ level.  The default is ‘cartesian’.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.ummy.immy.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tofloat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.immy.copy" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">totype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.immy.copy" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a copy of the jummy.  If the <cite>formatting</cite> parameter is
 <cite>True</cite> the display formatting information will be copied and if
 <cite>False</cite> the display formatting will be set to the default for a
@@ -5978,14 +6123,14 @@ Returns the imaginary part of the value.</p>
 <dt class="sig sig-object py" id="metrolopy.ummy.immy.phi">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">phi</span></span><a class="headerlink" href="#metrolopy.ummy.immy.phi" title="Link to this definition">¶</a></dt>
 <dd><p>read-only
-Returns the polar angle of the value.</p>
+Returns the polar angle of the value (<cite>self.angle()</cite>)</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.ummy.immy.r">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">r</span></span><a class="headerlink" href="#metrolopy.ummy.immy.r" title="Link to this definition">¶</a></dt>
 <dd><p>read-only
-Returns the magnitude of the value.</p>
+Returns the magnitude of the value (<cite>abs(self)</cite>).</p>
 </dd></dl>
 
 <dl class="py property">
@@ -6025,10 +6170,15 @@ imaginary components) converted to floats.</p>
 
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="metrolopy.ummy.sign">
+<span class="sig-prename descclassname"><span class="pre">metrolopy.ummy.</span></span><span class="sig-name descname"><span class="pre">sign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.sign" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="metrolopy.ummy.ummy">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.ummy.</span></span><span class="sig-name descname"><span class="pre">ummy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.dfunc.Dfunc" title="metrolopy.dfunc.Dfunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dfunc</span></code></a>, <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrettyPrinter</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.dfunc.Dfunc" title="metrolopy.dfunc.Dfunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dfunc</span></code></a>, <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrettyPrinter</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Number</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.ummy.ummy.angle">
 <span class="sig-name descname"><span class="pre">angle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.angle" title="Link to this definition">¶</a></dt>
@@ -6041,12 +6191,12 @@ imaginary components) converted to floats.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.ummy.ummy.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tofloat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.copy" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">totype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.copy" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a copy of the ummy.  If the <cite>formatting</cite> parameter is
 <cite>True</cite> the display formatting information will be copied and if
 <cite>False</cite> the display formatting will be set to the default for a
-new gummy.  The default for <cite>formatting</cite> is <cite>True</cite>.  If tofloat
-is true the x and u properties will be converted to float values
+new gummy.  The default for <cite>formatting</cite> is <cite>True</cite>.  If totype
+is defined the x and u properties will be converted to type <cite>totype</cite>
 before copying.</p>
 </dd></dl>
 
@@ -6062,6 +6212,11 @@ before copying.</p>
 <dd><p>Returns the correlation matrix of a list or array of ummys.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="metrolopy.ummy.ummy.correlation_tolerance">
+<span class="sig-name descname"><span class="pre">correlation_tolerance</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-14</span></em><a class="headerlink" href="#metrolopy.ummy.ummy.correlation_tolerance" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.ummy.ummy.covariance">
 <span class="sig-name descname"><span class="pre">covariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.covariance" title="Link to this definition">¶</a></dt>
@@ -6076,7 +6231,7 @@ before copying.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.ummy.ummy.create">
-<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correlation_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariance_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.create" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correlation_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariance_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.create" title="Link to this definition">¶</a></dt>
 <dd><p>A class method that creates a list of (possibly) correlated ummys.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -6114,20 +6269,14 @@ will be uncorrelated.</p></li>
 ummy is based on.  If the ummy was created as the result of an
 operation between two or more other gummys, then the dof is the effective
 number of degrees of freedom calculated using the Welch-Satterthwaite
-approximation.  Caution:  A variation of the the  Welch-Satterthwaite
-approximation is used that takes into account correlations, see
-[R. Willink, Metrologia, 44, 340 (2007)].  However correlations are
-not handled perfectly.  So if accurate dof calculations are need, care
-should be taken to ensure that correlations are not generated in
-intermediate calculations.</p>
+approximation.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.ummy.ummy.doffrom">
 <span class="sig-name descname"><span class="pre">doffrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.doffrom" title="Link to this definition">¶</a></dt>
 <dd><p>Gets the degrees of freedom contributed from particular ummys or
-utypes if all other free variables are held fixed.  Caution:  any
-correlations in the calculations can cause errors in dof calculations.</p>
+utypes if all other free variables are held fixed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<cite>ummy</cite>, <cite>str</cite>, or array_like) – A ummy, a string referencing a utype or a list containing
@@ -6158,9 +6307,19 @@ ummys and strings.</p>
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">imag</span></span><a class="headerlink" href="#metrolopy.ummy.ummy.imag" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="metrolopy.ummy.ummy.isindependent">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">isindependent</span></span><a class="headerlink" href="#metrolopy.ummy.ummy.isindependent" title="Link to this definition">¶</a></dt>
+<dd><p><cite>bool</cite>, read-only</p>
+<p>Returns <cite>True</cite> if the ummy is an independent variable.  That is the
+ummy has u &gt; 0 and was not correlated with any other ummy’s when it was
+created or is perfectly correlated or anti-correlated (correlation
+coefficeint 1 or -1) with such an ummy.’</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="metrolopy.ummy.ummy.max_digits">
-<span class="sig-name descname"><span class="pre">max_digits</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">15</span></em><a class="headerlink" href="#metrolopy.ummy.ummy.max_digits" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">max_digits</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></em><a class="headerlink" href="#metrolopy.ummy.ummy.max_digits" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -6212,7 +6371,7 @@ ummys and strings.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.ummy.ummy.tofloat">
 <span class="sig-name descname"><span class="pre">tofloat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.ummy.ummy.tofloat" title="Link to this definition">¶</a></dt>
-<dd><p>Returns a copy of the gummy with x an u converted to floats.</p>
+<dd><p>Returns a copy of the gummy with x an u converted to <cite>float</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -6253,8 +6412,10 @@ ummys and strings.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.ummy.ummy.utype">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">utype</span></span><a class="headerlink" href="#metrolopy.ummy.ummy.utype" title="Link to this definition">¶</a></dt>
-<dd><p><cite>str</cite> or <cite>None</cite></p>
-<p>An arbitrary string value labeling the uncertainty type.</p>
+<dd><p><cite>str</cite>, <cite>None</cite> or a list containing strings and possibly <cite>None</cite></p>
+<p>An arbitrary string value labeling the uncertainty type or or a
+list of types if the gummy was constructed from independent
+variables with different utypes.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -6330,9 +6491,32 @@ with not unit one.  The default value is 1.</p></li>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="metrolopy.unit.MFraction">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.unit.</span></span><span class="sig-name descname"><span class="pre">MFraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.MFraction" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Fraction</span></code></p>
+<p>A fraction.Fraction sub-class that works with Decimal and mpmath.mpf objects</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.unit.MFraction.fromnum">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fromnum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.MFraction.fromnum" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.unit.MFraction.todecimal">
+<span class="sig-name descname"><span class="pre">todecimal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.MFraction.todecimal" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="metrolopy.unit.MetaQuantity">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.unit.</span></span><span class="sig-name descname"><span class="pre">MetaQuantity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.MetaQuantity" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.MetaPrettyPrinter" title="metrolopy.printing.MetaPrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetaPrettyPrinter</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ABCMeta</span></code></p>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="metrolopy.unit.Quantity">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.unit.</span></span><span class="sig-name descname"><span class="pre">Quantity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">one</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrettyPrinter</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrettyPrinter</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Number</span></code></p>
 <p>Instances of this class represent a quantity with a value and a unit.
 The behavior of Quantity instances under mathematical operations with
 other Quanitity object or numerical values depends on the unit. E.g.
@@ -6349,7 +6533,7 @@ a number by a <cite>Unit</cite> instance: <cite>Quantity(2.2,unit=’cm’)</cit
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>value</strong> (number like including <cite>ummy</cite>) – the value of the Quantity</p></li>
+<li><p><strong>value</strong> (numeric (including <cite>ummy</cite>)) – the value of the Quantity</p></li>
 <li><p><strong>unit</strong> (<cite>str</cite> or <cite>Unit</cite>) – The <cite>Unit</cite> instance representing the unit of the Quantity or a string
 that references the <cite>Unit</cite> instance.</p></li>
 </ul>
@@ -6381,6 +6565,11 @@ you prefer be converted.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.unit.Quantity.conjugate">
+<span class="sig-name descname"><span class="pre">conjugate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.conjugate" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.unit.Quantity.convert">
 <span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.convert" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a copy of the Quantity with converted units.  A
@@ -6403,7 +6592,9 @@ will have the same units as <cite>x</cite>.  The default is <cite>None</cite>.</
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.unit.Quantity.copy">
 <span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tofloat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.copy" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>returns a copy of self.  If tofloat is True, the self.value will be
+converted to float.  The default is False.</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.unit.Quantity.imag">
@@ -6441,19 +6632,30 @@ calling gummy and returns <cite>None</cite>.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.unit.Quantity.tobaseunit">
+<span class="sig-name descname"><span class="pre">tobaseunit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.tobaseunit" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a Quantity equal to self converted to unit self.unit.base</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.unit.Quantity.tofloat">
 <span class="sig-name descname"><span class="pre">tofloat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.tofloat" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>returns a copy of self with value float(self.value) equivalent to
+copy(tofloat=True)</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.unit.Quantity.tostring">
-<span class="sig-name descname"><span class="pre">tostring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.tostring" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">tostring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unicode'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.tostring" title="Link to this definition">¶</a></dt>
+<dd><p>returns a string representation of the Quantity.  fmt may be “unicode”,
+“html”,”latex” or “ascii”.  The default is “unicode”.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.unit.Quantity.totuple">
 <span class="sig-name descname"><span class="pre">totuple</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unit.Quantity.totuple" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>returns the tuple (self.value,self.unit)</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.unit.Quantity.unit">
@@ -6567,6 +6769,16 @@ from the unicode representation of the symbol.</p></li>
 </dd>
 </dl>
 </div>
+<dl class="py property">
+<dt class="sig sig-object py" id="metrolopy.unit.Unit.base">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base</span></span><a class="headerlink" href="#metrolopy.unit.Unit.base" title="Link to this definition">¶</a></dt>
+<dd><p>read-only</p>
+<p>Returns the base unit.  That is we follow the chain of conversions
+starting with this units <cite>Conversion</cite> instance until we get to a unit
+that has no <cite>Conversion</cite> instance.  If this unit has no <cite>Conversion</cite>
+instance <cite>self</cite> is returned.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.unit.Unit.conversion">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">conversion</span></span><a class="headerlink" href="#metrolopy.unit.Unit.conversion" title="Link to this definition">¶</a></dt>
@@ -6733,7 +6945,7 @@ of <cite>to_unit</cite>.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="metrolopy.unitutils.search_units">
-<span class="sig-prename descclassname"><span class="pre">metrolopy.unitutils.</span></span><span class="sig-name descname"><span class="pre">search_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prnt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unitutils.search_units" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">metrolopy.unitutils.</span></span><span class="sig-name descname"><span class="pre">search_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converts_to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unitutils.search_units" title="Link to this definition">¶</a></dt>
 <dd><p>Prints a list of all loaded units or all units that match the search terms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -6750,28 +6962,44 @@ the second) and interval units are shown. If <cite>False</cite> only the base
 unit is shown.  The default is <cite>False</cite>.</p></li>
 <li><p><strong>units</strong> (<cite>list</cite> of <cite>str</cite> or <cite>Unit</cite>,optional) – A list of units to print.  If this parameter is specified the values
 of the search and <cite>show_all</cite> parameters are ignored.</p></li>
-<li><p><strong>prnt</strong> (<cite>bool</cite>, optional) – If this is <cite>True</cite>, the results are printed.  If it is <cite>False</cite> the results
-are returned as a string.  The default is <cite>True</cite>.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>A <cite>search_units_result</cite> instance which emulates a list of the returned</p></li>
+<li><p>constants and pretty-prints the results to the output or <cite>None</cite> if no</p></li>
+<li><p><em>units are found.</em></p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="metrolopy.unitutils.search_units_result">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.unitutils.</span></span><span class="sig-name descname"><span class="pre">search_units_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">units</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_all</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unitutils.search_units_result" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#metrolopy.printing.PrettyPrinter" title="metrolopy.printing.PrettyPrinter"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrettyPrinter</span></code></a></p>
+<p>A <cite>search_units_result</cite> instance emulates a list of units returned
+from a ‘search_units` function call, and pretty-prints the results to
+the output</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="metrolopy.unitutils.search_units_result.tostring">
+<span class="sig-name descname"><span class="pre">tostring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unicode'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unitutils.search_units_result.tostring" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="metrolopy.unitutils.shadowed_units">
-<span class="sig-prename descclassname"><span class="pre">metrolopy.unitutils.</span></span><span class="sig-name descname"><span class="pre">shadowed_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prnt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unitutils.shadowed_units" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">metrolopy.unitutils.</span></span><span class="sig-name descname"><span class="pre">shadowed_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.unitutils.shadowed_units" title="Link to this definition">¶</a></dt>
 <dd><p>Lists any units which have a shadowed name or alias.  Units may be shadowed
 if the user has defined a new unit with the same name or alias as an
 existing unit.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fmt</strong> ({‘html’,’latex’,’unicode’,’ascii’,`None`},optional) – The output format.  If <cite>None</cite>, then the <cite>gummy.printer</cite> value is used.
+<dd class="field-odd"><p><strong>fmt</strong> ({‘html’,’latex’,’unicode’,’ascii’,`None`},optional) – The output format.  If <cite>None</cite>, then the <cite>gummy.printer</cite> value is used.
 If latex output is selected, Markdown is actually used with the unit
-symbols and conversion displayed using inline LaTeX.</p></li>
-<li><p><strong>prnt</strong> (<cite>bool</cite>, optional) – If this is <cite>True</cite>, the results are printed.  If it is <cite>False</cite> the results
-are returned as a string.  The default is <cite>True</cite>.</p></li>
-</ul>
+symbols and conversion displayed using inline LaTeX.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -6827,6 +7055,7 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.budget.Budget.units_on_values"><code class="docutils literal notranslate"><span class="pre">Budget.units_on_values</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#metrolopy.budget.append_utype"><code class="docutils literal notranslate"><span class="pre">append_utype()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-metrolopy.dfunc">metrolopy.dfunc module</a><ul>
@@ -6845,6 +7074,12 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.distributions.ArcSinDist.x"><code class="docutils literal notranslate"><span class="pre">ArcSinDist.x()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#metrolopy.distributions.AveragedFrom"><code class="docutils literal notranslate"><span class="pre">AveragedFrom</span></code></a><ul>
+<li><a class="reference internal" href="#metrolopy.distributions.AveragedFrom.random"><code class="docutils literal notranslate"><span class="pre">AveragedFrom.random()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.distributions.AveragedFrom.u"><code class="docutils literal notranslate"><span class="pre">AveragedFrom.u()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.distributions.AveragedFrom.x"><code class="docutils literal notranslate"><span class="pre">AveragedFrom.x()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#metrolopy.distributions.BinomialDist"><code class="docutils literal notranslate"><span class="pre">BinomialDist</span></code></a><ul>
 <li><a class="reference internal" href="#metrolopy.distributions.BinomialDist.random"><code class="docutils literal notranslate"><span class="pre">BinomialDist.random()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.BinomialDist.u"><code class="docutils literal notranslate"><span class="pre">BinomialDist.u()</span></code></a></li>
@@ -6852,6 +7087,7 @@ Conversion Factors for General Use”, May 2006.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#metrolopy.distributions.Convolution"><code class="docutils literal notranslate"><span class="pre">Convolution</span></code></a><ul>
+<li><a class="reference internal" href="#metrolopy.distributions.Convolution.datafrom"><code class="docutils literal notranslate"><span class="pre">Convolution.datafrom()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.Convolution.isindependent"><code class="docutils literal notranslate"><span class="pre">Convolution.isindependent</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.Convolution.random"><code class="docutils literal notranslate"><span class="pre">Convolution.random()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.Convolution.x"><code class="docutils literal notranslate"><span class="pre">Convolution.x()</span></code></a></li>
@@ -6870,6 +7106,7 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.distributions.Distribution.ci"><code class="docutils literal notranslate"><span class="pre">Distribution.ci()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.Distribution.cisym"><code class="docutils literal notranslate"><span class="pre">Distribution.cisym()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.Distribution.clear"><code class="docutils literal notranslate"><span class="pre">Distribution.clear()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.distributions.Distribution.clear_all"><code class="docutils literal notranslate"><span class="pre">Distribution.clear_all()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.Distribution.covplot"><code class="docutils literal notranslate"><span class="pre">Distribution.covplot()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.Distribution.covsim"><code class="docutils literal notranslate"><span class="pre">Distribution.covsim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.Distribution.covsim_matrix"><code class="docutils literal notranslate"><span class="pre">Distribution.covsim_matrix()</span></code></a></li>
@@ -6884,6 +7121,7 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.distributions.Distribution.simulate"><code class="docutils literal notranslate"><span class="pre">Distribution.simulate()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.Distribution.stdev"><code class="docutils literal notranslate"><span class="pre">Distribution.stdev</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.Distribution.u"><code class="docutils literal notranslate"><span class="pre">Distribution.u()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.distributions.Distribution.utype"><code class="docutils literal notranslate"><span class="pre">Distribution.utype</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.distributions.Distribution.x"><code class="docutils literal notranslate"><span class="pre">Distribution.x()</span></code></a></li>
 </ul>
 </li>
@@ -6992,7 +7230,6 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.exceptions.GummyWarning"><code class="docutils literal notranslate"><span class="pre">GummyWarning</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.exceptions.IncompatibleUnitsError"><code class="docutils literal notranslate"><span class="pre">IncompatibleUnitsError</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.exceptions.NoSimulatedDataError"><code class="docutils literal notranslate"><span class="pre">NoSimulatedDataError</span></code></a></li>
-<li><a class="reference internal" href="#metrolopy.exceptions.NoUnitConversionFoundError"><code class="docutils literal notranslate"><span class="pre">NoUnitConversionFoundError</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.exceptions.UncertiantyPrecisionWarning"><code class="docutils literal notranslate"><span class="pre">UncertiantyPrecisionWarning</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.exceptions.UnitError"><code class="docutils literal notranslate"><span class="pre">UnitError</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.exceptions.UnitLibError"><code class="docutils literal notranslate"><span class="pre">UnitLibError</span></code></a></li>
@@ -7242,6 +7479,8 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.budget"><code class="docutils literal notranslate"><span class="pre">gummy.budget()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.cimethod"><code class="docutils literal notranslate"><span class="pre">gummy.cimethod</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.cisim"><code class="docutils literal notranslate"><span class="pre">gummy.cisim</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.gummy.gummy.clear"><code class="docutils literal notranslate"><span class="pre">gummy.clear()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.gummy.gummy.clear_all"><code class="docutils literal notranslate"><span class="pre">gummy.clear_all()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.conjugate"><code class="docutils literal notranslate"><span class="pre">gummy.conjugate()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.copy"><code class="docutils literal notranslate"><span class="pre">gummy.copy()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.correlation"><code class="docutils literal notranslate"><span class="pre">gummy.correlation()</span></code></a></li>
@@ -7254,6 +7493,7 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.covariance_sim"><code class="docutils literal notranslate"><span class="pre">gummy.covariance_sim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.covplot"><code class="docutils literal notranslate"><span class="pre">gummy.covplot()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.create"><code class="docutils literal notranslate"><span class="pre">gummy.create()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.gummy.gummy.datafrom"><code class="docutils literal notranslate"><span class="pre">gummy.datafrom()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.distribution"><code class="docutils literal notranslate"><span class="pre">gummy.distribution</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.dof"><code class="docutils literal notranslate"><span class="pre">gummy.dof</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.doffrom"><code class="docutils literal notranslate"><span class="pre">gummy.doffrom()</span></code></a></li>
@@ -7265,6 +7505,7 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.html"><code class="docutils literal notranslate"><span class="pre">gummy.html()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.imag"><code class="docutils literal notranslate"><span class="pre">gummy.imag</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.independent"><code class="docutils literal notranslate"><span class="pre">gummy.independent</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.gummy.gummy.isindependent"><code class="docutils literal notranslate"><span class="pre">gummy.isindependent</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.k"><code class="docutils literal notranslate"><span class="pre">gummy.k</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.ksim"><code class="docutils literal notranslate"><span class="pre">gummy.ksim</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.latex"><code class="docutils literal notranslate"><span class="pre">gummy.latex()</span></code></a></li>
@@ -7299,6 +7540,7 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.u"><code class="docutils literal notranslate"><span class="pre">gummy.u</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.ubreakdown"><code class="docutils literal notranslate"><span class="pre">gummy.ubreakdown</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.ufrom"><code class="docutils literal notranslate"><span class="pre">gummy.ufrom()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.gummy.gummy.ufromsim"><code class="docutils literal notranslate"><span class="pre">gummy.ufromsim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.unicode"><code class="docutils literal notranslate"><span class="pre">gummy.unicode()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.unit"><code class="docutils literal notranslate"><span class="pre">gummy.unit</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.gummy.gummy.usim"><code class="docutils literal notranslate"><span class="pre">gummy.usim</span></code></a></li>
@@ -7374,32 +7616,35 @@ Conversion Factors for General Use”, May 2006.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-metrolopy.nummy">metrolopy.nummy module</a><ul>
+<li><a class="reference internal" href="#metrolopy.nummy.get_name"><code class="docutils literal notranslate"><span class="pre">get_name()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy"><code class="docutils literal notranslate"><span class="pre">nummy</span></code></a><ul>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.Usim"><code class="docutils literal notranslate"><span class="pre">nummy.Usim</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.bayesian"><code class="docutils literal notranslate"><span class="pre">nummy.bayesian</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.cimethod"><code class="docutils literal notranslate"><span class="pre">nummy.cimethod</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.cisim"><code class="docutils literal notranslate"><span class="pre">nummy.cisim</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.nummy.nummy.clear"><code class="docutils literal notranslate"><span class="pre">nummy.clear()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.correlation_matrix_sim"><code class="docutils literal notranslate"><span class="pre">nummy.correlation_matrix_sim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.correlation_sim"><code class="docutils literal notranslate"><span class="pre">nummy.correlation_sim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.covariance_matrix_sim"><code class="docutils literal notranslate"><span class="pre">nummy.covariance_matrix_sim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.covariance_sim"><code class="docutils literal notranslate"><span class="pre">nummy.covariance_sim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.covplot"><code class="docutils literal notranslate"><span class="pre">nummy.covplot()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.create"><code class="docutils literal notranslate"><span class="pre">nummy.create()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.nummy.nummy.datafrom"><code class="docutils literal notranslate"><span class="pre">nummy.datafrom()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.distribution"><code class="docutils literal notranslate"><span class="pre">nummy.distribution</span></code></a></li>
-<li><a class="reference internal" href="#metrolopy.nummy.nummy.dof"><code class="docutils literal notranslate"><span class="pre">nummy.dof</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.get_name"><code class="docutils literal notranslate"><span class="pre">nummy.get_name()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.hist"><code class="docutils literal notranslate"><span class="pre">nummy.hist()</span></code></a></li>
-<li><a class="reference internal" href="#metrolopy.nummy.nummy.independent"><code class="docutils literal notranslate"><span class="pre">nummy.independent</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.nummy.nummy.isindependent"><code class="docutils literal notranslate"><span class="pre">nummy.isindependent</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.ksim"><code class="docutils literal notranslate"><span class="pre">nummy.ksim</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.name"><code class="docutils literal notranslate"><span class="pre">nummy.name</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.p"><code class="docutils literal notranslate"><span class="pre">nummy.p</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.set_seed"><code class="docutils literal notranslate"><span class="pre">nummy.set_seed()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.nummy.nummy.sim"><code class="docutils literal notranslate"><span class="pre">nummy.sim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.simdata"><code class="docutils literal notranslate"><span class="pre">nummy.simdata</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.simsorted"><code class="docutils literal notranslate"><span class="pre">nummy.simsorted</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.simulate"><code class="docutils literal notranslate"><span class="pre">nummy.simulate()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.splonk"><code class="docutils literal notranslate"><span class="pre">nummy.splonk()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.toummy"><code class="docutils literal notranslate"><span class="pre">nummy.toummy()</span></code></a></li>
-<li><a class="reference internal" href="#metrolopy.nummy.nummy.ufrom"><code class="docutils literal notranslate"><span class="pre">nummy.ufrom()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.nummy.nummy.ufromsim"><code class="docutils literal notranslate"><span class="pre">nummy.ufromsim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.usim"><code class="docutils literal notranslate"><span class="pre">nummy.usim</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.xsim"><code class="docutils literal notranslate"><span class="pre">nummy.xsim</span></code></a></li>
 </ul>
@@ -7473,18 +7718,12 @@ Conversion Factors for General Use”, May 2006.</p>
 </li>
 <li><a class="reference internal" href="#module-metrolopy.siunits">metrolopy.siunits module</a></li>
 <li><a class="reference internal" href="#module-metrolopy.ummy">metrolopy.ummy module</a><ul>
-<li><a class="reference internal" href="#metrolopy.ummy.GummyTag"><code class="docutils literal notranslate"><span class="pre">GummyTag</span></code></a><ul>
-<li><a class="reference internal" href="#metrolopy.ummy.GummyTag.get_values"><code class="docutils literal notranslate"><span class="pre">GummyTag.get_values()</span></code></a></li>
-<li><a class="reference internal" href="#metrolopy.ummy.GummyTag.set_tag"><code class="docutils literal notranslate"><span class="pre">GummyTag.set_tag()</span></code></a></li>
-<li><a class="reference internal" href="#metrolopy.ummy.GummyTag.tags"><code class="docutils literal notranslate"><span class="pre">GummyTag.tags</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#metrolopy.ummy.MFraction"><code class="docutils literal notranslate"><span class="pre">MFraction</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.MetaImmy"><code class="docutils literal notranslate"><span class="pre">MetaImmy</span></code></a><ul>
 <li><a class="reference internal" href="#metrolopy.ummy.MetaImmy.imag_symbol"><code class="docutils literal notranslate"><span class="pre">MetaImmy.imag_symbol</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.MetaImmy.style"><code class="docutils literal notranslate"><span class="pre">MetaImmy.style</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#metrolopy.ummy.MetaUmmy"><code class="docutils literal notranslate"><span class="pre">MetaUmmy</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.immy"><code class="docutils literal notranslate"><span class="pre">immy</span></code></a><ul>
 <li><a class="reference internal" href="#metrolopy.ummy.immy.angle"><code class="docutils literal notranslate"><span class="pre">immy.angle()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.immy.conjugate"><code class="docutils literal notranslate"><span class="pre">immy.conjugate()</span></code></a></li>
@@ -7501,12 +7740,14 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.ummy.immy.x"><code class="docutils literal notranslate"><span class="pre">immy.x</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#metrolopy.ummy.sign"><code class="docutils literal notranslate"><span class="pre">sign()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy"><code class="docutils literal notranslate"><span class="pre">ummy</span></code></a><ul>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.angle"><code class="docutils literal notranslate"><span class="pre">ummy.angle()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.conjugate"><code class="docutils literal notranslate"><span class="pre">ummy.conjugate()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.copy"><code class="docutils literal notranslate"><span class="pre">ummy.copy()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.correlation"><code class="docutils literal notranslate"><span class="pre">ummy.correlation()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.correlation_matrix"><code class="docutils literal notranslate"><span class="pre">ummy.correlation_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.ummy.ummy.correlation_tolerance"><code class="docutils literal notranslate"><span class="pre">ummy.correlation_tolerance</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.covariance"><code class="docutils literal notranslate"><span class="pre">ummy.covariance()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.covariance_matrix"><code class="docutils literal notranslate"><span class="pre">ummy.covariance_matrix()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.create"><code class="docutils literal notranslate"><span class="pre">ummy.create()</span></code></a></li>
@@ -7514,6 +7755,7 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.doffrom"><code class="docutils literal notranslate"><span class="pre">ummy.doffrom()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.finfo"><code class="docutils literal notranslate"><span class="pre">ummy.finfo</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.imag"><code class="docutils literal notranslate"><span class="pre">ummy.imag</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.ummy.ummy.isindependent"><code class="docutils literal notranslate"><span class="pre">ummy.isindependent</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.max_digits"><code class="docutils literal notranslate"><span class="pre">ummy.max_digits</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.max_dof"><code class="docutils literal notranslate"><span class="pre">ummy.max_dof</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.ummy.ummy.nsig"><code class="docutils literal notranslate"><span class="pre">ummy.nsig</span></code></a></li>
@@ -7545,8 +7787,15 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.unit.Conversion.unit"><code class="docutils literal notranslate"><span class="pre">Conversion.unit</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#metrolopy.unit.MFraction"><code class="docutils literal notranslate"><span class="pre">MFraction</span></code></a><ul>
+<li><a class="reference internal" href="#metrolopy.unit.MFraction.fromnum"><code class="docutils literal notranslate"><span class="pre">MFraction.fromnum()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.unit.MFraction.todecimal"><code class="docutils literal notranslate"><span class="pre">MFraction.todecimal()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#metrolopy.unit.MetaQuantity"><code class="docutils literal notranslate"><span class="pre">MetaQuantity</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Quantity"><code class="docutils literal notranslate"><span class="pre">Quantity</span></code></a><ul>
 <li><a class="reference internal" href="#metrolopy.unit.Quantity.c"><code class="docutils literal notranslate"><span class="pre">Quantity.c</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.unit.Quantity.conjugate"><code class="docutils literal notranslate"><span class="pre">Quantity.conjugate()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Quantity.convert"><code class="docutils literal notranslate"><span class="pre">Quantity.convert()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Quantity.copy"><code class="docutils literal notranslate"><span class="pre">Quantity.copy()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Quantity.imag"><code class="docutils literal notranslate"><span class="pre">Quantity.imag</span></code></a></li>
@@ -7554,6 +7803,7 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.unit.Quantity.reduce_unit"><code class="docutils literal notranslate"><span class="pre">Quantity.reduce_unit()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Quantity.splonk"><code class="docutils literal notranslate"><span class="pre">Quantity.splonk()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Quantity.splonk_func_ret"><code class="docutils literal notranslate"><span class="pre">Quantity.splonk_func_ret</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.unit.Quantity.tobaseunit"><code class="docutils literal notranslate"><span class="pre">Quantity.tobaseunit()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Quantity.tofloat"><code class="docutils literal notranslate"><span class="pre">Quantity.tofloat()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Quantity.tostring"><code class="docutils literal notranslate"><span class="pre">Quantity.tostring()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Quantity.totuple"><code class="docutils literal notranslate"><span class="pre">Quantity.totuple()</span></code></a></li>
@@ -7563,6 +7813,7 @@ Conversion Factors for General Use”, May 2006.</p>
 </li>
 <li><a class="reference internal" href="#metrolopy.unit.QuantityArray"><code class="docutils literal notranslate"><span class="pre">QuantityArray</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Unit"><code class="docutils literal notranslate"><span class="pre">Unit</span></code></a><ul>
+<li><a class="reference internal" href="#metrolopy.unit.Unit.base"><code class="docutils literal notranslate"><span class="pre">Unit.base</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Unit.conversion"><code class="docutils literal notranslate"><span class="pre">Unit.conversion</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Unit.convert"><code class="docutils literal notranslate"><span class="pre">Unit.convert()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unit.Unit.format_latex"><code class="docutils literal notranslate"><span class="pre">Unit.format_latex()</span></code></a></li>
@@ -7581,6 +7832,10 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#module-metrolopy.unitutils">metrolopy.unitutils module</a><ul>
 <li><a class="reference internal" href="#metrolopy.unitutils.convert"><code class="docutils literal notranslate"><span class="pre">convert()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.unitutils.search_units"><code class="docutils literal notranslate"><span class="pre">search_units()</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.unitutils.search_units_result"><code class="docutils literal notranslate"><span class="pre">search_units_result</span></code></a><ul>
+<li><a class="reference internal" href="#metrolopy.unitutils.search_units_result.tostring"><code class="docutils literal notranslate"><span class="pre">search_units_result.tostring()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#metrolopy.unitutils.shadowed_units"><code class="docutils literal notranslate"><span class="pre">shadowed_units()</span></code></a></li>
 </ul>
 </li>
@@ -7622,7 +7877,7 @@ Conversion Factors for General Use”, May 2006.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">metrolopy package</a></li> 
       </ul>
     </div>

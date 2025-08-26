@@ -85,8 +85,9 @@ class TestOperations(unittest.TestCase):
         else:
             self.assertTrue(abs((g.u - u)/u) < 1e-3)
         
-        if dof is not None and not np.isinf(dof):
-            self.assertTrue(abs((g.dof - dof)/dof) < 0.01)
+        if not uc.gummy.bayesian:
+            if dof is not None and not np.isinf(dof):
+                self.assertTrue(abs((g.dof - dof)/dof) < 0.01)
         
         self.assertTrue(a.correlation(b) == 0)
         

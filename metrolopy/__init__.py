@@ -23,8 +23,9 @@
 from .version import __version__
 
 from .gummy import gummy,jummy
-from .unit import Unit,Conversion,one,Quantity,QuantityArray,unit
-from .ummy import ummy,immy,MFraction
+from .unit import Unit,Conversion,one,Quantity,QuantityArray,unit,MFraction
+from .ummy import ummy,immy
+from .nummy import nummy
 from .budget import Budget
 from .prefixedunit import PrefixedUnit,BinaryPrefixedUnit
 from .nonlinearunit import NonlinearUnit,NonlinearConversion
@@ -36,6 +37,6 @@ from .fit import *
 from .distributions import *
 from .exceptions import *
 from .printing import set_printer
-from .unitutils import search_units,shadowed_units,convert
+from .unitutils import search_units,shadowed_units,convert,search_units_result
 from .constant import (GummyConstant,JummyConstant,constant,search_constants,
-                       shadowed_constants)
+                       shadowed_constants,search_constants_result)

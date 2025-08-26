@@ -2,7 +2,7 @@
 
 # module usunits
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -31,10 +31,9 @@ NIST Special Publication 1038, "The International System of Units (SI) –
 Conversion Factors for General Use", May 2006.
 """
 
-from .unit import Unit,Conversion
+from .unit import Unit,Conversion,MFraction
 from .offsetunit import OffsetUnit,OffsetConversion
 from .prefixedunit import PrefixedUnit
-from .ummy import MFraction
 
 with Unit._builtin():
     _in = PrefixedUnit('inch','in',Conversion('m',MFraction('0.0254')),prefixes=['micro'],
@@ -74,15 +73,15 @@ with Unit._builtin():
     
     _gal = Unit('gallon','gal',Conversion(_in**3,231),add_symbol=True,description='unit of volume')
     Unit.alias('liquid gallon',_gal)
-    Unit.alias('liquid gal',_gal)
+    Unit.alias('liquid-gal',_gal)
     
     _qt = Unit('quart','qt',Conversion(_gal,MFraction(1,4)),add_symbol=True,description='unit of volume')
     Unit.alias('liquid quart',_qt)
-    Unit.alias('liquid qt',_qt)
+    Unit.alias('liquid-qt',_qt)
     
     _pt = Unit('pint','pt',Conversion(_qt,MFraction(1,2)),add_symbol=True,description='unit of volume')
     Unit.alias('liquid pint',_pt)
-    Unit.alias('liquid pt',_pt)
+    Unit.alias('liquid-pt',_pt)
     
     _cp = Unit('cup','cp',Conversion(_pt,MFraction(1,2)),add_symbol=True,description='unit of volume')
     _gi = Unit('gill','gi',Conversion(_cp,MFraction(1,2)),add_symbol=True,description='unit of volume')
@@ -97,7 +96,7 @@ with Unit._builtin():
     
     _bbl = Unit('barrel','bbl',Conversion(_gal,MFraction('31.5')),add_symbol=True,description='unit of volume')
     Unit.alias('liquid barrel',_bbl)
-    Unit.alias('liquid bbl',_bbl)
+    Unit.alias('liquid-bbl',_bbl)
     
     Unit('oil barrel','bbl',Conversion(_gal,42),add_symbol=False,description='unit of volume')
     Unit('hogshead','hogshead',Conversion(_gal,65),add_symbol=True,description='unit of volume')
@@ -116,7 +115,7 @@ with Unit._builtin():
     _lb = PrefixedUnit('pound','lb',Conversion('kg',MFraction('0.45359237')),add_symbol=True,
                        prefixes=['micro'],description='unit of mass')
     Unit.alias('avoirdupois pound',_lb)
-    Unit.alias('avdp lb',_lb)
+    Unit.alias('avdp-lb',_lb)
     Unit.alias('lbm',_lb)
     Unit.alias('pound mass',_lb)
     Unit.alias('ulbm','ulb')
@@ -124,7 +123,7 @@ with Unit._builtin():
     
     _oz = Unit('ounce','oz',Conversion(_lb,MFraction('0.0625')),add_symbol=True,description='unit of mass')
     Unit.alias('avoirdupois ounce',_oz)
-    Unit.alias('avdp oz',_oz)
+    Unit.alias('avdp-oz',_oz)
     
     Unit('dram','dr',Conversion(_oz,MFraction('0.0625')),add_symbol=True,description='unit of mass')
     
@@ -147,14 +146,16 @@ with Unit._builtin():
     _degR = Unit('degree Rankine','\u00B0R',Conversion('K',MFraction(5,9)),
                  latex_symbol='^{\\circ}R',ascii_symbol='degR',add_symbol=True,
                  description='unit of temperature')
-    Unit.alias('degree R',_degR)
-    Unit.alias('deg R',_degR)
+    Unit.alias('degreeR',_degR)
+    Unit.alias('degree-R',_degR)
+    Unit.alias('deg-R',_degR)
     
     _degF = OffsetUnit('degree Fahrenheit','\u00B0F',OffsetConversion('degR',MFraction('459.67')),
                 latex_symbol='^{\\circ}F',ascii_symbol='degF',add_symbol=True,
                 description='unit of temperature')
-    Unit.alias('degree F',_degF)
-    Unit.alias('deg F',_degF)
+    Unit.alias('degreeF',_degF)
+    Unit.alias('degree-F',_degF)
+    Unit.alias('deg-F',_degF)
                
     Unit('pound per square inch','psi',Conversion(_lbf*_in**-2),add_symbol=True,
          description='unit of pressure')
