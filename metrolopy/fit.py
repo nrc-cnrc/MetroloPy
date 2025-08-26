@@ -929,7 +929,7 @@ class Fit(_Fit,PrettyPrinter):
         if self.p is None:
             if cov is not None and self.count > self.nparam:
                 if self.sigma is None or not self.sigma_is_known:
-                    dof = self.dof
+                    dof = self.dof/self.nparam
                     if dof < 1:
                         dof = 1
                 else:
@@ -1153,7 +1153,7 @@ class Fit(_Fit,PrettyPrinter):
         
         try:
             if self.sigma is None or not self.sigma_is_known:
-                dof = self.dof
+                dof = self.dof/self.nparam
             else:
                 dof = float('inf')
             self.p = gummy.create(self.pf,unit=self.punits,dof=dof,
@@ -1741,7 +1741,7 @@ class PolyFit(Fit):
         
         if p is None:
             if self.uy is None or not self.sigma_is_known:
-                dof = self.dof
+                dof = self.dof/self.nparam
             else:
                 dof = float('inf')
             try:

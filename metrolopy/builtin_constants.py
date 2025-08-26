@@ -472,7 +472,7 @@ with GummyConstant._builtin():
                   description='deuteron magnetic moment, calculated from CODATA 2022 values as g(d)*mu(N)',
                   _key='mud') 
     
-    GummyConstant(rd,
+    GummyConstant(rd*unit('m'),
                   name='deuteron rms charge radius',
                   symbol='r(d)',
                   html_symbol='<i>r</i><sub>d</sub>',

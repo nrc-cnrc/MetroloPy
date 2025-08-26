@@ -136,7 +136,7 @@ version history
 * Version 0.6.3 built 13 May 2022, bug fixes
 * Version 0.6.4 built 28 May 2025, bug fixes
 * Version 0.6.5 built 04 June 2025, bug fixes
-* Version 1.0.0 built 25 August 2025, improved dof calculations other fixes
+* Version 1.0.0 built 26 August 2025, improved dof calculations other fixes
 
 
 author

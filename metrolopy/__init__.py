@@ -37,6 +37,6 @@ from .fit import *
 from .distributions import *
 from .exceptions import *
 from .printing import set_printer
-from .unitutils import search_units,shadowed_units,convert
+from .unitutils import search_units,shadowed_units,convert,search_units_result
 from .constant import (GummyConstant,JummyConstant,constant,search_constants,
-                       shadowed_constants)
+                       shadowed_constants,search_constants_result)

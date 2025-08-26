@@ -921,10 +921,10 @@ class Unit(PrettyPrinter,Indexed):
         return _CompositeUnit(self.units + vi)
 
     def __rtruediv__(self,v):
-        return Quantity._make(1/v,unit=self)
-        
         if v is one or v == 1:
             return _CompositeUnit([(e[0],-e[1]) for e in self.units])
+        
+        return Quantity._make(v,unit=self**-1)
         
     def __pow__(self,v):
         if v == -1:
