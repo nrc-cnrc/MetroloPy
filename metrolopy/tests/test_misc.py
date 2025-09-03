@@ -29,7 +29,9 @@ import unittest
 
 
 class TestMisc(unittest.TestCase):
-
+    """
+    Miscellaneaus tests.
+    """
     def test_reduce(self):
         a = uc.gummy(12.367,0.22,unit='mm/m')
         a.reduce_unit()

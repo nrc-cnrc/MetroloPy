@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>metrolopy package &#8212; metrolopy 1.0.0 documentation</title>
+    <title>metrolopy package &#8212; metrolopy 1.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
-    <script src="_static/documentation_options.js?v=8d563738"></script>
+    <script src="_static/documentation_options.js?v=292eb321"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -23,7 +23,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.0.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">metrolopy package</a></li> 
       </ul>
     </div>  
@@ -4507,8 +4507,11 @@ attributes of the calling gummy.</p>
 <dt class="sig sig-object py" id="metrolopy.gummy.gummy.independent">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">independent</span></span><a class="headerlink" href="#metrolopy.gummy.gummy.independent" title="Link to this definition">¶</a></dt>
 <dd><p><cite>bool</cite>, read-only</p>
-<p>Returns <cite>False</cite> if the owning gummy was created from a operation involving
-other gummys or has zero uncertainty and <cite>True</cite> otherwise.</p>
+<p>Returns <cite>True</cite> if the gummy is an independent variable.  That is the
+ummy has u &gt; 0 and was not correlated with any other gummy’s when it was
+created or is perfectly correlated or anti-correlated (correlation
+coefficeint 1 or -1) with such an ummy.  Identical to the
+isindependent property.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -4518,7 +4521,7 @@ other gummys or has zero uncertainty and <cite>True</cite> otherwise.</p>
 <p>Returns <cite>True</cite> if the gummy is an independent variable.  That is the
 ummy has u &gt; 0 and was not correlated with any other gummy’s when it was
 created or is perfectly correlated or anti-correlated (correlation
-coefficeint 1 or -1) with such an ummy.’</p>
+coefficeint 1 or -1) with such an ummy.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -5426,9 +5429,9 @@ class.</p>
 <dt class="sig sig-object py" id="metrolopy.nummy.nummy">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">metrolopy.nummy.</span></span><span class="sig-name descname"><span class="pre">nummy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#metrolopy.ummy.ummy" title="metrolopy.ummy.ummy"><code class="xref py py-class docutils literal notranslate"><span class="pre">ummy</span></code></a></p>
-<dl class="py property">
+<dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.nummy.nummy.Usim">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Usim</span></span><a class="headerlink" href="#metrolopy.nummy.nummy.Usim" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">Usim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.Usim" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -5488,9 +5491,9 @@ and the same number of samples lie above the upper limit of the confidence
 interval.</p>
 </dd></dl>
 
-<dl class="py property">
+<dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.nummy.nummy.cisim">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cisim</span></span><a class="headerlink" href="#metrolopy.nummy.nummy.cisim" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">cisim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.cisim" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -5630,9 +5633,9 @@ overwritten.</p></li>
 other gummys and <cite>True</cite> otherwise.</p>
 </dd></dl>
 
-<dl class="py property">
+<dl class="py method">
 <dt class="sig sig-object py" id="metrolopy.nummy.nummy.ksim">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ksim</span></span><a class="headerlink" href="#metrolopy.nummy.nummy.ksim" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ksim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#metrolopy.nummy.nummy.ksim" title="Link to this definition">¶</a></dt>
 <dd><p>read-only</p>
 <p>Returns <code class="docutils literal notranslate"><span class="pre">0.5*(gummy.Usim[0]</span> <span class="pre">+</span> <span class="pre">gummy.Usim[1])/gummy.usim</span></code></p>
 </dd></dl>
@@ -5640,11 +5643,6 @@ other gummys and <cite>True</cite> otherwise.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="metrolopy.nummy.nummy.name">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#metrolopy.nummy.nummy.name" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="metrolopy.nummy.nummy.p">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">p</span></span><a class="headerlink" href="#metrolopy.nummy.nummy.p" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -7618,10 +7616,10 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#module-metrolopy.nummy">metrolopy.nummy module</a><ul>
 <li><a class="reference internal" href="#metrolopy.nummy.get_name"><code class="docutils literal notranslate"><span class="pre">get_name()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy"><code class="docutils literal notranslate"><span class="pre">nummy</span></code></a><ul>
-<li><a class="reference internal" href="#metrolopy.nummy.nummy.Usim"><code class="docutils literal notranslate"><span class="pre">nummy.Usim</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.nummy.nummy.Usim"><code class="docutils literal notranslate"><span class="pre">nummy.Usim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.bayesian"><code class="docutils literal notranslate"><span class="pre">nummy.bayesian</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.cimethod"><code class="docutils literal notranslate"><span class="pre">nummy.cimethod</span></code></a></li>
-<li><a class="reference internal" href="#metrolopy.nummy.nummy.cisim"><code class="docutils literal notranslate"><span class="pre">nummy.cisim</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.nummy.nummy.cisim"><code class="docutils literal notranslate"><span class="pre">nummy.cisim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.clear"><code class="docutils literal notranslate"><span class="pre">nummy.clear()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.correlation_matrix_sim"><code class="docutils literal notranslate"><span class="pre">nummy.correlation_matrix_sim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.correlation_sim"><code class="docutils literal notranslate"><span class="pre">nummy.correlation_sim()</span></code></a></li>
@@ -7634,9 +7632,8 @@ Conversion Factors for General Use”, May 2006.</p>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.get_name"><code class="docutils literal notranslate"><span class="pre">nummy.get_name()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.hist"><code class="docutils literal notranslate"><span class="pre">nummy.hist()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.isindependent"><code class="docutils literal notranslate"><span class="pre">nummy.isindependent</span></code></a></li>
-<li><a class="reference internal" href="#metrolopy.nummy.nummy.ksim"><code class="docutils literal notranslate"><span class="pre">nummy.ksim</span></code></a></li>
+<li><a class="reference internal" href="#metrolopy.nummy.nummy.ksim"><code class="docutils literal notranslate"><span class="pre">nummy.ksim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.name"><code class="docutils literal notranslate"><span class="pre">nummy.name</span></code></a></li>
-<li><a class="reference internal" href="#metrolopy.nummy.nummy.p"><code class="docutils literal notranslate"><span class="pre">nummy.p</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.set_seed"><code class="docutils literal notranslate"><span class="pre">nummy.set_seed()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.sim"><code class="docutils literal notranslate"><span class="pre">nummy.sim()</span></code></a></li>
 <li><a class="reference internal" href="#metrolopy.nummy.nummy.simdata"><code class="docutils literal notranslate"><span class="pre">nummy.simdata</span></code></a></li>
@@ -7877,7 +7874,7 @@ Conversion Factors for General Use”, May 2006.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.0.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">metrolopy package</a></li> 
       </ul>
     </div>

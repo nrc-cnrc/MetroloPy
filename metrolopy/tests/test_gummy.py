@@ -28,6 +28,9 @@ import numpy as np
 import unittest
 
 class TestGummy(unittest.TestCase):
+    """
+    Various unit tests of gummy properties and methods.
+    """
     def test_ku(self):
         from metrolopy.gummy import _ku
         from decimal import Decimal
@@ -36,6 +39,10 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(_ku(2.1,Decimal(3.3)) == Decimal(float(2.1))*Decimal(3.3))
         
     def test_meta_properties(self):
+        """
+        Test class properties.
+
+        """
         a = uc.gummy.cimethod
         self.assertTrue(isinstance(a,str))
         uc.gummy.cimethod = 'symmetric'
@@ -123,6 +130,9 @@ class TestGummy(unittest.TestCase):
         uc.gummy.thousand_spaces = ts
         
     def test_init(self):
+        """
+        Test gummy creation
+        """
         g = uc.gummy(1.2,3.4)
         self.assertTrue(g.x == 1.2)
         self.assertTrue(g.u == 3.4)
@@ -223,6 +233,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(gg.name == 'def')
         
     def test_U(self):
+        """
+        Test expanded uncertainty.
+        """
         a = uc.gummy(1.1,2.2)
         self.assertTrue(a.U == 2.2)
         b = uc.gummy(3,4.4)
@@ -240,6 +253,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(abs(c.U[1] - 4.4*1.1/3**2) < 1e-12)
         
     def test_set_U(self):
+        """
+        Additional tests for expanded uncertainty.
+        """
         g = uc.gummy(1.0,1.0,k=2,unit='cm',uunit='mm')
         self.assertTrue(g.U == 1)
         self.assertTrue(g.uunit is uc.unit('mm'))
@@ -254,6 +270,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(c.U[1] == 4.4)
         
     def test_iset_U(self):
+        """
+        Additional tests for expanded uncertainty.
+        """
         g = uc.gummy(1)
         self.assertTrue(g._iset_U() == 0)
         self.assertTrue(g._iset_U(unit='m').unit is uc.unit('m'))
@@ -284,6 +303,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(g._iset_U(k=2) == 2)
         
     def test_Usim(self):
+        """
+        Test the gummy.Usim property
+        """
         g = uc.gummy(-8.5,1,unit='m')
         g.sim()
         self.assertTrue(abs(g.Usim[0] - 1) < 0.5)
@@ -352,16 +374,25 @@ class TestGummy(unittest.TestCase):
             self.assertTrue(g.simsorted[i+1] >= g.simsorted[i])
             
     def test_distribution(self):
+        """
+        Test gummy.distribution
+        """
         g = uc.gummy(1,1)
         self.assertTrue(isinstance(g.distribution,uc.Distribution))
        
     def test_ksim(self):
+        """
+        Test gummy.ksim
+        """
         g = uc.gummy(1,1)
         g.p = 0.9545
         g.sim()
         self.assertTrue(abs(g.ksim - 2) < 0.1)
         
     def test_independent(self):
+        """
+        Test gummy.independant
+        """
         a = uc.gummy(1,1)
         b = uc.gummy(-2,2)
         c = a + b
@@ -371,6 +402,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(not d.independent)
         
     def test_name(self):
+        """
+        Test setting and getting gummy.name
+        """
         g = uc.gummy(1,1)
         self.assertTrue(g.name is None)
         g.name = 'abc'
@@ -415,6 +449,9 @@ class TestGummy(unittest.TestCase):
             pass
         
     def test_unit(self):
+        """
+        Test setting and getting gummy.unit
+        """
         g = uc.gummy(1,1,unit='m')
         self.assertTrue(g.unit is uc.unit('m'))
         self.assertTrue(str(g.unit) == 'm')
@@ -428,6 +465,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(g.u == 1000)
         
     def test_uunit(self):
+        """
+        Test setting and getting gummy.uunit
+        """
         g = uc.gummy(1,1)
         self.assertTrue(g.uunit is None)
         g = uc.gummy(1,1,unit='m',uunit='cm')
@@ -446,6 +486,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(g.uunit is None)
         
     def test_uunit_is_rel(self):
+        """
+        Test gummy.uunit_is_rel
+        """
         g = uc.gummy(1,1)
         self.assertTrue(not g.uunit_is_rel)
         g.uunit='%'
@@ -459,6 +502,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(g.uunit_is_rel)
         
     def test_k(self):
+        """
+        Test setting and getting gummy.k
+        """
         g = uc.gummy(1)
         self.assertTrue(g.k is None)
         
@@ -479,6 +525,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(abs(g.k - 1.96) < 0.01)
         
     def test_p(self):
+        """
+        Test setting and getting gummy.p
+        """
         uc.gummy.p_method = None
         g = uc.gummy(1,1)
         g.p = 0.95
@@ -498,6 +547,9 @@ class TestGummy(unittest.TestCase):
             pass
         
     def test_correlation(self):
+        """
+        Test gummy.correlation
+        """
         a = uc.gummy(1,1)
         b = uc.gummy(1,2)
         c = a + b
@@ -510,6 +562,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(a.correlation(a) == 1)
         
     def test_covariance(self):
+        """
+        Test gummy.covariance
+        """
         a = uc.gummy(1,1)
         b = uc.gummy(1,2)
         c = a + b
@@ -523,6 +578,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(b.covariance(b) == 4)
         
     def test_correlation_sim(self):
+        """
+        Test gummy.correlation_sim
+        """
         a = uc.gummy(1,1)
         b = uc.gummy(1,2)
         c = a + b
@@ -535,6 +593,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(abs(a.correlation_sim(a) - 1) < 1e-6)
         
     def test_covariance_sim(self):
+        """
+        Test gummy.covariance_sim
+        """
         a = uc.gummy(1,1)
         b = uc.gummy(1,2)
         c = a + b
@@ -548,6 +609,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(abs(b.covariance_sim(b) - 4) < 1e-1)
         
     def test_correlation_matrix(self):
+        """
+        Test gummy.correlation_matrix
+        """
         a = uc.gummy(1,1)
         b = uc.gummy(1,2)
         c = a + b
@@ -564,6 +628,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue((m[1][2] - 2/c.u) < 1e-1)
         
     def test_covariance_matrix(self):
+        """
+        Test gummy.covariance_matrix
+        """
         a = uc.gummy(1,1)
         b = uc.gummy(1,2)
         c = a + b
@@ -580,10 +647,16 @@ class TestGummy(unittest.TestCase):
         self.assertTrue((m[1][2] - 4) < 1e-1)
         
     def test_finfo(self):
+        """
+        Test gummy.finfo
+        """
         a = uc.gummy(1,1)
         self.assertTrue(a.finfo.rel_u == 0)
         
     def test_real(self):
+        """
+        Test gummy.real
+        """
         a = uc.gummy(1.1,0.3)
         b = a.real
         self.assertTrue(not a is b)
@@ -592,6 +665,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(a.correlation(b) == 1)
         
     def test_conjugate(self):
+        """
+        Test gummy.conjugate
+        """
         a = uc.gummy(1.1,0.3)
         b = a.conjugate()
         self.assertTrue(not a is b)
@@ -600,16 +676,25 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(a.correlation(b) == 1)
         
     def test_angle(self):
+        """
+        Test gummy.angle
+        """
         self.assertTrue(uc.gummy(1.1,0.3).angle() == 0)
         self.assertTrue(abs(abs(uc.gummy(-1.1,0.3).angle()) - np.pi) < 1e-10)
         
     def test_utype(self):
+        """
+        Test gummy.utype
+        """
         a = uc.gummy(1.2,1,1,utype='A')
         self.assertTrue(a.utype == 'A')
         b = uc.gummy(1.2,1,1,utype='xyz')
         self.assertTrue(b.utype == 'xyz')
         
     def test_ufrom(self):
+        """
+        Test gummy.ufrom
+        """
         a = uc.gummy(1.2,0.2,utype='A')
         b = uc.gummy(3.2,0.5,utype='A')
         c = uc.gummy(0.9,0.2,utype='B')
@@ -620,6 +705,9 @@ class TestGummy(unittest.TestCase):
         self.assertTrue(d.ufrom(c) == 0.2)
         
     def test_dof_from(self):
+        """
+        Test gummy.doffrom
+        """
         a = uc.gummy(1.2,0.2,dof=5,utype='A')
         b = uc.gummy(3.2,0.5,dof=7,utype='A')
         c = uc.gummy(0.9,0.2,utype='B')

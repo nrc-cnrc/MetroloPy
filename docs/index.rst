@@ -72,7 +72,7 @@ generating `uncertainty budget tables`_, and `curve fitting`_.  It can also hand
 further reading
 ===============
 
-* `a tutorial <_static/tutorial.html>`_ (or  :download:`download the tutorial as a Jupyter notebook <tutorial.ipynb>`)
+* `a tutorial <_static/tutorial.html>`_ (or :download:`download the tutorial as a Jupyter notebook <tutorial.ipynb>`)
 * :ref:`the documentation <hand_made_doc>` (see the auto-generated docs below for an alternative set of documentation)
 * `a list of the measurement units built into MetroloPy <_static/units.html>`_
 * `a list of the physical constants built into MetroloPy <_static/constants.html>`_
@@ -114,6 +114,12 @@ and the
 `IAU 2009 system of astronomical constants <http://maia.usno.navy.mil/NSFA/IAU2009_consts.html>`_.
 
 
+verification
+============
+MetroloPy has a "tests" module that checks most basic operations.  However more
+work needs to be done to extend and document the tests.
+
+
 version history
 ===============
 
@@ -137,6 +143,7 @@ version history
 * Version 0.6.4 built 28 May 2025, bug fixes
 * Version 0.6.5 built 04 June 2025, bug fixes
 * Version 1.0.0 built 26 August 2025, improved dof calculations other fixes
+* Version 1.0.1 built 03 September 2025, bug fixes
 
 
 author

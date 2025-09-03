@@ -78,6 +78,10 @@ def make_immy(prnt=False):
 
 
 class TestComplex(unittest.TestCase):
+    """
+    Tests for the `immy` and `jummy` classes.  Basic operations and
+    instance creation are tested using random values.
+    """
     def assert_ummy_close(self,u1,u2):
             self.assertTrue(abs(u1.correlation(u2)) > 1 - 1e-4)
             u1x = max(u1.x,u1.u,u2.x,u2.u)
@@ -94,6 +98,9 @@ class TestComplex(unittest.TestCase):
             self.assert_ummy_close(i1.imag,i2.imag)
     
     def test_immy_init(self,n=1000,prnt=False):
+        """
+        Test immy creation using the real,imag,r and phi keywords.
+        """
         for m in range(n):
             x,xr,xi = make_immy(prnt=prnt)
             
@@ -175,6 +182,9 @@ class TestComplex(unittest.TestCase):
                 self.assert_immy_close(c,cn)
         
     def test_immy_add(self,n=1000,prnt=False):
+        """
+        Test immy addition.
+        """
         self._test_immy_bop(lambda a,b: a + b,np.add,n,prnt)
         
         for m in range(10):
@@ -183,6 +193,9 @@ class TestComplex(unittest.TestCase):
             self.assertTrue(0 + i == i)
         
     def test_immy_sub(self,n=1000,prnt=False):
+        """
+        Test immy subtraction.
+        """
         self._test_immy_bop(lambda a,b: a - b,np.subtract,n,prnt)
         
         for m in range(10):
@@ -191,6 +204,9 @@ class TestComplex(unittest.TestCase):
             self.assertTrue(0 - i == -i)
         
     def test_immy_mul(self,n=1000,prnt=False):
+        """
+        Test immy multiplication.
+        """
         self._test_immy_bop(lambda a,b: a*b,np.multiply,n,prnt)
         
         for m in range(10):
@@ -203,6 +219,9 @@ class TestComplex(unittest.TestCase):
             self.assertTrue(immy(1)*i == i)
         
     def test_immy_div(self,n=1000,prnt=False):
+        """
+        Test immy division.
+        """
         self._test_immy_bop(lambda a,b: a/b,np.divide,n,prnt,allow_small=False)
         
         for m in range(10):
@@ -210,6 +229,9 @@ class TestComplex(unittest.TestCase):
             self.assertTrue(i/1 == i)
         
     def test_immy_pow(self,n=1000,prnt=False):
+        """
+        Test immy exponentiation.
+        """
         #_test_immy_bop(lambda a,b: a**b,np.power,n,prnt,allow_small=False)
         
         for m in range(10):

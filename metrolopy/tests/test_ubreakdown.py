@@ -28,6 +28,9 @@ from metrolopy.tests.common import rand,make_gummy
 
 class TestUbreakdown(unittest.TestCase):
     def test_ubreakdown(self,n=None,prnt=False,budget=False):
+        """
+        Test gummy.ubreakdown and the budget class.
+        """
         uc.gummy.p_method = None
         
         if n is None:
