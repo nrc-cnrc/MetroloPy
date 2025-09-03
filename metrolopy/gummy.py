@@ -561,7 +561,6 @@ class gummy(Quantity,metaclass=MetaGummy):
         
         if isinstance(x,gummy):
             self._value = nummy(x.value)
-            self._value._fp = self._get_p
             self._unit = x._unit
             self._U = self._value.u
             self._value._name = x._value._name
@@ -580,7 +579,6 @@ class gummy(Quantity,metaclass=MetaGummy):
         
         if isinstance(x,ummy):
             self._value = nummy(x)
-            self._value._fp = self._get_p
             self._U = self._value.u
             self._k = 1
             self._pm = None
@@ -659,7 +657,6 @@ class gummy(Quantity,metaclass=MetaGummy):
                     u = u/type(u)(self._k)
 
         self._value = nummy(x,u=u,dof=dof,utype=utype,name=name)
-        self._value._fp = self._get_p
         
         self._U = None
         self._set_U(self._k,uunit)
@@ -704,9 +701,22 @@ class gummy(Quantity,metaclass=MetaGummy):
         Returns `True` if the gummy is an independent variable.  That is the 
         ummy has u > 0 and was not correlated with any other gummy's when it was 
         created or is perfectly correlated or anti-correlated (correlation 
-        coefficeint 1 or -1) with such an ummy.'
+        coefficeint 1 or -1) with such an ummy.
         """
         
+        return self.value.isindependent
+    
+    @property
+    def independent(self):
+        """
+        `bool`, read-only
+
+        Returns `True` if the gummy is an independent variable.  That is the 
+        ummy has u > 0 and was not correlated with any other gummy's when it was 
+        created or is perfectly correlated or anti-correlated (correlation 
+        coefficeint 1 or -1) with such an ummy.  Identical to the 
+        isindependent property.
+        """
         return self.value.isindependent
         
     @property
@@ -839,7 +849,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         `k` properties will affect `Usym`.
         """
         if not isinstance(self._U,Quantity):
-            return self._value.Usim
+            return self._value.Usim(self.p)
             
         if self.uunit_is_rel:
             x = self.xsim
@@ -892,7 +902,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         but changing the `p`, `k`, or `cimethod` properties will affect the return
         value.
         """
-        return self._value.cisim
+        return self._value.cisim(self.p)
     
     @property
     def cimethod(self):
@@ -925,7 +935,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         value = value.lower().strip()
         if value not in ['shortest','symmetric']:
             raise ValueError('cimethod ' + str(value) + ' is not recognized')
-        self.value._cimethod = value
+        self.value.cimethod = value
         
     @property
     def simdata(self):
@@ -963,17 +973,7 @@ class gummy(Quantity,metaclass=MetaGummy):
 
         Returns ``0.5*(gummy.Usim[0] + gummy.Usim[1])/gummy.usim``
         """
-        return self.value.ksim
-    
-    @property
-    def independent(self):
-        """
-        `bool`, read-only
-
-        Returns `False` if the owning gummy was created from a operation involving
-        other gummys or has zero uncertainty and `True` otherwise.
-        """
-        return self.value.isindependent
+        return self.value.ksim(self.p)
             
     @property
     def name(self):
@@ -1039,6 +1039,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         Quantity.unit.fset(self,u)
         self._U = None
         self._set_U()
+        self._value.clear()
             
     @property
     def uunit(self):

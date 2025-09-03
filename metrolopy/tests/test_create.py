@@ -9,6 +9,9 @@ from metrolopy.tests.common import rand,display
 
 class TestCreate(unittest.TestCase):
     def test_gummy_init(self,n=None,exception_on_warning=True,prnt=False,plot=False):
+        """
+        Test gummy creation.
+        """
         try:
             from scipy.stats import norm, t
             

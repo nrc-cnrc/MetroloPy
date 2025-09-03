@@ -111,7 +111,6 @@ class nummy(ummy):
 
     _cimethod = 'shortest'
     _bayesian = False # see the gummy bayesian property
-    _fp = None
     _nsim = None
     
     def __init__(self,x,u=0,dof=float('inf'),utype=None,name=None):
@@ -299,38 +298,35 @@ class nummy(ummy):
     def xsim(self):
         if not isinstance(self._dist,Distribution):
             return self._dist
-        return self.distribution.mean
+        return float(self.distribution.mean)
         
     @property
     def usim(self):
         if not isinstance(self._dist,Distribution):
             return 0
-        return self.distribution.stdev
+        return float(self.distribution.stdev)
         
-    @property
-    def cisim(self):
+    def cisim(self,p):
         if not isinstance(self._dist,Distribution):
             return [self._dist,self._dist]
         if self._cimethod == 'shortest':
-            return self.distribution.ci(self.p)
+            return [float(i) for i in self.distribution.ci(p)]
         else:
-            return self.distribution.cisym(self.p)
+            return [float(i) for i in self.distribution.cisym(p)]
               
-    @property
-    def Usim(self):
+    def Usim(self,p):
         if not isinstance(self._dist,Distribution):
             return 0
         x = self.distribution.mean
         
         if self._cimethod == 'shortest':
-            ci = self.distribution.ci(self.p)
+            ci = self.distribution.ci(p)
         else:
-            ci = self.distribution.cisym(self.p)
+            ci = self.distribution.cisym(p)
             
-        return (ci[1]-x,x-ci[0])
+        return (float(ci[1]-x),float(x-ci[0]))
         
-    @property
-    def ksim(self):
+    def ksim(self,p):
         """
         read-only
 
@@ -338,7 +334,8 @@ class nummy(ummy):
         """
         if self.usim == 0 or not isinstance(self._dist,Distribution):
             return float('inf')
-        return 0.5*(self.Usim[0] + self.Usim[1])/self.usim
+        usm = self.Usim(p)
+        return 0.5*(usm[0] + usm[1])/self.usim
         
     @property
     def isindependent(self):
@@ -385,12 +382,9 @@ class nummy(ummy):
         if value not in ['shortest','symmetric']:
             raise ValueError('cimethod ' + str(value) + ' is not recognized')
         self._cimethod = value
-        
-    @property
-    def p(self):
-        if self._fp is None:
-            return 0.68268949213708585
-        return self._fp()
+        if isinstance(self.distribution,Distribution):
+            self.distribution._ci = {}
+            self.distribution._cisym = {}
         
     @staticmethod
     def set_seed(seed):
@@ -564,7 +558,7 @@ class nummy(ummy):
         See the method `gummy.covariance(g)` for the corresponding result based
         on first order error propagation.
         """
-        return self._dist.covsim(g._dist)
+        return float(self._dist.covsim(g._dist))
         
     def correlation_sim(self,g):
         """

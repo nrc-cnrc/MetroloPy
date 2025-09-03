@@ -28,6 +28,10 @@ from metrolopy.tests.common import rand,make_gummy,make_number
 
 
 class TestOperations(unittest.TestCase):
+    """
+    Tests checking basic operations with `gummy` instances using random 
+    values.
+    """
     def binary_func(self,f,df,sim=False,exp=None,fionly=False,uexp=-6,allowazero=True,
                     allowbzero=True,allowlargeu=True):
         if sim:
@@ -104,6 +108,9 @@ class TestOperations(unittest.TestCase):
                 self.assertTrue(abs((g.correlation_sim(b)-g.correlation(b))/g.correlation(b)) < 0.1)
         
     def test_add(self,n=1000,sim=False):
+        """
+        Test gummy addition.
+        """
         def f(a,b):
             return a + b
         def df(ax,bx):
@@ -112,6 +119,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim)
             
     def test_sub(self,n=1000,sim=False):
+        """
+        Test gummy subtraction.
+        """
         def f(a,b):
             return a - b
         def df(ax,bx):
@@ -120,6 +130,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim)
             
     def test_mul(self,n=1000,sim=False):
+        """
+        Test gummy multiplication.
+        """
         def f(a,b):
             return a*b
         def df(ax,bx):
@@ -128,6 +141,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim)
             
     def test_div(self,n=1000,sim=False):
+        """
+        Test gummy division.
+        """
         def f(a,b):
             return a/b
         def df(ax,bx):
@@ -140,6 +156,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim,allowbzero=False,allowlargeu=lu)
             
     def test_pow(self,n=1000,sim=False):
+        """
+        Test gummy exponentiation.
+        """
         def f(a,b):
             return abs(a)**b
         def df(ax,bx):
@@ -153,6 +172,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim,exp=0,allowazero=False,allowlargeu=lu)
             
     def test_mod(self,n=1000,sim=False):
+        """
+        Test gummy mod.
+        """
         def f(a,b):
             return a%b
         def df(ax,bx):
@@ -161,6 +183,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim,fionly=True,allowazero=False)
         
     def test_abs(self,n=1000,sim=False):
+        """
+        Test gummy abs.
+        """
         def f(a,b):
             return abs(a)*abs(b)
         def df(ax,bx):
@@ -174,6 +199,9 @@ class TestOperations(unittest.TestCase):
                         allowbzero=lu)
             
     def test_neg(self,n=1000,sim=False):
+        """
+        Test gummy neg.
+        """
         def f(a,b):
             return (-a)*b
         def df(ax,bx):
@@ -182,6 +210,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim)
             
     def test_pos(self,n=1000,sim=False):
+        """
+        Test gummy pos.
+        """
         def f(a,b):
             return (+a)*b
         def df(ax,bx):
@@ -190,6 +221,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim)
             
     def test_sincos(self,n=1000,sim=False):
+        """
+        Test gummy metrolopy.sin + metrolopy.cos.
+        """
         def f(a,b):
             return uc.sin(a) + uc.cos(b)
         def df(ax,bx):
@@ -198,6 +232,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim)
             
     def test_npsincos(self,n=1000,sim=False):
+        """
+        Test gummy numpy.sin + numpy.cos.
+        """
         def f(a,b):
             return np.sin(a) + np.cos(b)
         def df(ax,bx):
@@ -206,6 +243,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim,fionly=True)
             
     def test_ap1sincos(self,n=1000,sim=False):
+        """
+        Test gummy.apply(numpy.sin) + gummy.apply(numpy.cos).
+        """
         def f(a,b):
             return uc.gummy.apply(np.sin,np.cos,a) + uc.gummy.napply(np.cos,b)
         def df(ax,bx):
@@ -214,6 +254,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim,fionly=True,exp=0,allowlargeu=False)
             
     def test_ap2sincos(self,n=1000,sim=False):
+        """
+        Test gummy.apply(numpy.sin + numpy.cos).
+        """
         def ff(a,b):
             return np.sin(a) + np.cos(b)
         def df(ax,bx):
@@ -225,6 +268,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim,fionly=True)
             
     def test_apnsincos(self,n=1000,sim=False):
+        """
+        Test gummy.napply(numpy.sin + numpy.cos).
+        """
         def ff(a,b):
             return np.sin(a) + np.cos(b)
         def df(ax,bx):
@@ -236,6 +282,9 @@ class TestOperations(unittest.TestCase):
             self.binary_func(f,df,sim=sim,fionly=True,exp=0,allowlargeu=False)
             
     def test_addxmul(self,n=1000):
+        """
+        Check that x+x+x+...+x == n*x for gummy values.
+        """
         def f(*x):
             r = x[0]
             for i in range(len(x)-1):
@@ -283,6 +332,9 @@ class TestOperations(unittest.TestCase):
                 self.assertTrue(abs(d.correlation(b) - 1) < 1e-14)
             
     def test_mulxpow(self,n=1000):
+        """
+        Check that x*x*x*...*x == x**n for gummy values.
+        """
         def f(*x):
             r = x[0]
             for i in range(len(x)-1):
@@ -336,6 +388,9 @@ class TestOperations(unittest.TestCase):
     
             
     def test_mulxnpow(self,n=1000):
+        """
+        Check that (1/x)*(1/x)*(1/x)*...*(1/x) == x**-n for gummy values.
+        """
         def f(*x):
             r = 1/x[0]
             for i in range(len(x)-1):

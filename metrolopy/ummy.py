@@ -627,7 +627,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         """
         Returns the variance-covariance matrix of a list or array of ummys.
         """
-        return [[b.covariance(a) if isinstance(b,ummy) else 0 for b in gummys] 
+        return [[float(b.covariance(a)) if isinstance(b,ummy) else 0 for b in gummys] 
                 for a in gummys]
         
     @classmethod
