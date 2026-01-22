@@ -2758,14 +2758,18 @@ class gummy(Quantity,metaclass=MetaGummy):
             x = self.x
             
         xd = _to_decimal(x,max_digits=self.max_digits)
-        with localcontext(prec=nsig + 2):
+        #with localcontext(prec=nsig + 2):
+        with localcontext() as ctx:
+            ctx.prec = nsig + 2
             ud = _to_decimal(u)*_to_decimal(self._k)
         
         elip = ''
         uexp = 0
         xexp = 0
         dp = 0
-        with localcontext(prec=self.max_digits):
+        #with localcontext(prec=self.max_digits):
+        with localcontext() as ctx:
+            ctx.prec = self.max_digits
             if ud == 0 or not ud.is_finite():
                 if style != 'xf':
                     style = 'x'
@@ -2870,7 +2874,9 @@ class gummy(Quantity,metaclass=MetaGummy):
                     style = 'pmi'
                 return tuple([style,xret] + uret)
 
-        with localcontext(prec=nsig + 2):
+        #with localcontext(prec=nsig + 2):
+        with localcontext() as ctx:
+            ctx.prec = nsig + 2
             if sim:
                 u = abs(_to_decimal(self.cisim[1] - self.cisim[0]))
             else:

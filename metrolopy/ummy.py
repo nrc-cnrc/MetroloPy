@@ -152,7 +152,9 @@ def _to_decimal(x,max_digits=None):
     elif isinstance(x,Rational):
         if max_digits is None:
             max_digits = ummy.max_digits
-        with localcontext(prec=max_digits):
+        #with localcontext(prec=max_digits):
+        with localcontext() as ctx:
+            ctx.prec = max_digits
             try:
                 xd = Decimal(x.numerator)/Decimal(x.denominator)
             except:
@@ -754,7 +756,9 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
             dp = 0
             xd = _to_decimal(self._x,max_digits=self.max_digits)
             ud = _to_decimal(self.u)
-            with localcontext(prec=self.max_digits):
+            #with localcontext(prec=self.max_digits):
+            with localcontext() as ctx:
+                ctx.prec = self.max_digits
                 if ud == 0 or not ud.is_finite():
                     if xd.is_finite():
                         nm = False
