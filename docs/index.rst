@@ -144,6 +144,7 @@ version history
 * Version 0.6.5 built 04 June 2025, bug fixes
 * Version 1.0.0 built 26 August 2025, improved dof calculations other fixes
 * Version 1.0.1 built 03 September 2025, bug fixes
+* Version 1.0.2 built 05 February 2026, fixed a bug that broke formatting for Python versions 3.10 and earier.
 
 
 author
