@@ -54,12 +54,10 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'metrolopy'
-copyright = '2020, National Research Council Canada'
+copyright = '2026, National Research Council Canada'
 author = 'Harold Parks'
 
-__version__ = None
-with open('../metrolopy/version.py') as f:
-    exec(f.read())
+__version__ = '1.0.3'
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
