@@ -26,12 +26,22 @@ Check that known bugs are fixed.
 import metrolopy as uc
 import numpy as np
 import unittest
+import sys
 
 
 class TestMisc(unittest.TestCase):
     """
     Miscellaneaus tests.
     """
+    
+    def test_print(self):
+        print('\n---')
+        print('python version',sys.version)
+        print(uc.gummy(1.2,3.4))
+        print(uc.gummy(1.2))
+        print(uc.gummy(1.2,3.4,unit='cm'))
+        print('---')
+        
     def test_reduce(self):
         a = uc.gummy(12.367,0.22,unit='mm/m')
         a.reduce_unit()

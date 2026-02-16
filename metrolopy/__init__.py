@@ -20,7 +20,8 @@
 # You should have received a copy of the GNU General Public License along with 
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
-from .version import __version__
+from importlib.metadata import version
+__version__ = version('metrolopy')
 
 from .gummy import gummy,jummy
 from .unit import Unit,Conversion,one,Quantity,QuantityArray,unit,MFraction
