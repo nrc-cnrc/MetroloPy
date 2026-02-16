@@ -26,6 +26,8 @@ Simple unit tests for the gummy module
 import metrolopy as uc
 import numpy as np
 import unittest
+import sys
+
 
 class TestGummy(unittest.TestCase):
     """
@@ -133,6 +135,7 @@ class TestGummy(unittest.TestCase):
         """
         Test gummy creation
         """
+
         g = uc.gummy(1.2,3.4)
         self.assertTrue(g.x == 1.2)
         self.assertTrue(g.u == 3.4)
