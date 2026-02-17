@@ -49,7 +49,3 @@ dev = ["sphinx>=4.0.0","jupyterlab>=2.0.0"]
 
 [build-backend]
 source-include = ["tests/**"]
-
-[build-system]
-requires = ["uv_build>=0.10.3,<0.11.0"]
-build-backend = "uv_build"
