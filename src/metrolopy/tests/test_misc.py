@@ -37,6 +37,7 @@ class TestMisc(unittest.TestCase):
     def test_print(self):
         print('\n---')
         print('python version',sys.version)
+        print('metrolopy version',uc.__version__)
         print(uc.gummy(1.2,3.4))
         print(uc.gummy(1.2))
         print(uc.gummy(1.2,3.4,unit='cm'))

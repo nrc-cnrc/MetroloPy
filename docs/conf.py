@@ -57,7 +57,8 @@ project = 'metrolopy'
 copyright = '2026, National Research Council Canada'
 author = 'Harold Parks'
 
-__version__ = '1.0.3'
+from importlib.metadata import version
+__version__ = version('metrolopy')
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
