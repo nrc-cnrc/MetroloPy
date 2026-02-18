@@ -4,6 +4,10 @@ tools for dealing with physical quantities:  uncertainty propagation and unit co
 
 ---
 
+
+MetroloPy requires Python 3.8 or later and depends on NumPy, SciPy, pandas, matplotlib and ipython.
+It looks best in a Jupyter Notebook.
+
 Install MetroloPy with `pip install metrolopy` or
 `conda install -c conda-forge metrolopy`.
 Alternatively, add it to your uv or pixi project.
@@ -38,9 +42,6 @@ See:
 * [the issues page on GitHub](https://github.com/nrc-cnrc/Metrolopy/issues)
 * [a list of the units built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/units.html)
 * [a list of the physical constants built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/constants.html)
-
-MetroloPy requires Python 3.8 or later and depends on NumPy, SciPy, Pandas and ipython.
-It looks best in a Jupyter Notebook.
 
 ## new in version 1.0.0
 
