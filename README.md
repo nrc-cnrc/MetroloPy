@@ -4,10 +4,8 @@ tools for dealing with physical quantities:  uncertainty propagation and unit co
 
 ---
 
-MetroloPy is a pure python package and requires Python 3.8 or later and the SciPy stack (NumPy, SciPy and Pandas).  It looks best in a Jupyter Notebook.
-
-Install MetroloPy with `pip install metrolopy`  or 
-`conda install -c conda-forge metrolopy`.
+Install MetroloPy with `pip install metrolopy`,
+`conda install -c conda-forge metrolopy` or add it to a uv or pixi project.
 
 Physical quantities can then be represented in Python as `gummy` objects with an uncertainty and (or) a unit:
 
@@ -28,13 +26,20 @@ Physical quantities can then be represented in Python as `gummy` objects with an
 25.0 kPa &plusmn; 8.5%
 </code></pre>
 
-MetroloPy can do much more including Monte-Carlo uncertainty propagation, generating uncertainty budget tables, and curve fitting.  It can also handle expanded uncertainties, degrees of freedom, correlated quantities, and complex valued quantities. See:
+MetroloPy can do much more including Monte-Carlo uncertainty propagation, generating uncertainty budget tables, and curve fitting.
+It can also handle expanded uncertainties, degrees of freedom, correlated quantities, and complex valued quantities. 
+Also gummys work with many numpy functions with no wrapping.
+
+See:
 
 * [a tutorial](https://nrc-cnrc.github.io/MetroloPy/_build/html/_static/tutorial.html) (or  <a href="https://nrc-cnrc.github.io/MetroloPy/_build/html/_downloads/tutorial.ipynb" download> download the tutorial as Jupyter notebook</a>)
 * [the documentation](https://nrc-cnrc.github.io/MetroloPy/_build/html/index.html)
 * [the issues page on GitHub](https://github.com/nrc-cnrc/Metrolopy/issues)
 * [a list of the units built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/units.html)
 * [a list of the physical constants built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/constants.html)
+
+MetroloPy requires Python 3.8 or later and depends on NumPy, SciPy, Pandas and ipython.
+It looks best in a Jupyter Notebook.
 
 ## new in version 1.0.0
 
