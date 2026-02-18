@@ -5,7 +5,8 @@ tools for dealing with physical quantities:  uncertainty propagation and unit co
 ---
 
 Install MetroloPy with `pip install metrolopy` or
-`conda install -c conda-forge metrolopy` or add it to a uv or pixi project.
+`conda install -c conda-forge metrolopy`.
+Alternatively, add it to your uv or pixi project.
 
 Physical quantities can then be represented in Python as `gummy` objects with an uncertainty and (or) a unit:
 
