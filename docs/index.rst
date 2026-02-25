@@ -146,6 +146,7 @@ version history
 * Version 1.0.1 built 03 September 2025, bug fixes
 * Version 1.0.2 built 05 February 2026, fixed a bug that broke formatting for Python versions 3.10 and earier.
 * Version 1.0.3 built 16 February 2026, updated dependency versions, added ipython as a required depenency.
+* Version 1.0.4 build 25 February 2026, fixed a bug that broke unit conversion for a few constants and units.
 
 
 author

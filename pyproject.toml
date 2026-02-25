@@ -1,6 +1,6 @@
 [project]
 name = "metrolopy"
-version = "1.0.4a"
+version = "1.0.4"
 description = "tools for dealing with physical quantities: uncertainty propagation and unit conversion"
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -45,7 +45,7 @@ Repository = "https://github.com/nrc-cnrc/MetroloPy"
 Issues = "https://github.com/nrc-cnrc/MetroloPy/issues"
 
 [dependency-groups]
-dev = ["sphinx>=4.0.0","jupyterlab>=2.0.0"]
+dev = ["sphinx>=7.0.0","jupyterlab>=2.0.0"]
 
 [build-backend]
 source-include = ["tests/**"]
