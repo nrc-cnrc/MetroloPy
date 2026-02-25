@@ -29,6 +29,7 @@ import numpy as np
 from warnings import warn
 from .gummy import gummy
 from .ummy import ummy,_getfinfo,_iinfo
+from .nummy import nummy
 from .unit import MFraction
 
 
@@ -38,12 +39,12 @@ def _rounding_u(x):
             fi,_ = _getfinfo(x)
             if fi is _iinfo:
                 raise ValueError()
-            return ummy(x,x*fi.rel_u)
+            return nummy(x,x*fi.rel_u)
         except:
             warn('numpy.finfo cannot get the floating point accuracy for float64 math constants')
-            return ummy(x)
+            return nummy(x)
     else:
-        return ummy(x)
+        return nummy(x)
     
 pi = _rounding_u(np.pi)
 euler = _rounding_u(np.e)
@@ -149,7 +150,7 @@ RK = h/e**2
 KJ90 = MFraction('483597.9e9') # Josephson constant Hz/V, 1990 conventional value
 RK90 = MFraction('25812.807') # Von Klitzing constant in ohm, 1990 conventional value
     
-G = ummy(6.67430e-11,0.00015e-11) # gravitational constant in m**3/kg s**2, CODATA 2022
+G = nummy(6.67430e-11,0.00015e-11) # gravitational constant in m**3/kg s**2, CODATA 2022
 
 dalton = 2*ryd*h/(are*c*alph**2)
 me = 2*ryd*h/(c*alph**2) #electron mass in kg
@@ -160,8 +161,8 @@ mp = mpsme*me # in kg
 
 
 # constants from IAU 2009:
-earth_mass = ummy(3.986004418e14,8e5)/G # in kg
-solar_mass = ummy(1.32712442099e20,1e10)/G # in kg
-jupiter_mass = solar_mass/ummy(1.047348644e3,1.7e-5) # in kg
+earth_mass = nummy(3.986004418e14,8e5)/G # in kg
+solar_mass = nummy(1.32712442099e20,1e10)/G # in kg
+jupiter_mass = solar_mass/nummy(1.047348644e3,1.7e-5) # in kg
 
 hbar = h/(2*pi)

@@ -1023,7 +1023,11 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
             elif abs(c) < ummy.correlation_tolerance:
                 del ref[k]
         
-        return type(b)(x,u=u,dof=ref)
+        if issubclass(type(self),type(b)):
+            t = type(self)
+        else:
+            t = type(b)
+        return t(x,u=u,dof=ref)
                 
     def __add__(self,b):
         if isinstance(b,np.ndarray):

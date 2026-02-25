@@ -4,7 +4,6 @@ tools for dealing with physical quantities:  uncertainty propagation and unit co
 
 ---
 
-
 MetroloPy requires Python 3.8 or later and depends on NumPy, SciPy, pandas, matplotlib and ipython.
 It looks best in a Jupyter Notebook.
 
