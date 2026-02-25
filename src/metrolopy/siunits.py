@@ -28,7 +28,7 @@ The most of the units here are from the SI Brochure, 9th edition.
 """
 
 from numpy import pi
-from .ummy import ummy
+from .nummy import nummy
 from .unit import Conversion,Unit,MFraction
 from .prefixedunit import PrefixedUnit
 from .offsetunit import OffsetUnit,OffsetConversion
@@ -69,7 +69,7 @@ with Unit._builtin():
                       base_description='SI base unit of luminosity')
     
     _ipk = Unit('international prototype kilogram','m(K)',
-                Conversion(_kg,ummy(1,1.2e-8)),add_symbol=True,
+                Conversion(_kg,nummy(1,1.2e-8)),add_symbol=True,
                 html_symbol='<i>m</i>(&#x1d4a6;)',latex_symbol='m({\\mathcal {K}})',
                 description='IPK, le grand k')
     Unit.alias('IPK',_ipk)
