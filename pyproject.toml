@@ -1,11 +1,9 @@
 [project]
 name = "metrolopy"
-version = "1.0.4"
+version = "1.1.0a"
 description = "tools for dealing with physical quantities: uncertainty propagation and unit conversion"
 classifiers = [
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -26,13 +24,14 @@ classifiers = [
 authors = [{ name = "Harold Parks", email = "harold.parks@nrc-cnrc.gc.ca" }]
 maintainers = [{ name = "Harold Parks", email = "harold.parks@nrc-cnrc.gc.ca" }]
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
 	"ipython>=7.9.0",
     "matplotlib>=3.1.2",
     "numpy>=1.17.3",
     "pandas>=0.25.2",
     "scipy>=1.3.2",
+	"odrpack>=0.5.0",
 ]
 license = "GPL-3.0-only"
 license-files = ["LICENSE","CITATION.cff"]
@@ -51,5 +50,5 @@ dev = ["sphinx>=7.0.0","jupyterlab>=2.0.0"]
 source-include = ["tests/**"]
 
 [build-system]
-requires = ["uv_build>=0.10.3,<0.11.0"]
+requires = ["uv_build>=0.10.0,<0.12.0"]
 build-backend = "uv_build"

@@ -2,7 +2,7 @@
 
 # module distributions
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2026 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -26,7 +26,6 @@ calculations.
 """
 
 from .exceptions import NoSimulatedDataError
-#from .unit import Unit
 import numpy as np
 
 
@@ -39,8 +38,8 @@ class Distribution:
         
     random(n=None):  Return a numpy array of n values drawn from the distribution.
         If `n` is `None` then a single scalar value should be returned.  Preferably
-        use, as a random number generator, the `numpy.RandomState` object accessed
-        with the `Distribution.random_state` static method.
+        use, as a random number generator, the `numpy.random.Generator` object
+        accessed with the `Distribution.random_rng` static method.
         
     x():  A scalar "center" of the distribution.  This is used to get the `x` value
         of a gummy defined with the distribution.
@@ -64,7 +63,7 @@ class Distribution:
     ...        self.dof = dof
     ...
     ...    def random(self,n=None):
-    ...        return Distribution.random_state().chisquare(self.dof,n)
+    ...        return Distribution.random_rng().chisquare(self.dof,n)
     ...
     ...    def x(self):
     ...        return self.dof
@@ -74,6 +73,7 @@ class Distribution:
     
     """
     _random_state = None
+    _random_rng = None
     simdata = None
     
     utype = None
@@ -90,19 +90,34 @@ class Distribution:
     @staticmethod
     def random_state():
         """
-        Returns the `numpy.random.RandomState` object shared by all distributions.
+        Returns a legacy `numpy.random.RandomState` instance that may be
+        used as a random number generator by derived classes.  Use of the newer
+        `numpy.random.Generator` class is now preferred.  An instance of the
+        `numpy.random.Generator` class shared by all distributions is returned 
+        with the `Distribution.random_rng` static method.
         """
         if Distribution._random_state is None:
             Distribution._random_state = np.random.RandomState()
         return Distribution._random_state
+        
+    @staticmethod
+    def random_rng():
+        """
+        Returns the `numpy.random.Generator` object shared by all
+        distributions.
+        """
+        if Distribution._random_rng is None:
+            Distribution._random_rng = np.random.default_rng()
+        return Distribution._random_rng
     
     @staticmethod
     def set_seed(seed):
         """
-        Sets the seed of the `numpy.random.RandomState` object shared by all
-        distributions.
+        Reinitalized the `numpy.random.Generator` object shared by all
+        distributions with `seed`.
         """
-        Distribution.random_state().seed(seed)
+        Distribution._random_rng = np.random.default_rng(seed=seed)
+        Distribution._random_state = np.random.RandomState(seed=seed)
     
     @staticmethod
     def apply(f,*d):
@@ -696,8 +711,8 @@ class MultivariateDistribution:
         MultivariateDistribution and define the following methods:
 
         _simulate(n):  Return a numpy array of n samples drawn from the distribution. 
-            Preferably use, as a random number generator, the numpy RandomState 
-            object accessed with the Distribution.random_state() static method.
+            Preferably use, as a random number generator, the numpy.random.Generator 
+            object accessed with the Distribution.random_rng() static method.
                 
         x():  a list or array with the "center" of the distribution for each 
             dimension.  This is used to get the x value of a gummys defined with 
@@ -733,7 +748,7 @@ class MultivariateDistribution:
                         super().__init__(len(alpha))
 
                     def _simulate(self,n):
-                        self.simdata = Distribution.random_state().dirichlet(self.alpha,n).T
+                        self.simdata = Distribution.random_rng().dirichlet(self.alpha,n).T
 
                     def x(self):
                         return self._x
@@ -826,7 +841,7 @@ class NormalDist(Distribution):
                 return self._x
             else:
                 return np.full(n,self._x)
-        return Distribution.random_state().normal(self._x,self._u,n)
+        return Distribution.random_rng().normal(self._x,self._u,n)
         
     def x(self):
         return self._x
@@ -855,7 +870,7 @@ class TDist(Distribution):
                 return self._x
             else:
                 return np.full(n,self._x)
-        return self._x + self._s*Distribution.random_state().standard_t(self.dof,n)
+        return self._x + self._s*Distribution.random_rng().standard_t(self.dof,n)
         
     def x(self):
         return self._x
@@ -878,7 +893,7 @@ class MultiNormalDist(MultivariateDistribution):
         super().__init__(nd)
             
     def _simulate(self,n):
-        self.simdata = Distribution.random_state().multivariate_normal(self.mean,self.cov,n).T
+        self.simdata = Distribution.random_rng().multivariate_normal(self.mean,self.cov,n).T
         
     def x(self):
         return self.mean
@@ -991,7 +1006,7 @@ class UniformDist(Distribution):
         self._u = self.half_width/np.sqrt(3)
     
     def random(self,n=None):
-        return Distribution.random_state().uniform(self.lower_limit,self.upper_limit,n)
+        return Distribution.random_rng().uniform(self.lower_limit,self.upper_limit,n)
     
     def x(self):
         return self.center
@@ -1012,7 +1027,7 @@ class GammaDist(Distribution):
         self.scale = scale
         
     def random(self,n=None):
-        return Distribution.random_state().gamma(self.shape,self.scale,n)
+        return Distribution.random_rng().gamma(self.shape,self.scale,n)
         
     def x(self):
         return self.shape*self.scale
@@ -1031,7 +1046,7 @@ class LaplaceDist(Distribution):
         self.scale = scale
         
     def random(self,n=None):
-        return Distribution.random_state().laplace(self.x(),self.scale,n)
+        return Distribution.random_rng().laplace(self.x(),self.scale,n)
         
     def x(self):
         return self._x
@@ -1093,7 +1108,7 @@ class TriangularDist(Distribution):
                 self.upper_limit = upper_limit
             
     def random(self,n=None):
-        return Distribution.random_state().triangular(self.lower_limit,self.mode,self.upper_limit,n)
+        return Distribution.random_rng().triangular(self.lower_limit,self.mode,self.upper_limit,n)
         
     def x(self):
         return self.mode
@@ -1124,7 +1139,7 @@ class ExponentialDist(Distribution):
             self.scale = 1/rate
             
     def random(self,n=None):
-        return Distribution.random_state().exponential(self.scale,n)
+        return Distribution.random_rng().exponential(self.scale,n)
         
     def x(self):
         return self.scale
@@ -1144,7 +1159,7 @@ class PoissonDist(Distribution):
         self.lam = lam
             
     def random(self,n=None):
-        return Distribution.random_state().poisson(self.lam,n)
+        return Distribution.random_rng().poisson(self.lam,n)
         
     def x(self):
         return self.lam
@@ -1170,7 +1185,7 @@ class BinomialDist(Distribution):
         self.p = p
             
     def random(self,n=None):
-        return Distribution.random_state().binomial(self.n,self.p,n)
+        return Distribution.random_rng().binomial(self.n,self.p,n)
         
     def x(self):
         return self.n*self.p
@@ -1232,8 +1247,8 @@ class CurvlinearTrapDist(Distribution):
             raise ValueError('two and only two of the parameters may be specified')
     
     def random(self,n=None):
-        r1 = Distribution.random_state().uniform(0,1,n)
-        r2 = Distribution.random_state().uniform(0,1,n)
+        r1 = Distribution.random_rng().uniform(0,1,n)
+        r2 = Distribution.random_rng().uniform(0,1,n)
         sa = (self.lower_limt - self.limit_half_range) + 2*self.limit_half_range*r1
         sb = (self.lower_limit + self.upper_limit) - sa
         return sa+(sb - sa)*r2
@@ -1257,8 +1272,8 @@ class TrapezoidalDist(Distribution):
         self.upper_limit = upper_limit
         
     def random(self,n=None):
-        r1 = Distribution.random_state().uniform(0,1,n)
-        r2 = Distribution.random_state().uniform(0,1,n)
+        r1 = Distribution.random_rng().uniform(0,1,n)
+        r2 = Distribution.random_rng().uniform(0,1,n)
         return (self.lower_limit + ((self.upper_limit - self.lower_limit)/2)*
                 ((1+self.top_to_base_ratio)*r1 + (1-self.top_to_base_ratio)*r2))
     
@@ -1314,7 +1329,7 @@ class ArcSinDist(Distribution):
             
     def random(self,n=None):
         return (self.center + 
-            self.half_width*np.sin(2*np.pi*Distribution.random_state().uniform(0,1,n)))
+            self.half_width*np.sin(2*np.pi*Distribution.random_rng().uniform(0,1,n)))
             
     def x(self):
         return self.center
@@ -1332,7 +1347,7 @@ class LogNormalDist(Distribution):
         self.sigma = sigma
             
     def random(self,n=None):
-        return Distribution.random_state().lognormal(self.mu,self.sigma,n)
+        return Distribution.random_rng().lognormal(self.mu,self.sigma,n)
         
     def x(self):
         return np.exp(self.mu)
@@ -1355,7 +1370,7 @@ class WeibullDist(Distribution):
         self.scale = scale
             
     def random(self,n=None):
-        return self.scale*Distribution.random_state().weibull(self.shape,n)
+        return self.scale*Distribution.random_rng().weibull(self.shape,n)
         
     def x(self):
         return self.scale*self._gamma(1 + 1/self.shape)

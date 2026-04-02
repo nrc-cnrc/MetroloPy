@@ -4,7 +4,7 @@ tools for dealing with physical quantities:  uncertainty propagation and unit co
 
 ---
 
-MetroloPy requires Python 3.8 or later and depends on NumPy, SciPy, pandas, matplotlib and ipython.
+MetroloPy requires Python 3.10 or later and depends on NumPy, SciPy, pandas, matplotlib and ipython.
 It looks best in a Jupyter Notebook.
 
 Install MetroloPy with `pip install metrolopy` or
@@ -42,6 +42,22 @@ See:
 * [a list of the units built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/units.html)
 * [a list of the physical constants built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/constants.html)
 
+## new in version 1.1.0
+
+* Replaced the legacy `numpy.random.RandomState` random number generator with the
+  newer `numpy.random.Generator` for Monte-Carlo uncertainty propagation.
+  
+* Replaced the `scipy.optimize.leastsq` function with the newer 
+  `scipy.optimize.least_squares` function as the solver for nonlinear least squares 
+  fitting.
+  
+* Replaced the depreciated `scipy.odr` package with odrpack for orthogonal distance
+  regression fitting.
+  
+* Added gummy class properties to control the separator between the groups of three 
+  digits when displaying long numbers.
+
+
 ## new in version 1.0.0
 
 * The calculation of effective degrees of freedom has been improved. In
@@ -49,7 +65,7 @@ See:
   were calculated at each step based on the degrees of freedom calculated for the 
   previous step (using a modified Welch-Satterthwaite approximation).  Now 
   effective degrees of freedom are always calculated directly from the independent 
-  variables using the Welch-Satterthwaite equation.
+  variables using the standard Welch-Satterthwaite approximation.
 
 * CODATA 2022 values instead of 2018 values are used in the Constants module.
 

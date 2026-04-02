@@ -31,7 +31,7 @@ module.  The gummy object, in turn, inherits from the nummy object.
 """
 
 import numpy as np
-from .ummy import ummy,immy,_isscalar,_format_exp,_to_decimal,_decimal_str
+from .ummy import ummy,immy,_isscalar,_format_exp,_to_decimal,MantissaFormatter
 from .nummy import nummy,get_name
 from .exceptions import IncompatibleUnitsError
 from .unit import Unit,one,Quantity,MetaQuantity,MFraction
@@ -272,33 +272,62 @@ class MetaGummy(MetaQuantity):
         gummy._style = gummy._get_style(value)
         
     @property
-    def cmp_k(cls):
+    def use_th_separator(cls):
         """
-        Get or set the coverage factor for comparisons between gummys.
-        Setting this property sets the `cmp_p` property to `None`.
+        `bool`, wether or not to put a separator between groups of three digits
+        in the mantissa of a value.  The default separator is a space, but can
+        be set globally with the `gummy.th_separator`, `html_separator
         """
-        return gummy._cmp_k
-    @cmp_k.setter
-    def cmp_k(cls,v):
-        if v <= 0:
-            raise ValueError('cmp_k <= 0')
-        gummy._cmp_k = v
-        gummy._cmp_p = None
+        return MantissaFormatter.use_th_sepaerator
+    @use_th_separator.setter
+    def use_th_separator(cls,v):
+        MantissaFormatter.use_th_separator = bool(v)
         
-    # The default level of confidence for new ummies
     @property
-    def cmp_p(cls):
+    def th_separator(cls):
         """
-        Get or set the probability level to use when comparing gummys.
-        Setting this property sets the `cmp_k` property to `None`.
+        `str`, Get or set the separator used to group digits in the matissa for
+        unicode and ascii output.  The default is a space.  See also the 
+        `gummy.html_th_separator` and the `gummy.latex_th_separator` properties.
         """
-        return gummy._cmp_p
-    @cmp_p.setter
-    def cmp_p(cls,v):
-        if v <= 0 or v >= 1:
-            raise ValueError('cmp_p is not in the interval (0,1)')
-        gummy._cmp_p = v
-        gummy._cmp_k = None
+        return MantissaFormatter.th_separator
+    @th_separator.setter
+    def th_separator(cls,v):
+        MantissaFormatter.th_separator = v
+        
+    @property
+    def html_th_separator(cls):
+        """
+        `str`, Get or set the separator used to group digits in the matissa for
+        html output.  The default is "&thinsp;". See also the 
+        `gummy.latex_th_separator` and the `gummy.th_separator` properties.
+        """
+        return MantissaFormatter.html_th_separator
+    @html_th_separator.setter
+    def html_th_separator(cls,v):
+        MantissaFormatter.html_th_separator = v
+        
+    @property
+    def latex_th_separator(cls):
+        """
+        `str`, Get or set the separator used to group digits in the matissa for
+        latex output.  The default is "\\," See also the 
+        `gummy.html_th_separator` and the `gummy.th_separator` properties.
+        """
+        return MantissaFormatter.latex_th_separator
+    @latex_th_separator.setter
+    def latex_th_separator(cls,v):
+        MantissaFormatter.latex_th_separator = v
+        
+    @property
+    def decimal_separator(cls):
+        """
+        `str`, Get or set the decimal separator.  The default is "."
+        """
+        return MantissaFormatter.decimal_separator
+    @decimal_separator.setter
+    def decimal_separator(cls,v):
+        MantissaFormatter.decimal_sepaerator = v
         
     @property
     def p_method(cls):
@@ -540,8 +569,6 @@ class gummy(Quantity,metaclass=MetaGummy):
     
     slashaxis = True
                     
-    _cmp_k = None
-    _cmp_p = 0.95
     _ubreakdown = None
     _p_method = _Pmthd('loc')
     _Ubr = None
@@ -1249,8 +1276,8 @@ class gummy(Quantity,metaclass=MetaGummy):
         Returns the correlation matrix of a list or array of gummys.
         """
         m = [g.value if isinstance(g,Quantity) else g for g in gummys]
-        return [[b.correlation(a) if isinstance(b,ummy) else 0 
-                for b in m] for a in m]
+        return np.array([[b.correlation(a) if isinstance(b,ummy) else 0 
+                          for b in m] for a in m])
         
     @staticmethod
     def covariance_matrix(gummys):
@@ -1258,8 +1285,8 @@ class gummy(Quantity,metaclass=MetaGummy):
         Returns the variance-covariance matrix of a list or array of gummys.
         """
         m = [g.value if isinstance(g,Quantity) else g for g in gummys]
-        return [[b.covariance(a) if isinstance(b,ummy) else 0 
-                for b in m] for a in m]
+        return np.array([[b.covariance(a) if isinstance(b,ummy) else 0 
+                          for b in m] for a in m])
     
     def correlation_sim(self,gummy):
         """
@@ -1296,8 +1323,8 @@ class gummy(Quantity,metaclass=MetaGummy):
         result based on first order error propagation.
         """
         m = [g.value if isinstance(g,Quantity) else g for g in gummys]
-        return [[b.correlation_sim(a) if isinstance(b,nummy) else 0 
-                for b in m] for a in m]
+        return np.array([[b.correlation_sim(a) if isinstance(b,nummy) else 0 
+                          for b in m] for a in m])
     
     @staticmethod
     def covariance_matrix_sim(gummys):
@@ -1310,8 +1337,8 @@ class gummy(Quantity,metaclass=MetaGummy):
         result based on first order error propagation.
         """
         m = [g.value if isinstance(g,Quantity) else g for g in gummys]
-        return [[b.covariance_sim(a) if isinstance(b,nummy) else 0 
-                for b in m] for a in m]
+        return np.array([[b.covariance_sim(a) if isinstance(b,nummy) else 0 
+                          for b in m] for a in m])
     
     @property
     def finfo(self):
@@ -1539,7 +1566,7 @@ class gummy(Quantity,metaclass=MetaGummy):
             return 'cisim'
         if text == 'mcisim' or text == 'meanconfidenceintervalsim' or text == 'simmci' or text == 'simmeanconfidenceinterval':
             return 'mcisim'
-        if text in ['usim','ufsim','xsim','xfsim','xf','uf','xunit','uunit']:
+        if text in ['usim','ufsim','xsim','xfsim','xf','uf','xunit','uunit','1x']:
             return text
         raise ValueError('style ' + str(text) + ' is not recognized')
         
@@ -2388,6 +2415,15 @@ class gummy(Quantity,metaclass=MetaGummy):
                     fmt = 'ascii'
                 else:
                     fmt = 'unicode'
+            elif style is None:
+                if fmt.strip().lower() not in {'latex','html','unicode','ascii',''}:
+                    fmt = fmt.split(',')
+                    if len(fmt) > 1:
+                        style = fmt[1].strip()
+                        fmt = fmt[0].strip()
+                    else:
+                        style = fmt[0].strip()
+                        fmt = None
                     
             if norm is None:
                 norm = type(self).latex_norm
@@ -2412,6 +2448,10 @@ class gummy(Quantity,metaclass=MetaGummy):
                 
             if style is not None:
                 style = gummy._get_style(style)
+                
+            if style == '1x':
+                nsig = 1
+                style = 'x'
             
             if self.x is np.ma.masked:
                 return '--'        
@@ -2848,9 +2888,9 @@ class gummy(Quantity,metaclass=MetaGummy):
             xexp = 0
             
         if xexp == 0:
-            fstr =_decimal_str(xd,dalign=0,fmt=fmt)
+            fstr = MantissaFormatter.decimal_str(xd,dalign=0,fmt=fmt)
         else:
-            fstr = _decimal_str(xd,dplace=dp,fmt=fmt)
+            fstr = MantissaFormatter.decimal_str(xd,dplace=dp,fmt=fmt)
             
         xret = (fstr + elip,_format_exp(fmt,xexp),xsym)
                     
@@ -2912,11 +2952,11 @@ class gummy(Quantity,metaclass=MetaGummy):
         uret = []
         if style == 'concise':
             for ue in ub:
-                utxt = _decimal_str(ue,dplace=None,fmt=fmt)
+                utxt = MantissaFormatter.decimal_str(ue,dplace=None,fmt=fmt)
                 uret.append((utxt,'',xsym))
         elif style == 'pm':
             for ue in ub:
-                utxt = _decimal_str(ue,fmt=fmt,dalign=xexp)
+                utxt = MantissaFormatter.decimal_str(ue,fmt=fmt,dalign=xexp)
                 uret.append((utxt,_format_exp(fmt,ue),xsym))
         else:
             if style == 'pmsim' or u == 0 or not u.is_finite():
@@ -2940,18 +2980,18 @@ class gummy(Quantity,metaclass=MetaGummy):
             if style in ['ueq','pmi']:
                 if uexp == 0:
                     for ue in ub:
-                        utxt = _decimal_str(ue,fmt=fmt,dalign=0)
+                        utxt = MantissaFormatter.decimal_str(ue,fmt=fmt,dalign=0)
                         uret.append((utxt,_format_exp(fmt,uexp),xsym))
                 else:
                     for ue in ub:
-                        utxt = _decimal_str(ue,fmt=fmt,dalign=uexp)
+                        utxt = MantissaFormatter.decimal_str(ue,fmt=fmt,dalign=uexp)
                         uret.append((utxt,_format_exp(fmt,uexp),xsym))
             elif style in ['pmsim','pmsimi']:
                 u0 = _to_decimal(self.Usim[0]).quantize(u)
                 u1 = _to_decimal(self.Usim[1]).quantize(u)
                 if uexp == 0:
-                    utxt0 = _decimal_str(u0,fmt=fmt,dalign=0)
-                    utxt1 = _decimal_str(u1,fmt=fmt,dalign=0)
+                    utxt0 = MantissaFormatter.decimal_str(u0,fmt=fmt,dalign=0)
+                    utxt1 = MantissaFormatter.decimal_str(u1,fmt=fmt,dalign=0)
                     if utxt0 == utxt1:
                         if style == 'pmsim':
                             style = 'pm'
@@ -2962,8 +3002,8 @@ class gummy(Quantity,metaclass=MetaGummy):
                         uret.append((utxt0,'',xsym))
                         uret.append((utxt1,'',xsym))
                 else:
-                    utxt0 = _decimal_str(u0,fmt=fmt,dalign=uexp)
-                    utxt1 = _decimal_str(u1,fmt=fmt,dalign=uexp)
+                    utxt0 = MantissaFormatter.decimal_str(u0,fmt=fmt,dalign=uexp)
+                    utxt1 = MantissaFormatter.decimal_str(u1,fmt=fmt,dalign=uexp)
                     uetxt = _format_exp(fmt,uexp)
                     if utxt0 == utxt1:
                         if style == 'pmsim':
@@ -2993,11 +3033,11 @@ class gummy(Quantity,metaclass=MetaGummy):
                     if cin == 0 and xnexp > nsig-1:
                         scin = True
                     if scin:
-                        cin = _decimal_str(cin,fmt=fmt,dplace=dp)
+                        cin = MantissaFormatter.decimal_str(cin,fmt=fmt,dplace=dp)
                         xentxt = _format_exp(fmt,xnexp)
                         uret.append((cin,xentxt,xsym))                 
                     else:
-                        uret.append(( _decimal_str(cin,fmt=fmt,dalign=0),'',xsym))
+                        uret.append(( MantissaFormatter.decimal_str(cin,fmt=fmt,dalign=0),'',xsym))
                     
         return tuple([style,xret]+uret)
         

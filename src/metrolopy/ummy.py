@@ -172,78 +172,89 @@ def _to_decimal(x,max_digits=None):
                 xd = Decimal(float(x))
     return xd
 
-def _decimal_str(x,fmt='unicode',rtrim=False,dplace=0,dalign=None,th_spaces=True):
-    # string formats a Decimal number, putting digits in groups of three
-    # separated by spaces if necessary
+class MantissaFormatter:
+    use_th_separator = True
+    th_separator = ' '
+    html_th_separator = '&thinsp;'
+    latex_th_separator = r'\,'
+    decimal_separator = '.'
     
-    if x.is_nan():
-        return 'nan'
-    if x.is_infinite() and x > 0:
-        if fmt == 'html':
-            return '&infin;'
-        if fmt == 'latex':
-            return r'\infty'
-        if fmt == 'ascii':
-            return 'inf'
-        return '\u221E'
-    if x.is_infinite() and x < 0:
-        if fmt == 'html':
-            return '-&infin;'
-        if fmt == 'latex':
-            return r'-\infty'
-        if fmt == 'ascii':
-            return '-inf'
-        return '-\u221E'
-    
-    s,d,e = x.as_tuple()
-    
-    if dalign is not None:
-        dplace = len(d) + e - 1 - dalign
+    @staticmethod
+    def decimal_str(x,fmt='unicode',rtrim=False,dplace=0,dalign=None,th_spaces=None):
+        # string formats a Decimal number, putting digits in groups of three
+        # separated by spaces if necessary
         
-    if rtrim:
-        if dplace is not None and dplace > 0:
-            dp = dplace
-        else:
-            dp = 0
+        if x.is_nan():
+            return 'nan'
+        if x.is_infinite() and x > 0:
+            if fmt == 'html':
+                return '&infin;'
+            if fmt == 'latex':
+                return r'\infty'
+            if fmt == 'ascii':
+                return 'inf'
+            return '\u221E'
+        if x.is_infinite() and x < 0:
+            if fmt == 'html':
+                return '-&infin;'
+            if fmt == 'latex':
+                return r'-\infty'
+            if fmt == 'ascii':
+                return '-inf'
+            return '-\u221E'
+        
+        s,d,e = x.as_tuple()
+        
+        if dalign is not None:
+            dplace = len(d) + e - 1 - dalign
             
-        i = len(d)
-        while i > dp + 1 and d[i-1] == 0:
-            i -= 1
-        if i != len(d):
-            d = d[:i]
+        if rtrim:
+            if dplace is not None and dplace > 0:
+                dp = dplace
+            else:
+                dp = 0
+                
+            i = len(d)
+            while i > dp + 1 and d[i-1] == 0:
+                i -= 1
+            if i != len(d):
+                d = d[:i]
+                
+        if th_spaces is None:
+            th_spaces = MantissaFormatter.use_th_separator
             
-    if dplace is None:
-        th_spaces = False
-    else:
-        th_spaces &= (dplace > 3 or len(d) - dplace > 5)
-        if dplace < 0:
-            d = (0,)*(-dplace) + d
-            dplace = 0
-        elif x != 0 and dplace > len(d) - 1:
-            d = d + (0,)*(dplace - len(d) + 1)
-        
-    if th_spaces:
-        if fmt == 'html':
-            sp = '&thinsp;'
-        elif fmt == 'latex':
-            sp = r'\,'
+        if dplace is None:
+            th_spaces = False
         else:
-            sp = ' '
+            th_spaces &= (dplace > 3 or len(d) - dplace > 5)
+            if dplace < 0:
+                d = (0,)*(-dplace) + d
+                dplace = 0
+            elif x != 0 and dplace > len(d) - 1:
+                d = d + (0,)*(dplace - len(d) + 1)
+            
+        if th_spaces:
+            if fmt == 'html':
+                sp = MantissaFormatter.html_th_separator
+            elif fmt == 'latex':
+                sp = MantissaFormatter.latex_th_separator
+            else:
+                sp = MantissaFormatter.th_separator
+            
+        if s and x != 0:
+            txt = '-'
+        else:
+            txt = ''
         
-    if s and x != 0:
-        txt = '-'
-    else:
-        txt = ''
-    
-    for i in range(len(d)):
-        if i > 0 and dplace is not None:
-            if i == dplace + 1:
-                txt += '.'
-            elif th_spaces and (i - dplace - 1) % 3 == 0:
-                txt += sp
-        txt += chr(48 + d[i])
-    
-    return txt
+        for i in range(len(d)):
+            if i > 0 and dplace is not None:
+                if i == dplace + 1:
+                    txt += MantissaFormatter.decimal_separator
+                elif th_spaces and (i - dplace - 1) % 3 == 0:
+                    txt += sp
+            txt += chr(48 + d[i])
+        
+        return txt
                 
 def _xtype(x):
     # this is used when type conversions are needed, e.g. to convert float 
@@ -335,6 +346,10 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
     # zero and correlations samaller than -1 + correlation_tolerance or
     # bigger than 1 - correlation_tolerance are rounded to -1 or 1 respectively.
     correlation_tolerance = 1e-14
+    
+    exception_on_fmt_error = False  # if False, an exception while trying to 
+                                    # print the will cause _ret_something() to 
+                                    # be called.  Can be set to True for debugging
     
     def __init__(self,x,u=0,dof=float('inf'),utype=None):
         if isinstance(x,Quantity):
@@ -811,21 +826,23 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
                 xexp = 0
                 
             if xexp == 0:
-                txt =_decimal_str(xd,dalign=0,fmt=fmt)
+                txt =MantissaFormatter.decimal_str(xd,dalign=0,fmt=fmt)
             else:
-                txt = _decimal_str(xd,dplace=dp,fmt=fmt)
+                txt = MantissaFormatter.decimal_str(xd,dplace=dp,fmt=fmt)
                 
             if xd.is_finite():
                 if ud != 0:
-                    txt += '(' + _decimal_str(ud,dplace=None,fmt=fmt) + ')'
+                    txt += '(' + MantissaFormatter.decimal_str(ud,dplace=None,fmt=fmt) + ')'
                 txt += _format_exp(fmt,xexp)
             else:
                 if ud != 0:
-                    txt += '(' + _decimal_str(ud,dplace=None,fmt=fmt)
+                    txt += '(' + MantissaFormatter.decimal_str(ud,dplace=None,fmt=fmt)
                     txt += _format_exp(fmt,xexp) + ')'
             return txt
        
         except:
+            if self.exception_on_fmt_error:
+                raise
             try:
                 return(str(self.x) + '{' + str(self.u) + '}' + '??')
             except:
