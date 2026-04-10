@@ -24,8 +24,8 @@
 This module defines some classes to facilitate curve fitting.
 """
 
-from .ummy import ummy,_der
-from .gummy import gummy,_isscalar
+from .ummy import ummy,_der,_isscalar
+from .gummy import gummy
 from .exceptions import FitWarning
 from .unit import Unit,one
 from .printing import PrettyPrinter
@@ -512,6 +512,24 @@ class Fit(_Fit,PrettyPrinter):
         p0: array_like of `float`
             The initial values for the fit parameters.  This parameter is required
             unless the get_p0 method is overridden in a subclass.
+        jac: function, optional
+            The jacobian of the fit function.  
+            
+            If provided jac  must have the same signature as the f method and 
+            return a list (or array) of derivatives of the form:
+            
+            [df/dx1,df/dx2,...,df/dp1,df/dp2,...] 
+        
+            if f returns a scalar or:
+        
+            [[df1/dx1,df1/dx2,...,df1/dp1,df1/dp2,...],
+            [df2/dx1,df2/dx2,...,df2/dp1,df2/dp2,...],...]
+        
+            if f returns a 1-d array [f1,f2,...].
+            
+            Instead of passing the jacobian as a parameter, the jac method may 
+            be overridden is a subclass.  If no jacobian is available it will 
+            be calculated numerically.
         ux: `float`, array_like of `float`  or `None`, optional
             Uncertainty in the `x` values. This should not be specified if the `x`
             argument contains gummys.  If this is specified then only the odr
@@ -631,6 +649,40 @@ class Fit(_Fit,PrettyPrinter):
             [df2/dx1,df2/dx2,...,df2/dp1,df2/dp2,...],...]
         
             if f returns a 1-d array [f1,f2,...].
+            
+        jacp(self,x1,x2,...,xk,p1,p2,...,pk):
+            The Jacobian of the fit function with respect to the fit parameters.
+            
+            If the jac method (above) is not defined a `NotImplementedError` 
+            may be raised.
+            
+            It has the signature:
+                
+            [df/dp1,df/dp2,...] 
+            
+            if f returns a scalar or:
+            
+            [[df1/dp1,df1/dp2,...],
+             [df2/dp1,df2/dp2,...],...]
+            
+            if f returns a 1-d array [f1,f2,...].
+            
+        jacx(self,x1,x2,...,xk,p1,p2,...,pk):
+            The derivative fit function with respect to the x-values.
+            
+            If the jac method (above) is not defined a `NotImplementedError` 
+            may be raised.
+            
+            It has the signature:
+                
+            [df/dp1,df/dp2,...] 
+            
+            if f returns a scalar or:
+            
+            [[df1/dp1,df1/dp2,...],
+             [df2/dp1,df2/dp2,...],...]
+            
+            if f returns a 1-d array [f1,f2,...].
 
         get_p0(self):
             Returns an initial guess for the fit parameters based on the input x
@@ -650,11 +702,6 @@ class Fit(_Fit,PrettyPrinter):
         super().__init__(x,y,ux=ux,uy=uy,sigma_is_known=sigma_is_known,xunit=xunit,yunit=yunit)
         
         self.nprop = nprop
-        
-        if type(self) is Fit:
-            if kw.get('f') is not None: 
-                self.f = kw['f']
-                del kw['f']
             
         if solver is not None:
             solver = solver.strip().lower()
@@ -693,13 +740,28 @@ class Fit(_Fit,PrettyPrinter):
         self.nparam = len(self.p0)
         
         try:
+            self.f(self.xf[0],*self.p0)
+        except NotImplementedError:
+            if kw.get('f') is None:
+                raise TypeError('f must be specified')
+            self.f = kw['f']
+            del kw['f']
+            
+        try:
+            self.jac(self.xf[0],*self.p0)
+        except NotImplementedError:
+            if kw.get('jac') is not None:
+                self.jac = kw['jac']
+                del kw['jac']
+                
+        try:
             # See if f will broadcast properly across the xf array...
             if self.xdim == 1:
                 r = self.f(self.xf,*self.p0)
             else:
-                r = self.f(*(list(self.xf)+self.p0))
+                r = self.f(*np.concatenate([[self.xf],self.p0]))
             if self.ydim == 1:
-                if not r.shape != (self.count,):
+                if r.shape != (self.count,):
                     raise TypeError()
             else:
                 if len(r[0]) != self.count:
@@ -708,6 +770,7 @@ class Fit(_Fit,PrettyPrinter):
             pass
         except:
             # ...if not vectorize it so that it does.
+            raise
             ydim = self.ydim
             if ydim is None:
                 ydim = 1
@@ -836,11 +899,11 @@ class Fit(_Fit,PrettyPrinter):
                 if self.xdim == 1:
                     self.jac(self.xf,*self.p0)
                     def dfun(*a):
-                        return self.jac(a[1],*(a[0]))[1:]@ic.T
+                        return self.jacp(a[1],*(a[0]))@ic.T
                 else:
                     self.jac(*(list(self.xf)+list(self.p0)))
                     def dfun(*a):
-                        return self.jac(*(list(a[1])+list(a[0])))[self.xdim:]@ic.T
+                        return self.jacp(*(list(a[1])+list(a[0])))@ic.T
             except NotImplementedError:
                 dfun = None
         else:
@@ -858,11 +921,11 @@ class Fit(_Fit,PrettyPrinter):
                 if self.xdim == 1:
                     self.jac(self.xf,*self.p0)
                     def dfun(*a):
-                        return ww*np.asarray(self.jac(a[1],*(a[0]))[1:]).T
+                        return ww*np.asarray(self.jacp(a[1],*(a[0]))).T
                 else:
                     self.jac(*(list(self.xf)+self.p0))
                     def dfun(*a):
-                        return ww*np.asarray(self.jac(*(list(a[1])+list(a[0])))[self.xdim:]).T
+                        return ww*np.asarray(self.jacp(*(list(a[1])+list(a[0])))).T
             except NotImplementedError:
                 dfun = None
                 
@@ -942,9 +1005,9 @@ class Fit(_Fit,PrettyPrinter):
                         jac = np.array([_der(self.f,*(list(x)+list(gf)))[self.xdim:] for x in self.x.T],dtype=float)
                 else:
                     if self.xdim == 1:
-                        jac = np.array([self.jac(x,*self.pf)[1:] for x in self.x],dtype=float)
+                        jac = np.array([self.jacp(x,*self.pf) for x in self.x],dtype=float)
                     else:
-                        jac = np.array([self.jac(*(list(x)+list(self.pf)))[self.xdim:] for x in self.x.T],dtype=float)
+                        jac = np.array([self.jacp(*(list(x)+list(self.pf))) for x in self.x.T],dtype=float)
                 sc = np.sqrt((jac*jac).sum(axis=0))
                 jac /= sc
                 y = [g/g.unit for g in self.y]
@@ -1039,23 +1102,20 @@ class Fit(_Fit,PrettyPrinter):
             
         wd = self._getw(self.x,self.ux,covx,wd,self.xdim,self._xgummies)
         we = self._getw(self.y,self.uy,covy,we,self.ydim,self._ygummies)
-                                     
-        #if 'fix' in kw:
-            #del kw['fix']
         
         try:  
             if self.xdim == 1:
                 self.jac(self.xf,*self.p0)
                 def fjacb(x,p):
-                    return np.array(self.jac(x,*p)[1:])
+                    return np.array(self.jacp(x,*p))
                 def fjacd(x,p):
-                    return np.array(self.jac(x,*p)[0])
+                    return np.array(self.jacx(x,*p))
             else:
                 self.jac(*(list(self.xf)+self.p0))
                 def fjacb(x,p):
-                    return np.array(self.jac(*(list(x)+list(p)))[self.xdim:])
+                    return np.array(self.jacp(*(list(x)+list(p))))
                 def fjacd(x,p):
-                    return np.array(self.jac(*(list(x)+list(p)))[:self.xdim])
+                    return np.array(self.jacx(*(list(x)+list(p))))
                 
         except NotImplementedError:
             fjacb = None
@@ -1089,19 +1149,6 @@ class Fit(_Fit,PrettyPrinter):
                     yf = np.array([yf])
         else:
             yf = self.yf
-        #self.odr_data = odr.Data(self.xf,y=yf,wd=wd,we=we,
-                                     #fix=kw.get('fix'))
-
-                
-        #mkw = {}
-        #if 'estimate' in kw:
-            #mkw['estimate'] = kw['estimate']
-            #del kw['estimate']
-        #if 'extra_args' in kw:
-            #mkw['extra_args'] = kw['extra_args']
-            #del kw['extra_args']
-            
-        #self.odr_model = odr.Model(f,fjacb,fjacd,implicit=self.implicit,**mkw)
         
         if self.maxiter is not None:
             kw['maxit'] = self.maxiter
@@ -1130,33 +1177,6 @@ class Fit(_Fit,PrettyPrinter):
         else:
             if fit_type == 'implicit-ODR':
                 raise ValueError('task or fit_type implicit-ODR is not allowed if there is y-value data')
-            
-            
-        #if 'deriv' in kw:
-            #deriv = kw['deriv']
-            #del kw['deriv']
-        #else:
-            #deriv = None
-            
-        #if 'var_calc' in kw:
-            #var_calc = kw['var_calc']
-            #del kw['var_calc']
-        #else:
-            #var_calc = None
-            
-        #if 'del_init' in kw:
-            #del_init = 'del_init'
-            #del kw['del_init']
-        #else:
-            #del_init = None
-
-        #self.odr = odr.ODR(self.odr_data,self.odr_model,beta0=self.p0,**kw)
-        
-        #if fit_type is not None or deriv is not None or var_calc is not None or del_init is not None:
-            #self.odr.set_job(fit_type=fit_type,deriv=deriv,var_calc=var_calc,
-                             #del_init=del_init)
-        
-        #self.fit_output = self.odr.run()
         
         self.fit_output = odr_fit(f,self.xf,yf,self.p0,weight_x=wd,weight_y=we,
                                   task=fit_type,jac_beta=fjacb,jac_x=fjacd)
@@ -1222,80 +1242,59 @@ class Fit(_Fit,PrettyPrinter):
         """
         returns a float representing the value predicted by the fit at x
         """
-        if self.xdim == 1:
-            x = x[0]
-            if isinstance(x,gummy):
-                x = x.convert(self._xunit)
-                x = x.x
-            if self.ydim == 1:
-                return self.f(x,*self.pf)
-            else:
-                return np.asarray(self.f(x,*self.pf))
+
         if len(x) != self.xdim:
             raise TypeError('the length of the x parameter does not match the dimensinality of the x-value array')
-        a = list(x)+list(self.pf)
-        if self.ydim == 1:
-            ret = self.f(*a)
-        else:
-            ret = np.asarray(self.f(*a))
+            
+        a = list(x) + list(self.pf)
+
+        ret = np.asarray(self.f(*a))
         
-        if isinstance(ret,np.ndarray) and ret.shape == ():
+        if ret.shape == ():
             return ret.item()
+        elif len(ret) == 1 and _isscalar(x[0]):
+            return ret[0]
         else:
             return ret
-            
+        
     def ypred(self,*x):
         """
         returns a gummy representing the value predicted by the fit at x
         """
-        func = np.frompyfunc(self._ypred,self.xdim,self.ydim)
-        ret = func(*x)
-        if hasattr(ret,'shape') and ret.shape == ():
-            return ret.item()
-        return ret
         
-    def _ypred(self,*x):
-        p = list(self.p)
-        for i,e in enumerate(p):
-            p[i] = p[i]/p[i].unit
+        if len(x) != self.xdim:
+            raise TypeError('the length of the x parameter does not match the dimensionality of the x-value array')
+        
+        scl = _isscalar(x[0])
+        if scl:
+            x = [np.array([i]) for i in x]
+            
+        p = [i/i.unit for i in self.p]
+        
         if self.xdim == 1:
-            x = x[0]
-            if isinstance(x,Quantity):
-                x = x.convert(self._xunit)
-                x = x/x.unit
-            a = [x] + p
+            xu = [self._xunit]
         else:
-            if len(x) != self.xdim:
-                raise TypeError('the length of the x parameter does not match the dimensionality of the x-value array')
-            x = list(x)
-            for i,v in enumerate(x):
-                if isinstance(v,Quantity):
-                    x[i] = v.convert(self._xunit[i])
-                    x[i] = x[i]/x[i].unit
-            a = x + p
+            xu = self._xunit
+            
+        x = [np.array([j.convert(xu[i])/xu[i] if isinstance(j,Quantity) else j for j in x[i]])
+             for i in range(self.xdim)]
+        
+        a = x + p
+        
+        try:
+            r = gummy.apply(self.f,lambda *x:self.jac(*x).T,*a)
+        except NotImplementedError:
+            r = gummy.napply(self.f,*a)
             
         if self.ydim == 1:
-            try:
-                r = gummy.apply(self.f,self.jac,*a)
-            except NotImplementedError:
-                r = gummy.napply(self.f,*a)
-            r = r*self._yunit
-            return r
+            r = np.array([i*self._yunit for i in r])
         else:
-            r = np.zeros(self.ydim,dtype=np.object)
-            try:
-                for i in self.ydim:
-                    def f(*v):
-                        return self.f(*v)[i]
-                    r[i] = gummy.apply(f,self.jac,*a)
-                    r[i] = r[i]*self._yunit
-            except NotImplementedError:
-                for i in self.ydim:
-                    def f(*v):
-                        return self.f(*v)[i]
-                    r[i] = gummy.napply(f,*a)
-                    r[i] = r[i]*self._yunit
-            return r
+            r = np.array([[j*self._yunit[i] for j in r[i]] for i in self._ydim])
+            
+        if scl:
+            r = r[0]
+            
+        return r
                 
     def ptostring(self,fmt='unicode'):
         """
@@ -1345,7 +1344,7 @@ class Fit(_Fit,PrettyPrinter):
             if fmt == 'unicode' or fmt == 'ascii':
                 txt += self.funicode() + '\n\n'
             elif fmt == 'latex':
-                txt += self.flatex().strip('$') + '\\\\[10pt]'
+                txt += self.flatex().strip('$') + ' \\\\ [10pt]'
             elif fmt == 'html':
                 txt += self.fhtml() + '<br><br>'
             else:
@@ -1356,7 +1355,7 @@ class Fit(_Fit,PrettyPrinter):
         if fmt == 'unicode' or fmt == 'ascii':
             txt += 'best fit parameters:\n'
         elif fmt == 'latex':
-            txt += type(self).latex_norm('best fit parameters:') + '\\\\'
+            txt += type(self).latex_norm('best fit parameters:') + ' \\\\ '
         else:
             txt += 'best fit parameters:<br>'
         txt += self.ptostring(fmt)
@@ -1449,6 +1448,52 @@ class Fit(_Fit,PrettyPrinter):
         if f returns a 1-d array [f1,f2,...].
         """
         raise NotImplementedError()
+        
+    def jacp(self,*a):
+        """
+        The Jacobian of the fit function with respect to the fit parameters.
+        
+        If jac is not defined a `NotImplementedError` may be raised.
+        
+        It has the signature:
+            
+        [df/dx1,df/dx2,...]
+        
+        if f returns a scalar or:
+        
+        [[df1/dx1,df1/dx2,...],
+         [df2/dx1,df2/dx2,...],...]
+        
+        if f returns a 1-d array [f1,f2,...].
+        """
+        
+        if self.ydim <= 1:
+            return np.asarray(self.jac(*a)[self.xdim:])
+        
+        return np.asarray([j[self.xdim:] for j in self.jac])
+    
+    def jacx(self,*a):
+        """
+        The derivative fit function with respect to the x-values.
+        
+        If jac is not defined a `NotImplementedError` may be raised.
+        
+        It has the signature:
+            
+        [df/dp1,df/dp2,...] 
+        
+        if f returns a scalar or:
+        
+        [[df1/dp1,df1/dp2,...],
+         [df2/dp1,df2/dp2,...],...]
+        
+        if f returns a 1-d array [f1,f2,...].
+        """
+        
+        if self.ydim <= 1:
+            return np.asarray(self.jac(*a)[:self.xdim])
+        
+        return np.asarray([j[:self.xdim] for j in self.jac])
         
     def get_p0(self):
         """
@@ -1633,17 +1678,20 @@ class PolyFit(Fit):
         if x.ndim > 3:
             raise TypeError('the maximum dimension for the x values is 3')
         if _isscalar(deg):
+            if deg < 0:
+                raise ValueError('deg must be >= 0')
             if x.ndim > 1:
-                raise TypeError('if x is muilt-dimensional, then deg must be an list, tuple or array of length xdim')
-            self.deg = int(deg)
+                deg = np.array([int(deg)]*x.ndim)
+            else:
+                self.deg = int(deg)
             self._order = deg+1
         else:
             if x.ndim == 1:
                 raise TypeError('if x is 1-d, then deg must be a scalar')
             try:
-                self.deg = np.array(deg)
-                for i,d in enumerate(self.deg):
-                    self.deg[i] = int(d)
+                self.deg = np.array([int(d) for d in deg])
+                if np.any(self.deg < 0):
+                    raise ValueError('all elements of deg must be >= 0')
                 self._order = self.deg + 1
             except:
                 raise TypeError('deg must be a scalar value or a 1-d array')
@@ -1701,15 +1749,16 @@ class PolyFit(Fit):
             xav = np.mean(self.xf,axis=1)
             xd = (self.xf.T - xav).T
         if self.xdim == 1:
-            x = np.vander(xd,self._order)
+            xm = np.polynomial.polynomial.polyvander(xd,self.deg)
         elif self.xdim == 2:
-            x = np.polynomial.polynomial.polyvander2d(xd[0],xd[1],self._order)
+            xm = np.polynomial.polynomial.polyvander2d(xd[1],xd[0],[self.deg[1],self.deg[0]])
         elif self.xdim == 3:
-            x = np.polynomial.polynomial.polyvander3d(xd[0],xd[1],xd[2],self._order)
+            xm = np.polynomial.polynomial.polyvander3d(xd[2],xd[1],xd[0],[self.deg[2],self.deg[1],self.deg[0]])
         else:
             raise ValueError('solver ols or gls can be used if xdim <= 3')
-        sc = np.sqrt((x*x).sum(axis=0))
-        x /= sc
+            
+        sc = np.sqrt((xm*xm).sum(axis=0))
+        x = xm/sc
         nparam = len(x[0])
 
         # dunno if this is the best way to do it:  solve once with a method
@@ -1728,11 +1777,10 @@ class PolyFit(Fit):
         if rank != nparam:
             warn('the matrix is poorly conditioned',FitWarning)
         pf = (pf.T/sc).T
-        pf = pf[::-1]
         
         p = None
         try:
-            cov = inv(x.T@x)
+            cov = np.flip(inv(x.T@x))
             if self._ygummies and not ignore_corr and self.sigma_is_known:
                 y = self.y
                 if ic is not None:
@@ -1741,42 +1789,52 @@ class PolyFit(Fit):
                     y = w*y
                 b = cov@x.T
                 p = [np.sum(y*bi) for bi in b]/sc # correlate p with self.y
-                p = p[::-1]
             cov *= vsc
         except:
             warn('unable to find the variance-covariance matrix; uncertainties cannot be calculated',FitWarning)
             cov = None
         
         #Find the residuals:
-        xm = np.array([[z**i for i in range(nparam)] for z in xd])
-        #res = self.yf - xm.dot(pf)
-        res = yf
+        res = self.yf - xm@pf
         
         #Transform the de-meaned fit parameters and covariance matrix
         #back to the un-de-meaned coordinate system:
         if self.xdim == 1:
-            tr = np.array([[0 if j < i else (-xav)**(j-i)*binom(j,i) 
+            trp = np.array([[0 if j < i else (-xav)**(j-i)*binom(j,i) 
+                            for j in range(nparam)] for i in range(nparam)])
+            trc = np.array([[0 if j < i else xav**(j-i)*binom(j,i) 
                             for j in range(nparam)] for i in range(nparam)])
         elif self.xdim == 2:
-            tr = np.array([[0 if (j < i or l < k) else (-xav[0])**(j-i)*binom(j,i)*(-xav[1])**(l-k)*binom(l,k)
-                            for j in range(self._order[0]) for k in range(self._order[1])] 
-                            for i in range(self._order[0]) for l in range(self._order[1])])
+            trp = np.array([[0 if (j < i or k < l) else (-xav[0])**(j-i)*binom(j,i)*(-xav[1])**(l-k)*binom(l,k)
+                            for j in range(self._order[0]) for l in range(self._order[1])] 
+                            for i in range(self._order[0]) for k in range(self._order[1])])
+            trc = np.array([[0 if (j < i or k < l) else xav[1]**(j-i)*binom(j,i)*xav[0]**(l-k)*binom(l,k)
+                            for j in range(self._order[0]) for l in range(self._order[1])] 
+                            for i in range(self._order[0]) for k in range(self._order[1])])
         else:
-            tr = np.array([[0 if j < i else (-xav)**(j-i)*binom(j,i) 
-                            for j in range(nparam)] for i in range(nparam)])
+            trp = np.array([[0 if (j < i or k < l) else (-xav[0])**(j-i)*binom(j,i)*(-xav[1])**(l-k)*binom(l,k)*(-xav[2])**(n-m)*binom(n,m)
+                            for j in range(self._order[0]) for l in range(self._order[1]) for n in range(self._order[2])] 
+                            for i in range(self._order[0]) for k in range(self._order[1]) for m in range(self._order[2])])
+            trc = np.array([[0 if (j < i or k < l) else xav[1]**(j-i)*binom(j,i)*xav[0]**(l-k)*binom(l,k)
+                            for j in range(self._order[0]) for l in range(self._order[1]) for n in range(self._order[2])] 
+                            for i in range(self._order[0]) for k in range(self._order[1]) for m in range(self._order[2])])
             
         if p is not None:
-            p = tr.dot(p)
+            p = trp@p
         if pf is not None:
-            pf = tr.dot(pf)
+            pf = trp@pf
             if p is not None:
                 for g,gf in zip(p,pf):
                     g.value._x = gf
         
+        self.covr = cov
+        self.trp = trp
+        self.trc = trc
+        
+        
         if cov is not None:
             cov /= np.outer(sc,sc)
-            cov = cov[:,::-1][::-1]
-            cov = tr.dot(cov).dot(tr.transpose())
+            cov = trp@cov@trp.T
             
         if ic is not None:
             sigmasq = np.sum((ic@self.uy)**2)/self.count
@@ -1813,16 +1871,15 @@ class PolyFit(Fit):
         self.cov = cov
         self.dof = self.count - nparam
             
-        units = [self.yunit*self.xunit**-i for i in range(nparam)]
+        if self.xdim == 1:
+            units = [self.yunit*self.xunit**-i for i in range(nparam)]
+        elif self.xdim == 2:
+            units = [self.yunit*self.xunit[0]**(-i)*self.xunit[1]**(-j) for j in range(self._order[1]) for i in range(self._order[0])]
         
         if p is None:
             if self.sigma is None or not self.sigma_is_known:
                 d = self.dof
-                j = self.jac(self.xf,*pf)[1:]
-                if ic is not None:
-                    j = j@ic.T
-                elif w is not None:
-                    j = w*j
+                j = ((sc*x)@trc).T
             else:
                 d = None
                 j = None
@@ -1851,41 +1908,69 @@ class PolyFit(Fit):
         if self.xdim == 1:
             return [self._yunit*self._xunit**-i for i in range(self._order)]
             
-        return [self._yunit] + [self._yunit*self._xunit[j]**-i for j in range(self.xdim) for i in range(1,self._order[j])]
+        ret = []
+        if self.xdim == 2:
+            for i in range(self._order[0]):
+                for j in range(self._order[1]):
+                    ret.append(self._yunit*self._xunit[0]**-i*self._xunit[1]**-j)
+        else:
+            for i in range(self._order[0]):
+                for j in range(self._order[1]):
+                    for k in range(self._order[1]):
+                        ret.append(self._yunit*self._xunit[0]**-i*self._xunit[1]**-j*self._xunit[2]**-k)
+        
+        return ret
         
         
     def f(self,*a):
         if self.xdim == 1:
-            r = 0
-            for i in range(self._order):
-                r += a[i+1]*a[0]**i
-            return r
+            x = np.polynomial.polynomial.polyvander(a[0],self.deg)
+            y = x@a[1:]
+        elif self.xdim == 2:
+            x = np.polynomial.polynomial.polyvander2d(a[1],a[0],[self.deg[1],self.deg[0]])
+            y = x@a[1:]
+        else:
+            x = np.polynomial.polynomial.polyvander2d(a[2],a[1],a[0],[self.deg[2],self.deg[1],self.deg[0]])
+            y = x@a[1:]
             
-        k = self.xdim+1
-        r = a[self.xdim]
-        for j in range(self.xdim):
-            for i in range(1,self._order[j]):
-                r += a[k]*a[j]**i
-                k += 1
-        return r
+        if _isscalar(a[0]):
+            return y[0]
+        return y
         
+    
     def jac(self,*a):
         if self.xdim == 1:
             d0 = 0
             for i in range(1,self._order):
                 d0 += i*a[i+1]*a[0]**(i-1)
-            return [d0 if i == 0 else a[0]**(i-1) for i in range(self._order+1)]
-
-        k = self.xdim
-        d0 = [0]*self.xdim
-        for j in range(self.xdim):
-            for i in range(1,self._order[j]):
-                d0[j] += i*a[k]*a[j]**(i-1)
-                k += 1
-                
+            d0 = [d0]
+            d = np.polynomial.polynomial.polyvander(a[0],self.deg).T
+        elif self.xdim == 2:
+            k = 2
+            d0 = [0,0]
+            for i in range(self._order[0]):
+                for j in range(self._order[1]):
+                    d0[0] += i*a[k]*a[0]**(i-1)*a[1]**j
+                    d0[1] += j*a[k]*a[0]**i*a[1]**(j-1)
+                    k += 1
+            d = np.polynomial.polynomial.polyvander2d(a[1],a[0],[self.deg[1],self.deg[0]]).T
+        else:
+            k = 3
+            d0 = [0,0,0]
+            for i in range(self._order[0]):
+                for j in range(self._order[1]):
+                    for m in range(self._order[2]):
+                        d0[0] += i*a[k]*a[0]**(i-1)*a[1]**j*a[2]**m
+                        d0[1] += j*a[k]*a[0]**i*a[1]**(j-1)*a[2]**m
+                        d0[2] += m*a[k]*a[0]**i*a[1]**j*a[2]**(m-1)
+                        k += 1
+            d = np.polynomial.polynomial.polyvander2d(a[2],a[1],a[0],[self.deg[2],self.deg[1],self.deg[0]]).T
+        
         if _isscalar(a[0]):
-            return d0 + [1] + [a[j]**i for j in range(self.xdim) for i in range(1,self._order[j])]
-        return d0 + [[1]*len(a[0])] + [a[j]**i for j in range(self.xdim) for i in range(1,self._order[j])]
+            d0 = [[d] for d in d0]
+            return np.concatenate([d0,d]).T[0]
+        
+        return np.concatenate([d0,d])
         
     def funicode(self):
         if self.xdim == 1:
@@ -1895,18 +1980,24 @@ class PolyFit(Fit):
             for i in range(2,self._order):
                 txt += ' + p('+str(i+1)+')*x**'+str(i)
             return txt
-            
-        txt = 'y = p(1)'
-        k = 2
-        for j in range(self.xdim):
-            for i in range(1,self._order[j]):
-                if i == 1:
-                    txt += ' + p('+str(k)+')*x('+str(j+1)+')'
-                else:
-                    txt += ' + p('+str(k)+')*x('+str(j+1)+')**'+str(i)
-                k += 1
+        
+        if self.xdim == 2:
+            k = 1
+            txt = ''
+            for j in range(self._order[1]):
+                for i in range(self._order[0]):
+                    txt += ' + p('+str(k)+')'
+                    if i == 1:
+                        txt += '*x(1)'
+                    elif i > 1:
+                        txt += '*x(1)**'+str(i)
+                    if j == 1:
+                        txt += '*x(2)'
+                    elif j> 1:
+                        txt += '*x(2)**'+str(j)
+                    k += 1
                 
-        return txt
+            return 'y = ' + txt[3:]
     
     def flatex(self):
         if self.xdim == 1:
@@ -1916,18 +2007,24 @@ class PolyFit(Fit):
             for i in range(2,self._order):
                 txt += ' + p_{'+str(i+1)+'} x^{'+str(i)+'}'
             return txt + ' $'
-            
-        txt = '$ y = p_{1}'
-        k = 2
-        for j in range(self.xdim):
-            for i in range(1,self._order[j]):
-                if i == 1:
-                    txt += ' + p_{'+str(k)+'} x_{'+str(j+1)+'}'
-                else:
-                    txt += ' + p_{'+str(k)+'} x_{'+str(j+1)+'}^{'+str(i)+'}'
-                k += 1
+    
+        if self.xdim == 2:
+            k = 1
+            txt = ''
+            for j in range(self._order[1]):
+                for i in range(self._order[0]):
+                    txt += ' + p_{'+str(k)+'}'
+                    if i == 1:
+                        txt += ' x_{1}'
+                    elif i > 1:
+                        txt += ' x_{1}^{'+str(i)+'}'
+                    if j == 1:
+                        txt += ' x_{2}'
+                    elif j> 1:
+                        txt += ' x_{2}^{'+str(j)+'}'
+                    k += 1
                 
-        return txt + ' $'
+            return '$ y = ' + txt[3:] + ' $'
     
     def fhtml(self):
         if self.xdim == 1:
@@ -1937,18 +2034,24 @@ class PolyFit(Fit):
             for i in range(2,self._order):
                 txt += ' + <i>p</i><sub>'+str(i+1)+'</sub> <i>x</i><sup>'+str(i)+'</sup>'
             return txt
-            
-        txt = '<i>y</i> = <i>p</i><sub>1</sub>'
-        k = 2
-        for j in range(self.xdim):
-            for i in range(1,self._order[j]):
-                if i == 1:
-                    txt += ' + <i>p</i><sub>'+str(k)+'</sub> <i>x</i><sub>'+str(j+1)+'</sub>'
-                else:
-                    txt += ' + <i>p</i><sub>'+str(k)+'</sub> <i>x</i><sub>'+str(j+1)+'</sub><sup>'+str(i)+'</sup>'
-                k += 1
+        
+        if self.xdim == 2:
+            k = 1
+            txt = ''
+            for j in range(self._order[1]):
+                for i in range(self._order[0]):
+                    txt += ' + <i>p</i><sub>'+str(k)+'</sub>'
+                    if i == 1:
+                        txt += ' <i>x</i><sub>1</sub>'
+                    elif i > 1:
+                        txt += ' <i>x</i><sub>1</sub><sup>'+str(i)+'</sup>'
+                    if j == 1:
+                        txt += ' <i>x</i><sub>2</sub>'
+                    elif j> 1:
+                        txt += ' <i>x</i><sub>2</sub><sup>'+str(j)+'</sup>'
+                    k += 1
                 
-        return txt
+            return '<i>y</i> = ' + txt[3:]
 
 
 class DoubleExpFit(Fit):

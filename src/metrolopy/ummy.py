@@ -888,7 +888,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
             fx = function(*x)
             d = derivative(*x)
         else:
-            fx,d,x = fxdx
+            fx,d = fxdx
         if len(args) == 1:
             d = [d]
             
@@ -957,15 +957,23 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         if n == 0:
             return cls(function(),0)
         
-        d = _der(function,*args)
+        if fxx is None:
+            fx = None
+            x = args
+        else:
+            fx,x = fxx
         
-        if fxx is not None:
-            fxx = (fxx[0],d,fxx[1])
+        d = _der(function,*x)
+        
+        if fxx is None:
+            fxdx = None
+        else:
+            fxdx = (fx,d)
         
         if n == 1:
-            return cls._apply(function,lambda x: d,args[0],fxdx=fxx)
+            return cls._apply(function,lambda x: d,args[0],fxdx=fxdx)
 
-        return cls._apply(function,lambda *x: d,*args,fxdx=fxx)
+        return cls._apply(function,lambda *x: d,*args,fxdx=fxdx)
     
     def _aop(self,b,f,d1,d2):
         # computes the result of a binary operation f(self,b).  d1 and d2 are 

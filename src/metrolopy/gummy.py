@@ -119,6 +119,30 @@ def _set_covariance_matrix(gummys, matrix):
 def _set_correlation_matrix(gummys, matrix):
     nummys = [g.value for g in gummys]
     nummy._set_correlation_matrix(nummys, matrix)
+    
+def _replq(x):
+    if not isinstance(x,np.ndarray):
+        if isinstance(x,Quantity):
+            return x.convert(one).value
+        return x
+    
+    x = x.copy()
+    with np.nditer(x,flags=['refs_ok'],op_flags=['readwrite']) as it:
+        for r in it:
+            r[...] = r.item().convert(one).value if isinstance(r.item(),Quantity) else r
+    return x
+
+def _replu(x):
+    if not isinstance(x,np.ndarray):
+        if issubclass(type(x),(ummy,gummy)):
+            return x.x
+        return x
+    
+    x = x.copy()
+    with np.nditer(x,flags=['refs_ok'],op_flags=['readwrite']) as it:
+        for r in it:
+            r[...] = r.item().x if issubclass(type(r.item()),(ummy,gummy)) else r
+    return x
         
 
 class MetaGummy(MetaQuantity):
@@ -3191,7 +3215,7 @@ class gummy(Quantity,metaclass=MetaGummy):
         return ret
     
     @classmethod
-    def apply(cls,function,derivative,*args):
+    def apply(cls,function,derivative,*args,**kwds):
         """
         A classmethod that applies a function to one or more gummy or jummy 
         objects propagating the uncertainty.
@@ -3254,29 +3278,38 @@ class gummy(Quantity,metaclass=MetaGummy):
         3.65 +/- 0.65
         """
         
-        return cls._apply(function,derivative,*args)
+        return cls._apply(function,derivative,*args,**kwds)
+                
     
     @classmethod
     def _apply(cls,function,derivative,*args,fxdx=None):
         
         if fxdx is None:
-            args = [a.convert(one).value if isinstance(a,Quantity) else a for a in args]
-            x = [a.x if isinstance(a,ummy) else a for a in args]
+            args = [_replq(a) for a in args]
+            x = [_replu(a) for a in args]
             fx = function(*x)
-            d = derivative(*x)
+            if _isscalar(fx):
+                d = derivative(*x)
         else:
-            fx,d,x = fxdx
+            fx,d = fxdx
         
         if not _isscalar(fx):
-            return [cls.apply(lambda *y: function(*y)[i],
-                               lambda *y: derivative(*y)[i],
-                               *args,fxdx=(fx[i],d[i],x)) 
+            a = [[j[i] if isinstance(j,np.ndarray) and len(j) == len(fx) else j for j in args] 
+                 for i in range(len(fx))]
+            x = [[j[i] if isinstance(j,np.ndarray) and len(j) == len(fx) else j for j in x] 
+                 for i in range(len(fx))]
+            d = [derivative(*i) for i in x]
+            #return [cls.apply(lambda *y: function(*y)[i],
+                               #lambda *y: derivative(*y)[i],
+                               #*a[i],fxdx=(fx[i],d[i])) 
+                    #for i in range(len(fx))]
+            return [cls.apply(function,derivative,*a[i],fxdx=(fx[i],d[i])) 
                     for i in range(len(fx))]
-        r = nummy._apply(function,derivative,*args,fxdx=(fx,d,x))
+        r = nummy._apply(function,derivative,*args,fxdx=(fx,d))
         return cls(r)
         
     @classmethod
-    def napply(cls,function,*args,fxx=None):
+    def napply(cls,function,*args,**kwds):
         """
         gummy.napply(function, arg1, arg2, ...) and
         jummy.napply(function, arg1, arg2, ...)
@@ -3325,20 +3358,27 @@ class gummy(Quantity,metaclass=MetaGummy):
         3.65 +/- 0.65
         """
         
-        return cls._napply(function,*args)
+        return cls._napply(function,*args,**kwds)
         
     @classmethod
     def _napply(cls,function,*args,fxx=None):
         if fxx is None:
-            args = [a.convert(one).value if isinstance(a,Quantity) else a for a in args]
-            x = [a.x if isinstance(a,ummy) else a for a in args]
+            args = [_replq(a) for a in args]
+            x = [_replu(a) for a in args]
             fx = function(*x)
         else:
             fx,x = fxx
             
         if not _isscalar(fx):
-            return [cls.napply(lambda *y: function(*y)[i],*args,fxx=(fx[i],x)) 
+            a = [[j[i] if isinstance(j,np.ndarray) and len(j) == len(fx) else j for j in args] 
+                 for i in range(len(fx))]
+            x = [[j[i] if isinstance(j,np.ndarray) and len(j) == len(fx) else j for j in x] 
+                 for i in range(len(fx))]
+            #return [cls.napply(lambda *y: function(*y)[i],*a[i],fxx=(fx[i],x[i])) 
+                    #for i in range(len(fx))]
+            return [cls.napply(function,*a[i],fxx=(fx[i],x[i])) 
                     for i in range(len(fx))]
+        
         return cls(nummy._napply(function,*args,fxx=fxx))
     
     def __array_ufunc__(self,ufunc,method,*args,**kwds):
