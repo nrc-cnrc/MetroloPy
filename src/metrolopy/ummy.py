@@ -117,6 +117,10 @@ def _combu(a,b,c):
     return abs(a)*x**0.5   
 
 def _isscalar(x):
+    #try:
+        #return np.ndim(x) == 0
+    #except:
+        #return True
     if isinstance(x,str):
         return True
     try:
@@ -957,18 +961,18 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         if n == 0:
             return cls(function(),0)
         
-        if fxx is None:
-            fx = None
-            x = args
-        else:
-            fx,x = fxx
+        #if fxx is None:
+            #fx = None
+            #x = args
+        #else:
+            #fx,x = fxx
         
-        d = _der(function,*x)
+        d = _der(function,*args)
         
         if fxx is None:
             fxdx = None
         else:
-            fxdx = (fx,d)
+            fxdx = (fxx,d)
         
         if n == 1:
             return cls._apply(function,lambda x: d,args[0],fxdx=fxdx)

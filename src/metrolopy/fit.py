@@ -61,6 +61,9 @@ def _create_p(pf,cov,units=None,jac=None,dof=None):
         m = np.array([[cov[i][j]/np.sqrt(cov[i][i]*cov[j][j]) for i in range(n)] for j in range(n)])
         u = np.sqrt(np.diag(cov))
         val,vec = np.linalg.eig(m)
+        val = np.real(val)
+        val = np.clip(val,0,None)
+        vec = np.real(vec)
         sqrtm = ((vec*np.sqrt(val)@np.linalg.inv(vec)).T*u).T
         jact = sqrtm.T@jac
         
@@ -231,6 +234,10 @@ class _Fit:
                     rxf[i][j] = v
                     if gummies:
                         ru[i][j] = 0
+                        
+        if ru is not None and np.all(ru==0):
+            ru = None
+            gummies = False
             
         if dim == 1:
             n = rxf.shape[1]
@@ -739,8 +746,12 @@ class Fit(_Fit,PrettyPrinter):
             
         self.nparam = len(self.p0)
         
+        if self.xdim == 1:
+            xz = [self.xf[0]]
+        else:
+            xz = self.xf.T[0]
         try:
-            self.f(self.xf[0],*self.p0)
+            self.f(*xz,*self.p0)
         except NotImplementedError:
             if kw.get('f') is None:
                 raise TypeError('f must be specified')
@@ -748,7 +759,7 @@ class Fit(_Fit,PrettyPrinter):
             del kw['f']
             
         try:
-            self.jac(self.xf[0],*self.p0)
+            self.jac(*xz,*self.p0)
         except NotImplementedError:
             if kw.get('jac') is not None:
                 self.jac = kw['jac']
@@ -759,7 +770,7 @@ class Fit(_Fit,PrettyPrinter):
             if self.xdim == 1:
                 r = self.f(self.xf,*self.p0)
             else:
-                r = self.f(*np.concatenate([[self.xf],self.p0]))
+                r = self.f(*self.xf,*self.p0)
             if self.ydim == 1:
                 if r.shape != (self.count,):
                     raise TypeError()
@@ -770,7 +781,6 @@ class Fit(_Fit,PrettyPrinter):
             pass
         except:
             # ...if not vectorize it so that it does.
-            raise
             ydim = self.ydim
             if ydim is None:
                 ydim = 1
@@ -893,7 +903,7 @@ class Fit(_Fit,PrettyPrinter):
                     return ic@(f(x,*params) - y)      
             else:
                 def func(params,x,y,f):
-                    return ic@(f(*(list(x)+list(params))) - y)
+                    return ic@(f(*x,*params) - y)
                 
             try:
                 if self.xdim == 1:
@@ -901,9 +911,9 @@ class Fit(_Fit,PrettyPrinter):
                     def dfun(*a):
                         return self.jacp(a[1],*(a[0]))@ic.T
                 else:
-                    self.jac(*(list(self.xf)+list(self.p0)))
+                    self.jac(*self.xf,*self.p0)
                     def dfun(*a):
-                        return self.jacp(*(list(a[1])+list(a[0])))@ic.T
+                        return self.jacp(*a[1],*a[2])@ic.T
             except NotImplementedError:
                 dfun = None
         else:
@@ -916,16 +926,16 @@ class Fit(_Fit,PrettyPrinter):
                     return ww*f(x,*params) - y
             else:
                 def func(params,x,y,f):
-                    return ww*f(*(list(x)+list(params))) - y
+                    return ww*f(*x,*params) - y
             try:
                 if self.xdim == 1:
                     self.jac(self.xf,*self.p0)
                     def dfun(*a):
                         return ww*np.asarray(self.jacp(a[1],*(a[0]))).T
                 else:
-                    self.jac(*(list(self.xf)+self.p0))
+                    self.jac(*self.xf,*self.p0)
                     def dfun(*a):
-                        return ww*np.asarray(self.jacp(*(list(a[1])+list(a[0])))).T
+                        return ww*np.asarray(self.jacp(*a[1],*a[2])).T
             except NotImplementedError:
                 dfun = None
                 
@@ -1723,10 +1733,25 @@ class PolyFit(Fit):
             return 'odr',self._odr
         else:
             raise ValueError('solver ' + str(solver) + ' is not recognized')
+            
+    def _binom(self,xav):
+        from scipy.special import comb
         
+        if self.xdim == 1:
+            ret = np.array([[0 if j < i else (-xav)**(j-i)*comb(j,i,exact=True) 
+                            for j in range(self._order)] for i in range(self._order)])
+        elif self.xdim == 2:
+            ret = np.array([[0 if (j < i or l < k) else (-xav[0])**(j-i)*comb(j,i,exact=True)*(-xav[1])**(l-k)*comb(l,k,exact=True)
+                            for l in range(self._order[1]) for j in range(self._order[0])] 
+                            for k in range(self._order[1]) for i in range(self._order[0])])
+        else:
+            ret = np.array([[0 if (j < i or l < k) else (-xav[0])**(j-i)*comb(j,i,exact=True)*(-xav[1])**(l-k)*comb(l,k,exact=True)*(-xav[2])**(n-m)*comb(n,m,exact=True)
+                            for n in range(self._order[2]) for l in range(self._order[1]) for j in range(self._order[0])] 
+                            for m in range(self._order[2]) for k in range(self._order[1]) for i in range(self._order[0])])
+        return ret
+                    
     def _gls(self,**kw):
         from scipy.linalg import lstsq,inv
-        from scipy.special import binom
         
         if 'rcond' in kw:
             self.rcond = kw['rcond']
@@ -1798,27 +1823,9 @@ class PolyFit(Fit):
         res = self.yf - xm@pf
         
         #Transform the de-meaned fit parameters and covariance matrix
-        #back to the un-de-meaned coordinate system:
-        if self.xdim == 1:
-            trp = np.array([[0 if j < i else (-xav)**(j-i)*binom(j,i) 
-                            for j in range(nparam)] for i in range(nparam)])
-            trc = np.array([[0 if j < i else xav**(j-i)*binom(j,i) 
-                            for j in range(nparam)] for i in range(nparam)])
-        elif self.xdim == 2:
-            trp = np.array([[0 if (j < i or k < l) else (-xav[0])**(j-i)*binom(j,i)*(-xav[1])**(l-k)*binom(l,k)
-                            for j in range(self._order[0]) for l in range(self._order[1])] 
-                            for i in range(self._order[0]) for k in range(self._order[1])])
-            trc = np.array([[0 if (j < i or k < l) else xav[1]**(j-i)*binom(j,i)*xav[0]**(l-k)*binom(l,k)
-                            for j in range(self._order[0]) for l in range(self._order[1])] 
-                            for i in range(self._order[0]) for k in range(self._order[1])])
-        else:
-            trp = np.array([[0 if (j < i or k < l) else (-xav[0])**(j-i)*binom(j,i)*(-xav[1])**(l-k)*binom(l,k)*(-xav[2])**(n-m)*binom(n,m)
-                            for j in range(self._order[0]) for l in range(self._order[1]) for n in range(self._order[2])] 
-                            for i in range(self._order[0]) for k in range(self._order[1]) for m in range(self._order[2])])
-            trc = np.array([[0 if (j < i or k < l) else xav[1]**(j-i)*binom(j,i)*xav[0]**(l-k)*binom(l,k)
-                            for j in range(self._order[0]) for l in range(self._order[1]) for n in range(self._order[2])] 
-                            for i in range(self._order[0]) for k in range(self._order[1]) for m in range(self._order[2])])
-            
+        #back to the un-de-meaned coordinate system:            
+        trp = self._binom(xav)
+        
         if p is not None:
             p = trp@p
         if pf is not None:
@@ -1826,11 +1833,6 @@ class PolyFit(Fit):
             if p is not None:
                 for g,gf in zip(p,pf):
                     g.value._x = gf
-        
-        self.covr = cov
-        self.trp = trp
-        self.trc = trc
-        
         
         if cov is not None:
             cov /= np.outer(sc,sc)
@@ -1871,15 +1873,17 @@ class PolyFit(Fit):
         self.cov = cov
         self.dof = self.count - nparam
             
-        if self.xdim == 1:
-            units = [self.yunit*self.xunit**-i for i in range(nparam)]
-        elif self.xdim == 2:
-            units = [self.yunit*self.xunit[0]**(-i)*self.xunit[1]**(-j) for j in range(self._order[1]) for i in range(self._order[0])]
+        #if self.xdim == 1:
+            #units = [self.yunit*self.xunit**-i for i in range(nparam)]
+        #elif self.xdim == 2:
+            #units = [self.yunit*self.xunit[0]**(-i)*self.xunit[1]**(-j) for j in range(self._order[1]) for i in range(self._order[0])]
+        
+        units = self.get_punits()
         
         if p is None:
             if self.sigma is None or not self.sigma_is_known:
                 d = self.dof
-                j = ((sc*x)@trc).T
+                j = ((sc*x)@self._binom(-xav)).T
             else:
                 d = None
                 j = None
@@ -1895,7 +1899,12 @@ class PolyFit(Fit):
     def get_p0(self):
         if self.solver in ('ols','gls'):   
             # Linear fit will be used, no p0 needed.
-            return [0]*self._order
+            if self.xdim == 1:
+                return [0]*self._order
+            elif self.xdim == 2:
+                return [0]*(self._order[0]*self._order[1])
+            else:
+                return [0]*(self._order[0]*self._order[1]*self._order[2])
         # If a nonlinear fit will be used, get p0 from a linear fit:
         try:
             return PolyFit(self.xf,self.yf,deg=self.deg,solver='ols').pf
@@ -1910,13 +1919,13 @@ class PolyFit(Fit):
             
         ret = []
         if self.xdim == 2:
-            for i in range(self._order[0]):
-                for j in range(self._order[1]):
+            for j in range(self._order[1]):
+                for i in range(self._order[0]):
                     ret.append(self._yunit*self._xunit[0]**-i*self._xunit[1]**-j)
         else:
-            for i in range(self._order[0]):
+            for k in range(self._order[2]):
                 for j in range(self._order[1]):
-                    for k in range(self._order[1]):
+                    for i in range(self._order[0]):
                         ret.append(self._yunit*self._xunit[0]**-i*self._xunit[1]**-j*self._xunit[2]**-k)
         
         return ret
@@ -1928,10 +1937,10 @@ class PolyFit(Fit):
             y = x@a[1:]
         elif self.xdim == 2:
             x = np.polynomial.polynomial.polyvander2d(a[1],a[0],[self.deg[1],self.deg[0]])
-            y = x@a[1:]
+            y = x@a[2:]
         else:
-            x = np.polynomial.polynomial.polyvander2d(a[2],a[1],a[0],[self.deg[2],self.deg[1],self.deg[0]])
-            y = x@a[1:]
+            x = np.polynomial.polynomial.polyvander3d(a[2],a[1],a[0],[self.deg[2],self.deg[1],self.deg[0]])
+            y = x@a[3:]
             
         if _isscalar(a[0]):
             return y[0]
@@ -1948,8 +1957,8 @@ class PolyFit(Fit):
         elif self.xdim == 2:
             k = 2
             d0 = [0,0]
-            for i in range(self._order[0]):
-                for j in range(self._order[1]):
+            for i in range(1,self._order[0]):
+                for j in range(1,self._order[1]):
                     d0[0] += i*a[k]*a[0]**(i-1)*a[1]**j
                     d0[1] += j*a[k]*a[0]**i*a[1]**(j-1)
                     k += 1
@@ -1957,14 +1966,14 @@ class PolyFit(Fit):
         else:
             k = 3
             d0 = [0,0,0]
-            for i in range(self._order[0]):
-                for j in range(self._order[1]):
-                    for m in range(self._order[2]):
+            for i in range(1,self._order[0]):
+                for j in range(1,self._order[1]):
+                    for m in range(1,self._order[2]):
                         d0[0] += i*a[k]*a[0]**(i-1)*a[1]**j*a[2]**m
                         d0[1] += j*a[k]*a[0]**i*a[1]**(j-1)*a[2]**m
                         d0[2] += m*a[k]*a[0]**i*a[1]**j*a[2]**(m-1)
                         k += 1
-            d = np.polynomial.polynomial.polyvander2d(a[2],a[1],a[0],[self.deg[2],self.deg[1],self.deg[0]]).T
+            d = np.polynomial.polynomial.polyvander3d(a[2],a[1],a[0],[self.deg[2],self.deg[1],self.deg[0]]).T
         
         if _isscalar(a[0]):
             d0 = [[d] for d in d0]
@@ -1981,9 +1990,9 @@ class PolyFit(Fit):
                 txt += ' + p('+str(i+1)+')*x**'+str(i)
             return txt
         
+        txt = ''
         if self.xdim == 2:
             k = 1
-            txt = ''
             for j in range(self._order[1]):
                 for i in range(self._order[0]):
                     txt += ' + p('+str(k)+')'
@@ -1993,11 +2002,30 @@ class PolyFit(Fit):
                         txt += '*x(1)**'+str(i)
                     if j == 1:
                         txt += '*x(2)'
-                    elif j> 1:
+                    elif j > 1:
                         txt += '*x(2)**'+str(j)
                     k += 1
+        else:
+            k = 1
+            for m in range(self._order[2]):
+                for j in range(self._order[1]):
+                    for i in range(self._order[0]):
+                        txt += ' + p('+str(k)+')'
+                        if i == 1:
+                            txt += '*x(1)'
+                        elif i > 1:
+                            txt += '*x(1)**'+str(i)
+                        if j == 1:
+                            txt += '*x(2)'
+                        elif j > 1:
+                            txt += '*x(2)**'+str(j)
+                        if m == 1:
+                            txt += '*x(3)'
+                        elif m > 1:
+                            txt += '*x(3)**'+str(m)
+                        k += 1
                 
-            return 'y = ' + txt[3:]
+        return 'y = ' + txt[3:]
     
     def flatex(self):
         if self.xdim == 1:
@@ -2008,9 +2036,9 @@ class PolyFit(Fit):
                 txt += ' + p_{'+str(i+1)+'} x^{'+str(i)+'}'
             return txt + ' $'
     
+        txt = ''
         if self.xdim == 2:
             k = 1
-            txt = ''
             for j in range(self._order[1]):
                 for i in range(self._order[0]):
                     txt += ' + p_{'+str(k)+'}'
@@ -2023,8 +2051,26 @@ class PolyFit(Fit):
                     elif j> 1:
                         txt += ' x_{2}^{'+str(j)+'}'
                     k += 1
-                
-            return '$ y = ' + txt[3:] + ' $'
+        else:
+            for m in range(self._order[2]):
+                for j in range(self._order[1]):
+                    for i in range(self._order[0]):
+                        txt += ' + p_{'+str(k)+'}'
+                        if i == 1:
+                            txt += ' x_{1}'
+                        elif i > 1:
+                            txt += ' x_{1}^{'+str(i)+'}'
+                        if j == 1:
+                            txt += ' x_{2}'
+                        elif j > 1:
+                            txt += ' x_{2}^{'+str(j)+'}'
+                        if m == 1:
+                            txt += ' x_{3}'
+                        elif m > 1:
+                            txt += ' x_{3}^{'+str(m)+'}'
+                        k += 1
+                            
+        return '$ y = ' + txt[3:] + ' $'
     
     def fhtml(self):
         if self.xdim == 1:
@@ -2035,9 +2081,9 @@ class PolyFit(Fit):
                 txt += ' + <i>p</i><sub>'+str(i+1)+'</sub> <i>x</i><sup>'+str(i)+'</sup>'
             return txt
         
+        txt = ''
         if self.xdim == 2:
             k = 1
-            txt = ''
             for j in range(self._order[1]):
                 for i in range(self._order[0]):
                     txt += ' + <i>p</i><sub>'+str(k)+'</sub>'
@@ -2050,8 +2096,27 @@ class PolyFit(Fit):
                     elif j> 1:
                         txt += ' <i>x</i><sub>2</sub><sup>'+str(j)+'</sup>'
                     k += 1
+        else:
+            k = 1
+            for m in range(self._order[2]):
+                for j in range(self._order[1]):
+                    for i in range(self._order[0]):
+                        txt += ' + <i>p</i><sub>'+str(k)+'</sub>'
+                        if i == 1:
+                            txt += ' <i>x</i><sub>1</sub>'
+                        elif i > 1:
+                            txt += ' <i>x</i><sub>1</sub><sup>'+str(i)+'</sup>'
+                        if j == 1:
+                            txt += ' <i>x</i><sub>2</sub>'
+                        elif j> 1:
+                            txt += ' <i>x</i><sub>2</sub><sup>'+str(j)+'</sup>'
+                        if m == 1:
+                            txt += ' <i>x</i><sub>3</sub>'
+                        elif m > 1:
+                            txt += ' <i>x</i><sub>3</sub><sup>'+str(m)+'</sup>'
+                        k += 1
                 
-            return '<i>y</i> = ' + txt[3:]
+        return '<i>y</i> = ' + txt[3:]
 
 
 class DoubleExpFit(Fit):
