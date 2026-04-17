@@ -883,7 +883,6 @@ class Fit(_Fit,PrettyPrinter):
         return ic,w,vsc,ignore_corr
 
     def _leastsq(self,**kw):
-        #from scipy.optimize import leastsq
         from scipy.optimize import least_squares
         from scipy.linalg import inv,LinAlgError
         
@@ -897,6 +896,11 @@ class Fit(_Fit,PrettyPrinter):
         # for ic or w.
         
         args = (self.xf,self.yf,self.f)
+        
+        if w is not None and ic is None:
+            ww = np.asarray(w)
+        else:
+            ww = 1
         if ic is not None:
             if self.xdim == 1:
                 def func(params,x,y,f):
@@ -912,53 +916,51 @@ class Fit(_Fit,PrettyPrinter):
                         return self.jacp(a[1],*(a[0]))@ic.T
                 else:
                     self.jac(*self.xf,*self.p0)
+                    #def dfun(*a):
+                        #return self.jacp(*a[1],*a[2])@ic.T
                     def dfun(*a):
-                        return self.jacp(*a[1],*a[2])@ic.T
+                        return self.jacp(*a[1],*a[0])@ic.T
             except NotImplementedError:
                 dfun = None
         else:
-            if w is None:
-                ww = 1
-            else:
-                ww = np.asarray(w)
             if self.xdim == 1:
                 def func(params,x,y,f):
-                    return ww*f(x,*params) - y
+                    return ww*(f(x,*params) - y)
             else:
                 def func(params,x,y,f):
-                    return ww*f(*x,*params) - y
+                    return ww*(f(*x,*params) - y)
             try:
                 if self.xdim == 1:
-                    self.jac(self.xf,*self.p0)
+                    self.jacp(self.xf[:1],*self.p0)
                     def dfun(*a):
-                        return ww*np.asarray(self.jacp(a[1],*(a[0]))).T
+                        return (ww*np.asarray(self.jacp(a[1],*(a[0])))).T
                 else:
-                    self.jac(*self.xf,*self.p0)
+                    self.jacp(*(self.xf.T[:1]).T,*self.p0)
+                    #def dfun(*a):
+                       # return ww*np.asarray(self.jacp(*a[1],*a[2])).T
                     def dfun(*a):
-                        return ww*np.asarray(self.jacp(*a[1],*a[2])).T
+                       return (ww*np.asarray(self.jacp(*a[1],*a[0]))).T
             except NotImplementedError:
                 dfun = None
                 
         if dfun is not None:
             kw['jac'] = dfun
         
-        #kw['full_output'] = 1
         if self.maxiter is not None:
             kw['max_nfev'] = self.maxiter
             
-        #self.fit_output = leastsq(func,self.p0,Dfun=dfun,args=args,col_deriv=1,**kw)
         self.fit_output = least_squares(func,self.p0,args=args,**kw)
-        #self.pf,cov,infodict,errmsg,ier = self.fit_output
         self.pf = self.fit_output.x
         try:
+            #if ic is not None:
+                #cov = inv(np.matmul((ic.T@self.fit_output.jac).T,ic.T@self.fit_output.jac))
+            #elif w is not None:
+                #cov = inv(np.matmul(ww*self.fit_output.jac.T,ww*self.fit_output.jac))
+            #else:
             cov = inv(np.matmul(self.fit_output.jac.T,self.fit_output.jac))
         except LinAlgError:
             cov = None
              
-        #if ier == 5:
-            #raise RuntimeError('the fit did not converge: max iterations reached (maxiter = '+str(infodict['nfev'])+')\nyou may wish to try again either increasing maxiter or with a different p0')
-        #elif ier not in [1, 2, 3, 4]:
-            #raise RuntimeError('the fit did not converge: ' + errmsg)
         if self.fit_output.status not in {1,2,3,4}:
             warn('the fit was not sucessful, status ' + str(self.fit_output.status) + ', ' + self.fit_output.message,FitWarning)
         
@@ -980,6 +982,7 @@ class Fit(_Fit,PrettyPrinter):
             sigmasq = ((w*self.uy)**2).sum()/self.count
             self.sigma = np.sqrt(sigmasq)
             var = ((w*self.res)**2).sum()/(self.count - self.nparam)
+            print(var,cov)
             if not self.sigma_is_known:
                 cov *= var/sigmasq
         elif self.uy is not None:
@@ -1873,11 +1876,6 @@ class PolyFit(Fit):
         self.cov = cov
         self.dof = self.count - nparam
             
-        #if self.xdim == 1:
-            #units = [self.yunit*self.xunit**-i for i in range(nparam)]
-        #elif self.xdim == 2:
-            #units = [self.yunit*self.xunit[0]**(-i)*self.xunit[1]**(-j) for j in range(self._order[1]) for i in range(self._order[0])]
-        
         units = self.get_punits()
         
         if p is None:
@@ -1948,15 +1946,24 @@ class PolyFit(Fit):
         
     
     def jac(self,*a):
+        scl = _isscalar(a[0])
+        a = [i if _isscalar(i) else np.asarray(i) for i in a]
+        
         if self.xdim == 1:
-            d0 = 0
+            if scl:
+                d0 = 0
+            else:
+                d0 = np.zeros(a[0].shape)
             for i in range(1,self._order):
                 d0 += i*a[i+1]*a[0]**(i-1)
             d0 = [d0]
             d = np.polynomial.polynomial.polyvander(a[0],self.deg).T
         elif self.xdim == 2:
             k = 2
-            d0 = [0,0]
+            if scl:
+                d0 = [0,0]
+            else:
+                d0 = [np.zeros(a[0].shape),np.zeros(a[0].shape)]
             for i in range(1,self._order[0]):
                 for j in range(1,self._order[1]):
                     d0[0] += i*a[k]*a[0]**(i-1)*a[1]**j
@@ -1965,7 +1972,10 @@ class PolyFit(Fit):
             d = np.polynomial.polynomial.polyvander2d(a[1],a[0],[self.deg[1],self.deg[0]]).T
         else:
             k = 3
-            d0 = [0,0,0]
+            if scl:
+                d0 = [0,0,0]
+            else:
+                d0 = [np.zeros(a[0].shape),np.zeros(a[0].shape),np.zeros(a[0].shape)]
             for i in range(1,self._order[0]):
                 for j in range(1,self._order[1]):
                     for m in range(1,self._order[2]):
@@ -1975,7 +1985,7 @@ class PolyFit(Fit):
                         k += 1
             d = np.polynomial.polynomial.polyvander3d(a[2],a[1],a[0],[self.deg[2],self.deg[1],self.deg[0]]).T
         
-        if _isscalar(a[0]):
+        if scl:
             d0 = [[d] for d in d0]
             return np.concatenate([d0,d]).T[0]
         

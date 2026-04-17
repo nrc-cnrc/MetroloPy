@@ -56,6 +56,12 @@ See:
   
 * Added gummy class properties to control the separator between the groups of three 
   digits when displaying long numbers.
+  
+* Fixed issues that affected the `gummy.apply` and `gummy.napply` method when 
+  broadcasing over arguments and and applying functions that have array like return 
+  values.
+  
+* Fixed an number of bugs in the fitting module.
 
 
 ## new in version 1.0.0

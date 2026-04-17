@@ -3230,7 +3230,8 @@ class gummy(Quantity,metaclass=MetaGummy):
               The the function to be applied. For `gummy.apply`, 'function'
               should take one or more float arguments and return a float value 
               or float array.  For `jummy.apply`, 'function' may also take and
-              return complex values.
+              return complex values.  If the function returns an array like 
+              value, it must be convertable to a numpy homogeneous array.
 
         derivative:  `function`
               The name of a second function that gives the derivatives
@@ -3258,7 +3259,7 @@ class gummy(Quantity,metaclass=MetaGummy):
               
         Returns
         -------
-        `gummy`, `jummy`:
+        `gummy`, `jummy` or a `numpy.ndarray` of `gummy` or `jummy`:
             If none of the arguments are `gummy` or `jummy`
             then the return value is the same type as the return value of `function`.
             Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
@@ -3342,7 +3343,8 @@ class gummy(Quantity,metaclass=MetaGummy):
             The the function to be applied. For `gummy.apply`, 'function'
             should take one or more float arguments and return a float value
             r float array.  For `jummy.apply`, 'function' may also take and
-            return complex values.
+            return complex values.  If the function returns an array like 
+            value, it must be convertable to a numpy homogeneous array.
 
         *args:  `gummy`, `jummy`, or `float`
               One or more arguments to which `function` will be applied.  These
@@ -3353,7 +3355,7 @@ class gummy(Quantity,metaclass=MetaGummy):
 
         Returns
         -------
-        `gummy`, `jummy`:
+        `gummy`, `jummy` or a `numpy.ndarray` of `gummy` or `jummy`:
             If none of the arguments are `gummy` or `jummy`
             then the return value is the same type as the return value of `function`.
             Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
