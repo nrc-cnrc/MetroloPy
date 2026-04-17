@@ -982,7 +982,6 @@ class Fit(_Fit,PrettyPrinter):
             sigmasq = ((w*self.uy)**2).sum()/self.count
             self.sigma = np.sqrt(sigmasq)
             var = ((w*self.res)**2).sum()/(self.count - self.nparam)
-            print(var,cov)
             if not self.sigma_is_known:
                 cov *= var/sigmasq
         elif self.uy is not None:
