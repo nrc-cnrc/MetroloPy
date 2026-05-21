@@ -24,7 +24,7 @@
 This module defines some classes to facilitate curve fitting.
 """
 
-from .ummy import ummy,_der,_isscalar
+from .ummy import _isscalar,UncertainValue,njacobian
 from .gummy import gummy
 from .exceptions import FitWarning
 from .unit import Unit,one
@@ -34,62 +34,201 @@ from .unit import Quantity
 import numpy as np
 from warnings import warn
 
-def _create_p(pf,cov,units=None,jac=None,dof=None):
-    # Given fit parameters pf (float array) and the covariance matrix cov for the
-    # parameters, return correlated gummys representing the fit parameters. jac,
-    # if provided, should be the jacobian mutiplied by any weighting of the data
-    # points.
-    dof = max(1,dof)
-    if jac is None:
-        try:
-            return gummy.create(pf,unit=units,covariance_matrix=cov,dof=dof)
-        except np.linalg.LinAlgError:
-            warn('the covariance matrix is not positive semidefinate; uncertainties cannot be calculated',FitWarning)
-            return gummy.create(pf,unit=units)
-        
-    # If we have a jacobian, calculate effiective degrees of freedom for each
-    # parameter as sum(weights)**2/sum(weights**2) where the weights are the
-    # square of the elements of the jacobian.
-    try:
-        pf = np.asarray(pf)
-        cov = np.asarray(cov)
-        jac = np.asarray(jac)
-        n = len(pf)
-        
-        # sqrtm below if used to transform the jacobian from a basis with 
-        # correlated parameters to one where the parameters are uncorrelated
-        m = np.array([[cov[i][j]/np.sqrt(cov[i][i]*cov[j][j]) for i in range(n)] for j in range(n)])
-        u = np.sqrt(np.diag(cov))
-        val,vec = np.linalg.eig(m)
-        val = np.real(val)
-        val = np.clip(val,0,None)
-        vec = np.real(vec)
-        sqrtm = ((vec*np.sqrt(val)@np.linalg.inv(vec)).T*u).T
-        jact = sqrtm.T@jac
-        
-        # calculate the effective degrees of freedom for the uncorrelated 
-        # parameters then transform the resulting gummys back to the
-        # correlated basis
-        df = (np.sum(jact**2,axis=1)**2/np.sum(jact**4,axis=1))
-        df = np.array([i if i >= 1 else 1 for i in df])
-        g = [gummy(0,1,dof=df[i]) for i in range(n)]
-        ret = sqrtm@g + pf
-        
-        if units is not None:
-            try:
-                len(units)
-            except TypeError:
-                units = [units]*n
-            ret = [g*u for g,u in zip(ret,units)]
-                    
-    except np.linalg.LinAlgError:
-        try:
-            return gummy.create(pf,unit=units,covariance_matrix=cov,dof=dof)
-        except np.linalg.LinAlgError:
-            warn('the covariance matrix is not positive semidefinate; uncertainties cannot be calculated',FitWarning)
-            return gummy.create(pf,unit=units)
+def odr_jac(work,count,xdim,nparam,ydim,nwe):
+    # get the jacobian with respect to the fit parameters and the jacobian with 
+    # respect to x from the rwork array returned by odrpack.odr_fit
+    a = 2*count*xdim + 3*count*ydim  + nparam*nparam + 10*nparam + 17
+    b = a + count*nparam*ydim
+    jp = work[a:b]
+    if ydim == 1:
+        jp = np.reshape(jp,(count,nparam),order='F')
+    else:
+        jp = np.reshape(jp,(count,nparam,ydim),order='F')
+
+    c = b + nwe*ydim + ydim*(nparam + xdim) + 4*count*xdim + ydim*ydim
+    d = c + count*xdim*ydim
+    jx = work[c:d]
+    if ydim == 1:
+        jx = np.reshape(jx,(count,xdim),order='F')
+    else:
+        jx = np.reshape(jx,(count,xdim,ydim),order='F')
     
-    return ret
+    return (jp,jx)
+
+def getvalues(txt,x,u,cov,w,units,ignore_corr):
+    # unpack Fit x or y values
+    
+    from scipy.linalg import pinvh
+    
+    if x is None:
+        return None,None,None,None,None,None,None,None,0
+    elif _isscalar(x):
+        if isinstance(x,UncertainValue):
+            xf = float(x.x)
+            u = x.u
+        else:
+            xf = float(x)
+            u = None
+        if units is None:
+            units = one
+        else:
+            units = Unit.unit(units)
+        return x,xf,u,None,w,None,None,units,0
+    
+    x = np.asarray(x)
+        
+    shape = np.shape(x)
+    if np.ndim(x) == 1:
+        dim = 1
+        x = np.reshape(x,(1,len(x)))
+    else:
+        dim = shape[0]
+        
+    shape = np.shape(x)
+    
+    
+    if units is not None:
+        if _isscalar(units):
+            units = [Unit.unit(units)]*dim
+        else:
+            if np.shape(units) != (dim,):
+                raise TypeError(txt + 'units must be either None, a single unit or a list of units with length equal to xdim')
+            units = [Unit.unit(u) for u in units]
+        
+    pcorr = False
+    if x.dtype is np.dtype('O'):
+        xx = np.empty(shape,dtype=np.dtype('O'))
+        xf = np.empty(shape)
+        uf = np.empty(shape)
+
+        if units is None:
+            units = [i[0].unit if isinstance(i[0],Quantity) else one for i in x]
+            
+        with np.nditer(x,flags=['multi_index','refs_ok']) as it:
+            for i in it:
+                if isinstance(i,np.ndarray) and not np.ndim(i):
+                    ii = i.item()
+                else:
+                    ii = i
+                iunit = units[it.multi_index[0]]
+                if iunit is one:
+                    ii = ii.convert(one) if isinstance(i,Quantity) else ii
+                else:
+                    if isinstance(ii,Quantity):
+                        if ii.unit is one:
+                            ii *= iunit
+                        else:
+                            ii = ii.convert(iunit)
+                    else:
+                        ii = gummy(ii,unit=iunit)
+                xx[it.multi_index] = ii
+                ii = ii.value if isinstance(ii,Quantity) else ii
+                xf[it.multi_index] = ii.x if isinstance(ii,UncertainValue) else ii
+                uf[it.multi_index] = ii.u if isinstance(ii,UncertainValue) else 0
+        
+        if u is None and cov is None:
+            pcorr = np.any(uf)
+            if not pcorr:
+                xx = np.array(list(xx))
+    
+        if pcorr:
+            if dim == 1:
+                cov = gummy.covariance_matrix(xx[0])
+            else:
+                cov = np.array([gummy.covariance_matrix(i) for i in xx.T])
+                
+        x = xx
+    else:
+        if units is None:
+            units = [one]*dim
+            
+        if x.dtype is np.dtype('float64'):
+            xf = x
+        else:
+            xf = x.astype(np.dtype('float64'))
+
+    if u is None and cov is not None:
+        if pcorr:
+            u = uf
+        else:
+            if dim == 1:
+                u = np.diag(cov)
+            else:
+                u = np.array([np.diag(i) for i in cov]).T
+           
+    if u is not None and cov is not None:
+        if dim == 1:
+            if not np.any(cov - np.diag(u)):
+                cov = None
+        else:
+            if not np.any(np.any(cov - np.diag(u.T) for i in cov)):
+                cov = None
+                
+    if ignore_corr:
+        cov = None
+        if w is not None and not _isscalar(w):
+            if dim == 1 and len(np.shape(w)) > 1:
+                w = np.diagonal(w)
+            elif len(np.shape(w)) > 2 and len(w) == len(xf[0]) and len(w[0]) == dim:
+                w = np.array([np.diag(np.diagonal) for i in w])
+                
+    var = None
+    if u is not None:
+        if w is None:
+            if cov is not None:
+                if dim == 1:
+                    w = pinvh(cov)
+                else:
+                    w = np.array([pinvh(i) for i in cov])
+            else:
+                w = 1/u**2
+            var = np.sum(w)/np.size(w)
+            w *= var
+        else:
+            if cov is not None:
+                if dim == 1 and np.ndim(w) == 2:
+                    var = np.sum(w.T@cov@w)/np.size(w)
+        
+    if dim == 1:
+        x= x[0]
+        xf = xf[0]
+        if len(np.shape(u)) > 1:
+            u = u[0]
+        units = units[0]
+        
+        if np.ndim(w) == 2 and not np.max(w - np.diag(np.diagonal(w))):
+            w = np.diagonal(w)
+        
+    return x,xf,u,cov,w,var,pcorr,units,dim
+
+def wsqrt(w):
+    # used by the _least_squares and _ols solvers to get the square root of the
+    # weights
+    
+    from scipy.linalg import cholesky
+    
+    if w is None:
+        return 1
+    if np.ndim(w) < 2:
+        return np.sqrt(w)
+    return cholesky(w)
+
+def get_jacx(f,x,xf,pf,w):
+    # numerically calculate the jacobian of the fit function with respect to x
+    if np.ndim(x) == 1:
+        x = [x[i] if isinstance(x[i],UncertainValue) and x[i].u > 0 else 
+                      gummy(xf[i],1) for i in len(x)]
+        r = np.array([njacobian(f,x,*pf) for i in x]).T
+    else:
+        x = [[x[j][i] if isinstance(x[i],UncertainValue) and x[i].u > 0 else 
+                      gummy(xf[i],1) for i in len(x[0])] for j in len(x)]
+        r = np.array([njacobian(f,*x,*pf) for i in x]).T
+        
+    if np.ndim(w) == 1:
+        return w*r
+    else:
+        return w@r
+    
 
 class _Fit:
     # Base class for fitting.  This implements plotting and unpacks any
@@ -101,8 +240,8 @@ class _Fit:
     xlabel = None
     ylabel = None
     
-    def __init__(self,x,y,ux=None,uy=None,xweights=None,yweights=None,
-                 sigma_is_known=True,xunit=None,yunit=None):
+    def __init__(self,x,y,ux=None,uy=None,xweights=None,weights=None,xcov=None,
+                 ycov=None,sigma_is_known=True,xunit=None,yunit=None,ignore_correlations=False):
         self.sigma_is_known = sigma_is_known
             
         if isinstance(x,np.ma.masked_array) or isinstance(y,np.ma.masked_array):
@@ -132,123 +271,43 @@ class _Fit:
             if y is not None:
                 y.mask = mask
                 y = y.compressed()
+                
+        if weights is not None and xweights is not None:
+            c = np.sum(weights)/np.size(weights) + np.sum(xweights)/np.size(xweights)
+            weights /= c
+            xweights /= c
+        elif weights is not None:
+            weights /= np.sum(weights)/np.size(weights)
+        elif xweights is not None:
+            xweights /= np.sum(xweights)/np.size(xweights)
             
-        self.x,self.xf,self.ux,self._xunit,self.xdim,self._xgummies = _Fit._getvalues('x',x,ux,xunit)
+        self.ssqpred = None
+        self.spred = None
+        self.x,self.xf,self.ux,self.xcov,self.xweights,self.xssqpred,self.xpcorr,self._xunit,self.xdim = getvalues('x',x,ux,xcov,xweights,xunit,ignore_correlations)
         if y is not None and not _isscalar(y):
-            self.y,self.yf,self.uy,self._yunit,self.ydim,self._ygummies = _Fit._getvalues('y',y,uy,yunit)
-            self.implicit = False
+            self.y,self.yf,self.uy,self.ycov,self.weights,self.ssqpred,self.ypcorr,self._yunit,self.ydim = getvalues('y',y,uy,ycov,weights,yunit,ignore_correlations)
             if self.xf.shape[-1] != self.yf.shape[-1]:
                 raise TypeError('x and y do not have equal lengths')
+            if self.ssqpred is not None:
+                self.spred = np.sqrt(self.ssqpred)
+            self.sqrt_weights = wsqrt(self.weights)
         else:
-            self.implicit = True
             self.y = y
             self.yf = None
             self.uy = None
             self._yunit = None
             self.ydim = None
-            self._ygummies = None
+            self.ypcorr = None
+            self.covy = None
+            self.weights = None
+        
+        self.implicit = y is None
+            
+        if self.ssqpred is None and self.xssqpred is None:
+            self.sigma_is_known = False
         
         self.count = self.xf.shape[-1]
-            
-    @staticmethod
-    def _getvalues(txt,x,u,units):
-        try:
-            x = np.asarray_chkfinite(x)
-        except ValueError:
-            raise ValueError('the '+txt+'-values must not contain infs or NaNs')
-        
-        if x.ndim > 2 or x.ndim == 0:
-            raise TypeError(txt+' must be a 1-d or 2-d array')
-            
-        count = x.shape[-1]
-        
-        if u is not None:
-            if _isscalar(u):
-                u = float(u)
-            else:
-                u = np.asarray_chkfinite(u,dtype=np.float64)
-                if u.shape != x.shape:
-                    raise TypeError('u'+txt+' is an array and u'+txt+'.shape != '+txt+'.shape')
-
-        if x.ndim == 1:
-            if not isinstance(x[0],(Quantity,ummy)):
-                if units is None:
-                    units = one
-                else:
-                    units = Unit.unit(units)
-                return x,np.asarray_chkfinite(x,dtype=np.float64),u,units,1,False
-            x = x.reshape((1,count))
-            if u is not None and not _isscalar(u):
-                u = u.reshape((1,count))
-            dim = 1
-        else:
-            dim = x.shape[0]
-            if not isinstance(x[0][0],(Quantity,ummy)):
-                if units is None:
-                    units = [one]*x.shape[0]
-                else:
-                    try:
-                        if len(units) != x.shape[0]:
-                            raise ValueError(txt + 'unit must be a list with length equal to the dimension of the ' + txt + '-parameters')
-                    except TypeError:
-                        raise ValueError(txt + 'unit must be a list with length equal to the dimension of the ' + txt + '-parameters')
-                    units = [Unit.unit(un) for un in units]
-                return x,np.asarray_chkfinite(x,dtype=np.float64),u,units,dim,False
-
-        if isinstance(x[0][0],ummy) or (isinstance(x[0][0],Quantity) and isinstance(x[0][0].value,ummy)):
-            gummies = True            
-            if u is not None:
-                raise ValueError('u'+txt+' may not be specified if the '+txt+'-values contain non-constant gummies')
-        else:
-            gummies = False
-            
-        if units is None:
-            if isinstance(x[0][0],Quantity):
-                try:
-                    units = [un.unit for un in (x.T)[0]]
-                except:
-                    raise TypeError('gummies and non gummies may not be mixed in the '+txt+'-values')
-            else:
-                units = [one]*x.shape[0]
-        else:
-            if dim == 1:
-                units = [units]
-            units = [Unit.unit(un) for un in units]
-            
-        rxf = np.empty(x.shape,dtype=np.float64)
-        if not gummies:
-            ru = u
-        else:
-            ru = np.empty(x.shape,dtype=np.float64)
-        
-        for i,e in enumerate(x):
-            for j,v in enumerate(e):
-                if isinstance(v,Quantity):
-                    v = v.convert(units[i])
-                    v = v.value
-                if isinstance(v,ummy):
-                    rxf[i][j] = v.x
-                    if gummies:
-                        ru[i][j] = v.u
-                else:
-                    rxf[i][j] = v
-                    if gummies:
-                        ru[i][j] = 0
-                        
-        if ru is not None and np.all(ru==0):
-            ru = None
-            gummies = False
-            
-        if dim == 1:
-            n = rxf.shape[1]
-            rxf = rxf.reshape(n)
-            x = x.reshape(n)
-            if ru is not None and not _isscalar(ru):
-                ru = ru.reshape(n)
-            units = units[0]
-            
-        return x,rxf,ru,units,dim,gummies
-            
+                       
     @property
     def xunit(self):
         """
@@ -347,9 +406,6 @@ class _Fit:
          
         if self.xdim != 1 or self.ydim != 1:
             raise NotImplementedError('plot is only available for 1-d data')
-
-        if self.implicit:
-            raise NotImplementedError('plot is only available for an explict fit')
             
         if xlabel is None:
             xlabel = self.xlabel
@@ -431,7 +487,7 @@ class _Fit:
             clk = gummy._p_method.fptok(clp,dof,False)
         
         if show_fit:
-            fy = np.array([self.ypredf(x) for x in fx])
+            fy = self.ypredf(fx)
             if fit_format is None:
                 plt.plot(fx,fy,**fit_options)
             else:
@@ -471,10 +527,10 @@ class _Fit:
             plt.show()
             
     def control_limit(self,x,k=2):
-        if self.sigma is None:
+        if self.spred is None:
             s = self.s
         else:
-            s = self.sigma
+            s = self.spred
         return k*(np.sqrt(self.ypred(x).u**2 + s**2))
         
     
@@ -482,8 +538,9 @@ class Fit(_Fit,PrettyPrinter):
     
     latex_math = None
     
-    def __init__(self,x,y=None,p0=None,ux=None,uy=None,sigma_is_known=True,xunit=None,
-                 yunit=None,solver=None,maxiter=None,nprop=False,**kw):
+    def __init__(self,x,y=None,p0=None,ux=None,uy=None,sigma_is_known=True,
+                 xunit=None, yunit=None,solver=None,xweights=None,weights=None,
+                 xcov=None,ycov=None,ignore_correlations=False,**kw):
         """
         Performs a non-linear fit.  The function may be passed in the arguments
         or may be specified by overriding the Fit.f(...) method in a subclass.
@@ -550,30 +607,17 @@ class Fit(_Fit,PrettyPrinter):
             are used to calculate the uncertainties in the fit.  Otherwise,
             the uncertainties are based on the standard deviation of the
             residuals and the uncertainties in the data are used only for
-            weighting the data points.  The default value is `True`. This
-            parameter is ignored if `nprop` is `True`.
+            weighting the data points.  The default value is `True`.
         xunits, yunits: `str` or `None`, optional
             units for the x and y coordinates. These should not be specified
             if the `x` and `y` parameters contain gummys. These may only be
             specified if the `get_punits` method is overridden in a subclass.
-        solver:  {'nls','odr'}, optional
+        solver:  {'ols','nls','odr'}, optional
             If this is 'nls' then `scipy.optimize.least_squares` is used to perform
             the fit.  If it is 'odr' then `odrpack.odr_fit` is used.  'nls' may 
             not be used if the y-coordinate is `None` or multi-dimensional or if
             there is uncertainty in the x-coordinates.  If this is `None`,
-            then 'nls' will be used when possible.  For an ordinary least squares
-            fit, the `PolyFit` class rather than the `Fit` class should be used.
-        maxiter:  `int` or `None`, optional
-            The maximum number of iterations that the solver may use. If this
-            is `None` or omitted then the default value for the solver will
-            be used.
-        nprop:  `bool`, optional
-            If this is `True` then uncertainties in the fit will be numerically
-             calculated by varying each data point. This will not work if there
-             are more than a few data points or if the it is not very stable.
-             If this is False than the covariance matrix generated by the solver
-             will be used to calculate the uncertainties.  The default value is
-             `False`
+            then 'nls' will be used when possible.
         other keywords:  optional
             Any additional keyword parameters will be passed to the solver.
         
@@ -706,9 +750,10 @@ class Fit(_Fit,PrettyPrinter):
             Returns a `str` containing unicode, latex, and html representations of
             the fit function.
         """
-        super().__init__(x,y,ux=ux,uy=uy,sigma_is_known=sigma_is_known,xunit=xunit,yunit=yunit)
-        
-        self.nprop = nprop
+        super().__init__(x,y,ux=ux,uy=uy,sigma_is_known=sigma_is_known,
+                         xunit=xunit,yunit=yunit, xweights=xweights,
+                         weights=weights,xcov=xcov,ycov=ycov,
+                         ignore_correlations=ignore_correlations)
             
         if solver is not None:
             solver = solver.strip().lower()
@@ -742,54 +787,118 @@ class Fit(_Fit,PrettyPrinter):
         else:
             self.punits = [one]*len(self.p0)
             
-        self.maxiter = maxiter
-            
         self.nparam = len(self.p0)
-        
-        if self.xdim == 1:
-            xz = [self.xf[0]]
-        else:
-            xz = self.xf.T[0]
-        try:
-            self.f(*xz,*self.p0)
-        except NotImplementedError:
-            if kw.get('f') is None:
-                raise TypeError('f must be specified')
+            
+        if 'f' in kw:
             self.f = kw['f']
             del kw['f']
             
-        try:
-            self.jac(*xz,*self.p0)
-        except NotImplementedError:
-            if kw.get('jac') is not None:
-                self.jac = kw['jac']
-                del kw['jac']
-                
+        if 'jacp' in kw:
+            self.jacp = kw['jacp']
+            del kw['jacp']
+            
+        if 'jacx' in kw:
+            self.jacx = kw['jacx']
+            del kw['jacx']
+                 
         try:
             # See if f will broadcast properly across the xf array...
             if self.xdim == 1:
-                r = self.f(self.xf,*self.p0)
+                self.f0 = self.f(self.xf,*self.p0)
             else:
-                r = self.f(*self.xf,*self.p0)
-            if self.ydim == 1:
-                if r.shape != (self.count,):
-                    raise TypeError()
-            else:
-                if len(r[0]) != self.count:
-                    raise TypeError()
+                self.f0 = self.f(*self.xf,*self.p0)
+            
+            if np.shape(self.f0)[-1] != self.count:
+                raise TypeError
+                
+            if not isinstance(self.f0,np.ndarray):
+                self.f = lambda *x: np.array(self.f(*x))
+                self.f0 = np.array(self.f0)
+                
         except NotImplementedError:
-            pass
+            raise TypeError('the fit function f has not been sepecified')
+        except:
+            self.f0 = None
+            # ...if not vectorize it so that it does.
+            if self.ydim is None or self.ydim == 1:
+                ot = [np.float64]
+            else:
+                ot = [np.float64]*self.ydim
+            self.f = np.vectorize(self.f,ot)#,excluded=list(range(self.xdim,self.xdim+self.nparam)))
+            
+        # _f takes two arguments x and p rather than *x,*p
+        if self.xdim == 1:
+            self._f = lambda x,p:self.f(x,*p)
+        else:
+            self._f = lambda x,p:self.f(*x,*p)
+        
+        if self.f0 is None:
+            self.f0 = self._f(self.xf,self.p0)
+            
+        if self.yf is not None and np.shape(self.yf) != np.shape(self.f0):
+            raise TypeError('The shape of the fit function f(x) does not match y')
+            
+        jok = True
+        self._jacp = None
+        try:
+            # See if jacp will broadcast properly across the xf array...
+            if self.xdim == 1:
+                r = self.jacp(self.xf,*self.p0)
+            else:
+                r = self.jacp(*self.xf,*self.p0)
+                
+            if np.shape(r)[-1] != self.count:
+                raise TypeError
+            
+            if not isinstance(r,np.ndarray):
+                self.jacp = lambda *x: np.array(self.jacp(*x))
+        except NotImplementedError:
+            jok = False
         except:
             # ...if not vectorize it so that it does.
-            ydim = self.ydim
-            if ydim is None:
-                ydim = 1
-            ot = [np.float64]*ydim
-            self.f = np.vectorize(self.f,ot,excluded=list(range(self.xdim,self.xdim+self.nparam)))
+            ot = [np.float64]*self.nparam
+            self.jacp = np.vectorize(self.jacp,ot)#,excluded=list(range(self.xdim,self.xdim+self.nparam)))
+        finally:
+            if jok:
+                if self.xdim == 1:
+                    self._jacp = lambda x,p:self.jacp(x,*p)
+                else:
+                    self._jacp = lambda x,p:self.jacp(*x,*p)
         
+        jok = True
+        self._jacx = None
+        try:
+            # See if jacp will broadcast properly across the xf array...
+            if self.xdim == 1:
+                r = self.jacx(self.xf,*self.p0)
+            else:
+                r = self.jacx(*self.xf,*self.p0)
+
+            if np.shape(r)[-1] != self.count:
+                raise TypeError
+            
+            if not isinstance(r,np.ndarray):
+                self.jacp = lambda *x: np.array(self.jacp(*x))
+        except NotImplementedError:
+            jok = False
+        except:
+            # ...if not vectorize it so that it does.
+            ot = [np.float64]*self.xdim
+            self.jacx = np.vectorize(self.jacx,ot)#,excluded=list(range(self.xdim,self.xdim+self.nparam)))
+        finally:
+            if jok:
+                if self.xdim == 1:
+                    self._jacx = lambda x,p:self.jacx(x,*p)
+                else:
+                    self._jacx = lambda x,p:self.jacx(*x,*p)
+
+        nprop = False
+        if 'nprop' in kw:
+            nprop = kw.pop('nprop')
+            
         self._solver(**kw)
         
-        if self.nprop and (self._xgummies or self._ygummies):
+        if nprop and (self._xgummies or self._ygummies):
             self._solver(**kw)
             p0 = self.p0
             self.p0 = self.pf
@@ -826,387 +935,272 @@ class Fit(_Fit,PrettyPrinter):
                     p._set_U()
             
     def _get_solver(self,solver,**kw):
-        if self.ux is not None or self.implicit or self.ydim > 1:
-            if solver is not None and solver != 'odr':
-                raise ValueError('if there are uncertainties on the x-values, ydim >1, or the model is impicit\nthen only the odr solver can be used')
-            return 'odr',self._odr
+        if solver is None:
+            return 'nls',self._leastsq
+        
+        solver = solver.strip().lower()
             
-        if solver == 'nls' or solver is None:
+        if self.ydim > 1:
+            if solver is not None and solver != 'odr':
+                raise ValueError(str(solver) + ' has been manually selected, but only the odr solver supports y-values with dim > 1')
+            return 'odr',self._odr
+        
+        if self.ux is not None or self.y is None:
+            if solver is None:
+                return 'odr',self._odr
+            
+        if solver == 'nls':
             return 'nls',self._leastsq
         elif solver == 'odr':
             return 'odr',self._odr
-        elif solver == 'gls':
-            raise ValueError('solver gls is only available with PolyFit')
+        elif solver == 'ols' or solver == 'gls':
+            return 'ols',self._ols
         else:
             raise ValueError('solver ' + str(solver) + ' is not recognized')
             
-    def _get_corr(self,**kw):
-        from scipy.linalg import inv,cholesky
-        if 'ignore_correlations' in kw:
-            ignore_corr = kw['ignore_correlations']
-        else:
-            ignore_corr = False
-            
-        v = None
-        ic = None
-        w = None
-        vsc = 1
+    def _create_p(self):
+        # Given fit parameters pf (float array) and the covariance matrix cov for the
+        # parameters, return correlated gummys representing the fit parameters. jac,
+        # if provided, should be the jacobian mutiplied by any weighting of the data
+        # points.
         
-        if 'ycov' in kw:
-            v = np.asarray(kw['ycov'])
-            if v.shape != (self.count,self.count):
-                raise ValueError('ycov mustbe a len(x) by len(x) matrix')
-            self.uy = np.diagonal(v)
-            if ignore_corr:
-                v = None
-        elif self._ygummies and not ignore_corr:
-            v = gummy.covariance_matrix(self.y)
-            
-        if v is not None and np.count_nonzero(v - np.diag(np.diagonal(v))) == 0:
-            v = None
-            
-        if v is not None:
+        if self.njacp is None:
             try:
-                vsc = np.diagonal(v).sum()/self.count
-                v /= vsc
-                ic = cholesky(inv(v))
-            except:
-                ignore_corr = True
-                warn('unable to invert the covariance matrix for y;\ncorrelations will be ignored and correlations between the fit parameters and y will not be set',FitWarning)
-                v = None
-                
-        if v is None and self.uy is not None and not _isscalar(self.uy):
-            vsc = np.sum(self.uy**2)/self.count
-            w = 1/self.uy
-            w *=  np.sqrt(vsc)
+                return gummy.create(self.pf,covariance_matrix=self.cov,dof=self.dof)
+            except np.linalg.LinAlgError:
+                warn('the covariance matrix is not positive semidefinate; uncertainties cannot be calculated',FitWarning)
+                return gummy.create(self.pf)
             
-        return ic,w,vsc,ignore_corr
+        uy = self.uy
+        if self.sigma_is_known:
+            dof = float('inf')
+        elif self.s is not None:
+            uy = self.s
+            dof = (self.count - self.nparam)/self.count
+        
+        y = self.y
+        ydim = self.ydim
+        if not self.ypcorr and y is not None:
+            if self.ydim == 0:
+                y = [self.y]
+                ydim = 1
+            y = np.empty(np.shape(self.yf),dtype=np.dtype('O'))
+            scl = _isscalar(uy)
+            with np.nditer(y,flags=['multi_index','refs_ok'],op_flags=['readwrite']) as it:
+                for i in it:
+                    if scl:
+                        iuy = uy
+                    else:
+                        iuy = uy[it.multi_index]
+                    i[...] = gummy(self.yf[it.multi_index],iuy,dof=dof)
+        if self.weights is not None:
+            c = np.sum(self.sqrt_weights)/np.size(self.sqrt_weights)
+            w = self.sqrt_weights/c
+            if np.ndim(self.weights) == 2:
+                y = w@y
+            else:
+                y = w*y
+                        
+        x = self.x
+        xdim = self.xdim
+        if not self.xpcorr and self.ux is not None and x is not None:
+            if self.xdim == 0:
+                x = [x]
+                xdim = 1
+            x = np.empty(np.shape(self.xf),dtype=np.dtype('O'))
+            scl = _isscalar(self.ux)
+            with np.nditer(x,flags=['multi_index','refs_ok'],op_flags=['readwrite']) as it:
+                for i in it:
+                    if scl:
+                        iux = self.ux
+                    else:
+                        iuy = self.ux[it.multi_index]
+                    i[...] = gummy(self.xf[it.multi_index],iux)
+        if self.weights is not None:
+            if np.ndim(self.weights) == 2:
+                x = w@x
+            else:
+                x = w*x
+                    
+        b = self.rcov@self.njacp.T
 
+        if ydim == 1:
+            p = [np.sum(y*bi) for bi in b]
+        else:
+            p = [0]*self.nparam
+            for yi in y:
+                pi = [np.sum(yi*bi) for bi in b]
+                p = [a+b for a,b in zip(pi,p)]
+
+        if self.xpcorr or (self.ux is not None and x is not None):
+            if self.njacx is None:
+                warn('njacx is not available, uncertainty in the x-values will be ignored')
+            else:
+                j = x*self.njacx
+                if xdim == 1:
+                    px = [np.sum(j*bi) for bi in b]
+                else:
+                    px = [0]*self.naparam
+                    for ji in j:
+                        pxi = [np.sum(ji*bi) for bi in b]
+                        px = [a+b for a,b in zip(pxi,px)]
+                p = [a+b for a,b in zip(p,px)]
+                
+        for g,gf in zip(p,self.pf):
+            g.value._x = gf
+        return np.array([g*u for g,u in zip(p,self.punits)])
+                
+        if dof is None:
+            dof = float('inf')
+        dof = max(1,dof)
+        if self.njacp is not None:
+            # If we have a jacobian, calculate effiective degrees of freedom for each
+            # parameter as sum(weights)**2/sum(weights**2) where the weights are the
+            # square of the elements of the jacobian.
+            try:
+                pf = np.asarray(self.pf)
+                cov = np.asarray(self.cov)
+                pjac = np.asarray(self.njacp)
+                n = len(pf)
+                
+                # sqrtm below if used to transform the jacobian from a basis with 
+                # correlated parameters to one where the parameters are uncorrelated
+                m = np.array([[cov[i][j]/np.sqrt(cov[i][i]*cov[j][j]) if cov[i][i] != 0 and cov[j][j] != 0 else 0 for i in range(n)] for j in range(n)])
+                u = np.sqrt(np.diag(cov))
+                val,vec = np.linalg.eig(m)
+                val = np.real(val)
+                val = np.clip(val,0,None)
+                vec = np.real(vec)
+                sqrtm = ((vec*np.sqrt(val)@np.linalg.inv(vec)).T*u).T
+                jact = sqrtm.T@pjac.T
+                
+                # calculate the effective degrees of freedom for the uncorrelated 
+                # parameters then transform the resulting gummys back to the
+                # correlated basis
+                df = (np.sum(jact**2,axis=1)**2/np.sum(jact**4,axis=1))
+                df = np.array([i if i >= 1 else 1 for i in df])
+                g = np.array([gummy(0,1,dof=df[i]) for i in range(n)])
+                ret = sqrtm@g + pf
+                return ret
+                            
+            except np.linalg.LinAlgError:
+                warn('unable to calculate the effective degrees of freedom for the fit parameters')
+    
+    
     def _leastsq(self,**kw):
+        # non-linear least square solver
         from scipy.optimize import least_squares
-        from scipy.linalg import inv,LinAlgError
         
-        ic,w,vsc,ignore_corr = self._get_corr(**kw)
-        # If there are correlations between the y values and ignore_corr is False,
-        # then ic is the cholesky decomposition of the inverse of the covariance 
-        # matrix of self.y. ignore_correlations may be True
-        # if it was passed in kw or if there was an error when calculating ic.
-        # If there are no correlations, but self.uy is an array,then w is an array 
-        # of weights for each data point.  vsc is a scalar normalization factor
-        # for ic or w.
+        from scipy.linalg import pinvh,LinAlgError
         
-        args = (self.xf,self.yf,self.f)
         
-        if w is not None and ic is None:
-            ww = np.asarray(w)
-        else:
-            ww = 1
-        if ic is not None:
-            if self.xdim == 1:
-                def func(params,x,y,f):
-                    return ic@(f(x,*params) - y)      
-            else:
-                def func(params,x,y,f):
-                    return ic@(f(*x,*params) - y)
+        w = self.sqrt_weights
+        if np.ndim(w) == 2:
+            def func(params,x,y,f):
+                return w@(f(x,params) - y)
                 
-            try:
-                if self.xdim == 1:
-                    self.jac(self.xf,*self.p0)
-                    def dfun(*a):
-                        return self.jacp(a[1],*(a[0]))@ic.T
-                else:
-                    self.jac(*self.xf,*self.p0)
-                    #def dfun(*a):
-                        #return self.jacp(*a[1],*a[2])@ic.T
-                    def dfun(*a):
-                        return self.jacp(*a[1],*a[0])@ic.T
-            except NotImplementedError:
+            if self._jacp is not None:
+                def dfun(*a):
+                    return (self._jacp(a[1],a[0])@w.T).T
+            else:
                 dfun = None
         else:
-            if self.xdim == 1:
-                def func(params,x,y,f):
-                    return ww*(f(x,*params) - y)
+            def func(params,x,y,f):
+                return w*(f(x,params) - y)
+                    
+            if self._jacp is not None:
+                def dfun(*a):
+                    return (w*np.asarray(self._jacp(a[1],a[0]))).T
             else:
-                def func(params,x,y,f):
-                    return ww*(f(*x,*params) - y)
-            try:
-                if self.xdim == 1:
-                    self.jacp(self.xf[:1],*self.p0)
-                    def dfun(*a):
-                        return (ww*np.asarray(self.jacp(a[1],*(a[0])))).T
-                else:
-                    self.jacp(*(self.xf.T[:1]).T,*self.p0)
-                    #def dfun(*a):
-                       # return ww*np.asarray(self.jacp(*a[1],*a[2])).T
-                    def dfun(*a):
-                       return (ww*np.asarray(self.jacp(*a[1],*a[0]))).T
-            except NotImplementedError:
                 dfun = None
-                
         if dfun is not None:
             kw['jac'] = dfun
-        
-        if self.maxiter is not None:
-            kw['max_nfev'] = self.maxiter
             
+        args = (self.xf,self.yf,self._f)
         self.fit_output = least_squares(func,self.p0,args=args,**kw)
         self.pf = self.fit_output.x
-        try:
-            #if ic is not None:
-                #cov = inv(np.matmul((ic.T@self.fit_output.jac).T,ic.T@self.fit_output.jac))
-            #elif w is not None:
-                #cov = inv(np.matmul(ww*self.fit_output.jac.T,ww*self.fit_output.jac))
-            #else:
-            cov = inv(np.matmul(self.fit_output.jac.T,self.fit_output.jac))
-        except LinAlgError:
-            cov = None
-             
+        
         if self.fit_output.status not in {1,2,3,4}:
             warn('the fit was not sucessful, status ' + str(self.fit_output.status) + ', ' + self.fit_output.message,FitWarning)
-        
+
         if self.xdim == 1:
             self.res = self.yf - self.ypredf(self.xf)
         else:
             self.res = self.yf - self.ypredf(*self.xf)
         
-        if cov is not None:
-            cov *= vsc
-
-        if ic is not None:
-            sigmasq = np.sum((ic@self.uy)**2)/self.count
-            self.sigma = np.sqrt(sigmasq)
-            var = np.sum((ic@self.res)**2)/(self.count - self.nparam)
-            if not self.sigma_is_known:
-                cov *= var/sigmasq
-        elif w is not None:
-            sigmasq = ((w*self.uy)**2).sum()/self.count
-            self.sigma = np.sqrt(sigmasq)
+        if np.ndim(w) == 2:
+            var = np.sum((w@self.res)**2)/(self.count - self.nparam)
+        else:
             var = ((w*self.res)**2).sum()/(self.count - self.nparam)
-            if not self.sigma_is_known:
-                cov *= var/sigmasq
-        elif self.uy is not None:
-            if _isscalar(self.uy):
-                self.sigma = self.uy
-                sigmasq = self.uy**2
-            else:
-                sigmasq = np.sum(self.uy**2)/self.count
-                self.sigma = np.sqrt(sigmasq)
-            var = (self.res**2).sum()/(self.count - self.nparam)
-            if cov is not None:
-                if self.sigma_is_known:
-                    cov *= sigmasq
-                else:
-                    cov *= var
-        else:
-            sigmasq = None
-            self.sigma = None
-            var = (self.res**2).sum()/(self.count-self.nparam)
-            if cov is not None:
-                cov *= var
-                
-        self.p = None
-        self.dof = None
-        if self._ygummies and not ignore_corr and self.sigma_is_known:
-            # set the correlations between self.p and self.y
-            try:
-                if dfun is None:
-                    gf = [ummy(p,np.sqrt(u)) for p,u in zip(self.pf,np.diagonal(cov))]
-                    if self.xdim == 1:
-                        jac = np.array([_der(self.f,x,*gf)[1:] for x in self.x],dtype=float)
-                    else:
-                        jac = np.array([_der(self.f,*(list(x)+list(gf)))[self.xdim:] for x in self.x.T],dtype=float)
-                else:
-                    if self.xdim == 1:
-                        jac = np.array([self.jacp(x,*self.pf) for x in self.x],dtype=float)
-                    else:
-                        jac = np.array([self.jacp(*(list(x)+list(self.pf))) for x in self.x.T],dtype=float)
-                sc = np.sqrt((jac*jac).sum(axis=0))
-                jac /= sc
-                y = [g/g.unit for g in self.y]
-                if ic is not None:
-                    jac = ic@jac
-                    y = [np.sum(y*c) for c in ic]
-                elif w is not None:
-                    jac *= w[:,np.newaxis]
-                    y = y*w
-                else:
-                    y = y
-                pcov = inv(jac.T@jac)
-                if cov is None:
-                    cov = pcov*vsc
-                    cov /= np.outer(sc,sc)
-                b = pcov@jac.T
-                self.p = [np.sum(y*bi) for bi in b]/sc
-                for g,gf in zip(self.p,self.pf):
-                    g.value._x = gf
-            except:
-                self.p = None
-                if cov is not None:
-                    warn('unable to set the correlations between the y-values and the fit parameters',FitWarning)
-                
+                    
+        self.dof = self.count - len(self.pf)
         self.s = np.sqrt(var)
-            
-        if self.dof is None:
-            self.dof = self.count - len(self.pf)
-    
-        self.cov = cov
         
-        if self.p is None:
-            if self.sigma is None or not self.sigma_is_known:
-                d = self.dof
-                j = self.fit_output.jac.T
-            else:
-                d = None
-                j = None
-            self.p = _create_p(self.pf,self.cov,units=self.punits,jac=j,dof=d)
+        try:
+            cov = pinvh(self.fit_output.jac.T@self.fit_output.jac)
+        except LinAlgError:
+            self.cov = None
+            warn('unable to calculate covariances for the fit parameters',FitWarning)
+            return np.array([gummy(i) for i in self.pf])
+            
+        self.rcov = cov
+        if self.sigma_is_known and self.ssqpred is not None:
+            self.cov = cov*self.ssqpred
         else:
-            self.p = [g*u/g.unit for g,u in zip(self.p,self.punits)]
-            
-    @staticmethod
-    def _getw(x,u,cov,w,dim,gummies):
-        from scipy.linalg import inv
+            self.sigma = None
+            self.cov = cov*var
         
-        if w is not None:
-            return np.asarray(w)
-            
-        if gummies and dim > 1:
-            return [inv(gummy.covariance_matrix(v)) for v in (x.T)]
-            
-        if cov is not None:
-            cov = np.asarray(cov)
-            if cov.ndim < 2 or cov.ndim > 3:
-                raise TypeError('covx.ndim must be 2 or 3')
-            if cov.ndim == 2:
-                return inv(cov)
-            else:
-                return [inv(c) for c in cov]
-                
-        if u is not None:
-            u = np.asarray(u)
-            return 1/u**2
-            
-        return None
+        self.njacp = self.fit_output.jac
+        
+        if self.xpcorr or self.ux is not None:
+            self.njacx = get_jacx(self.f,self.x,self.xf,self.pf,w)
+        else:
+            self.njacx = None
+        
+        self.p = self._create_p()
         
     def _odr(self,**kw):
-        #from scipy import odr
+        #orthogonal distance regression solver
         from odrpack import odr_fit
         
-        covx = kw.get('covx')
-        covy = kw.get('covy')
-        
-        wd = None
-        if 'wd' in kw:
-            wd = kw.pop('wd')
-        if 'weight_x' in kw:
-            wd = kw.pop('weight_x')
-            
-        we = None
-        if 'we' in kw:
-            we = kw.pop('we')
-        if 'weight_y' in kw:
-            we = kw.pop('weight_y')
-        
-        if (self.ux is not None) + (covx is not None) + (wd is not None) > 1:
-            raise ValueError('only one of (ux, covx, and odrwd) may be specified')
-            
-        if (self.uy is not None) + (covy is not None) + (we is not None) > 1:
-            raise ValueError('only one of (uy, covy, and odrwe) may be specified')
-            
-        wd = self._getw(self.x,self.ux,covx,wd,self.xdim,self._xgummies)
-        we = self._getw(self.y,self.uy,covy,we,self.ydim,self._ygummies)
-        
-        try:  
-            if self.xdim == 1:
-                self.jac(self.xf,*self.p0)
-                def fjacb(x,p):
-                    return np.array(self.jacp(x,*p))
-                def fjacd(x,p):
-                    return np.array(self.jacx(x,*p))
-            else:
-                self.jac(*(list(self.xf)+self.p0))
-                def fjacb(x,p):
-                    return np.array(self.jacp(*(list(x)+list(p))))
-                def fjacd(x,p):
-                    return np.array(self.jacx(*(list(x)+list(p))))
-                
-        except NotImplementedError:
-            fjacb = None
-            fjacd = None
-            
-        if self.xdim == 1:
-            if self.ydim == 1:
-                def f(x,p):
-                    return self.f(x,*p)
-            else:
-                def f(x,p):
-                    return np.asarray(self.f(*x,*p))
+        if np.ndim(self.weights) == 2 and len(self.weights[0]) > self.ydim:
+            weight_y = np.diagonal(self.weights)
         else:
-            if self.implicit or self.ydim == 1:
-                def f(x,p):
-                    return self.f(*(list(x)+list(p)))
-            else:
-                def f(x,p):
-                    return np.asarray(self.f(*(list(x)+list(p))))
+            weight_y = self.weights
+            
+        if np.ndim(self.xweights) == 2 and len(self.xweights[0]) > self.xdim:
+            weight_x = np.diagonal(self.xweights)
+        else:
+            weight_x = self.xweights
                 
         if self.implicit:
-            if self.y is None:
-                yf = f(self.p0,self.xf)
-                if yf.ndim == 1:
-                    yf = 1
-                else:
-                    yf = yf.shape(0)
-            else:
-                yf = self.y
-                if self.ydim == 1:
-                    yf = np.array([yf])
+            ydim = 1
+            yf = np.zeros(self.f0.shape)
         else:
+            ydim = self.ydim
             yf = self.yf
         
-        if self.maxiter is not None:
-            kw['maxit'] = self.maxiter
-        
-        fit_type = None
+        if self.implicit:
+            fit_type = 'implicit-ODR'
+        else:
+            fit_type = 'explicit-ODR'
         if 'fit_type' in kw:
             fit_type = kw.pop('fit_type')
         if 'task' in kw:
             fit_type = kw.pop('task')
-            
-        if isinstance(fit_type,str):
-            fit_type = fit_type.strip().lower()
-            
-        if fit_type in {'leastsq',2,'ols'}:
-            fit_type = 'OLS'
-        elif fit_type in {'odr','expicit-odr',0,None}:
-            fit_type = 'explicit-ODR'
-        elif fit_type in {'implicit','implicit-ODR',1}:
-            fit_type = 'implicit-ODR'
-        else:
-            raise ValueError('task or fit_type ' + str(fit_type) + ' is not recongized\nit should be one of {"OLS","expicit-ODR","implicit-ODR"}')
                     
-        if self.implicit:
-            if fit_type != 'implicit-ODR':
-                raise ValueError('task or fit_type must implicit-ODR if there is no y-value data')
-        else:
-            if fit_type == 'implicit-ODR':
-                raise ValueError('task or fit_type implicit-ODR is not allowed if there is y-value data')
-        
-        self.fit_output = odr_fit(f,self.xf,yf,self.p0,weight_x=wd,weight_y=we,
-                                  task=fit_type,jac_beta=fjacb,jac_x=fjacd)
+        self.fit_output = odr_fit(self._f,self.xf,yf,self.p0,weight_x=weight_x,
+                                  weight_y=weight_y,task=fit_type,
+                                  jac_beta=self._jacp,jac_x=self._jacx)
         
         if self.fit_output.info > 5:
             raise RuntimeError('Error encountered during fit:\n' + str(self.fit_output.stopreason) + '\nODR info  = ' + str(self.fit_output.info))
         if self.fit_output.info == 4:
             warn('the iteration limit was reached',FitWarning)
 
-        self.pf = self.fit_output.beta
+        pf = self.fit_output.beta
 
-        if self.implicit:
-            self.res = f(self.pf,self.xf)
-        else:
-            if self.xdim == 1:
-                self.res = self.yf - self.ypredf(self.xf)
-            else:
-                self.res = self.yf - self.ypredf(*self.xf)
+        self.res = np.array([self.fit_output.delta,self.fit_output.eps])
         
         var = self.fit_output.res_var
         
@@ -1232,54 +1226,185 @@ class Fit(_Fit,PrettyPrinter):
         else:
             self.sigma = None
        
-        self.dof = self.count - len(self.pf)
+        self.dof = self.count - len(pf)
         
+        self.rcov = self.fit_output.cov_beta
         if self.sigma is None or not self.sigma_is_known:
             self.cov = var*self.fit_output.cov_beta
         elif self.sigma_is_known:
             self.cov = (self.sigma**2)*self.fit_output.cov_beta
+            
+        if self.implicit or weight_y is None or _isscalar(weight_y):
+            nwe = 1
+        elif np.ndim(weight_y):
+            nwe = np.size(weight_y)
+        self.njacp,self.njacx = odr_jac(self.fit_output.rwork,self.count,
+                                        self.xdim,self.nparam,ydim,nwe)
+
+        #if self.xpcorr or self.ypcorr:
+            #b = cov@njacp.T
+            #if self._xgummies is not None:
+                #j = x*njacx
+                #if xdim == 1:
+                    #px = [np.sum(j*bi) for bi in b]
+                #else:
+                    #px = [0]*self.npram
+                    #for ji in j:
+                        #pxi = [np.sum(j*bi) for bi in b]
+                        #px = [a+b for a,b in zip(pxi,px)]
+            #else:
+                #px = [0]*self.npram
+            #if self._ygummies is not None:
+                #py = [np.sum(y*bi) for bi in b]
+                #p = [a + b for a,b in zip(px,py)]
+            #for g,gf in zip(p,pf):
+                #g.value._x = gf
+            #p = np.asarray(p)
+        #else:
+           # p = _create_p(pf,cov,jac=njacp.T,
+                          #dof=self.dof,y=self.y,ygummies=False)
+            
+        #self.p = np.array([g*u for g,u in zip(p,self.punits)])
         
-        if self.sigma is None or not self.sigma_is_known:
-            d = self.dof
-            try:
-                j = self.jac(self.xf,*self.pf)[1:]
-            except NotImplementedError:
-                j = None
+        self.pf = pf
+        self.p = self._create_p()
+        
+    def _shiftx(self,xav):
+        # PolyFit implements this method which returns a matrix that transforms 
+        # the fit parameters under: x -> x + xav
+        
+        # if this is impemented, the jacp method must also be implemented
+        
+        raise NotImplementedError()
+                    
+    def _ols(self,**kw):
+        #ordinary least squares solver
+        from scipy.linalg import pinvh
+        
+        try:
+            # PolyFit implements _shiftx which returns a matrix that transforms 
+            # the fit parameters under: x -> x + xav
+            if self.xdim == 1:
+                xav = np.mean(self.xf)
+                xd = [self.xf - xav] # Bad data! Bad! (de-mean the data)
+            else:
+                xav = np.mean(self.xf,axis=1)
+                xd = (self.xf.T - xav).T
+            trp = self._shiftx(xav)
+
+            x = self.jacp(*xd,*self.p0).T
+            if self._jacp is None:
+                raise NotImplementedError()
+            self.njacp = self._jacp(self.xf,self.p0).T
+        except NotImplementedError:
+            trp = None
+            if self._jacp is not None:
+                x = self._jacp(self.xf,self.p0).T
+            else:
+                # numerically calculate the jacobian with repect to the fit 
+                # parameters
+                g0 = [gummy(p,1) for p in self.p0]
+                if self.xdim == 1:
+                    x = np.array([njacobian(lambda *p:self.f(i,*p),*g0) for i in self.xf])
+                else:
+                    x = np.array([njacobian(lambda *p:self.f(*i,*p),*g0) for i in self.xf.T]).T
+            self.njacp = np.array(x)
+        
+        yf = self.yf
+        w = self.sqrt_weights
+        if np.ndim(w) == 2:
+            x = w@x
+            self.njacp = w@self.njacp
+            yf = w@yf
+        elif np.ndim(w) == 1:
+            x = (x.T*w).T
+            self.njacp = (w*self.njacp.T).T
+            yf = yf*w
+            
+        sc = np.sqrt((x*x).sum(axis=0))
+        x /= sc
+        
+        kw['return_rank'] = True
+        
+        cov,rank = pinvh(x.T@x,**kw)
+        if rank != self.nparam:
+            warn('the rank of the covariance matrix is not equal to the number of parameters',FitWarning)
+        
+        pf = cov@(yf@x)
+        
+        res = self.yf - x@pf # residuals
+        
+        var = np.sum((yf - x@pf)**2)/(self.count - self.nparam)
+        
+        self.dof = self.count - self.nparam
+
+        pf = (pf.T/sc).T
+        cov /= np.outer(sc,sc)
+        
+        if trp is not None:
+            cov = trp@cov@trp.T
+            pf = trp@pf
+        
+        self.rcov = cov
+            
+        if self.sigma_is_known and self.ssqpred is not None:
+            self.cov = self.ssqpred
         else:
-            d = None
-            j = None
-        self.p = _create_p(self.pf,self.cov,units=self.punits,dof=d,jac=j)
+            self.cov = cov*var
+            
+        if self.xpcorr or self.ux is not None:
+            self.njacx = get_jacx(self.f,self.x,self.xf,self.pf,w)
+        else:
+            self.njacx = None
+        
+        self.s = np.sqrt(var)
+        self.pf = pf
+        self.res = res
+        self.p = self._create_p()
+        self.fit_output = None
             
     def ypredf(self,*x):
         """
         returns a float representing the value predicted by the fit at x
         """
-
         if len(x) != self.xdim:
-            raise TypeError('the length of the x parameter does not match the dimensinality of the x-value array')
+            raise TypeError('the number of arguments to ypredf must be equal to xdim')
             
-        a = list(x) + list(self.pf)
-
-        ret = np.asarray(self.f(*a))
-        
-        if ret.shape == ():
-            return ret.item()
-        elif len(ret) == 1 and _isscalar(x[0]):
-            return ret[0]
+        if self.xdim == 1:
+            x = x[0]
+            scl = _isscalar(x)
+            if scl:
+                x = np.array([x])
         else:
-            return ret
+            scl = np.all(_isscalar(i) for i in x)
+            if scl:
+                x = [np.array([i]) for i in x]
+
+        ret = self._f(x,self.pf)
+        
+        if scl:
+            if self.ydim is None or self.ydim == 1:
+                return ret[0]
+            else:
+                return np.array([i[0] for i in ret])
+        else:
+            return np.asarray(ret)
         
     def ypred(self,*x):
         """
         returns a gummy representing the value predicted by the fit at x
         """
-        
         if len(x) != self.xdim:
-            raise TypeError('the length of the x parameter does not match the dimensionality of the x-value array')
+            raise TypeError('the number of arguments to ypred must be equal to xdim')
         
-        scl = _isscalar(x[0])
-        if scl:
-            x = [np.array([i]) for i in x]
+        if self.xdim == 1:
+            scl = _isscalar(x[0])
+            if scl:
+                x = np.array([x])
+        else:
+            scl = np.all(_isscalar(i) for i in x)
+            if scl:
+                x = [np.array([i]) for i in x]
             
         p = [i/i.unit for i in self.p]
         
@@ -1287,16 +1412,13 @@ class Fit(_Fit,PrettyPrinter):
             xu = [self._xunit]
         else:
             xu = self._xunit
-            
         x = [np.array([j.convert(xu[i])/xu[i] if isinstance(j,Quantity) else j for j in x[i]])
              for i in range(self.xdim)]
         
-        a = x + p
-        
         try:
-            r = gummy.apply(self.f,lambda *x:self.jac(*x).T,*a)
+            r = gummy.apply(self.f,lambda *z:self.jac(*z),*x,*p)
         except NotImplementedError:
-            r = gummy.napply(self.f,*a)
+            r = gummy.napply(self.f,*x,*p)
             
         if self.ydim == 1:
             r = np.array([i*self._yunit for i in r])
@@ -1304,9 +1426,12 @@ class Fit(_Fit,PrettyPrinter):
             r = np.array([[j*self._yunit[i] for j in r[i]] for i in self._ydim])
             
         if scl:
-            r = r[0]
-            
-        return r
+            if self.ydim is None or self.ydim == 1:
+                return r[0]
+            else:
+                return np.array([i[0] for i in r])
+        else:
+            return np.asarray(r)
                 
     def ptostring(self,fmt='unicode'):
         """
@@ -1440,15 +1565,7 @@ class Fit(_Fit,PrettyPrinter):
     
     def jac(self,*a):
         """
-        Not implemented, may optionally be implemented by a derived class.
-        
         The Jacobian of the fit function.
-        
-        If this method throws a `NotImplementedError` the derivatives will be
-        calculated numerically.
-        
-        It must have the same signature as the f method and return a list
-        of derivatives of the form:
             
         [df/dx1,df/dx2,...,df/dp1,df/dp2,...] 
         
@@ -1458,16 +1575,33 @@ class Fit(_Fit,PrettyPrinter):
          [df2/dx1,df2/dx2,...,df2/dp1,df2/dp2,...],...]
         
         if f returns a 1-d array [f1,f2,...].
+        
+        A NotImplementedError will be raised unless both the `jacx` and `jacp`
+        methods are implemented.
         """
-        raise NotImplementedError()
+        return np.concatenate([self.jacx(*a),self.jacp(*a)])
         
     def jacp(self,*a):
         """
         The Jacobian of the fit function with respect to the fit parameters.
         
-        If jac is not defined a `NotImplementedError` may be raised.
+        This may be implemented in a derived class.  Note that this function
+        can also be passed to the Fit initializer using the jacp keyword or
+        can be omitted entirely in which case the Jacobian will be calculated
+        numerically.
         
-        It has the signature:
+        It must either have signature:
+        
+        jacp(self,x,p1,p2,...,pn) 
+        
+        where there are p1 to pn are the n fit parameters and the independent
+        variable x has one dimension, or:
+        
+        jacp(self,x1,x2,...,xm,p1,p2,...,pn)
+        
+        where the independent variable x has m dimensions at each observation.
+        
+        It must return an array (or array like object) with values:
             
         [df/dx1,df/dx2,...]
         
@@ -1479,18 +1613,29 @@ class Fit(_Fit,PrettyPrinter):
         if f returns a 1-d array [f1,f2,...].
         """
         
-        if self.ydim <= 1:
-            return np.asarray(self.jac(*a)[self.xdim:])
-        
-        return np.asarray([j[self.xdim:] for j in self.jac])
+        raise NotImplementedError()
     
     def jacx(self,*a):
         """
-        The derivative fit function with respect to the x-values.
+        The derivative fit function with respect to the x-values:
+            
+        This may be implemented in a derived class.  Note that this function
+        can also be passed to the Fit initializer using the jacp keyword or
+        can be omitted entirely in which case this Jacobian will be calculated
+        numerically if it is needed.
         
-        If jac is not defined a `NotImplementedError` may be raised.
+        It must either have signature:
         
-        It has the signature:
+        jacp(self,x,p1,p2,...,pn) 
+        
+        where there are p1 to pn are the n fit parameters and the independent
+        variable x has one dimension, or:
+        
+        jacp(self,x1,x2,...,xm,p1,p2,...,pn)
+        
+        where the independent variable x has m dimensions at each observation.
+        
+        It must return an array (or array like object) with values:
             
         [df/dp1,df/dp2,...] 
         
@@ -1502,10 +1647,7 @@ class Fit(_Fit,PrettyPrinter):
         if f returns a 1-d array [f1,f2,...].
         """
         
-        if self.ydim <= 1:
-            return np.asarray(self.jac(*a)[:self.xdim])
-        
-        return np.asarray([j[:self.xdim] for j in self.jac])
+        raise NotImplementedError()
         
     def get_p0(self):
         """
@@ -1515,7 +1657,7 @@ class Fit(_Fit,PrettyPrinter):
         on the input x and y data.  
         
         If this method is not implemented then the inital values must be passed 
-        in the p0 parameter when the instance is created.
+        in the p0 parameter to the Fit initializer.
         """
         raise NotImplementedError()
         
@@ -1557,8 +1699,7 @@ class Fit(_Fit,PrettyPrinter):
         
 class PolyFit(Fit):
     def __init__(self,x,y,deg=1,ux=None,uy=None,sigma_is_known=True,p0=None,
-                 xunit=None,yunit=None,solver=None,maxiter=None,
-                 nprop=False,**kw):
+                 xunit=None,yunit=None,solver=None,**kw):
         """
         Fits the x,y data to a polynomial
 
@@ -1603,8 +1744,7 @@ class PolyFit(Fit):
             are used to calculate the uncertainties in the fit.  Otherwise,
             the uncertainties are based on the standard deviation of the
             residuals and the uncertainties in the data are used only for
-            weighting the data points.  The default value is `True`. This
-            parameter is ignored if `nprop` is `True`.
+            weighting the data points.  The default value is `True`.
         xunits, yunits: `str` or `None`, optional
             units for the x and y coordinates. These should not be specified
             if the `x` and `y` parameters contain gummys. These may only be
@@ -1615,17 +1755,6 @@ class PolyFit(Fit):
             solver must be used if there is uncertainty in the x-values or if the
             y-coordinates are multi-dimensional.  By default the nonlinear least
             squares solver, 'nls' will be used if `x` is multi-dimensional.
-        maxiter:  `int` or `None`, optional
-            The maximum number of iterations that the solver may use. If this
-            is `None` or omitted then the default value for the solver will
-            be used.
-        nprop:  `bool`, optional
-            If this is `True` then uncertainties in the fit will be numerically
-             calculated by varying each data point. This will not work if there
-             are more than a few data points or if the it is not very stable.
-             If this is False than the covariance matrix generated by the solver
-             will be used to calculate the uncertainties.  The default value is
-             `False`
         other keywords:  optional
             Any additional keyword parameters will be passed to the solver.
 
@@ -1709,34 +1838,21 @@ class PolyFit(Fit):
                 raise TypeError('deg must be a scalar value or a 1-d array')
 
         super().__init__(x,y=y,p0=p0,ux=ux,uy=uy,sigma_is_known=sigma_is_known,xunit=xunit,
-                 yunit=yunit,solver=solver,maxiter=maxiter,
-                 nprop=nprop,**kw)
+                 yunit=yunit,solver=solver,**kw)
 
     def _get_solver(self,solver,**kw):
         if self.xdim > 1:
             if _isscalar(self.deg) or len(self.deg) != self.xdim:
                 raise TypeError('len(deg) != xdim')
                 
-        if self.ux is not None or self.ydim > 1 or self.implicit:
-            if solver is not None and solver != 'odr':
-                raise ValueError('if there are uncertainties on the x-values, ydim > 1, or the model is impicit\nthen only the odr solver can be used')
-            return 'odr',self._odr
-        
-        if solver == 'gls': solver = 'ols'
-            
         if solver is None:
-                return 'ols',self._gls
+            solver = 'ols'
+                
+        return super()._get_solver(solver,**kw)
             
-        if solver == 'ols':
-            return 'ols',self._gls
-        elif solver == 'nls':
-            return 'nls',self._leastsq
-        elif solver == 'odr' or solver is None:
-            return 'odr',self._odr
-        else:
-            raise ValueError('solver ' + str(solver) + ' is not recognized')
-            
-    def _binom(self,xav):
+    def _shiftx(self,xav):
+        # returns a matrix that transforms the fit parameters under: x -> x + xav
+
         from scipy.special import comb
         
         if self.xdim == 1:
@@ -1751,148 +1867,7 @@ class PolyFit(Fit):
                             for n in range(self._order[2]) for l in range(self._order[1]) for j in range(self._order[0])] 
                             for m in range(self._order[2]) for k in range(self._order[1]) for i in range(self._order[0])])
         return ret
-                    
-    def _gls(self,**kw):
-        from scipy.linalg import lstsq,inv
-        
-        if 'rcond' in kw:
-            self.rcond = kw['rcond']
-        else:
-            self.rcond = len(self.xf)*np.finfo(self.xf.dtype).eps
-            
-        ic,w,vsc,ignore_corr = self._get_corr(**kw)
-        # If there are correlations between the y values and ignore_corr is False,
-        # then ic is the cholesky decomposition of the inverse of the covariance 
-        # matrix of self.y. ignore_correlations may be True
-        # if it was passed in kw or if there was an error when calculating ic.
-        # If there are no correlations, but self.uy is an array,then w is an array 
-        # of weights for each data point.  vsc is a scalar normalization factor
-        # for ic or w.
-            
-        if self.xdim == 1:
-            xav = np.mean(self.xf)
-            xd = self.xf - xav # Bad data! Bad! (de-mean the data)
-        else:
-            xav = np.mean(self.xf,axis=1)
-            xd = (self.xf.T - xav).T
-        if self.xdim == 1:
-            xm = np.polynomial.polynomial.polyvander(xd,self.deg)
-        elif self.xdim == 2:
-            xm = np.polynomial.polynomial.polyvander2d(xd[1],xd[0],[self.deg[1],self.deg[0]])
-        elif self.xdim == 3:
-            xm = np.polynomial.polynomial.polyvander3d(xd[2],xd[1],xd[0],[self.deg[2],self.deg[1],self.deg[0]])
-        else:
-            raise ValueError('solver ols or gls can be used if xdim <= 3')
-            
-        sc = np.sqrt((xm*xm).sum(axis=0))
-        x = xm/sc
-        nparam = len(x[0])
-
-        # dunno if this is the best way to do it:  solve once with a method
-        # that is quite numerically stable to get the fit parameter best values, 
-        # then solve again inverting x.T@x to get the covariances
-        if ic is not None:
-            x = ic@x
-            yf = ic@self.yf
-        elif w is not None:
-            x *= w[:,np.newaxis]
-            yf = self.yf*w
-        else:
-            yf = self.yf
-        self.fit_output = lstsq(x,yf,self.rcond)
-        pf,_,rank,_ = self.fit_output
-        if rank != nparam:
-            warn('the matrix is poorly conditioned',FitWarning)
-        pf = (pf.T/sc).T
-        
-        p = None
-        try:
-            cov = np.flip(inv(x.T@x))
-            if self._ygummies and not ignore_corr and self.sigma_is_known:
-                y = self.y
-                if ic is not None:
-                    y = [np.sum(y*c) for c in ic] # y = ic@self.y
-                elif w is not None:
-                    y = w*y
-                b = cov@x.T
-                p = [np.sum(y*bi) for bi in b]/sc # correlate p with self.y
-            cov *= vsc
-        except:
-            warn('unable to find the variance-covariance matrix; uncertainties cannot be calculated',FitWarning)
-            cov = None
-        
-        #Find the residuals:
-        res = self.yf - xm@pf
-        
-        #Transform the de-meaned fit parameters and covariance matrix
-        #back to the un-de-meaned coordinate system:            
-        trp = self._binom(xav)
-        
-        if p is not None:
-            p = trp@p
-        if pf is not None:
-            pf = trp@pf
-            if p is not None:
-                for g,gf in zip(p,pf):
-                    g.value._x = gf
-        
-        if cov is not None:
-            cov /= np.outer(sc,sc)
-            cov = trp@cov@trp.T
-            
-        if ic is not None:
-            sigmasq = np.sum((ic@self.uy)**2)/self.count
-            self.sigma = np.sqrt(sigmasq)
-            var = np.sum((ic@res)**2)/(self.count - nparam)
-            if not self.sigma_is_known:
-                cov *= var/sigmasq
-        elif w is not None:
-            sigmasq = ((w*self.uy)**2).sum()/self.count
-            self.sigma = np.sqrt(sigmasq)
-            var = ((w*res)**2).sum()/(self.count - nparam)
-            if not self.sigma_is_known:
-                cov *= var/sigmasq
-        elif self.uy is not None:
-            if _isscalar(self.uy):
-                self.sigma = self.uy
-                sigmasq = self.uy**2
-            else:
-                sigmasq = np.sum(self.uy**2)/self.count
-                self.sigma = np.sqrt(sigmasq)
-            var = (res**2).sum()/(self.count - nparam)
-            if cov is not None:
-                if self.sigma_is_known:
-                    cov *= sigmasq
-                else:
-                    cov *= var
-        else:
-            self.sigma = None
-            var = (res**2).sum()/(self.count - nparam)
-            if cov is not None:
-                cov *= var
-
-        self.s = np.sqrt(var)
-        self.cov = cov
-        self.dof = self.count - nparam
-            
-        units = self.get_punits()
-        
-        if p is None:
-            if self.sigma is None or not self.sigma_is_known:
-                d = self.dof
-                j = ((sc*x)@self._binom(-xav)).T
-            else:
-                d = None
-                j = None
-            self.p = _create_p(pf,cov,units=units,jac=j,dof=d)
-        else:
-            self.p = [g*units[i]/g.unit for i,g in enumerate(p)]
-            if pf is None:
-                pf = [g.x for g in p]
-            
-        self.pf = pf
-        self.res = res
-                     
+                                         
     def get_p0(self):
         if self.solver in ('ols','gls'):   
             # Linear fit will be used, no p0 needed.
@@ -1943,8 +1918,58 @@ class PolyFit(Fit):
             return y[0]
         return y
         
+    def jacp(self,*a):
+        if self.xdim == 1:
+            return np.polynomial.polynomial.polyvander(a[0],self.deg).T
+        elif self.xdim == 2:
+            return np.polynomial.polynomial.polyvander2d(a[1],a[0],[self.deg[1],self.deg[0]]).T
+        else:
+            return np.polynomial.polynomial.polyvander3d(a[2],a[1],a[0],[self.deg[2],self.deg[1],self.deg[0]]).T
+        
+    def jacx(self,*a):
+        scl = _isscalar(a[0])
+        a = [i if _isscalar(i) else np.asarray(i) for i in a]
+        
+        if self.xdim == 1:
+            if scl:
+                d0 = 0
+            else:
+                d0 = np.zeros(a[0].shape)
+            for i in range(1,self._order):
+                d0 += i*a[i+1]*a[0]**(i-1)
+            d0 = [d0]
+        elif self.xdim == 2:
+            k = 2
+            if scl:
+                d0 = [0,0]
+            else:
+                d0 = [np.zeros(a[0].shape),np.zeros(a[0].shape)]
+            for i in range(1,self._order[0]):
+                for j in range(1,self._order[1]):
+                    d0[0] += i*a[k]*a[0]**(i-1)*a[1]**j
+                    d0[1] += j*a[k]*a[0]**i*a[1]**(j-1)
+                    k += 1
+        else:
+            k = 3
+            if scl:
+                d0 = [0,0,0]
+            else:
+                d0 = [np.zeros(a[0].shape),np.zeros(a[0].shape),np.zeros(a[0].shape)]
+            for i in range(1,self._order[0]):
+                for j in range(1,self._order[1]):
+                    for m in range(1,self._order[2]):
+                        d0[0] += i*a[k]*a[0]**(i-1)*a[1]**j*a[2]**m
+                        d0[1] += j*a[k]*a[0]**i*a[1]**(j-1)*a[2]**m
+                        d0[2] += m*a[k]*a[0]**i*a[1]**j*a[2]**(m-1)
+                        k += 1
+        
+        if scl:
+            d0 = [[d] for d in d0]
+        return np.array(d0)
     
-    def jac(self,*a):
+    def iiijac(self,*a):
+        return np.concatenate([self.jacx(*a),self.jacp(*a)])
+    
         scl = _isscalar(a[0])
         a = [i if _isscalar(i) else np.asarray(i) for i in a]
         
@@ -2131,7 +2156,7 @@ class PolyFit(Fit):
 class DoubleExpFit(Fit):
     """
     DoubleExpFit(x,y,p0=None,ux=None,uy=None,sigma_is_known=True,xunit=None, yunit=None,
-             solver=None,maxiter=None,nprop=False,**keywords)
+             solver=None,**keywords)
    
     Fits the x,y data to a function of the form:
        
@@ -2161,8 +2186,7 @@ class DoubleExpFit(Fit):
         are used to calculate the uncertainties in the fit.  Otherwise,
         the uncertainties are based on the standard deviation of the
         residuals and the uncertainties in the data are used only for
-        weighting the data points.  The default value is `True`. This
-        parameter is ignored if `nprop` is `True`.
+        weighting the data points.  The default value is `True`.
     xunits, yunits: `str` or `None`, optional
         units for the x and y coordinates. These should not be specified
         if the `x` and `y` parameters contain gummys. These may only be
@@ -2173,17 +2197,6 @@ class DoubleExpFit(Fit):
         be used if the y-coordinate is `None` or multi-dimensional or if
         there is uncertainty in the x-coordinates.  If this is `None`,
         then 'nls' will be used when possible.
-    maxiter:  `int` or `None`, optional
-        The maximum number of iterations that the solver may use. If this
-        is `None` or omitted then the default value for the solver will
-        be used.
-    nprop:  `bool`, optional
-        If this is `True` then uncertainties in the fit will be numerically
-         calculated by varying each data point. This will not work if there
-         are more than a few data points or if the it is not very stable.
-         If this is False than the covariance matrix generated by the solver
-         will be used to calculate the uncertainties.  The default value is
-         `False`
     other keywords:  optional
         Any additional keyword parameters will be passed to the solver.
 
@@ -2280,7 +2293,7 @@ class DoubleExpFit(Fit):
 class ExpFit(Fit):
     """
     ExpFit(x,y,p0=None,ux=None,uy=None,sigma_is_known=True,xunit=None, yunit=None,
-             solver=None,maxiter=None,nprop=False,**keywords)
+             solver=None,**keywords)
    
     Fits the x,y data to a function of the form:
        
@@ -2310,8 +2323,7 @@ class ExpFit(Fit):
         are used to calculate the uncertainties in the fit.  Otherwise,
         the uncertainties are based on the standard deviation of the
         residuals and the uncertainties in the data are used only for
-        weighting the data points.  The default value is `True`. This
-        parameter is ignored if `nprop` is `True`.
+        weighting the data points.  The default value is `True`.
     xunits, yunits: `str` or `None`, optional
         units for the x and y coordinates. These should not be specified
         if the `x` and `y` parameters contain gummys. These may only be
@@ -2322,17 +2334,6 @@ class ExpFit(Fit):
         be used if the y-coordinate is `None` or multi-dimensional or if
         there is uncertainty in the x-coordinates.  If this is `None`,
         then 'nls' will be used when possible.
-    maxiter:  `int` or `None`, optional
-        The maximum number of iterations that the solver may use. If this
-        is `None` or omitted then the default value for the solver will
-        be used.
-    nprop:  `bool`, optional
-        If this is `True` then uncertainties in the fit will be numerically
-         calculated by varying each data point. This will not work if there
-         are more than a few data points or if the it is not very stable.
-         If this is False than the covariance matrix generated by the solver
-         will be used to calculate the uncertainties.  The default value is
-         `False`
     other keywords:  optional
         Any additional keyword parameters will be passed to the solver.
 
@@ -2424,7 +2425,7 @@ class ExpFit(Fit):
 class OneOverTFit(Fit):
     """
     DoubleExpFit(x,y,p0=None,ux=None,uy=None,sigma_is_known=True,xunit=None, yunit=None,
-             solver=None,maxiter=None,nprop=False,**keywords)
+             solver=None,**keywords)
    
     Fits the x,y data to a function of the form:
        
@@ -2454,8 +2455,7 @@ class OneOverTFit(Fit):
         are used to calculate the uncertainties in the fit.  Otherwise,
         the uncertainties are based on the standard deviation of the
         residuals and the uncertainties in the data are used only for
-        weighting the data points.  The default value is `True`. This
-        parameter is ignored if `nprop` is `True`.
+        weighting the data points.  The default value is `True`.
     xunits, yunits: `str` or `None`, optional
         units for the x and y coordinates. These should not be specified
         if the `x` and `y` parameters contain gummys. These may only be
@@ -2466,17 +2466,6 @@ class OneOverTFit(Fit):
         be used if the y-coordinate is `None` or multi-dimensional or if
         there is uncertainty in the x-coordinates.  If this is `None`,
         then 'nls' will be used when possible.
-    maxiter:  `int` or `None`, optional
-        The maximum number of iterations that the solver may use. If this
-        is `None` or omitted then the default value for the solver will
-        be used.
-    nprop:  `bool`, optional
-        If this is `True` then uncertainties in the fit will be numerically
-         calculated by varying each data point. This will not work if there
-         are more than a few data points or if the it is not very stable.
-         If this is False than the covariance matrix generated by the solver
-         will be used to calculate the uncertainties.  The default value is
-         `False`
     other keywords:  optional
         Any additional keyword parameters will be passed to the solver.
 
@@ -2561,7 +2550,7 @@ class OneOverTFit(Fit):
 class SinFit(Fit):
     """
     SinFit(x,y,p0=None,ux=None,uy=None,sigma_is_known=True,xunit=None, yunit=None,
-             solver=None,maxiter=None,nprop=False,**keywords)
+             solver=None,**keywords)
    
     Fits the x,y data to a function of the form:
        
@@ -2591,8 +2580,7 @@ class SinFit(Fit):
         are used to calculate the uncertainties in the fit.  Otherwise,
         the uncertainties are based on the standard deviation of the
         residuals and the uncertainties in the data are used only for
-        weighting the data points.  The default value is `True`. This
-        parameter is ignored if `nprop` is `True`.
+        weighting the data points.  The default value is `True`.
     xunits, yunits: `str` or `None`, optional
         units for the x and y coordinates. These should not be specified
         if the `x` and `y` parameters contain gummys. These may only be
@@ -2603,17 +2591,6 @@ class SinFit(Fit):
         be used if the y-coordinate is `None` or multi-dimensional or if
         there is uncertainty in the x-coordinates.  If this is `None`,
         then 'nls' will be used when possible.
-    maxiter:  `int` or `None`, optional
-        The maximum number of iterations that the solver may use. If this
-        is `None` or omitted then the default value for the solver will
-        be used.
-    nprop:  `bool`, optional
-        If this is `True` then uncertainties in the fit will be numerically
-         calculated by varying each data point. This will not work if there
-         are more than a few data points or if the it is not very stable.
-         If this is False than the covariance matrix generated by the solver
-         will be used to calculate the uncertainties.  The default value is
-         `False`
     other keywords:  optional
         Any additional keyword parameters will be passed to the solver.
 

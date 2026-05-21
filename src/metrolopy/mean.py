@@ -38,9 +38,9 @@ def autocorrelation(x):
     return rho/np.sum(z**2)
 
 def n_eff(x, y = None):
-    """Takes a series of data points which may be 
-    correlated and uses the auto-correlation of the set to find an effective 
-    number of data points such that an estimate of the standard uncertainty is
+    """Takes a series of data points which may be correlated and uses the 
+    auto-correlation of the set to find an effective number of data points such 
+    that an estimate of the standard uncertainty is
     (standard deviation)/sqrt(n_eff).
     
     See [N.F. Zhang, Metrologia, 43, S276 (2006)] for details.
@@ -181,7 +181,7 @@ def wmean(x,chi_correct=False):
         
     return ret
     
-def mean(x,n_sigma_trim=3,unit=1,ignore_nan=True,use_n_eff=None,utype=None):
+def mean(x,n_sigma_trim=None,unit=1,ignore_nan=True,use_n_eff=False,utype=None):
     """
     Returns a gummy representing the mean of a float array.
     
@@ -190,10 +190,10 @@ def mean(x,n_sigma_trim=3,unit=1,ignore_nan=True,use_n_eff=None,utype=None):
     x:  array_like of `float` or `int`
         the value to be averaged
 
-    n_sigma_trim:  `int`, optional
+    n_sigma_trim:  `int` or `float`, optional
         If this is not `None`, then ``sigma_trim(x, n_sigma_trim)`` is applied
         to the data before taking the mean.  Set this argument to `None` if you
-        don't want `sigma_trim` to be applied.  The default value is 3.
+        don't want `sigma_trim` to be applied.  The default value is `None`.
 
     unit: `str`, `Unit` or 1
         The unit of returned gummy.  The default is 1.
@@ -203,9 +203,8 @@ def mean(x,n_sigma_trim=3,unit=1,ignore_nan=True,use_n_eff=None,utype=None):
         The default value is `True`
 
     use_n_eff: `bool`, optional
-        Whether to use the `n_eff` function to calculate an effective number of degrees of freedom.
-        If use_n_eff is `None`, then `n_eff` will be used if the length of x is greater or equal
-        to 20.  The default value is `None`.
+        Whether to use the `n_eff` function to calculate an effective number of 
+        degrees of freedom. The default value is `False`.
 
     bayesian:  `bool`, optional
         If bayesian is `False` the standard uncertainty of the returned
@@ -218,11 +217,11 @@ def mean(x,n_sigma_trim=3,unit=1,ignore_nan=True,use_n_eff=None,utype=None):
     x = np.asanyarray(x)
     if ignore_nan:
         x = np.ma.masked_where([y is None or np.isnan(y) for y in x],x)
-    if sigma_trim is not None:
+    if n_sigma_trim is not None:
         x = sigma_trim(x, n_sigma_trim)
     
     n = x.count()
-    if use_n_eff or (use_n_eff is None and n >= 20):
+    if use_n_eff:
         n = n_eff(x)
 
     m = float(np.mean(x))

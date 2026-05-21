@@ -31,7 +31,8 @@ module.  The gummy object, in turn, inherits from the nummy object.
 """
 
 import numpy as np
-from .ummy import ummy,immy,_isscalar,_format_exp,_to_decimal,MantissaFormatter
+from .ummy import (ummy,immy,_isscalar,_format_exp,_to_decimal,MantissaFormatter,
+                   UncertainValue)
 from .nummy import nummy,get_name
 from .exceptions import IncompatibleUnitsError
 from .unit import Unit,one,Quantity,MetaQuantity,MFraction
@@ -119,34 +120,6 @@ def _set_covariance_matrix(gummys, matrix):
 def _set_correlation_matrix(gummys, matrix):
     nummys = [g.value for g in gummys]
     nummy._set_correlation_matrix(nummys, matrix)
-    
-def _replq(x):
-    if _isscalar(x):
-        if isinstance(x,np.ndarray):
-            x = x.item()
-        if isinstance(x,Quantity):
-            return x.convert(one).value
-        return x
-    
-    x = np.array(x)
-    with np.nditer(x,flags=['refs_ok'],op_flags=['readwrite']) as it:
-        for r in it:
-            r[...] = r.item().convert(one).value if isinstance(r.item(),Quantity) else r
-    return x
-
-def _replu(x):
-    if _isscalar(x):
-        if isinstance(x,np.ndarray):
-            x = x.item()
-        if issubclass(type(x),(ummy,gummy)):
-            return x.x
-        return x
-    
-    x = np.array(x)
-    with np.nditer(x,flags=['refs_ok'],op_flags=['readwrite']) as it:
-        for r in it:
-            r[...] = r.item().x if issubclass(type(r.item()),(ummy,gummy)) else r
-    return x
         
 
 class MetaGummy(MetaQuantity):
@@ -500,7 +473,7 @@ class MetaGummy(MetaQuantity):
         Unit.mulsep = bool(v)
         
     
-class gummy(Quantity,metaclass=MetaGummy):
+class gummy(Quantity,UncertainValue,metaclass=MetaGummy):
     """
     A gummy object represents a numerical value with an uncertainty and (or) a
     unit.  They can be used in place of float values in Python expressions and 
@@ -613,6 +586,9 @@ class gummy(Quantity,metaclass=MetaGummy):
                  utype=None,name=None):
         self._old = None
         self.autoconvert = False
+        
+        if isinstance(x,np.ndarray) and not np.ndim(x):
+            x = x.item()
         
         if isinstance(x,gummy):
             self._value = nummy(x.value)
@@ -3219,209 +3195,24 @@ class gummy(Quantity,metaclass=MetaGummy):
         return ret
     
     @classmethod
-    def apply(cls,function,derivative,*args,**kwds):
-        """
-        A classmethod that applies a function to one or more gummy or jummy 
-        objects propagating the uncertainty.
-        
-        Parameters
-        ----------
-        function: `function`
-              The the function to be applied. For `gummy.apply`, 'function'
-              should take one or more float arguments and return a float value 
-              or float array.  For `jummy.apply`, 'function' may also take and
-              return complex values.  If the function returns an array like 
-              value, it must be convertable to a numpy homogeneous array.
-
-        derivative:  `function`
-              The name of a second function that gives the derivatives
-              with respect to the arguments of `function`.  `derivative` should
-              take an equal number of arguments as `function`.  If `function`
-              takes one argument `derivative` should return a float and if
-              `function` takes more than one argument then `derivative` should
-              return a tuple, list or array of floats that contains the derivatives
-              with respect to each argument.  In the case of `jummy.apply`, the
-              derivatives with respect to each argument may be real or complex
-              values, in which case `function` is assumed to be holomorphic.  Or
-              the derivative may be a 2 x 2 matrix of the form:
-
-                              [[ du/dx, du/dy ],
-                               [ dv/dx, dv/dy ]]
-
-             where function(x + j*y) = u + j*v.
-
-        *args:  `gummy`, `jummy`, or `float`
-              One or more arguments to which `function` will be applied.  These
-              arguments need not all be `Dfunc` objects; arguments  such as
-              floats will be taken to be constants with no uncertainty.
-              They may also be numpy ndarrays in which case the usual numpy
-              broadcasting rules apply.
-              
-        Returns
-        -------
-        `gummy`, `jummy` or a `numpy.ndarray` of `gummy` or `jummy`:
-            If none of the arguments are `gummy` or `jummy`
-            then the return value is the same type as the return value of `function`.
-            Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
-            `gummy` or a `jummy` depending on whether `function` has a float or
-            a complex return value.
-            
-        
-        Examples
-        --------
-            
-        >>> import numpy as np
-        >>> x = gummy(0.678,u=0.077)
-        >>> gummy.apply(np.sin,np.cos,x)
-        0.627 +/- 0.060
-        
-        >>> x = gummy(1.22,u=0.44)
-        >>> y = gummy(3.44,u=0.67)
-        >>> def dhypot(x,y):
-        ...     return (x1/sqrt(x1**2 + x2**2),x2/np.sqrt(x1**2 + x2**2))
-        >>> gummy.apply(np.hypot,dhypot,x,y)
-        3.65 +/- 0.65
-        """
-        
-        if np.all([_isscalar(a) for a in args]):
-            return cls._apply(function,derivative,*args,**kwds)
-        
-        b = np.broadcast(*args)
-        ret = np.empty(b.shape,dtype=object)
-        ret = [cls._apply(function,derivative,*a,**kwds) for a in b]
-        ret = np.array(ret)
-        
-        shape = b.shape
-        if isinstance(ret[0],np.ndarray):
-            shape += ret[0].shape
-        np.reshape(ret,shape)
-        
-        return ret
-                
-    
-    @classmethod
-    def _apply(cls,function,derivative,*args,fxdx=None):
-        args = [_replq(a) for a in args]
-        x = [_replu(a) for a in args]
-        
-        if fxdx is None:
-            fx = function(*x)
-            d = derivative(*x)
-        else:
-            fx,d = fxdx
-        
-        if not _isscalar(fx):
-            fx = np.asarray(fx)
-            d = np.asarray(d)
-            r = np.empty(fx.shape,dtype=object)
-            with np.nditer(fx,flags=['multi_index']) as it:
-                for i in it:
-                    idx = tuple(it.multi_index)
-                    fxdx = (fx[idx],d[idx])
-                    r[idx] = cls._apply(lambda *x:np.asarray(function(*x))[idx],
-                                        lambda *x:np.asarray(derivative(*x))[idx],
-                                        *args,fxdx=fxdx)
-            return r
-        
-        r = nummy._apply(function,derivative,*args,fxdx=(fx,d))
+    def _apply(cls,function,derivative,*args,fxdx=None,**kwds):
+        r = nummy._apply(function,derivative,*args,fxdx=fxdx,**kwds)
         return cls(r)
         
     @classmethod
-    def napply(cls,function,*args,**kwds):
-        """
-        gummy.napply(function, arg1, arg2, ...) and
-        jummy.napply(function, arg1, arg2, ...)
-        
-        A classmethod that applies a function to one or more gummy or jummy 
-        objects propagating the uncertainty.  This method is similar to apply 
-        except that the derivatives are computed numerically so a derivative 
-        function does not need to be supplied.
-        
-        Parameters
-        ----------
-        function: `function`
-            The the function to be applied. For `gummy.apply`, 'function'
-            should take one or more float arguments and return a float value
-            r float array.  For `jummy.apply`, 'function' may also take and
-            return complex values.  If the function returns an array like 
-            value, it must be convertable to a numpy homogeneous array.
-
-        *args:  `gummy`, `jummy`, or `float`
-              One or more arguments to which `function` will be applied.  These
-              arguments need not all be `Dfunc` objects; arguments  such as
-              floats will be taken to be constants with no uncertainty.
-              They may also be numpy ndarrays in which case the usual numpy
-              broadcasting rules apply.
-
-        Returns
-        -------
-        `gummy`, `jummy` or a `numpy.ndarray` of `gummy` or `jummy`:
-            If none of the arguments are `gummy` or `jummy`
-            then the return value is the same type as the return value of `function`.
-            Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
-            `gummy` or a `jummy` depending on whether `function` has a float or
-            a complex return value.
-            
-        
-        Examples
-        --------
-            
-        >>> import numpy as np
-        >>> x = gummy(0.678,u=0.077)
-        >>> gummy.napply(np.sin,x)
-        0.627 +/- 0.060
-        
-        >>> x = gummy(1.22,u=0.44)
-        >>> y = gummy(3.44,u=0.67)
-        >>> gummy.napply(np.hypot,x,y)
-        3.65 +/- 0.65
-        """
-        
-        if np.all([_isscalar(a) for a in args]):
-            return cls._napply(function,*args,**kwds)
-        
-        b = np.broadcast(*args)
-        ret = np.empty(b.shape,dtype=object)
-        ret = [cls._napply(function,*a,**kwds) for a in b]
-        ret = np.array(ret)
-        
-        shape = b.shape
-        if isinstance(ret[0],np.ndarray):
-            shape += ret[0].shape
-        np.reshape(ret,shape)
-        
-        return ret
-        
-    @classmethod
-    def _napply(cls,function,*args,fxx=None):
-        args = [_replq(a) for a in args]
-        
-        if fxx is None:
-            x = [_replu(a) for a in args]
-            fxx = function(*x)
-        
-        if not _isscalar(fxx):
-            fxx = np.asarray(fxx)
-            r = np.empty(fxx.shape,dtype=object)
-            with np.nditer(fxx,flags=['multi_index']) as it:
-                for i in it:
-                    idx = tuple(it.multi_index)
-                    r[idx] = cls._napply(lambda *x:np.asarray(function(*x))[idx],
-                                         *args,fxx=fxx[idx])
-            return r
-        
-        r = nummy._napply(function,*args,fxx=fxx)
+    def _napply(cls,function,*args,fxx=None,**kwds):
+        r = nummy._napply(function,*args,fxx=fxx,**kwds)
         return cls(r)
     
-    def __array_ufunc__(self,ufunc,method,*args,**kwds):
-        if method != '__call__':
-            return None
+    #def __array_ufunc__(self,ufunc,method,*args,**kwds):
+        #if method != '__call__':
+            #return None
         
-        if any(isinstance(a,np.ndarray) for a in args):
-            args = [np.array(a) if isinstance(a,gummy) else a for a in args]
-            return ufunc(*args)
+        #if any(isinstance(a,np.ndarray) for a in args):
+            #args = [np.array(a) if isinstance(a,gummy) else a for a in args]
+            #return ufunc(*args)
         
-        return super().__array_ufunc__(ufunc,method,*args,**kwds)
+        #return super().__array_ufunc__(ufunc,method,*args,**kwds)
                 
     def _nprnd(self,f):
         ret = self._value._nprnd(f)

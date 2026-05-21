@@ -176,6 +176,35 @@ def _to_decimal(x,max_digits=None):
                 xd = Decimal(float(x))
     return xd
 
+def _replq(x):
+    if _isscalar(x):
+        if isinstance(x,np.ndarray):
+            x = x.item()
+        if isinstance(x,Quantity):
+            x = x.convert(one).value
+        return x
+    
+    x = np.array(x)
+    with np.nditer(x,flags=['refs_ok'],op_flags=['readwrite']) as it:
+        for r in it:
+            r[...] = _replq(r)
+    return x
+
+def _replu(x):
+    if _isscalar(x):
+        if isinstance(x,np.ndarray):
+            x = x.item()
+        if isinstance(x,Quantity):
+            x = x.value
+        if isinstance(x,UncertainValue):
+            x = x.x
+        return x
+    
+    x = np.array(x)
+    with np.nditer(x,flags=['refs_ok'],op_flags=['readwrite']) as it:
+        for r in it:
+            r[...] = _replu(r)
+
 class MantissaFormatter:
     use_th_separator = True
     th_separator = ' '
@@ -316,6 +345,15 @@ def _combrd(xl,du):
 # those variables divided by the combined standard uncertainty of the ummy.
 class _udict(dict):
     pass
+    #def __init__(self,*p,neg=None):
+        #super.__init__(*p)
+        #self._neg = neg
+    
+    #def neg(self):
+        #if self._neg is None:
+            #self._neg = _udict(((k,-v) for k,v in self.items()),neg=self)
+        #return self._neg
+        
 
 class _UmmyRef:
     __slots__ = 'dof','utype'
@@ -327,7 +365,209 @@ class _UmmyRef:
 class MetaUmmy(MetaPrettyPrinter,ABCMeta):
     pass
 
-class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
+class UncertainValue:
+    @classmethod
+    def apply(cls,function,derivative,*args,**kwds):
+        """
+        A classmethod that applies a function to one or more gummy or jummy 
+        objects propagating the uncertainty.
+        
+        Parameters
+        ----------
+        function: `function`
+              The the function to be applied. For `gummy.apply`, 'function'
+              should take one or more float arguments and return a float value 
+              or float array.  For `jummy.apply`, 'function' may also take and
+              return complex values.  If the function returns an array like 
+              value, it must be convertable to a numpy homogeneous array.
+
+        derivative:  `function`
+              The name of a second function that gives the derivatives
+              with respect to the arguments of `function`.  `derivative` should
+              take an equal number of arguments as `function`.  If `function`
+              takes one argument `derivative` should return a float and if
+              `function` takes more than one argument then `derivative` should
+              return a tuple, list or array of floats that contains the derivatives
+              with respect to each argument.  In the case of `jummy.apply`, the
+              derivatives with respect to each argument may be real or complex
+              values, in which case `function` is assumed to be holomorphic.  Or
+              the derivative may be a 2 x 2 matrix of the form:
+
+                              [[ du/dx, du/dy ],
+                               [ dv/dx, dv/dy ]]
+
+             where function(x + j*y) = u + j*v.
+
+        *args:  `gummy`, `jummy`, or `float`
+              One or more arguments to which `function` will be applied.  These
+              arguments need not all be `Dfunc` objects; arguments  such as
+              floats will be taken to be constants with no uncertainty.
+              They may also be numpy ndarrays in which case the usual numpy
+              broadcasting rules apply.
+              
+        Returns
+        -------
+        `gummy`, `jummy` or a `numpy.ndarray` of `gummy` or `jummy`:
+            If none of the arguments are `gummy` or `jummy`
+            then the return value is the same type as the return value of `function`.
+            Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
+            `gummy` or a `jummy` depending on whether `function` has a float or
+            a complex return value.
+            
+        
+        Examples
+        --------
+            
+        >>> import numpy as np
+        >>> x = gummy(0.678,u=0.077)
+        >>> gummy.apply(np.sin,np.cos,x)
+        0.627 +/- 0.060
+        
+        >>> x = gummy(1.22,u=0.44)
+        >>> y = gummy(3.44,u=0.67)
+        >>> def dhypot(x,y):
+        ...     return (x1/sqrt(x1**2 + x2**2),x2/np.sqrt(x1**2 + x2**2))
+        >>> gummy.apply(np.hypot,dhypot,x,y)
+        3.65 +/- 0.65
+        """
+        
+        if np.all([_isscalar(a) for a in args]):
+            return cls._apply(function,derivative,*args,**kwds)
+        
+        b = np.broadcast(*args)
+        ret = np.empty(b.shape,dtype=object)
+        ret = [cls._iapply(function,derivative,*a,**kwds) for a in b]
+        ret = np.array(ret)
+        
+        shape = b.shape
+        if isinstance(ret[0],np.ndarray):
+            shape += ret[0].shape
+        np.reshape(ret,shape)
+        
+        return ret
+    
+    @classmethod
+    def _iapply(cls,function,derivative,*args,**kwds):
+        args = [_replq(a) for a in args]
+        x = [_replq(a) for a in args]
+        
+        fx = function(*x,**kwds)
+        d = derivative(*x,**kwds)
+        if _isscalar(fx) and len(args) > 1:
+           d = [i[0] if not _isscalar(i) and len(i) == 1 else i for i in d]
+        
+        if _isscalar(fx):
+            r = cls._apply(function,derivative,*args,fxdx = (fx,d),**kwds)
+        else:
+            fx = np.asarray(fx)
+            d = np.asarray(d)
+            r = np.empty(fx.shape,dtype=object)
+            with np.nditer(fx,flags=['multi_index']) as it:
+                for i in it:
+                    idx = tuple(it.multi_index)
+                    fxdx = (fx[idx],d[idx])
+                    r[idx] = cls._apply(lambda *x:np.asarray(function(*x))[idx],
+                                        lambda *x:np.asarray(derivative(*x))[idx],
+                                        *args,fxdx=fxdx)
+        return r
+    
+    @classmethod
+    def _apply(cls,function,derivative,*a,fxdx=None,**kwds):
+        raise NotImplementedError()
+    
+    @classmethod
+    def napply(cls,function,*args,**kwds):
+        """
+        gummy.napply(function, arg1, arg2, ...) and
+        jummy.napply(function, arg1, arg2, ...)
+        
+        A classmethod that applies a function to one or more gummy or jummy 
+        objects propagating the uncertainty.  This method is similar to apply 
+        except that the derivatives are computed numerically so a derivative 
+        function does not need to be supplied.
+        
+        Parameters
+        ----------
+        function: `function`
+            The the function to be applied. For `gummy.apply`, 'function'
+            should take one or more float arguments and return a float value
+            r float array.  For `jummy.apply`, 'function' may also take and
+            return complex values.  If the function returns an array like 
+            value, it must be convertable to a numpy homogeneous array.
+
+        *args:  `gummy`, `jummy`, or `float`
+              One or more arguments to which `function` will be applied.  These
+              arguments need not all be `Dfunc` objects; arguments  such as
+              floats will be taken to be constants with no uncertainty.
+              They may also be numpy ndarrays in which case the usual numpy
+              broadcasting rules apply.
+
+        Returns
+        -------
+        `gummy`, `jummy` or a `numpy.ndarray` of `gummy` or `jummy`:
+            If none of the arguments are `gummy` or `jummy`
+            then the return value is the same type as the return value of `function`.
+            Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
+            `gummy` or a `jummy` depending on whether `function` has a float or
+            a complex return value.
+            
+        
+        Examples
+        --------
+            
+        >>> import numpy as np
+        >>> x = gummy(0.678,u=0.077)
+        >>> gummy.napply(np.sin,x)
+        0.627 +/- 0.060
+        
+        >>> x = gummy(1.22,u=0.44)
+        >>> y = gummy(3.44,u=0.67)
+        >>> gummy.napply(np.hypot,x,y)
+        3.65 +/- 0.65
+        """
+        
+        if np.all([_isscalar(a) for a in args]):
+            return cls._napply(function,*args,**kwds)
+        
+        b = np.broadcast(*args)
+        ret = np.empty(b.shape,dtype=object)
+        ret = [cls._napply(function,*a,**kwds) for a in b]
+        ret = np.array(ret)
+        
+        shape = b.shape
+        if isinstance(ret[0],np.ndarray):
+            shape += ret[0].shape
+        np.reshape(ret,shape)
+        
+        return ret
+    
+    @classmethod
+    def _inapply(cls,function,*args,fxx=None,**kwds):
+        args = [_replq(a) for a in args]
+        x = [_replq(a) for a in args]
+        
+        fxx = function(*x,**kwds)
+        
+        if _isscalar(fxx):
+            r = cls._napply(function,*args,fxx=fxx,**kwds)
+        else:
+            fxx = np.asarray(fxx)
+            r = np.empty(fxx.shape,dtype=object)
+            with np.nditer(fxx,flags=['multi_index']) as it:
+                for i in it:
+                    idx = tuple(it.multi_index)
+                    r[idx] = cls._napply(lambda *x:np.asarray(function(*x))[idx],
+                                         *args,fxx=fxx[idx])
+        return r
+        
+    @classmethod
+    def _napply(cls,function,*args,fxx=None,**kwds):
+        raise NotImplementedError()
+
+class UncertainComplexValue(UncertainValue):
+    pass
+
+class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
     max_dof = 10000 # any larger dof will be rounded to float('inf')
     nsig = 2 # The number of digits to quote the uncertainty to
     thousand_spaces = True # If true spaces will be placed between groups of three digits.
@@ -696,7 +936,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
                 raise ValueError('the diagonal elements of the covariance matrix must be positive real numbers')
             except IndexError:
                 raise ValueError('covariance must have shape len(gummys) x len(gummys)')
-            correlation_matrix = [[covariance_matrix[i][j]/(u[i]*u[j]) for i in range(n)] for j in range(n)]
+            correlation_matrix = [[covariance_matrix[i][j]/(u[i]*u[j]) if u[i] != 0 and u[j] != 0 else 0 for i in range(n)] for j in range(n)]
         else:
             if u is None:
                 u = [0]*n
@@ -722,7 +962,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
                 raise ValueError('the correlation matrix must have shape len(gummys) x len(gummys)')
             
             for i in range(n):
-                if abs(m[i][i] - 1.0) > sqrt(ummy.correlation_tolerance):
+                if u[i] != 0 and abs(m[i][i] - 1.0) > sqrt(ummy.correlation_tolerance):
                     raise ValueError('correlation matrix diagonal elements must be 1')
                     
             # The correlated values can be constructed from a linear combination
@@ -887,12 +1127,14 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
     
     @classmethod
     def _apply(cls,function,derivative,*args,fxdx=None):
-        if fxdx is None:
-            x = [a.x if isinstance(a,ummy) else a for a in args]
-            fx = function(*x)
-            d = derivative(*x)
-        else:
-            fx,d = fxdx
+        #if fxdx is None:
+            #x = [a.x if isinstance(a,ummy) else a for a in args]
+            #fx = function(*x)
+            #d = derivative(*x)
+        #else:
+            #fx,d = fxdx
+        fx,d = fxdx
+        
         if len(args) == 1:
             d = [d]
             
@@ -967,7 +1209,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         #else:
             #fx,x = fxx
         
-        d = _der(function,*args)
+        d = njacobian(function,*args)
         
         if fxx is None:
             fxdx = None
@@ -1630,13 +1872,13 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
             return 1
         return float(dof)
     
-def _der(function,*args):
+def njacobian(function,*args):
     # computes the numerical derivative of function with respect to args.
-    # puts zeros for any of args that are not an ummy
+    # puts zeros for any of args that are not an UncertainValue or has u == 0
     n = len(args)
     if n == 1:
         arg = args[0]
-        if not isinstance(arg,ummy) or arg._u == 0:
+        if not isinstance(arg,UncertainValue) or arg.u == 0:
             return 0
                 
         df = None
@@ -1662,13 +1904,13 @@ def _der(function,*args):
         
     v = np.empty(n)
     for i,a in enumerate(args):
-        if isinstance(a,ummy):
+        if isinstance(a,UncertainValue):
             v[i] = a.x
         else:
             v[i] = a
     d = np.zeros(n)
     for i,p in enumerate(args):
-        if isinstance(p,ummy) and p._u != 0:          
+        if isinstance(p,UncertainValue) and p.u != 0:          
             df = None
             s = 2*p.u
             x1 = np.array(v)
@@ -1732,7 +1974,7 @@ class MetaImmy(MetaPrettyPrinter,ABCMeta):
     def imag_symbol(cls,value):
         immy._imag_symbol = str(value)
     
-class immy(PrettyPrinter,Dfunc,Number,metaclass=MetaImmy):
+class immy(PrettyPrinter,Dfunc,Number,UncertainComplexValue,metaclass=MetaImmy):
     
     _style = 'cartesian'
     _imag_symbol = 'j'
