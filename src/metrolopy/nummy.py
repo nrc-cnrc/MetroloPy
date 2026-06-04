@@ -401,7 +401,6 @@ class nummy(ummy):
         """
         r = ummy(self.x,u=self.u)
         r._ref = self._ref
-        r._refs = self._refs
         return r
     
     def splonk(self):

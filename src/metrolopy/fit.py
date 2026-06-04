@@ -34,7 +34,7 @@ from .unit import Quantity
 import numpy as np
 from warnings import warn
 
-def odr_jac(work,count,xdim,nparam,ydim,nwe):
+def odr_jac(work,count,xdim,nparam,ydim,nwe,task):
     # get the jacobian with respect to the fit parameters and the jacobian with 
     # respect to x from the rwork array returned by odrpack.odr_fit
     a = 2*count*xdim + 3*count*ydim  + nparam*nparam + 10*nparam + 17
@@ -47,11 +47,14 @@ def odr_jac(work,count,xdim,nparam,ydim,nwe):
 
     c = b + nwe*ydim + ydim*(nparam + xdim) + 4*count*xdim + ydim*ydim
     d = c + count*xdim*ydim
-    jx = work[c:d]
-    if ydim == 1:
-        jx = np.reshape(jx,(count,xdim),order='F')
+    if task == 'OLS':
+        jx = None
     else:
-        jx = np.reshape(jx,(count,xdim,ydim),order='F')
+        jx = work[c:d]
+        if ydim == 1:
+            jx = np.reshape(jx,(count,xdim),order='F')
+        else:
+            jx = np.reshape(jx,(count,xdim,ydim),order='F')
     
     return (jp,jx)
 
@@ -80,12 +83,11 @@ def getvalues(txt,x,u,cov,w,units,ignore_corr):
     shape = np.shape(x)
     if np.ndim(x) == 1:
         dim = 1
-        x = np.reshape(x,(1,len(x)))
+        #x = np.reshape(x,(1,len(x)))
     else:
         dim = shape[0]
         
     shape = np.shape(x)
-    
     
     if units is not None:
         if _isscalar(units):
@@ -94,6 +96,8 @@ def getvalues(txt,x,u,cov,w,units,ignore_corr):
             if np.shape(units) != (dim,):
                 raise TypeError(txt + 'units must be either None, a single unit or a list of units with length equal to xdim')
             units = [Unit.unit(u) for u in units]
+        if dim == 1:
+            units = units[0]
         
     pcorr = False
     if x.dtype is np.dtype('O'):
@@ -101,6 +105,8 @@ def getvalues(txt,x,u,cov,w,units,ignore_corr):
         xf = np.empty(shape)
         uf = np.empty(shape)
 
+        if dim == 1:
+            units = x[0].unit if isinstance(x[0],Quantity) else one
         if units is None:
             units = [i[0].unit if isinstance(i[0],Quantity) else one for i in x]
             
@@ -110,7 +116,10 @@ def getvalues(txt,x,u,cov,w,units,ignore_corr):
                     ii = i.item()
                 else:
                     ii = i
-                iunit = units[it.multi_index[0]]
+                if dim == 1:
+                    iunit = units
+                else:
+                    iunit = units[it.multi_index[0]]
                 if iunit is one:
                     ii = ii.convert(one) if isinstance(i,Quantity) else ii
                 else:
@@ -123,24 +132,30 @@ def getvalues(txt,x,u,cov,w,units,ignore_corr):
                         ii = gummy(ii,unit=iunit)
                 xx[it.multi_index] = ii
                 ii = ii.value if isinstance(ii,Quantity) else ii
-                xf[it.multi_index] = ii.x if isinstance(ii,UncertainValue) else ii
-                uf[it.multi_index] = ii.u if isinstance(ii,UncertainValue) else 0
-        
-        if u is None and cov is None:
-            pcorr = np.any(uf)
-            if not pcorr:
-                xx = np.array(list(xx))
+                if isinstance(ii,UncertainValue):
+                    if ii.u > 0:
+                        pcorr = True
+                    xf[it.multi_index] = ii.x
+                    uf[it.multi_index] = ii.u
+                else:
+                    xf[it.multi_index] = ii
+                    uf[it.multi_index] = 0
     
-        if pcorr:
+        if np.any(uf):
             if dim == 1:
-                cov = gummy.covariance_matrix(xx[0])
+                cov = gummy.covariance_matrix(xx)
             else:
                 cov = np.array([gummy.covariance_matrix(i) for i in xx.T])
-                
-        x = xx
+            u = uf
+            x = xx
+        else:
+            x = np.array(list(xx))
     else:
         if units is None:
-            units = [one]*dim
+            if dim == 1:
+                units = one
+            else:
+                units = [one]*dim
             
         if x.dtype is np.dtype('float64'):
             xf = x
@@ -148,20 +163,17 @@ def getvalues(txt,x,u,cov,w,units,ignore_corr):
             xf = x.astype(np.dtype('float64'))
 
     if u is None and cov is not None:
-        if pcorr:
-            u = uf
-        else:
             if dim == 1:
-                u = np.diag(cov)
+                u = np.sqrt(np.diagonal(cov))
             else:
-                u = np.array([np.diag(i) for i in cov]).T
+                u = np.sqrt(np.array([np.diagonal(i) for i in cov]).T)
            
     if u is not None and cov is not None:
         if dim == 1:
-            if not np.any(cov - np.diag(u)):
+            if not np.any(cov - np.diag(u**2)):
                 cov = None
         else:
-            if not np.any(np.any(cov - np.diag(u.T) for i in cov)):
+            if not np.any(np.any(cov - np.diag((u.T)**2) for i in cov)):
                 cov = None
                 
     if ignore_corr:
@@ -182,22 +194,17 @@ def getvalues(txt,x,u,cov,w,units,ignore_corr):
                     w = np.array([pinvh(i) for i in cov])
             else:
                 w = 1/u**2
-            var = np.sum(w)/np.size(w)
-            w *= var
+            var = 1
         else:
             if cov is not None:
-                if dim == 1 and np.ndim(w) == 2:
-                    var = np.sum(w.T@cov@w)/np.size(w)
-        
-    if dim == 1:
-        x= x[0]
-        xf = xf[0]
-        if len(np.shape(u)) > 1:
-            u = u[0]
-        units = units[0]
-        
-        if np.ndim(w) == 2 and not np.max(w - np.diag(np.diagonal(w))):
-            w = np.diagonal(w)
+                if dim == 1:
+                    if _isscalar(w):
+                        ww = np.full(len(x),w)
+                    else:
+                        ww = w
+                    var = np.sum(ww.T@cov@ww)/np.size(w)
+            else:
+                var = np.sum(w*u**2)/np.size(w)
         
     return x,xf,u,cov,w,var,pcorr,units,dim
 
@@ -212,22 +219,6 @@ def wsqrt(w):
     if np.ndim(w) < 2:
         return np.sqrt(w)
     return cholesky(w)
-
-def get_jacx(f,x,xf,pf,w):
-    # numerically calculate the jacobian of the fit function with respect to x
-    if np.ndim(x) == 1:
-        x = [x[i] if isinstance(x[i],UncertainValue) and x[i].u > 0 else 
-                      gummy(xf[i],1) for i in len(x)]
-        r = np.array([njacobian(f,x,*pf) for i in x]).T
-    else:
-        x = [[x[j][i] if isinstance(x[i],UncertainValue) and x[i].u > 0 else 
-                      gummy(xf[i],1) for i in len(x[0])] for j in len(x)]
-        r = np.array([njacobian(f,*x,*pf) for i in x]).T
-        
-    if np.ndim(w) == 1:
-        return w*r
-    else:
-        return w@r
     
 
 class _Fit:
@@ -241,8 +232,8 @@ class _Fit:
     ylabel = None
     
     def __init__(self,x,y,ux=None,uy=None,xweights=None,weights=None,xcov=None,
-                 ycov=None,sigma_is_known=True,xunit=None,yunit=None,ignore_correlations=False):
-        self.sigma_is_known = sigma_is_known
+                 ycov=None,variance_is_known=True,xunit=None,yunit=None,ignore_correlations=False):
+        self.variance_is_known = variance_is_known
             
         if isinstance(x,np.ma.masked_array) or isinstance(y,np.ma.masked_array):
             if not isinstance(x,np.ma.masked_array):
@@ -272,25 +263,9 @@ class _Fit:
                 y.mask = mask
                 y = y.compressed()
                 
-        if weights is not None and xweights is not None:
-            c = np.sum(weights)/np.size(weights) + np.sum(xweights)/np.size(xweights)
-            weights /= c
-            xweights /= c
-        elif weights is not None:
-            weights /= np.sum(weights)/np.size(weights)
-        elif xweights is not None:
-            xweights /= np.sum(xweights)/np.size(xweights)
-            
-        self.ssqpred = None
-        self.spred = None
-        self.x,self.xf,self.ux,self.xcov,self.xweights,self.xssqpred,self.xpcorr,self._xunit,self.xdim = getvalues('x',x,ux,xcov,xweights,xunit,ignore_correlations)
+        self.x,self.xf,self.ux,self.xcov,self.xweights,self.known_xvar,self.x_is_gummies,self._xunit,self.xdim = getvalues('x',x,ux,xcov,xweights,xunit,ignore_correlations)
         if y is not None and not _isscalar(y):
-            self.y,self.yf,self.uy,self.ycov,self.weights,self.ssqpred,self.ypcorr,self._yunit,self.ydim = getvalues('y',y,uy,ycov,weights,yunit,ignore_correlations)
-            if self.xf.shape[-1] != self.yf.shape[-1]:
-                raise TypeError('x and y do not have equal lengths')
-            if self.ssqpred is not None:
-                self.spred = np.sqrt(self.ssqpred)
-            self.sqrt_weights = wsqrt(self.weights)
+            self.y,self.yf,self.uy,self.ycov,self.weights,self.known_var,self.y_is_gummies,self._yunit,self.ydim = getvalues('y',y,uy,ycov,weights,yunit,ignore_correlations)
         else:
             self.y = y
             self.yf = None
@@ -300,11 +275,16 @@ class _Fit:
             self.ypcorr = None
             self.covy = None
             self.weights = None
-        
+            self.known_var = None
+            self.y_is_gummies = False
+            
+        self.sqrt_weights = wsqrt(self.weights)
+        self.sqrt_xweights = wsqrt(self.xweights)
+    
         self.implicit = y is None
             
-        if self.ssqpred is None and self.xssqpred is None:
-            self.sigma_is_known = False
+        if self.known_var is None and self.known_xvar is None:
+            self.variance_is_known = False
         
         self.count = self.xf.shape[-1]
                        
@@ -527,10 +507,10 @@ class _Fit:
             plt.show()
             
     def control_limit(self,x,k=2):
-        if self.spred is None:
+        if self.known_var is None:
             s = self.s
         else:
-            s = self.spred
+            s = np.sqrt(self.known_var)
         return k*(np.sqrt(self.ypred(x).u**2 + s**2))
         
     
@@ -538,7 +518,7 @@ class Fit(_Fit,PrettyPrinter):
     
     latex_math = None
     
-    def __init__(self,x,y=None,p0=None,ux=None,uy=None,sigma_is_known=True,
+    def __init__(self,x,y=None,p0=None,ux=None,uy=None,variance_is_known=True,
                  xunit=None, yunit=None,solver=None,xweights=None,weights=None,
                  xcov=None,ycov=None,ignore_correlations=False,**kw):
         """
@@ -601,7 +581,7 @@ class Fit(_Fit,PrettyPrinter):
         uy: `float`, array_like of `float`  or `None`, optional
             Uncertainty in the `y` values. This should not be specified if the y
             argument contains gummys.  The default is `None`.
-        sigma_is_known: `bool`, optional
+        variance_is_known: `bool`, optional
             If this is `True` then any uncertainties in the data  (either as
             gummys in the `x` or `y` values or in the ux or uy parameters)
             are used to calculate the uncertainties in the fit.  Otherwise,
@@ -750,15 +730,27 @@ class Fit(_Fit,PrettyPrinter):
             Returns a `str` containing unicode, latex, and html representations of
             the fit function.
         """
-        super().__init__(x,y,ux=ux,uy=uy,sigma_is_known=sigma_is_known,
+        super().__init__(x,y,ux=ux,uy=uy,variance_is_known=variance_is_known,
                          xunit=xunit,yunit=yunit, xweights=xweights,
                          weights=weights,xcov=xcov,ycov=ycov,
                          ignore_correlations=ignore_correlations)
+        
+        if '_ch_create_p' in kw:
+            self._ch_create_p = kw.pop('_ch_create_p')
+        else:
+            self._ch_create_p = False
             
         if solver is not None:
             solver = solver.strip().lower()
         self.solver = solver
         self.solver,self._solver = self._get_solver(solver,**kw)
+        
+        self.xvar = None
+        self.yvar = None
+        self.xres = None
+        self.yres = None
+        self.njacp = None
+        self.njacx = None
         
         if p0 is None:
             try:
@@ -905,7 +897,6 @@ class Fit(_Fit,PrettyPrinter):
             xf = self.xf
             yf = self.yf
             res = self.res
-            sigma = self.sigma
             s = self.s
             cov = self.cov
             fit_output = self.fit_output
@@ -925,7 +916,6 @@ class Fit(_Fit,PrettyPrinter):
             self.xf = xf
             self.yf = yf
             self.res = res
-            self.sigma = sigma
             self.s = s
             self.cov = cov
             self.fit_output = fit_output
@@ -958,6 +948,39 @@ class Fit(_Fit,PrettyPrinter):
         else:
             raise ValueError('solver ' + str(solver) + ' is not recognized')
             
+    def get_jacx(self):
+        try:
+            if self.xdim <= 1:
+                return self.jacx(self.xf,*self.pf).T*self.sqrt_weights
+            else:
+                if np.ndim(self.sqrt_weights) <= 1:
+                    return self.jacx(*self.xf,*self.pf)*self.sqrt_weights
+                else:
+                    return self.jacx(*self.xf,*self.pf)@self.sqrt_weights
+        except NotImplementedError:
+            # numerically calculate the jacobian of the fit function with respect to x
+            f = self.f
+            x = self.x
+            xf = self.xf
+            pf = self.pf
+            w = self.sqrt_weights
+            if self.xdim == 1:
+                x = [x[i] if isinstance(x[i],UncertainValue) and x[i].u > 0 else 
+                              gummy(xf[i],1) for i in range(len(x))]
+                r = np.array([njacobian(lambda z:f(z,*pf),i) for i in x]).T
+            else:
+                x = [[x[j][i] if isinstance(x[i],UncertainValue) and x[i].u > 0 else 
+                              gummy(xf[i],1) for i in len(x[0])] for j in range(len(x))]
+                r = np.array([njacobian(lambda z:f(*z,*pf),*i) for i in x]).T
+                
+            if np.ndim(w) <= 1:
+                return np.reshape(w*r,(len(x),1))
+            else:
+                if np.ndim(w) <= 1:
+                    return (w*r).T
+                else:
+                    return (w@r).T
+            
     def _create_p(self):
         # Given fit parameters pf (float array) and the covariance matrix cov for the
         # parameters, return correlated gummys representing the fit parameters. jac,
@@ -971,120 +994,126 @@ class Fit(_Fit,PrettyPrinter):
                 warn('the covariance matrix is not positive semidefinate; uncertainties cannot be calculated',FitWarning)
                 return gummy.create(self.pf)
             
-        uy = self.uy
-        if self.sigma_is_known:
-            dof = float('inf')
-        elif self.s is not None:
-            uy = self.s
-            dof = (self.count - self.nparam)/self.count
-        
-        y = self.y
-        ydim = self.ydim
-        if not self.ypcorr and y is not None:
-            if self.ydim == 0:
-                y = [self.y]
-                ydim = 1
-            y = np.empty(np.shape(self.yf),dtype=np.dtype('O'))
-            scl = _isscalar(uy)
-            with np.nditer(y,flags=['multi_index','refs_ok'],op_flags=['readwrite']) as it:
-                for i in it:
-                    if scl:
-                        iuy = uy
-                    else:
-                        iuy = uy[it.multi_index]
-                    i[...] = gummy(self.yf[it.multi_index],iuy,dof=dof)
-        if self.weights is not None:
-            c = np.sum(self.sqrt_weights)/np.size(self.sqrt_weights)
-            w = self.sqrt_weights/c
-            if np.ndim(self.weights) == 2:
-                y = w@y
+        if self.y_is_gummies or self.x_is_gummies or self._ch_create_p:
+            odr = self.solver.startswith('odr') and self.xvar > 0
+            
+            uy = self.uy
+            if self.yvar is None:
+                yvar = self.var
             else:
-                y = w*y
+                yvar = self.yvar
+            if self.variance_is_known:
+                dof = float('inf')
+            elif yvar is not None:
+                uy = np.sqrt(yvar)
+                dof = (self.count - 1)/self.count
+            
+            y = self.y
+            if not self.y_is_gummies and uy is not None:
+                if self.ydim == 0:
+                    y = [self.y]
+                y = np.empty(np.shape(self.yf),dtype=np.dtype('O'))
+                scl = _isscalar(uy)
+                with np.nditer(y,flags=['multi_index','refs_ok'],op_flags=['readwrite']) as it:
+                    for i in it:
+                        if scl:
+                            iuy = uy
+                        else:
+                            iuy = uy[it.multi_index]
+                        i[...] = gummy(0,iuy,dof=dof)
                         
-        x = self.x
-        xdim = self.xdim
-        if not self.xpcorr and self.ux is not None and x is not None:
-            if self.xdim == 0:
-                x = [x]
-                xdim = 1
-            x = np.empty(np.shape(self.xf),dtype=np.dtype('O'))
-            scl = _isscalar(self.ux)
-            with np.nditer(x,flags=['multi_index','refs_ok'],op_flags=['readwrite']) as it:
-                for i in it:
-                    if scl:
-                        iux = self.ux
-                    else:
-                        iuy = self.ux[it.multi_index]
-                    i[...] = gummy(self.xf[it.multi_index],iux)
-        if self.weights is not None:
-            if np.ndim(self.weights) == 2:
-                x = w@x
-            else:
-                x = w*x
-                    
-        b = self.rcov@self.njacp.T
-
-        if ydim == 1:
-            p = [np.sum(y*bi) for bi in b]
-        else:
-            p = [0]*self.nparam
-            for yi in y:
-                pi = [np.sum(yi*bi) for bi in b]
-                p = [a+b for a,b in zip(pi,p)]
-
-        if self.xpcorr or (self.ux is not None and x is not None):
-            if self.njacx is None:
-                warn('njacx is not available, uncertainty in the x-values will be ignored')
-            else:
-                j = x*self.njacx
-                if xdim == 1:
-                    px = [np.sum(j*bi) for bi in b]
+            if self.weights is not None:
+                if np.ndim(self.sqrt_weights) == 2:
+                    y = self.sqrt_weights@y
                 else:
-                    px = [0]*self.naparam
-                    for ji in j:
-                        pxi = [np.sum(ji*bi) for bi in b]
-                        px = [a+b for a,b in zip(pxi,px)]
-                p = [a+b for a,b in zip(p,px)]
-                
-        for g,gf in zip(p,self.pf):
-            g.value._x = gf
-        return np.array([g*u for g,u in zip(p,self.punits)])
-                
-        if dof is None:
-            dof = float('inf')
-        dof = max(1,dof)
-        if self.njacp is not None:
-            # If we have a jacobian, calculate effiective degrees of freedom for each
-            # parameter as sum(weights)**2/sum(weights**2) where the weights are the
-            # square of the elements of the jacobian.
-            try:
-                pf = np.asarray(self.pf)
-                cov = np.asarray(self.cov)
-                pjac = np.asarray(self.njacp)
-                n = len(pf)
-                
-                # sqrtm below if used to transform the jacobian from a basis with 
-                # correlated parameters to one where the parameters are uncorrelated
-                m = np.array([[cov[i][j]/np.sqrt(cov[i][i]*cov[j][j]) if cov[i][i] != 0 and cov[j][j] != 0 else 0 for i in range(n)] for j in range(n)])
-                u = np.sqrt(np.diag(cov))
-                val,vec = np.linalg.eig(m)
-                val = np.real(val)
-                val = np.clip(val,0,None)
-                vec = np.real(vec)
-                sqrtm = ((vec*np.sqrt(val)@np.linalg.inv(vec)).T*u).T
-                jact = sqrtm.T@pjac.T
-                
-                # calculate the effective degrees of freedom for the uncorrelated 
-                # parameters then transform the resulting gummys back to the
-                # correlated basis
-                df = (np.sum(jact**2,axis=1)**2/np.sum(jact**4,axis=1))
-                df = np.array([i if i >= 1 else 1 for i in df])
-                g = np.array([gummy(0,1,dof=df[i]) for i in range(n)])
-                ret = sqrtm@g + pf
-                return ret
+                    y = self.sqrt_weights*y
                             
-            except np.linalg.LinAlgError:
-                warn('unable to calculate the effective degrees of freedom for the fit parameters')
+            ux = self.ux
+            if self.variance_is_known:
+                xdof = float('inf')
+            elif odr:
+                ux = np.sqrt(self.xvar)
+                xdof = (self.count - 1)/self.count
+            
+    
+            if odr:
+                if self.njacx is None:
+                    self.njacx = self.get_jacx()
+                wr = 1/self.sqrt_xweights
+                cjx = np.cos(np.arctan((self.njacx.T)[0]*wr))
+                y = cjx*y
+                
+                
+            p = self.rcov@(y@self.njacp)
+    
+            if ux is not None and self.x is not None:
+                x = self.x
+                if not self.x_is_gummies and ux is not None and x is not None:
+                    if self.xdim == 0:
+                        x = [x]
+                    x = np.empty(np.shape(self.xf),dtype=np.dtype('O'))
+                    scl = _isscalar(ux)
+                    with np.nditer(x,flags=['multi_index','refs_ok'],op_flags=['readwrite']) as it:
+                        for i in it:
+                            if scl:
+                                iux = ux
+                            else:
+                                iux = ux[it.multi_index]
+                            i[...] = gummy(0,iux,dof=xdof)
+                            
+                if self.xweights is not None:
+                    if np.ndim(self.sqrt_xweights) == 2:
+                        x = self.sqrt_xweights@x
+                    else:
+                        x = self.sqrt_xweights*x
+                        
+                if odr:
+                    x = cjx*x
+                else:
+                    if self.njacx is None:
+                        self.njacx = self.get_jacx()
+                    x = x*(self.njacx.T)[0]
+    
+                px = self.rcov@(x@self.njacp)
+                p = p + px
+                if odr and self.known_var:
+                    p = p/np.sqrt(2)
+                    
+            for g,gf in zip(p,self.pf):
+                g.value._x = gf
+            return np.array([g*u if g.unit is one else g for g,u in zip(p,self.punits)])
+        
+        # If we have a jacobian, calculate effiective degrees of freedom for each
+        # parameter as sum(weights)**2/sum(weights**2) where the weights are the
+        # square of the elements of the jacobian.
+        try:
+            pf = np.asarray(self.pf)
+            cov = np.asarray(self.cov)
+            pjac = np.asarray(self.njacp)
+            n = len(pf)
+            
+            # sqrtm below if used to transform the jacobian from a basis with 
+            # correlated parameters to one where the parameters are uncorrelated
+            m = np.array([[cov[i][j]/np.sqrt(cov[i][i]*cov[j][j]) if cov[i][i] != 0 and cov[j][j] != 0 else 0 for i in range(n)] for j in range(n)])
+            u = np.sqrt(np.diag(cov))
+            val,vec = np.linalg.eig(m)
+            val = np.real(val)
+            val = np.clip(val,0,None)
+            vec = np.real(vec)
+            sqrtm = ((vec*np.sqrt(val)@np.linalg.inv(vec)).T*u).T
+            jact = sqrtm.T@pjac.T
+            
+            # calculate the effective degrees of freedom for the uncorrelated 
+            # parameters then transform the resulting gummys back to the
+            # correlated basis
+            df = (np.sum(jact**2,axis=1)**2/np.sum(jact**4,axis=1))*(self.count - 1)/self.count
+            df = np.array([i if i >= 1 else 1 for i in df])
+            g = np.array([gummy(0,1,dof=df[i]) for i in range(n)])
+            p = sqrtm@g + pf
+            return np.array([g*u for g,u in zip(p,self.punits)])
+                        
+        except np.linalg.LinAlgError:
+            warn('unable to calculate the effective degrees of freedom for the fit parameters')
     
     
     def _leastsq(self,**kw):
@@ -1092,8 +1121,7 @@ class Fit(_Fit,PrettyPrinter):
         from scipy.optimize import least_squares
         
         from scipy.linalg import pinvh,LinAlgError
-        
-        
+            
         w = self.sqrt_weights
         if np.ndim(w) == 2:
             def func(params,x,y,f):
@@ -1124,9 +1152,10 @@ class Fit(_Fit,PrettyPrinter):
             warn('the fit was not sucessful, status ' + str(self.fit_output.status) + ', ' + self.fit_output.message,FitWarning)
 
         if self.xdim == 1:
-            self.res = self.yf - self.ypredf(self.xf)
+            self.res = self.yres = self.yf - self.ypredf(self.xf)
         else:
-            self.res = self.yf - self.ypredf(*self.xf)
+            self.res = self.yres = self.yf - self.ypredf(*self.xf)
+        self.xres = None
         
         if np.ndim(w) == 2:
             var = np.sum((w@self.res)**2)/(self.count - self.nparam)
@@ -1134,6 +1163,8 @@ class Fit(_Fit,PrettyPrinter):
             var = ((w*self.res)**2).sum()/(self.count - self.nparam)
                     
         self.dof = self.count - len(self.pf)
+        self.var = self.yvar = var
+        self.xvar = None
         self.s = np.sqrt(var)
         
         try:
@@ -1144,18 +1175,14 @@ class Fit(_Fit,PrettyPrinter):
             return np.array([gummy(i) for i in self.pf])
             
         self.rcov = cov
-        if self.sigma_is_known and self.ssqpred is not None:
-            self.cov = cov*self.ssqpred
+        if self.variance_is_known and self.known_var is not None:
+            self.cov = cov*self.known_var
         else:
-            self.sigma = None
             self.cov = cov*var
         
         self.njacp = self.fit_output.jac
-        
-        if self.xpcorr or self.ux is not None:
-            self.njacx = get_jacx(self.f,self.x,self.xf,self.pf,w)
-        else:
-            self.njacx = None
+        self.xweights = None
+        self.sqrt_xweights = 1
         
         self.p = self._create_p()
         
@@ -1201,70 +1228,30 @@ class Fit(_Fit,PrettyPrinter):
         pf = self.fit_output.beta
 
         self.res = np.array([self.fit_output.delta,self.fit_output.eps])
+        self.xres = self.fit_output.delta
+        self.yres = self.fit_output.eps
         
-        var = self.fit_output.res_var
+        self.var = self.fit_output.res_var
+        self.xvar = np.sum(self.xres**2)/(self.count - self.nparam)
+        self.yvar = np.sum(self.yres**2)/(self.count - self.nparam)
         
-        self.s = np.sqrt(var)
-        
-        if self.uy is None and self.ux is not None:
-            u = self.ux
-        elif self.uy is not None and self.ux is None:
-            u = self.uy
-        elif self.uy is not None and self.ux is not None:
-            u = np.sqrt(self.ux**2 + self.uy**2)
-        else:
-            u = None
-            
-        if u is not None:
-            if _isscalar(u):
-                self.sigma = u
-            else:
-                if self.ydim == 1:
-                    self.sigma = np.sqrt((u**2).sum()/self.count)
-                else:
-                    self.sigma = 1
-        else:
-            self.sigma = None
+        self.s = np.sqrt(self.var)
        
         self.dof = self.count - len(pf)
         
         self.rcov = self.fit_output.cov_beta
-        if self.sigma is None or not self.sigma_is_known:
-            self.cov = var*self.fit_output.cov_beta
-        elif self.sigma_is_known:
-            self.cov = (self.sigma**2)*self.fit_output.cov_beta
+        if self.known_var is None or not self.variance_is_known:
+            self.cov = self.var*self.fit_output.cov_beta
+        elif self.variance_is_known:
+            self.cov = self.known_var*self.fit_output.cov_beta
             
         if self.implicit or weight_y is None or _isscalar(weight_y):
             nwe = 1
         elif np.ndim(weight_y):
             nwe = np.size(weight_y)
         self.njacp,self.njacx = odr_jac(self.fit_output.rwork,self.count,
-                                        self.xdim,self.nparam,ydim,nwe)
-
-        #if self.xpcorr or self.ypcorr:
-            #b = cov@njacp.T
-            #if self._xgummies is not None:
-                #j = x*njacx
-                #if xdim == 1:
-                    #px = [np.sum(j*bi) for bi in b]
-                #else:
-                    #px = [0]*self.npram
-                    #for ji in j:
-                        #pxi = [np.sum(j*bi) for bi in b]
-                        #px = [a+b for a,b in zip(pxi,px)]
-            #else:
-                #px = [0]*self.npram
-            #if self._ygummies is not None:
-                #py = [np.sum(y*bi) for bi in b]
-                #p = [a + b for a,b in zip(px,py)]
-            #for g,gf in zip(p,pf):
-                #g.value._x = gf
-            #p = np.asarray(p)
-        #else:
-           # p = _create_p(pf,cov,jac=njacp.T,
-                          #dof=self.dof,y=self.y,ygummies=False)
-            
-        #self.p = np.array([g*u for g,u in zip(p,self.punits)])
+                                        self.xdim,self.nparam,ydim,nwe,
+                                        fit_type)
         
         self.pf = pf
         self.p = self._create_p()
@@ -1280,7 +1267,7 @@ class Fit(_Fit,PrettyPrinter):
     def _ols(self,**kw):
         #ordinary least squares solver
         from scipy.linalg import pinvh
-        
+            
         try:
             # PolyFit implements _shiftx which returns a matrix that transforms 
             # the fit parameters under: x -> x + xav
@@ -1332,7 +1319,8 @@ class Fit(_Fit,PrettyPrinter):
         
         pf = cov@(yf@x)
         
-        res = self.yf - x@pf # residuals
+        self.res = self.yres = self.yf - x@pf # residuals
+        self.xres = None
         
         var = np.sum((yf - x@pf)**2)/(self.count - self.nparam)
         
@@ -1347,19 +1335,16 @@ class Fit(_Fit,PrettyPrinter):
         
         self.rcov = cov
             
-        if self.sigma_is_known and self.ssqpred is not None:
-            self.cov = self.ssqpred
+        if self.variance_is_known and self.known_var is not None:
+            self.cov = cov*self.known_var
         else:
             self.cov = cov*var
-            
-        if self.xpcorr or self.ux is not None:
-            self.njacx = get_jacx(self.f,self.x,self.xf,self.pf,w)
-        else:
-            self.njacx = None
         
+        self.var = self.yvar = var
+        self.xweights = None
+        self.sqrt_xweights = 1
         self.s = np.sqrt(var)
         self.pf = pf
-        self.res = res
         self.p = self._create_p()
         self.fit_output = None
             
@@ -1698,7 +1683,7 @@ class Fit(_Fit,PrettyPrinter):
         raise NotImplementedError()
         
 class PolyFit(Fit):
-    def __init__(self,x,y,deg=1,ux=None,uy=None,sigma_is_known=True,p0=None,
+    def __init__(self,x,y,deg=1,ux=None,uy=None,variance_is_known=True,p0=None,
                  xunit=None,yunit=None,solver=None,**kw):
         """
         Fits the x,y data to a polynomial
@@ -1738,7 +1723,7 @@ class PolyFit(Fit):
         uy: `float`, array_like of `float`  or `None`, optional
             Uncertainty in the `y` values. This should not be specified if the y
             argument contains gummys.  The default is `None`.
-        sigma_is_known: `bool`, optional
+        variance_is_known: `bool`, optional
             If this is `True` then any uncertainties in the data  (either as
             gummys in the `x` or `y` values or in the ux or uy parameters)
             are used to calculate the uncertainties in the fit.  Otherwise,
@@ -1837,7 +1822,7 @@ class PolyFit(Fit):
             except:
                 raise TypeError('deg must be a scalar value or a 1-d array')
 
-        super().__init__(x,y=y,p0=p0,ux=ux,uy=uy,sigma_is_known=sigma_is_known,xunit=xunit,
+        super().__init__(x,y=y,p0=p0,ux=ux,uy=uy,variance_is_known=variance_is_known,xunit=xunit,
                  yunit=yunit,solver=solver,**kw)
 
     def _get_solver(self,solver,**kw):
@@ -2155,7 +2140,7 @@ class PolyFit(Fit):
 
 class DoubleExpFit(Fit):
     """
-    DoubleExpFit(x,y,p0=None,ux=None,uy=None,sigma_is_known=True,xunit=None, yunit=None,
+    DoubleExpFit(x,y,p0=None,ux=None,uy=None,variance_is_known=True,xunit=None, yunit=None,
              solver=None,**keywords)
    
     Fits the x,y data to a function of the form:
@@ -2180,7 +2165,7 @@ class DoubleExpFit(Fit):
     uy: `float`, array_like of `float`  or `None`, optional
         Uncertainty in the `y` values. This should not be specified if the y
         argument contains gummys.  The default is `None`.
-    sigma_is_known: `bool`, optional
+    variance_is_known: `bool`, optional
         If this is `True` then any uncertainties in the data  (either as
         gummys in the `x` or `y` values or in the ux or uy parameters)
         are used to calculate the uncertainties in the fit.  Otherwise,
@@ -2292,7 +2277,7 @@ class DoubleExpFit(Fit):
         
 class ExpFit(Fit):
     """
-    ExpFit(x,y,p0=None,ux=None,uy=None,sigma_is_known=True,xunit=None, yunit=None,
+    ExpFit(x,y,p0=None,ux=None,uy=None,variance_is_known=True,xunit=None, yunit=None,
              solver=None,**keywords)
    
     Fits the x,y data to a function of the form:
@@ -2317,7 +2302,7 @@ class ExpFit(Fit):
     uy: `float`, array_like of `float`  or `None`, optional
         Uncertainty in the `y` values. This should not be specified if the y
         argument contains gummys.  The default is `None`.
-    sigma_is_known: `bool`, optional
+    variance_is_known: `bool`, optional
         If this is `True` then any uncertainties in the data  (either as
         gummys in the `x` or `y` values or in the ux or uy parameters)
         are used to calculate the uncertainties in the fit.  Otherwise,
@@ -2424,7 +2409,7 @@ class ExpFit(Fit):
         
 class OneOverTFit(Fit):
     """
-    DoubleExpFit(x,y,p0=None,ux=None,uy=None,sigma_is_known=True,xunit=None, yunit=None,
+    DoubleExpFit(x,y,p0=None,ux=None,uy=None,variance_is_known=True,xunit=None, yunit=None,
              solver=None,**keywords)
    
     Fits the x,y data to a function of the form:
@@ -2449,7 +2434,7 @@ class OneOverTFit(Fit):
     uy: `float`, array_like of `float`  or `None`, optional
         Uncertainty in the `y` values. This should not be specified if the y
         argument contains gummys.  The default is `None`.
-    sigma_is_known: `bool`, optional
+    variance_is_known: `bool`, optional
         If this is `True` then any uncertainties in the data  (either as
         gummys in the `x` or `y` values or in the ux or uy parameters)
         are used to calculate the uncertainties in the fit.  Otherwise,
@@ -2549,7 +2534,7 @@ class OneOverTFit(Fit):
         
 class SinFit(Fit):
     """
-    SinFit(x,y,p0=None,ux=None,uy=None,sigma_is_known=True,xunit=None, yunit=None,
+    SinFit(x,y,p0=None,ux=None,uy=None,variance_is_known=True,xunit=None, yunit=None,
              solver=None,**keywords)
    
     Fits the x,y data to a function of the form:
@@ -2574,7 +2559,7 @@ class SinFit(Fit):
     uy: `float`, array_like of `float`  or `None`, optional
         Uncertainty in the `y` values. This should not be specified if the y
         argument contains gummys.  The default is `None`.
-    sigma_is_known: `bool`, optional
+    variance_is_known: `bool`, optional
         If this is `True` then any uncertainties in the data  (either as
         gummys in the `x` or `y` values or in the ux or uy parameters)
         are used to calculate the uncertainties in the fit.  Otherwise,
