@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# module gummy
+# module _gummy
 
 # Copyright (C) 2025 National Research Council Canada
 # Author:  Harold Parks
@@ -1757,10 +1757,10 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
                 r.show_k = self.show_k
             if self.show_dof != type(r).show_dof:
                 r.show_dof = self.show_dof
-            if self.mulsep != type(r).mulsep:
-                r.mulsep = self.mulsep
-            if self.solidus != type(r).solidus:
-                r.solidus = self.solidus
+            if self._mulsep != type(r)._mulsep:
+                r._mulsep = self._mulsep
+            if self._solidus != type(r)._solidus:
+                r._solidus = self._solidus
             r._k = self._k
             r._pm = self._pm
             r._set_k = self._set_k
@@ -2784,10 +2784,10 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
             nsig = 1
             
         if solidus is None:
-            solidus = self.solidus
+            solidus = self._solidus
             
         if mulsep is None:
-            mulsep = self.mulsep 
+            mulsep = self._mulsep 
             
         if style in  ['u','uf']:
             if isinstance(self._U,Quantity):
@@ -3193,7 +3193,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
         if _isscalar(u):
             u = [u]*n
             
-        if isinstance(unit,str) or isinstance(unit,Unit):
+        if _isscalar(unit):
             unit = [unit]*n
             
         if dof is None:
@@ -3211,9 +3211,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
         elif _isscalar(k):
             k = [k]*n
             
-        if uunit is None:
-            uunit = [None]*n
-        elif isinstance(uunit,str) or isinstance(uunit,Unit):
+        if _isscalar(uunit):
             uunit = [uunit]*n
             
         if utype is None:

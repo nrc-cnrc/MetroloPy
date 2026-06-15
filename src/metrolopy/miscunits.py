@@ -30,7 +30,7 @@ obsolete SI units, and a few other units.
 """
 
 from numpy import sqrt,log,log2,log10
-from .gummy import gummy
+from ._gummy import gummy
 from .unit import Unit,Conversion,MFraction
 from .prefixedunit import PrefixedUnit,BinaryPrefixedUnit
 from .logunit import LogUnit,LogConversion

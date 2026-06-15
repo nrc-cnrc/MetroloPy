@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# module ummy
+# module _ummy
 
 # Copyright (C) 2026 National Research Council Canada
 # Author:  Harold Parks

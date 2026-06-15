@@ -21,7 +21,8 @@
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
 from ._gummy import gummy,jummy
-from .unit import Unit,Conversion,one,Quantity,QuantityArray,unit
+from .unit import Unit,Conversion,one,unit
+from .quantity import Quantity,ArrayQuantity
 from ._ummy import ummy,immy
 from ._nummy import nummy
 from .budget import Budget

@@ -197,8 +197,8 @@ class Dfunc:
         # converted to float values
         raise NotImplementedError()
         
-    @classmethod
-    def apply(cls,function,derivative,*args):
+    #@classmethod
+    #def apply(cls,function,derivative,*args):
         """
         A classmethod that applies a function to one or more gummy or jummy 
         objects propagating the uncertainty.
@@ -261,16 +261,16 @@ class Dfunc:
         3.65 +/- 0.65
         """
         
-        bargs = np.broadcast(*args)
-        if bargs.shape == ():
-            return _call(lambda *x: cls._apply(function,derivative,*x), *args) 
+        #bargs = np.broadcast(*args)
+        #if bargs.shape == ():
+            #return _call(lambda *x: cls._apply(function,derivative,*x), *args) 
         
-        ret = np.array([_call(lambda *x: cls._apply(function,derivative,*x), *a) for a in bargs])
-        ret = ret.reshape(bargs.shape)
-        return ret
+        #ret = np.array([_call(lambda *x: cls._apply(function,derivative,*x), *a) for a in bargs])
+        #ret = ret.reshape(bargs.shape)
+        #return ret
     
-    @classmethod
-    def napply(cls,function,*args):
+    #@classmethod
+    #def napply(cls,function,*args):
         """
         gummy.napply(function, arg1, arg2, ...) and
         jummy.napply(function, arg1, arg2, ...)
@@ -319,19 +319,19 @@ class Dfunc:
         3.65 +/- 0.65
         """
         
-        bargs = np.broadcast(*args)
-        if bargs.shape == ():
-            return _call(lambda *x: cls._napply(function,*x), *args)
+        #bargs = np.broadcast(*args)
+        #if bargs.shape == ():
+            #return _call(lambda *x: cls._napply(function,*x), *args)
         
-        ret = np.array([_call(lambda *x: cls._napply(function,*x), *a) for a in bargs])
-        ret = ret.reshape(bargs.shape)
-        return ret
+        #ret = np.array([_call(lambda *x: cls._napply(function,*x), *a) for a in bargs])
+        #ret = ret.reshape(bargs.shape)
+        #return ret
     
     def _ufunc(self,ufunc,*args,**kwds):
         if any(isinstance(a,np.ndarray) for a in args):
             args = [np.array(a) if isinstance(a,Dfunc) else a for a in args]
         try:
-            return _call(lambda *x: self._apply(ufunc,ddict[ufunc],*x), *args)
+            return _call(lambda *x: self.apply(ufunc,ddict[ufunc],*x), *args)
         except KeyError:
             try:
                 return _call(fdict[ufunc],*args)

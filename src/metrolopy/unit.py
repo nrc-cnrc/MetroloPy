@@ -943,6 +943,9 @@ class Unit(AbcUnit,PrettyPrinter,Indexed,metaclass = MetaUnit):
             raise TypeError('unsupported operand type(s) for **: Unit and ' + str(v))
 
         return _CompositeUnit([(e[0],v*e[1]) for e in self.units])
+    
+    def __hash__(self):
+        return hash((hash(type(self)),9))
         
     
 class _CompositeUnit(Unit):

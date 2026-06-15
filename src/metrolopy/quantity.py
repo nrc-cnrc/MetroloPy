@@ -81,7 +81,6 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
             raise TypeError('value is unhashable')
         self._value = value
         if unit == 1:
-            self.unit_is_one = True
             self._unit = 1
         else:
             from .unit import Unit
@@ -89,7 +88,6 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
                 self._unit = unit
             else:
                 self._unit = Unit.unit(unit)
-            self.unit_is_one = (self._unit == 1)
         self._old = None
         self.autoconvert = False
         
@@ -227,8 +225,11 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
         returns a string representation of the Quantity.  fmt may be "unicode",
         "html","latex" or "ascii".  The default is "unicode".
         """
-        unit = self._unit.tostring(fmt=fmt,**kwds)
-        unit = self._add_unit_sp(fmt,unit)
+        if self.unit_is_one:
+            unit = ''
+        else:
+            unit = self._unit.tostring(fmt=fmt,**kwds)
+            unit = self._add_unit_sp(fmt,unit)
         if isinstance(self.value,PrettyPrinter):
             value = self.value.tostring(fmt=fmt,**kwds)
         else:
