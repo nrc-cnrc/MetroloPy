@@ -2,7 +2,7 @@
 
 # module unit
 
-# Copyright (C) 2025 National Research Council Canada
+# Copyright (C) 2026 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -28,21 +28,19 @@ _CompositeUnit, one, Quantity and QuantityArray
 import numpy as np
 import weakref
 import warnings
+from numbers import Rational,Integral
+from fractions import Fraction
+from abc import ABCMeta
+
 from .exceptions import (UnitLibError,CircularUnitConversionError,
                          UnitNotFoundError,IncompatibleUnitsError,
                          UnitLibNotFoundError,UnitWarning)
 from .printing import PrettyPrinter,MetaPrettyPrinter
 from .indexed import Indexed
 from .unitparser import _UnitParser
-from numbers import Rational,Integral,Number
-from abc import ABCMeta
-from fractions import Fraction
-from decimal import Decimal
+from .mfraction import MFraction
+from .abc import AbcQuantity,AbcUnit
 
-try:
-    from mpmath import mp,mpf,rational
-except:
-    mp = mpf = rational = None
 
 def unit(name,exception=True):
     """
@@ -150,15 +148,15 @@ class Conversion:
 
 
 def _f_bop(f,rf,x,y):
-    if isinstance(x,Quantity) and x.unit:
-        if isinstance(y,Quantity):
+    if isinstance(x,AbcQuantity) and x.unit:
+        if isinstance(y,AbcQuantity):
             yunit = y.unit
             y = y.value
         else:
             yunit = one
         return f(x.unit,x.value,yunit,y,x.autoconvert)
     else:
-        if isinstance(x,Quantity):
+        if isinstance(x,AbcQuantity):
             xunit = x.unit
             x = x.value
         else:
@@ -166,16 +164,19 @@ def _f_bop(f,rf,x,y):
         return rf(y.unit,y.value,xunit,x,y.autoconvert)
     
 def _f_ratio(f,x,y):
-    if not isinstance(y,Quantity):
+    if not isinstance(y,AbcQuantity):
         x = x.convert(one).value
-    elif not isinstance(x,Quantity):
+    elif not isinstance(x,AbcQuantity):
         y = y.convert(one).value
     else:
         y = y.convert(x.unit).value
         x = x.value
     return (f(x,y),one)
 
-class Unit(PrettyPrinter,Indexed):
+class MetaUnit(MetaPrettyPrinter,ABCMeta):
+    pass
+
+class Unit(AbcUnit,PrettyPrinter,Indexed,metaclass = MetaUnit):
     """
     Creating an instance of this class creates a representation of a physical
     unit and adds it to the unit library.  Once created the unit intance may
@@ -863,7 +864,7 @@ class Unit(PrettyPrinter,Indexed):
         if self.linear:
             try:
                 nl = next(a for a in args 
-                          if isinstance(a,Quantity) and not a.unit.linear)
+                          if isinstance(a,AbcQuantity) and not a.unit.linear)
                 return nl.unit._ufunc(func,*args,**kwds)
             except StopIteration:
                 pass
@@ -884,35 +885,35 @@ class Unit(PrettyPrinter,Indexed):
         return (abs(a),self)
     
     def __mul__(self,v):
+        if v == 1:
+            return self
+        
         if not isinstance(v,Unit):
-            return Quantity._make(v,unit=self)
+           raise TypeError('unsupported operand type(s) for *: Unit and ' + str(v))
         
         if not v.linear:
             return v.__rmul__(self)
         
-        if v is one:
-            return self
-        
         return _CompositeUnit(self.units + v.units)
     
     def __rmul__(self,v):
+        if v == 1:
+            return self
+        
         if not isinstance(v,Unit):
-            return Quantity._make(v,unit=self)
+            raise TypeError('unsupported operand type(s) for *: Unit and ' + str(v))
         
         if not v.linear:
             return v.__mul__(self)
         
-        if v is one:
-            return self
-        
         return _CompositeUnit(self.units + v.units)
         
     def __truediv__(self,v):
-        if v is one:
+        if v == 1:
             return self
         
         if not isinstance(v,Unit):
-            return Quantity._make(1/v,unit=self)
+            raise TypeError('unsupported operand type(s) for /: Unit and ' + str(v))
             
         if not v.linear:
             return v.__rtruediv__(self)
@@ -921,10 +922,12 @@ class Unit(PrettyPrinter,Indexed):
         return _CompositeUnit(self.units + vi)
 
     def __rtruediv__(self,v):
-        if v is one or v == 1:
+        if v == 1:
             return _CompositeUnit([(e[0],-e[1]) for e in self.units])
         
-        return Quantity._make(v,unit=self**-1)
+        raise TypeError('unsupported operand type(s) for /: Unit and ' + str(v))
+        
+        #return Quantity._make(v,unit=self**-1)
         
     def __pow__(self,v):
         if v == -1:
@@ -1315,19 +1318,26 @@ class _One(Unit):
     The only instance of this class should be the unit `one`.
     """
     def __mul__(self,v):
-        if isinstance(v,Unit):            
+        if isinstance(v,Unit) or v == 1:            
             return v
-        return Quantity._make(v)
+        raise TypeError('a unit only be multipled by 1 or another unit')
+        #return Quantity._make(v)
         
     def __truediv__(self,v):
         if isinstance(v,Unit):            
             return v**-1
-        return Quantity._make(1/v)
+        elif v == 1:
+            return self
+        raise TypeError('a unit only by divided by 1 or another unit')
+        #return Quantity._make(1/v)
 
     def __rtruediv__(self,v):
         if isinstance(v,Unit):            
             return v
-        return Quantity._make(v)
+        elif v == 1:
+            return self
+        raise TypeError('a unit divide 1 or another unit')
+        #return Quantity._make(v)
         
     def __pow__(self,v):
         return self
@@ -1347,612 +1357,15 @@ class _One(Unit):
     def __repr__(self):
         return 'one'
     
+    def __eq__(self,x):
+        if x is self:
+            return True
+        return x == 1
+    
     @property
     def is_dimensionless(self):
         return True
     
 with Unit._builtin():
     one = _One('1','',add_symbol=False)
-
-class MetaQuantity(MetaPrettyPrinter,ABCMeta):
-    pass
-
-class Quantity(PrettyPrinter,Number,metaclass=MetaQuantity):
-    """
-    Instances of this class represent a quantity with a value and a unit.
-    The behavior of Quantity instances under mathematical operations with
-    other Quanitity object or numerical values depends on the unit. E.g. 
-    an interger of float may be added to `Quantity(1,unit='%')` but not to 
-    `Quantity(1,unit='m/s')`.  For operations involving only linear units, the
-    units will be automatically converted to facilitate the operation, e.g.
-    `Quantity(1,unit='psi')` may be added to `Quantity(1,unit='psi')` but not
-    `Quantity(1,unit='db(uPa)'.  Manual unit conversions can be realized by
-    calling the `Quantity.convert` method, or in place by setting the 
-    `Quantity.unit` property.
-    
-    Quantity instances may be created directly or by multiplying or dividing 
-    a number by a `Unit` instance: `Quantity(2.2,unit='cm')` is equivalent to
-    `2.2 * unit('cm')`.
-
-    Parameters
-    ----------
-
-    value: numeric (including `ummy`)
-        the value of the Quantity
-
-    unit:  `str` or `Unit`
-        The `Unit` instance representing the unit of the Quantity or a string
-        that references the `Unit` instance.
-    """
-    
-    splonk_func_ret = False
-    
-    _arraytype = None
-    
-    @classmethod
-    def _make(cls,value,unit=one):
-        if (isinstance(value,np.ndarray) or isinstance(value,list) or
-            isinstance(value,tuple)) and cls._arraytype is not None:
-            return cls._arraytype(value,unit=unit)
-        return cls(value,unit=unit)
-            
-    
-    @staticmethod
-    def _add_unit_sp(fmt,unit):
-        if unit is None or unit is one:
-            return ''
-            
-        if unit == '':
-            return ''
-            
-        if unit.startswith('\t'):
-            unit = unit[1:]
-        else:
-            if fmt == 'latex':
-                unit = r'\:' + unit
-            elif fmt == 'html':
-                unit = '&nbsp;' + unit
-            else:
-                unit = ' ' + unit
-            
-        return unit
-    
-    def __init__(self,value,unit=one):
-        try:
-            hash(value)
-        except TypeError:
-            raise TypeError('value is unhashable')
-        self._value = value
-        if isinstance(unit,Unit):
-            self._unit = unit
-        else:
-            self._unit = Unit.unit(unit)
-        self._old = None
-        self.autoconvert = False
-        
-    @property
-    def value(self):
-        return self._value
-           
-    @property
-    def unit(self):
-        """
-        Gets or sets the unit for the Quantity.
-        
-        If this property is set, a unit conversion will be performed.  The value 
-        it is set to may be a string, `None`, a `Unit` object, or the integer 1.
-        Both 1 and `None` will be interpreted as the Unit instance `one`. A
-        `NoUnitConversionFoundError` will be raised if the unit conversion is
-        not possible.
-        
-        Example
-        -------
-            
-        >>> x = Quantity(0.001,unit='V')
-        >>> x
-        0.001 V
-        >>> x.unit = 'uV'
-        >>> x
-        1000.0 uV
-        """
-        return self._unit
-    @unit.setter
-    def unit(self,unit):     
-        #Always convert back to the original units so we don't accumulate
-        #rounding errors.
-        if self._old is None:
-            self._old = (self.value,self.unit)
-        else:
-            self._value,self._unit = self._old
-            
-        unit = Unit.unit(unit)
-        value = self._unit.convert(self.value,unit)
-        
-        self._value = value
-        self._unit = unit
-        return
-        
-    def convert(self,unit):
-        """
-        Returns a copy of the Quantity with converted units.  A 
-        `NoUnitConversionFoundError` will be raised if the unit conversion is
-        not possible.
-        
-        
-        Parameters
-        ----------
-        unit:  `str` or `Unit`
-            The unit for the `x` value and if `uunit` is `None`, the
-            uncertainty.  It must be string, None, a `Unit` object, or the
-            integer 1.  Both 1 and `None` will be interpreted as the Unit
-            instance `one`.
-
-        uunit `str`, `Unit` or None, optional
-            The unit for the uncertainty `U`.  If this is `None` then `U`
-            will have the same units as `x`.  The default is `None`.
-        """
-        unit = Unit.unit(unit)
-        value = self.unit.convert(self.value,unit)
-        return type(self)(value,unit=unit)
-        
-    def reduce_unit(self):
-        """
-        Cancels factors in a Quantity's unit when possible.  This modifies the
-        calling gummy and returns `None`.
-        
-        Example
-        -------
-        
-        >>> x = Quantity(5,unit='mm/m')
-        >>> x.reduce_unit()
-        >>> x
-        0.005
-        """
-        un,f = self._unit._mul_cancel(one)
-        self._unit = un
-        self._value *= f
-    
-    @property
-    def c(self):
-        """
-        This read-only property is used as a conversion flag during calculations.
-        When an arithmetic operation is carried out between two Quantaties with
-        different units, a unit conversion on one of the input quantities may be
-        required to complete the calculation.  Attach this flag to the unit that
-        you prefer be converted.
-
-        Examples
-        --------
-        
-        >>> a = Quantity(1,unit='cm')
-        >>> b = Quantity(2,unit='mm')
-        >>> a + b
-        1.2 cm
-        >>> a.c + b
-        12 mm
-        >>> a + b.c
-        1.2 cm
-        >>> a*b
-        0.2 cm**2
-        >>>a.c*b
-        20 mm**2
-        """
-        c = Quantity(self.value,self.unit)
-        c.autoconvert = True
-        return c
- 
-    def tostring(self,fmt=None,**kwds):
-        """
-        tostring(fmt='unicode')
-        
-        returns a string representation of the Quantity.  fmt may be "unicode",
-        "html","latex" or "ascii".  The default is "unicode".
-        """
-        unit = self._unit.tostring(fmt=fmt,**kwds)
-        unit = self._add_unit_sp(fmt,unit)
-        if isinstance(self.value,PrettyPrinter):
-            value = self.value.tostring(fmt=fmt,**kwds)
-        else:
-            value = str(self.value)
-        return value + unit
-    
-    def copy(self,tofloat=False):
-        """
-        copy(tofloat=False)
-        
-        returns a copy of self.  If tofloat is True, the self.value will be
-        converted to float.  The default is False.
-        """
-        if tofloat:
-            try:
-                return type(self)(self.value.tofloat(),unit=self.unit)
-            except:
-                return type(self)(float(self._value),unit=self._unit)
-            
-        try:
-            return type(self)(self.value.copy(),unit=self.unit)
-        except:
-            return type(self)(self.value,self.unit)
-        
-    def tofloat(self):
-        """
-        returns a copy of self with value float(self.value) equivalent to 
-        copy(tofloat=True)
-        """
-        return self.copy(tofloat=True)
-    
-    def totuple(self):
-        """
-        returns the tuple (self.value,self.unit)
-        """
-        return (self.value,self.unit)
-    
-    def tobaseunit(self):
-        """
-        Returns a Quantity equal to self converted to unit self.unit.base
-        """
-        return self.convert(self.unit.base)
-    
-    def splonk(self):
-        """
-        returns self.value if self.unit is one else returns self
-        """
-        if self.unit is one:
-            try:
-                return self.value.splonk()
-            except AttributeError:
-                return self.value
-        return self
-        
-    def _bop(self,v,f):
-        if issubclass(type(v),type(self)):
-            make =  v._make
-        else:
-            make =  self._make
-            
-        if isinstance(v,Quantity):
-            vunit = v._unit
-            v = v.value
-            aconv = self.autoconvert
-        else:
-            vunit = one
-            aconv = False
-            
-        r,runit = f(self.value,vunit,v,aconv)
-            
-        return make(r,unit=runit)
-        
-    def __add__(self, v):
-        return self._bop(v,self.unit._add)
-                
-    def __radd__(self, v):
-        return self._bop(v,self.unit._radd)
-    
-    def __sub__(self, v):
-        return self._bop(v,self.unit._sub)
-                
-    def __rsub__(self, v):
-        return self._bop(v,self.unit._rsub)
-    
-    def __mul__(self, v):
-        return self._bop(v,self.unit._mul)
-                
-    def __rmul__(self, v):
-        return self._bop(v,self.unit._rmul)
-    
-    def __truediv__(self, v):
-        return self._bop(v,self.unit._truediv)
-                
-    def __rtruediv__(self, v):
-        return self._bop(v,self.unit._rtruediv)
-    
-    def __floordiv__(self, v):
-        return self._bop(v,self.unit._floordiv)
-                
-    def __rfloordiv__(self, v):
-        return self._bop(v,self.unit._rfloordiv)
-    
-    def __pow__(self, v):
-        return self._bop(v,self.unit._pow)
-                
-    def __rpow__(self, v):
-        return self._bop(v,self.unit._rpow)
-    
-    def __mod__(self, v):
-        return self._bop(v,self.unit._mod)
-                
-    def __rmod__(self, v):
-        return self._bop(v,self.unit._rmod)                
-        
-    def __neg__(self):
-        r,runit = self.unit._neg(self.value)
-        return self._make(r,unit=runit)
-        
-    def __pos__(self):
-        r,runit = self.unit._pos(self.value)
-        return self._make(r,unit=runit)
-        
-    def __abs__(self):
-        r,runit = self.unit._abs(self.value)
-        return self._make(r,unit=runit)
-    
-    def _cmp(self,v,f):
-        if isinstance(v,Quantity):
-            if self._unit is not v.unit:
-                try:
-                    v = v.convert(self.unit)
-                except IncompatibleUnitsError:
-                    raise IncompatibleUnitsError('Quantities with incompatible units cannot be ordered')
-            return f(self.value,v.value)
-        else:
-            try:
-                s = self.convert(one)
-                return f(s.value,v)
-            except IncompatibleUnitsError:
-                raise IncompatibleUnitsError('Quantities with incompatible units cannot be ordered')
-        
-    def __eq__(self, v):
-        try:
-            return self._cmp(v,lambda x,y: x == y)
-        except IncompatibleUnitsError:
-            return False
-    
-    def __ne__(self, v):
-        try:
-            return self._cmp(v,lambda x,y: x != y)
-        except IncompatibleUnitsError:
-            return True
-        
-    def __lt__(self, v):
-        return self._cmp(v,lambda x,y: x < y)
-    
-    def __le__(self, v):
-       return self._cmp(v,lambda x,y: x <= y)
-        
-    def __gt__(self, v):
-        return self._cmp(v,lambda x,y: x > y)
-        
-    def __ge__(self, v):
-        return self._cmp(v,lambda x,y: x >= y)
-    
-    def _ufunc(self,func,*args,**kwds):
-        # handles numpy functions applied to Quantity arguments
-        
-        s = self
-        for a in args:
-            if issubclass(type(a),type(s)):
-                s = a
-        make = s._make
-        
-        try:
-            x,xunit = self.unit._ufunc(func,*args,**kwds)
-            return make(x,unit=xunit)
-        except NotImplementedError:
-            try:
-                x = [a if not isinstance(a,Quantity) else a.convert(one).value 
-                     for a in args]
-                if self.splonk_func_ret:
-                    return func(*x,**kwds)
-                return make(func(*x,**kwds))
-            except IncompatibleUnitsError:
-                raise NotImplementedError()
-      
-    def __array_ufunc__(self,ufunc,method,*args,**kwds):
-        # handles numpy ufunc's applied to Quantity arguments
-        if method != '__call__':
-            return None
-        
-        return self._ufunc(ufunc,*args,**kwds)
-    
-    def __array_function__(self,func,method,*args,**kwds):        
-        return self._ufunc(func,*args,**kwds)
-    
-    def __float__(self):
-        s = self.convert(1)
-        return float(s.value)
-
-    def __complex__(self):
-        s = self.convert(1)
-        return complex(s.value)
-    
-    def __bool__(self):
-        return self != 0
-    
-    @property
-    def real(self):
-        if self.unit.linear:
-            s = self
-        else:
-            s = self.tobaseunit()
-         
-        try:
-            v = s.value.real
-        except:
-            v = float(s.value)
-        return type(self)(v,unit=s.unit)
-     
-    @property
-    def imag(self):
-        if self.unit.linear:
-            s = self
-        else:
-            s = self.tobaseunit()
-        
-        try:
-            v = s.value.imag
-        except:
-            v = 0
-        return type(self)(v,unit=s.unit)
-    
-    def __hash__(self):
-        r = self.tobaseunit().totuple()
-        if r[1] is one:
-            return hash(r[0])
-        return hash(r)
-    
-    def conjugate(self):
-        try:
-            v = self.value.conjugate()
-        except:
-            v = complex(float(self.value))
-        return type(self)(v,unit=self.unit)
-
-
-class QuantityArray(Quantity):
-    """
-    A subclass of Quantity.  Instance of this class represent a list, tuple, 
-    or numpy array of values all with the same unit.  Elements of the array 
-    are returned as `Quantity` instances.  Instances of this class can be
-    created directly or by multiplying a list, tuple, or numpy array by a
-    `Unit` instance.
-    
-    Parameters
-    ----------
-
-    value: `list`, `tuple` or `ndarray`
-        the value of the Quantity
-
-    unit:  `str` or `Unit`
-        The `Unit` instance representing the unit of the Quantity or a string
-        that references the `Unit` instance.
-    """
-    
-    _elementtype = Quantity
-    
-    def __len__(self):
-        return len(self.value)
-    
-    def __getitem__(self,key):
-        return self._elementtype(self.value[key],unit=self.unit)
-
-    def __contains__(self,quantity):
-        if isinstance(quantity,self._elementtype):
-            if self._unit is not quantity.unit:
-                try:
-                    quantity = quantity.convert(self.unit)
-                    return quantity.value in self.value
-                except:
-                    return False
-        else:
-            try:
-                s = self.convert(one)
-                return quantity in s.value
-            except:
-                return False
-            
-    def __iter__(self):
-        for e in self.value:
-            yield self._elementtype(e,unit=self.unit)
-            
-    def __array__(self):
-        return type(self)(np.asarray(self.value),unit=self.unit)
-    
-    
-Quantity._arraytype = QuantityArray
-
-        
-class MFraction(Fraction):
-    """
-    A fraction.Fraction sub-class that works with Decimal and mpmath.mpf objects
-    """
-    
-    @classmethod
-    def fromnum(cls,x):
-        return MFraction(Fraction(x))
-    
-    def __new__(cls, *args, **kwargs):
-        if len(args) == 1 and not (isinstance(args[0],str) 
-                                   or isinstance(args[0],Fraction)):
-            return args[0]
-        ret = super(MFraction, cls).__new__(cls, *args, **kwargs)
-        if ret.denominator == 1:
-            return ret.numerator
-        return ret
-    
-    def _mpmath_(self,p,r):
-        return rational.mpq(self.numerator,self.denominator)
-    
-    def todecimal(self):
-        return Decimal(self.numerator)/Decimal(self.denominator)
-    
-    def __add__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__add__(v)
-        return MFraction(super().__add__(v))
-    
-    def __radd__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__radd__(v)
-        return MFraction(super().__radd__(v))
-    
-    def __sub__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__sub__(v)
-        return MFraction(super().__sub__(v))
-    
-    def __rsub__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__rsub__(v)
-        return MFraction(super().__rsub__(v))
-    
-    def __mul__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__mul__(v)
-        return MFraction(super().__mul__(v))
-    
-    def __rmul__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__rmul__(v)
-        return MFraction(super().__rmul__(v))
-    
-    def __truediv__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__truediv__(v)
-        return MFraction(super().__truediv__(v))
-    
-    def __rtruediv__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__rtruediv__(v)
-        return MFraction(super().__rtruediv__(v))
-        
-    def __pow__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__pow__(v)
-        return MFraction(super().__pow__(v))
-    
-    def __rpow__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__rpow__(v)
-        if isinstance(v,Fraction):
-            return MFraction(v).__pow__(self)
-        return MFraction(super().__rpow__(v))
-        
-    def __floordiv__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__floordiv__(v)
-        return MFraction(super().__floordiv__(v))
-        
-    def __rfloordiv__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__rfloordiv__(v)
-        return MFraction(super().__rfloordiv__(v))
-        
-    def __mod__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__mod__(v)
-        return MFraction(super().__mod__(v))
-    
-    def __rmod__(self,v):
-        if isinstance(v,Decimal):
-            return self.todecimal().__rmod__(v)
-        return MFraction(super().__rmod__(v))
-    
-    def __abs__(self):
-        return MFraction(super().__abs__())
-    
-    def __neg__(self):
-        return MFraction(super().__neg__())
-    
-    def __pos__(self):
-        return MFraction(super().__pos__())
 

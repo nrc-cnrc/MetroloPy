@@ -25,7 +25,7 @@ Some miscellaneous functions that are useful for uncertainty analysis.
 """
 
 import numpy as np
-from .gummy import gummy
+from ._gummy import gummy
 import datetime
 
 def autocorrelation(x):

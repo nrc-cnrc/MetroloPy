@@ -32,6 +32,7 @@ dependencies = [
     "pandas>=0.25.2",
     "scipy>=1.3.2",
 	"odrpack>=0.5.0",
+	"lazy_loader>=0.5",
 ]
 license = "GPL-3.0-only"
 license-files = ["LICENSE","CITATION.cff"]

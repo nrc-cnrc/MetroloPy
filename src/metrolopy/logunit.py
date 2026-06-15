@@ -27,7 +27,7 @@ units.
 
 import numpy as np
 from .unit import one,_CompositeUnit,Quantity
-from .ummy import ummy
+from ._ummy import ummy
 from .nonlinearunit import NonlinearConversion,NonlinearUnit
 from .exceptions import IncompatibleUnitsError
 

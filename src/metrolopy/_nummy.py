@@ -27,7 +27,7 @@ class is not intended to be used directly; rather it is utilized by the gummy
 class.
 """
 import numpy as np
-from .ummy import ummy,_udict,_isscalar
+from ._ummy import ummy,_udict,_isscalar
 from .distributions import (Distribution,TDist,NormalDist,MultivariateElement,
                             MultivariateDistribution,Convolution)
 from .exceptions import NoSimulatedDataError
@@ -437,7 +437,7 @@ class nummy(ummy):
                     r._dist = TDist(s.x,s.u,dof)
         
     @classmethod
-    def _apply(cls,function,derivative,*args,fxdx=None):
+    def _apply(cls,function,derivative,fx,dx,*args):
         # called from ummpy.apply()
 
         a = list(args)
@@ -446,13 +446,13 @@ class nummy(ummy):
                 a[i] = e._dist
             elif isinstance(e,ummy):
                 a[i] = nummy(e)._dist
-        r = super(nummy,cls)._apply(function,derivative,*args,fxdx=fxdx)
+        r = super(nummy,cls)._apply(function,derivative,fx,dx,*args)
         if isinstance(r,nummy):
             r._dist = Distribution.apply(function,*a)
         return r
         
     @classmethod
-    def _napply(cls,function,*args,fxx=None):
+    def _napply(cls,function,fxx,*args):
         # called from ummpy.napply()
             
         a = list(args)
@@ -461,7 +461,7 @@ class nummy(ummy):
                 a[i] = e._dist
             elif isinstance(e,ummy):
                 a[i] = nummy(e)._dist
-        r = super(nummy,cls)._napply(function,*args,fxx=fxx)
+        r = super(nummy,cls)._napply(function,fxx,*args)
         if isinstance(r,nummy):
             r._dist = Distribution.apply(function,*a)
         return r

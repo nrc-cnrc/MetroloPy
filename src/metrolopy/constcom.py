@@ -27,10 +27,10 @@ are from CODATA 2018
 
 import numpy as np
 from warnings import warn
-from .gummy import gummy
-from .ummy import ummy,_getfinfo,_iinfo
-from .nummy import nummy
-from .unit import MFraction
+from ._gummy import gummy
+from ._ummy import ummy,_getfinfo,_iinfo
+from ._nummy import nummy
+from .mfraction import MFraction
 
 
 def _rounding_u(x):

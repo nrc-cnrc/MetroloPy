@@ -2,7 +2,7 @@
 
 # module ummy
 
-# Copyright (C) 2025 National Research Council Canada
+# Copyright (C) 2026 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -34,17 +34,18 @@ from warnings import warn
 from math import isnan,isinf,log,pi,sqrt,copysign,floor
 from fractions import Fraction
 from numbers import Rational,Integral,Real,Complex,Number
-from .printing import PrettyPrinter,MetaPrettyPrinter
-from .dfunc import Dfunc
-from .exceptions import UncertiantyPrecisionWarning
-from .unit import Unit,one,Quantity,MFraction
 from decimal import Decimal,localcontext,InvalidOperation
 from abc import ABCMeta
 
-try:
-    from mpmath import mp,mpf
-except:
-    mp = mpf = None
+from .printing import PrettyPrinter,MetaPrettyPrinter
+from .dfunc import Dfunc
+from .exceptions import UncertiantyPrecisionWarning
+from .mfraction import MFraction
+from .abc import UncertainValue,AbcUnit,AbcQuantity,UncertainComplexValue
+
+
+import lazy_loader as lazy
+mpm = lazy.load('mpmath')
 
 
 _FInfo = namedtuple('_FIinfo','rel_u precision warn_u ')
@@ -54,17 +55,20 @@ def _getfinfo(x):
     if isinstance(x,Rational) or isinstance(x,Decimal):
         return (_iinfo,x)
     
-    if mpf is not None and isinstance(x,mpf):
-        n = mp.prec
-        x = mpf(x)
-        try:
-            return (_finfodict[n],x)
-        except:
-            f = _FInfo(rel_u=0.4222/2**n,
-                       precision=mp.dps,
-                       warn_u = 0)
-            _finfodict[n] = f
-            return (f,x)
+    try:
+        if x.__class__.startswith('mpmath.') and isinstance(x,mpm.mpf):
+            n = mpm.mp.prec
+            x = mpm.mpf(x)
+            try:
+                return (_finfodict[n],x)
+            except:
+                f = _FInfo(rel_u=0.4222/2**n,
+                           precision=mpm.mp.dps,
+                           warn_u = 0)
+                _finfodict[n] = f
+                return (f,x)
+    except:
+        pass
         
     t = type(x)
     try:
@@ -151,8 +155,13 @@ def _to_decimal(x,max_digits=None):
     # The Decimal data type has some convinent methods for rounding numbers to
     # show a given number of significant figures.
     
-    if mpf is not None and isinstance(x,mpf):
-         xd = Decimal(mp.nstr(x,n=mp.dps))
+    try:
+        mp = x.__class__.startswith('mpmath.')
+    except:
+        mp = False
+        
+    if mp and isinstance(x,mpm.mpf):
+         xd = Decimal(mpm.mp.nstr(x,n=mpm.mp.dps))
     elif isinstance(x,Rational):
         if max_digits is None:
             max_digits = ummy.max_digits
@@ -179,9 +188,9 @@ def _to_decimal(x,max_digits=None):
 def _replq(x):
     if _isscalar(x):
         if isinstance(x,np.ndarray):
-            x = x.item()
-        if isinstance(x,Quantity):
-            x = x.convert(one).value
+            return _replq(x.item())
+        if isinstance(x,AbcQuantity):
+            return _replq(x.convert(1).value)
         return x
     
     x = np.array(x)
@@ -193,11 +202,9 @@ def _replq(x):
 def _replu(x):
     if _isscalar(x):
         if isinstance(x,np.ndarray):
-            x = x.item()
-        if isinstance(x,Quantity):
-            x = x.value
+            return _replu(x.item())
         if isinstance(x,UncertainValue):
-            x = x.x
+            return x.x
         return x
     
     x = np.array(x)
@@ -365,7 +372,7 @@ class _UmmyRef:
 class MetaUmmy(MetaPrettyPrinter,ABCMeta):
     pass
 
-class UncertainValue:
+class _UncertainValue(UncertainValue):
     @classmethod
     def apply(cls,function,derivative,*args,**kwds):
         """
@@ -432,7 +439,7 @@ class UncertainValue:
         """
         
         if np.all([_isscalar(a) for a in args]):
-            return cls._apply(function,derivative,*args,**kwds)
+            return cls._iapply(function,derivative,*args,**kwds)
         
         b = np.broadcast(*args)
         ret = np.empty(b.shape,dtype=object)
@@ -449,7 +456,7 @@ class UncertainValue:
     @classmethod
     def _iapply(cls,function,derivative,*args,**kwds):
         args = [_replq(a) for a in args]
-        x = [_replq(a) for a in args]
+        x = [_replu(a) for a in args]
         
         fx = function(*x,**kwds)
         d = derivative(*x,**kwds)
@@ -457,7 +464,7 @@ class UncertainValue:
            d = [i[0] if not _isscalar(i) and len(i) == 1 else i for i in d]
         
         if _isscalar(fx):
-            r = cls._apply(function,derivative,*args,fxdx = (fx,d),**kwds)
+            r = cls._apply(function,derivative,fx,d,*args,**kwds)
         else:
             fx = np.asarray(fx)
             d = np.asarray(d)
@@ -465,14 +472,12 @@ class UncertainValue:
             with np.nditer(fx,flags=['multi_index']) as it:
                 for i in it:
                     idx = tuple(it.multi_index)
-                    fxdx = (fx[idx],d[idx])
-                    r[idx] = cls._apply(lambda *x:np.asarray(function(*x))[idx],
-                                        lambda *x:np.asarray(derivative(*x))[idx],
-                                        *args,fxdx=fxdx)
+                    r[idx] = cls._apply(function,derivative,fx[idx],d[idx],
+                                        *args,**kwds)
         return r
     
     @classmethod
-    def _apply(cls,function,derivative,*a,fxdx=None,**kwds):
+    def _apply(cls,function,derivative,fx,d,*a,**kwds):
         raise NotImplementedError()
     
     @classmethod
@@ -527,11 +532,11 @@ class UncertainValue:
         """
         
         if np.all([_isscalar(a) for a in args]):
-            return cls._napply(function,*args,**kwds)
+            return cls._inapply(function,*args,**kwds)
         
         b = np.broadcast(*args)
         ret = np.empty(b.shape,dtype=object)
-        ret = [cls._napply(function,*a,**kwds) for a in b]
+        ret = [cls._inapply(function,*a,**kwds) for a in b]
         ret = np.array(ret)
         
         shape = b.shape
@@ -542,14 +547,14 @@ class UncertainValue:
         return ret
     
     @classmethod
-    def _inapply(cls,function,*args,fxx=None,**kwds):
+    def _inapply(cls,function,*args,**kwds):
         args = [_replq(a) for a in args]
-        x = [_replq(a) for a in args]
+        x = [_replu(a) for a in args]
         
         fxx = function(*x,**kwds)
         
         if _isscalar(fxx):
-            r = cls._napply(function,*args,fxx=fxx,**kwds)
+            r = cls._napply(function,fxx,*args,**kwds)
         else:
             fxx = np.asarray(fxx)
             r = np.empty(fxx.shape,dtype=object)
@@ -557,17 +562,14 @@ class UncertainValue:
                 for i in it:
                     idx = tuple(it.multi_index)
                     r[idx] = cls._napply(lambda *x:np.asarray(function(*x))[idx],
-                                         *args,fxx=fxx[idx])
+                                         fxx[idx],*args)
         return r
         
     @classmethod
-    def _napply(cls,function,*args,fxx=None,**kwds):
+    def _napply(cls,function,fxx,*args,**kwds):
         raise NotImplementedError()
 
-class UncertainComplexValue(UncertainValue):
-    pass
-
-class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
+class ummy(Dfunc,PrettyPrinter,_UncertainValue,metaclass=MetaUmmy):
     max_dof = 10000 # any larger dof will be rounded to float('inf')
     nsig = 2 # The number of digits to quote the uncertainty to
     thousand_spaces = True # If true spaces will be placed between groups of three digits.
@@ -596,8 +598,8 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
                                     # be called.  Can be set to True for debugging
     
     def __init__(self,x,u=0,dof=float('inf'),utype=None):
-        if isinstance(x,Quantity):
-            x = x.convert(one).value
+        if isinstance(x,AbcQuantity):
+            x = x.convert(1).value
             
         if isinstance(x,ummy):
              self._copy(x,self,formatting=False)
@@ -1126,15 +1128,7 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
         #return r
     
     @classmethod
-    def _apply(cls,function,derivative,*args,fxdx=None):
-        #if fxdx is None:
-            #x = [a.x if isinstance(a,ummy) else a for a in args]
-            #fx = function(*x)
-            #d = derivative(*x)
-        #else:
-            #fx,d = fxdx
-        fx,d = fxdx
-        
+    def _apply(cls,function,derivative,fx,d,*args,**kw):
         if len(args) == 1:
             d = [d]
             
@@ -1198,28 +1192,17 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
         return r
         
     @classmethod
-    def _napply(cls,function,*args,fxx=None):      
+    def _napply(cls,function,fxx,*args):      
         n = len(args)
         if n == 0:
             return cls(function(),0)
         
-        #if fxx is None:
-            #fx = None
-            #x = args
-        #else:
-            #fx,x = fxx
-        
         d = njacobian(function,*args)
         
-        if fxx is None:
-            fxdx = None
-        else:
-            fxdx = (fxx,d)
-        
         if n == 1:
-            return cls._apply(function,lambda x: d,args[0],fxdx=fxdx)
+            return cls._apply(function,None,fxx,d,args[0])
 
-        return cls._apply(function,lambda *x: d,*args,fxdx=fxdx)
+        return cls._apply(function,None,fxx,d,*args)
     
     def _aop(self,b,f,d1,d2):
         # computes the result of a binary operation f(self,b).  d1 and d2 are 
@@ -1303,7 +1286,7 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
     def __add__(self,b):
         if isinstance(b,np.ndarray):
             return np.array(self) + b
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__radd__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1333,7 +1316,7 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
         if isinstance(b,np.ndarray):
             return np.array(self) - b
           
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rsub__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1364,7 +1347,7 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
         if isinstance(b,np.ndarray):
             return np.array(self)*b
         
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rmul__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1406,7 +1389,7 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
     def __truediv__(self,b):
         if isinstance(b,np.ndarray):
             return np.array(self)/b
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rtruediv__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1468,7 +1451,7 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
         if isinstance(b,np.ndarray):
             return np.array(self)**b
         
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rpow__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1551,7 +1534,7 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
         if isinstance(b,np.ndarray):
             return np.array(self) // b
         
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rmfloordiv__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1575,13 +1558,13 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
         if isinstance(b,np.ndarray):
             return np.array(self) % b
         
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rmod__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
             return immy(self) % b
         
-        ret = ummy._apply(lambda x1,x2: x1%x2,
+        ret = ummy.apply(lambda x1,x2: x1%x2,
                           lambda x1,x2: (1,copysign(abs(x1//x2),x2)),self,b)
         return type(self)(ret)
         
@@ -1592,7 +1575,7 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
         if isinstance(b,ummy):
             return b.__mod__(self)
         
-        ret = ummy._apply(lambda x1,x2: x1%x2,
+        ret = ummy.apply(lambda x1,x2: x1%x2,
                           lambda x1,x2: (1,copysign(abs(x1//x2),x2)),b,self)
         return type(self)(ret)
     
@@ -1733,10 +1716,10 @@ class ummy(Dfunc,PrettyPrinter,Number,UncertainValue,metaclass=MetaUmmy):
         if self._ref is None:
             return dict()
         
-        if isinstance(x,ummy) or isinstance(x,str) or isinstance(x,Quantity):
+        if isinstance(x,ummy) or isinstance(x,str) or isinstance(x,AbcQuantity):
             x = [x]
         
-        x = [i.value if isinstance(i,Quantity) else i for i in x]
+        x = [i.value if isinstance(i,AbcQuantity) else i for i in x]
             
         d = dict()
         for g in x:
@@ -1974,7 +1957,7 @@ class MetaImmy(MetaPrettyPrinter,ABCMeta):
     def imag_symbol(cls,value):
         immy._imag_symbol = str(value)
     
-class immy(PrettyPrinter,Dfunc,Number,UncertainComplexValue,metaclass=MetaImmy):
+class immy(PrettyPrinter,Dfunc,UncertainComplexValue,metaclass=MetaImmy):
     
     _style = 'cartesian'
     _imag_symbol = 'j'
@@ -2171,21 +2154,21 @@ class immy(PrettyPrinter,Dfunc,Number,UncertainComplexValue,metaclass=MetaImmy):
         return self
             
     @classmethod
-    def _apply(cls,function,derivative,*args,fxx=None,rjd=None):
+    def _apply(cls,function,derivative,fxdx,*args,rjd=None):
         
         n = len(args)
-        if fxx is None:
+        if fxdx is None:
             rargs = [a.real for a in args]
             jargs = [a.imag for a in args]
             args = rargs + jargs
-            args = [a.convert(one).value if isinstance(a,Quantity) else a for 
+            args = [a.convert(1).value if isinstance(a,AbcQuantity) else a for 
                     a in args]
             x = [a.x if isinstance(a,ummy) else a for a in args]
             func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
             der = lambda *a: derivative(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
             fx = func(*x)
         else:
-            fx,x = fxx
+            fx,x = fxdx
             
         if not _isscalar(fx):
             return [cls._apply(lambda *y: func(*y)[i],
@@ -2236,13 +2219,13 @@ class immy(PrettyPrinter,Dfunc,Number,UncertainComplexValue,metaclass=MetaImmy):
         return cls._element_type._apply(function,der,*args,fxdx=(fx,rd,x))
     
     @classmethod
-    def _napply(cls,function,*args,fxx=None):
+    def _napply(cls,function,fxx,*args,**kw):
         n = len(args)
         if fxx is None:
             rargs = [a.real for a in args]
             jargs = [a.imag for a in args]
             args = rargs + jargs
-            args = [a.convert(one).value if isinstance(a,Quantity) else a for 
+            args = [a.convert(1).value if isinstance(a,AbcQuantity) else a for 
                     a in args]
             x = [a.x if isinstance(a,ummy) else a for a in args]
             func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
@@ -2255,10 +2238,8 @@ class immy(PrettyPrinter,Dfunc,Number,UncertainComplexValue,metaclass=MetaImmy):
                     for i in range(len(fx))]
             
         if not isinstance(fx,Real) and isinstance(fx,Complex):
-            r = cls._element_type._napply(lambda *a: func(*a).real,*args,
-                                          fxx=(fx.real,x))
-            j = cls._element_type._napply(lambda *a: func(*a).imag,*args,
-                                          fxx=(fx.imag,x))
+            r = cls._element_type._napply(lambda *a: func(*a).real,(fx.real,x),*args,**kw)
+            j = cls._element_type._napply(lambda *a: func(*a).imag,(fx.imag,x)*args,**kw)
             return cls(real=r,imag=j)
         
         return cls._element_type._napply(func,*args,fxx=(fx,x))

@@ -25,7 +25,7 @@ Classes to automatically generate prefixed units from a base unit.
 """
 
 from .unit import Unit,Conversion
-from .ummy import MFraction
+from .mfraction import MFraction
 
 class PrefixedUnit(Unit):    
     """PrefixedUnit(name,symbol,conversion=None,short_name=None,
