@@ -26,7 +26,7 @@ units.
 """
 
 import numpy as np
-from .unit import one,_CompositeUnit
+from ._unit import one,_CompositeUnit
 from .abc import AbcQuantity
 from ._ummy import ummy
 from .nonlinearunit import NonlinearConversion,NonlinearUnit

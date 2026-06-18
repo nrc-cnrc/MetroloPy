@@ -28,7 +28,7 @@ This module defines the Nonlinear Unit and Nonlinear Conversion abstract
 classes that are the base class for the LogUnit and OffsetUnit classes.
 """
 
-from .unit import Unit, Conversion
+from ._unit import Unit, Conversion
 from .exceptions import IncompatibleUnitsError
 
 class NonlinearConversion(Conversion):
@@ -144,12 +144,6 @@ class NonlinearUnit(Unit):
         # combined with other units.  Override this method to return a subclass
         # of _CompositeUnit to allow combinations.
         raise NotImplementedError()
-        
-    def from_uunit(self,u,unit):
-        raise IncompatibleUnitsError('uunit may not be used with unit ' + self.tostring())
-        
-    def to_uunit(self,u,unit):
-        raise IncompatibleUnitsError('uunit may not be used with unit ' + self.tostring())
     
     # override any of the methods below to allow the operations
     def _add(self,a,bunit,b,aconv):

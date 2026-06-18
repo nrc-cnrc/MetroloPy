@@ -26,6 +26,8 @@ calculations.
 """
 
 from .exceptions import NoSimulatedDataError
+from .dof import DoF
+
 import numpy as np
 
 
@@ -77,6 +79,11 @@ class Distribution:
     simdata = None
     
     utype = None
+    
+    p_names = None
+    p_names_html = None
+    p_names_latex = None
+    p_names_ascii = None
     
     _called = []
     _mean = None
@@ -370,18 +377,8 @@ class Distribution:
             raise NoSimulatedDataError('simulate must be called to generate some data')
         if not 'bins' in kwds:
             kwds['bins'] = 100
-        if not ('normed' in kwds or 'density' in kwds):
-            try:
-                from matplotlib import __version__ as version
-                version = [int(v) for v in version.split('.')[:2]]
-                usedensity = (version[0] > 2 or 
-                              (version[0] == 2 and version[1] > 0))
-            except:
-                usedensity = True
-            if usedensity:
-                kwds['density'] = True
-            else:
-                kwds['normed'] = True
+        if not 'density' in kwds:
+            kwds['density'] = True
         if not 'histtype' in kwds:
             kwds['histtype'] ='stepfilled'
         plt.hist(self.simsorted[np.abs(self.simsorted) != np.inf],**kwds)
@@ -854,6 +851,10 @@ class NormalDist(Distribution):
         
     def u(self):
         return self._u
+    
+    def cdf(self,z,x,s):
+        from scipy.stats import norm
+        return norm.cdf(z,loc=x,scale=s)
         
         
 class TDist(Distribution):
@@ -868,7 +869,9 @@ class TDist(Distribution):
             raise ValueError('dof <= 0')
         self._x = x
         self._s = s
-        self.dof = dof
+        if not isinstance(dof,DoF):
+            dof = DoF(dof)
+        self.DoF = dof
         
     def random(self,n=None):
         if self._s == 0:
@@ -876,7 +879,7 @@ class TDist(Distribution):
                 return self._x
             else:
                 return np.full(n,self._x)
-        return self._x + self._s*Distribution.random_rng().standard_t(self.dof,n)
+        return self._x + self._s*Distribution.random_rng().standard_t(self.DoF.value,n)
         
     def x(self):
         return self._x
@@ -884,6 +887,7 @@ class TDist(Distribution):
     def u(self):
         return self._s
     
-    def cdf(self,z,x,s,dof):
+    @staticmethod
+    def cdf(z,x,s,dof):
         from scipy.stats import t as tdist
         return tdist.cdf(z,dof,loc=x,scale=s)

@@ -25,6 +25,7 @@ calculations.
 """
 import numpy as np
 from .distributions import Distribution,MultivariateDistribution,MultivariateElement
+from .dof import DoF
 
 class MultiNormalDist(MultivariateDistribution):
     def __init__(self,mean,cov):
@@ -61,7 +62,7 @@ class MultiTElement(MultivariateElement):
         """
         self.parent = parent
         self.index = index
-        self.dof = dof
+        self.DoF = dof
         
 class MultiTDist(MultivariateDistribution):
     def __init__(self,mean,cov,dof):
@@ -76,24 +77,17 @@ class MultiTDist(MultivariateDistribution):
         self._cov = np.asarray(cov)
         nd = len(self.mean)
         
-        try:
-            if len(dof) == nd:
-                dof = np.asarray(dof)
-                for d in dof:
-                    if d != dof[0]:
-                        raise ValueError('all dimensions must have the same dof')
-            else:
-                raise TypeError('dof must be a scalar or be the same length as mean')
-        except TypeError:
-            self.dof = np.array(nd*[dof])
+        if not isinstance(dof,DoF):
+            dof = DoF(dof)
         
         if self._cov.shape != (nd,nd):
             ValueError('cov.shape != (len(mean),len(mean))')
         self._elements = [MultiTElement(self,i,dof) for i in range(nd)]
         self._len = nd
+        self.DoF = dof
     
     def _simulate(self,n):
-        gamma = np.tile(np.random.gamma(self.dof[0]/2,2/self.dof[0],n),(len(self),1)).T
+        gamma = np.tile(np.random.gamma(self.DoF.value/2,2/self.DoF.value,n),(len(self),1)).T
         Z = np.random.multivariate_normal(np.zeros(len(self)),self.cov,n)
         self.simdata = (self.mean + Z/np.sqrt(gamma)).T
         
@@ -161,6 +155,10 @@ class UniformDist(Distribution):
     def u(self):
         return self._u
     
+    def cdf(self,z,center,half_width):
+        from scipy.stats import uniform
+        return uniform.cdf(z,loc=center-half_width,scale=2*half_width)
+    
 class GammaDist(Distribution):
     def __init__(self,shape,scale):
         """
@@ -181,6 +179,10 @@ class GammaDist(Distribution):
         
     def u(self):
         return self.shape*np.sqrt(self.scale)
+    
+    def cdf(self,z,shape,scale):
+        from scipy.stats import gamma
+        return gamma.cdf(z,shape,scale=scale)
         
 class LaplaceDist(Distribution):
     def __init__(self,x,scale):
@@ -200,6 +202,10 @@ class LaplaceDist(Distribution):
         
     def u(self):
         return self.scale*np.sqrt(2)
+    
+    def cdf(self,z,x,scale):
+        from scipy.stats import laplace
+        return laplace.cdf(z,loc=x,scale=scale)
         
 class TriangularDist(Distribution):
     def __init__(self,mode,half_width=None,left_width=None,right_width=None,lower_limit=None,upper_limit=None):
@@ -262,6 +268,10 @@ class TriangularDist(Distribution):
         
     def u(self):
         return np.sqrt((self.left_width**2+self.right_width**2+self.left_width*self.right_width)/18)
+    
+    def cdf(self,z,mode,left_width,right_width):
+        from scipy.stats import triang
+        return triang.cdf(z,left_width/(left_width+right_width),loc=mode-left_width,scale=left_width+right_width)
         
 class ExponentialDist(Distribution):
     def __init__(self,scale=None,rate=None):
@@ -293,6 +303,10 @@ class ExponentialDist(Distribution):
         
     def u(self):
         return self.scale
+    
+    def cdf(self,z,scale):
+        from scipy.stats import expon
+        return expon.cdf(z,scale=scale)
         
 class PoissonDist(Distribution):
     def __init__(self,lam):

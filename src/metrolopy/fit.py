@@ -24,11 +24,13 @@
 This module defines some classes to facilitate curve fitting.
 """
 
-from ._ummy import _isscalar,UncertainValue,njacobian
+from ._ummy import njacobian
+from .dof import DoF,_DoF_inf
+from .util import _isscalar
 from ._gummy import gummy
 from .exceptions import FitWarning
 from .printing import PrettyPrinter
-from .abc import AbcQuantity
+from .abc import UncertainValue,AbcQuantity
 
 import numpy as np
 from warnings import warn
@@ -80,7 +82,7 @@ def getvalues(txt,x,u,cov,w,units,ignore_corr):
                 units = 1
         else:
             if units != 1:
-                from .unit import Unit
+                from ._unit import Unit
                 units = Unit.unit(units)
         return x,xf,u,None,w,None,pcorr,units,0
     
@@ -104,13 +106,13 @@ def getvalues(txt,x,u,cov,w,units,ignore_corr):
             if units == 1:
                 units = [1]*dim
             else:
-                from .unit import Unit
+                from ._unit import Unit
                 units = [Unit.unit(units)]*dim
         else:
             if np.shape(units) != (dim,):
                 raise TypeError(txt + 'units must be either None, a single unit or a list of units with length equal to xdim')
-            if any(units != 1):
-                from .unit import Unit
+            if any([i != 1 for i in units]):
+                from ._unit import Unit
                 units = [Unit.unit(u) for u in units]
         if dim == 1:
             units = units[0]
@@ -142,7 +144,7 @@ def getvalues(txt,x,u,cov,w,units,ignore_corr):
                     ii = ii.convert(1) if isinstance(i,AbcQuantity) else ii
                 else:
                     if isinstance(ii,AbcQuantity):
-                        if ii.unit_unit_is_one:
+                        if ii.unit_is_one:
                             ii *= iunit
                         else:
                             ii = ii.convert(iunit)
@@ -249,7 +251,7 @@ def mmul(m,v):
     
 def repl(a,p,fix):
     p = np.array(p)
-    p[fix] = a
+    p[~fix] = a
     return p
 
 class _Fit:
@@ -515,11 +517,19 @@ class _Fit:
                 plt.plot(fx,upl,clformat,**cloptions)
                 plt.plot(fx,unl,clformat,**cloptions)
             
-        xlabel = gummy._plotlabel(xlabel,self.xunit.tostring(fmt='latex'))
+        if self.xunit == 1:
+            xs = None
+        else:
+            xs = self.xunit.tostring(fmt='latex')
+        xlabel = gummy._plotlabel(xlabel,symbol=xs)
         if xlabel is not None:
             plt.xlabel(xlabel)
             
-        ylabel = gummy._plotlabel(ylabel,self.yunit.tostring(fmt='latex'))
+        if self.yunit == 1:
+            ys = None
+        else:
+            ys = self.yunit.tostring(fmt='latex')
+        ylabel = gummy._plotlabel(ylabel,symbol=ys)
         if ylabel is not None:
             plt.ylabel(ylabel)
             
@@ -538,10 +548,10 @@ class Fit(_Fit,PrettyPrinter):
     
     latex_math = None
     
-    def __init__(self,x,y=None,p0=None,ux=None,uy=None,variance_is_known=None,
-                 xunit=None, yunit=None,solver=None,xweights=None,weights=None,
-                 xcov=None,ycov=None,ignore_correlations=False,fix=None,
-                 fargs=[],fkwds={},**kw):
+    def __init__(self,x,y=None,f=None,p0=None,ux=None,uy=None,
+                 variance_is_known=None,xunit=None, yunit=None,solver=None,
+                 xweights=None,weights=None,xcov=None,ycov=None,
+                 ignore_correlations=False,fix=None, fargs=[],fkwds={},**kw):
         """
         Performs a non-linear fit.  The function may be passed in the arguments
         or may be specified by overriding the Fit.f(...) method in a subclass.
@@ -772,27 +782,36 @@ class Fit(_Fit,PrettyPrinter):
         self.yres = None
         self.njacp = None
         self.njacx = None
+        self.p_names = None
+        self.p_names_html = None
+        self.p_names_latex = None
+        self.p_names_ascii = None
         
-        if 'f' in kw:
-            self.f = kw['f']
-            del kw['f']
+        if f is not None:
+            self.f = f
             
         if 'jacp' in kw:
-            self.jacp = kw['jacp']
-            del kw['jacp']
+            self.jacp = kw.pop('jacp')
             
         if 'jacx' in kw:
-            self.jacx = kw['jacx']
-            del kw['jacx']
+            self.jacx = kw.pop('jacx')
+            
+        if 'p_names' in kw:
+            self.p_names = kw.pop('p_names')
+        if 'p_names_html' in kw:
+            self.p_names_html = kw.pop('p_names_html')
+        if 'p_names_latex' in kw:
+            self.p_names_latex = kw.pop('p_names_latex')
+        if 'p_names_ascii' in kw:
+            self.p_names_html = kw.pop('p_names_ascii')
         
         if p0 is None:
             try:
-                self.p0 = self.get_p0()
+                p0 = self.get_p0()
             except NotImplementedError:
-                raise ValueError('p0 must be specified')
-        else:
-            self.p0 = p0
-            
+                raise ValueError('initial values p0 must be specified for this fit')
+        self.p0 = np.asarray(p0,dtype=float)
+
         getpu = False
         if self.xdim == 1:
             getpu = getpu or (self.xunit != 1)
@@ -808,7 +827,7 @@ class Fit(_Fit,PrettyPrinter):
             try:
                 self.punits = self.get_punits()
             except NotImplementedError:
-                raise ValueError('only dimensionless quanities are accepted')
+                raise ValueError('only dimensionless quanities are accepted for this fit')
         else:
             self.punits = [1]*len(self.p0)
             
@@ -835,15 +854,18 @@ class Fit(_Fit,PrettyPrinter):
         except NotImplementedError:
             raise TypeError('the fit function f has not been sepecified')
         except:
-            if self.count is None:
-                raise
-            self.f0 = None
-            # ...if not vectorize it so that it does.
-            if self.ydim <= 1:
-                ot = [np.float64]
-            else:
-                ot = [np.float64]*self.ydim
-            self.f = np.vectorize(self.f,ot)#,excluded=list(range(self.xdim,self.xdim+self.nparam)))
+            try:
+                if self.count is None:
+                    raise
+                self.f0 = None
+                # ...if not vectorize it so that it does.
+                if self.ydim <= 1:
+                    ot = [np.float64]
+                else:
+                    ot = [np.float64]*self.ydim
+                self.f = np.vectorize(self.f,ot)#,excluded=list(range(self.xdim,self.xdim+self.nparam)))
+            except:
+                raise TypeError('the calling the fit function with the initial parameters raises an error')
             
         jp = True
         try:
@@ -888,7 +910,7 @@ class Fit(_Fit,PrettyPrinter):
 
         self._jacp = None
         self._jacx = None
-        self.fix = fix
+        
         if fix is None:
             if self.xdim == 1:
                 self._f = lambda x,p:self.f(x,*p,*fargs,**fkwds)
@@ -904,19 +926,21 @@ class Fit(_Fit,PrettyPrinter):
                     self._jacx = lambda x,p:self.jacx(*x,*p)
             self._p0 = self.p0
         else:
+            fix = np.asarray(fix,dtype=bool)
             self._p0 = self.p0[~fix]
             if self.xdim == 1:
                 self._f = lambda x,p:self.f(x,*repl(p,self.p0,fix),*fargs,**fkwds)
                 if jp:
-                    self._jacp = lambda x,p:self.jacp(x,*repl(p,self.p0,fix))
+                    self._jacp = lambda x,p:self.jacp(x,*repl(p,self.p0,fix))[~fix]
                 if jx:
                     self._jacx = lambda x,p:self.jacx(x,*repl(p,self.p0,fix))
             else:
                 self._f = lambda x,p:self.f(*x,*repl(p,self.p0,fix),*fargs,**fkwds)
                 if jp:
-                    self._jacp = lambda x,p:self.jacp(*x,*repl(p,self.p0,fix))
+                    self._jacp = lambda x,p:self.jacp(*x,*repl(p,self.p0,fix))[~fix]
                 if jx:
                     self._jacx = lambda x,p:self.jacx(*x,*repl(p,self.p0,fix))
+        self.fix = fix
                     
         self.nparam = len(self._p0)
         
@@ -1004,35 +1028,33 @@ class Fit(_Fit,PrettyPrinter):
     
         self.s = np.sqrt(self.var)
         self.dof = self.count - len(self._pf)
-            
-        odr = self.solver.startswith('odr') and self.xvar > 0
         
-        self.cov = None
-        if self.variance_is_known and self.known_var is not None:
+        if self.variance_is_known and self.known_var is None:
+            self.variance_is_known = False
+            
+        if self.variance_is_known:
+            dof = _DoF_inf
+        else:
+            dof = DoF(self.dof)
+            
+        if self.variance_is_known:
             self.cov = self.rcov*self.known_var
         elif self.var is not None:
             self.cov = self.rcov*self.var
-            
-        if self.njacp is None:
-            try:
-                return gummy.create(self._pf,covariance_matrix=self.cov,dof=self.dof)
-            except np.linalg.LinAlgError:
-                warn('the covariance matrix is not positive semidefinate; uncertainties cannot be calculated',FitWarning)
-                return gummy.create(self._pf)
-            
-        if (self.y_is_gummies or self.x_is_gummies or self._ch_create_p or 
-            (not odr and self.ux is not None)):
+        else:
+            self.cov = None
+
+        if self.y_is_gummies or self.x_is_gummies or self._ch_create_p:
+            odr = self.solver.startswith('odr') and self.xvar > 0
             
             uy = self.uy
             if self.yvar is None:
                 yvar = self.var
             else:
                 yvar = self.yvar
-            if self.variance_is_known:
-                dof = float('inf')
-            elif yvar is not None:
+            if yvar is not None:
                 uy = np.sqrt(yvar)
-                dof = (self.count - 1)/self.count
+                
             
             y = self.y
             if not self.y_is_gummies and uy is not None:
@@ -1054,12 +1076,10 @@ class Fit(_Fit,PrettyPrinter):
             if self.weights is not None:
                 y = mmul(self.sqrt_weights,y)
                             
-            ux = self.ux
-            if self.variance_is_known:
-                xdof = float('inf')
-            elif odr:
+            if odr and not self.variance_is_known:
                 ux = np.sqrt(self.xvar)
-                xdof = (self.count - 1)/self.count
+            else:
+                ux = self.ux
     
             if odr:
                 if self.xdim == 1:
@@ -1087,7 +1107,7 @@ class Fit(_Fit,PrettyPrinter):
                                 iux = ux[it.multi_index[0]]
                             else:
                                 iux = ux[it.multi_index]
-                            i[...] = gummy(0,iux,dof=xdof)
+                            i[...] = gummy(0,iux,dof=dof)
                             
                 if self.xweights is not None:
                     x = mmul(self.sqrt_xweights,x)
@@ -1108,34 +1128,39 @@ class Fit(_Fit,PrettyPrinter):
                 g.value._x = gf
             
         else:
+            try:
+                p = gummy.create(self._pf,covariance_matrix=self.cov,dof=dof)
+            except np.linalg.LinAlgError:
+                warn('the covariance matrix returned by the solver is not positive semidefinate; uncertainties cannot be calculated',FitWarning)
+                p = gummy.create(self._pf)
             # If we have a jacobian, calculate effiective degrees of freedom for each
             # parameter as sum(weights)**2/sum(weights**2) where the weights are the
             # square of the elements of the jacobian.
-            try:
+            #try:
                 # sqrtm below if used to transform the jacobian from a basis with 
                 # correlated parameters to one where the parameters are uncorrelated
-                cov = self.cov
-                m = np.array([[cov[i][j]/np.sqrt(cov[i][i]*cov[j][j]) 
-                               if cov[i][i] != 0 and cov[j][j] != 0 else 0 
-                               for i in range(self.nparam)] for j in range(self.nparam)])
-                u = np.sqrt(np.diag(cov))
-                val,vec = np.linalg.eig(m)
-                val = np.real(val)
-                val = np.clip(val,0,None)
-                vec = np.real(vec)
-                sqrtm = ((vec*np.sqrt(val)@np.linalg.inv(vec)).T*u).T
-                jact = sqrtm.T@self.njacp.T
+                #cov = self.cov
+                #m = np.array([[cov[i][j]/np.sqrt(cov[i][i]*cov[j][j]) 
+                               #if cov[i][i] != 0 and cov[j][j] != 0 else 0 
+                               #for i in range(self.nparam)] for j in range(self.nparam)])
+                #u = np.sqrt(np.diag(cov))
+                #val,vec = np.linalg.eig(m)
+                #val = np.real(val)
+                #val = np.clip(val,0,None)
+                #vec = np.real(vec)
+                #sqrtm = ((vec*np.sqrt(val)@np.linalg.inv(vec)).T*u).T
+                #jact = sqrtm.T@self.njacp.T
                 
                 # calculate the effective degrees of freedom for the uncorrelated 
                 # parameters then transform the resulting gummys back to the
                 # correlated basis
-                df = (np.sum(jact**2,axis=1)**2/np.sum(jact**4,axis=1))*(self.count - 1)/self.count
-                df = np.array([i if i >= 1 else 1 for i in df])
-                g = np.array([gummy(0,1,dof=df[i]) for i in range(self.nparam)])
-                p = sqrtm@g + self._pf
-            except np.linalg.LinAlgError:
-                warn('unable to calculate the effective degrees of freedom for the fit parameters')
-                p = gummy.create(self._pf,cov=cov)
+                #df = (np.sum(jact**2,axis=1)**2/np.sum(jact**4,axis=1))*(self.count - 1)/self.count
+                #df = np.array([i if i >= 1 else 1 for i in df])
+                #g = np.array([gummy(0,1,dof=df[i]) for i in range(self.nparam)])
+                #p = sqrtm@g + self._pf
+            #except np.linalg.LinAlgError:
+                #warn('unable to calculate the effective degrees of freedom for the fit parameters')
+                #p = gummy.create(self._pf,cov=cov)
             
         self._p = p
         if self.fix is None:
@@ -1258,7 +1283,7 @@ class Fit(_Fit,PrettyPrinter):
             fit_type = kw.pop('fit_type')
         if 'task' in kw:
             fit_type = kw.pop('task')
-                    
+            
         self.fit_output = odr_fit(self._f,self.xf,yf,self._p0,
                                   weight_x=weight_x,weight_y=weight_y,
                                   task=fit_type,jac_beta=self._jacp,
@@ -1311,6 +1336,9 @@ class Fit(_Fit,PrettyPrinter):
         try:
             # PolyFit implements _shiftx which returns a matrix that transforms 
             # the fit parameters under: x -> x + xav
+            if self.fix is not None or self._jacp is None:
+                raise NotImplementedError()
+                
             if self.xdim == 1:
                 xav = np.mean(self.xf)
                 xd = self.xf - xav # Bad data! Bad! (de-mean the data)
@@ -1319,8 +1347,6 @@ class Fit(_Fit,PrettyPrinter):
                 xd = (self.xf.T - xav).T
             trp = self._shiftx(xav)
             
-            if self._jacp is None:
-                raise NotImplementedError
             x = self._jacp(xd,self._p0).T
             self.njacp = self._jacp(self.xf,self._p0).T
         except NotImplementedError:
@@ -1337,10 +1363,12 @@ class Fit(_Fit,PrettyPrinter):
                     x = np.array([njacobian(lambda *p:self._f(i,p),*g0) for i in self.xf.T])
                 if len(self._p0) == 1:
                     x = np.reshape(x,np.shape(x) + (1,))
-                #x = x.T
             self.njacp = np.array(x)
         
         yf = self.yf
+        if self.fix is not None:
+            yf = yf - self._f(self.xf,np.zeros(self.nparam))
+            
         w = self.sqrt_weights
         
         if np.ndim(w) == 2:
@@ -1475,13 +1503,43 @@ class Fit(_Fit,PrettyPrinter):
             txt = ''
         for i,p in enumerate(self.p):
             if fmt == 'unicode' or fmt == 'utf-8':
-                txt += 'p('+str(i+1)+') = ' + p.tostring(fmt='unicode') + '\n'
+                nm = 'p('+str(i+1)+')'
+                try:
+                    if self.p_names is not None:
+                        nm = str(self.p_names[i])
+                except:
+                    pass
+                txt += nm + ' = ' + p.tostring(fmt='unicode') + '\n'
             elif fmt == 'ascii' or fmt == 'utf-8':
-                txt += 'p('+str(i+1)+') = ' + p.tostring(fmt='ascii') + '\n'
+                nm = 'p('+str(i+1)+')'
+                try:
+                    if self.p_names_ascii is not None:
+                        nm = str(self.p_names_ascii[i])
+                except:
+                    pass
+                txt += nm + ' = ' + p.tostring(fmt='ascii') + '\n'
             elif fmt == 'latex':
+                if self.p_names_latex is not None:
+                    nm = str(self.p_names_latex[i])
+                elif self.p_names is not None:
+                    if len(self.p_names[i]) == 1:
+                        nm = str(self.p_names[i])
+                    else:
+                       nm = PrettyPrinter.latex_norm(str(self.p_names[i]))
                 txt += 'p_{'+str(i+1)+'} &= ' + p.tostring(fmt='latex').strip('$') + '\\\\'
             elif fmt == 'html':
-                txt += '<i>p</i><sub>'+str(i+1)+'</sub> = ' + p.tostring(fmt='html') + '<br>'
+                nm = '<i>p</i><sub>'+str(i+1)+'</sub>'
+                try:
+                    if self.p_names_html is not None:
+                        nm = str(self.p_names_html[i])
+                    elif self.p_names is not None:
+                        if len(self.p_names[i]) == 1:
+                            nm = '<i>' + str(self.p_names[i]) + '</i>'
+                        else:
+                            nm = str(self.p_names[i])
+                except:
+                    pass
+                txt += nm + ' = ' + p.tostring(fmt='html') + '<br>'
             else:
                 raise ValueError('format ' + str(fmt) + ' is not understood')
                 

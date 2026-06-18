@@ -2,7 +2,7 @@
 
 # module dfunc
 
-# Copyright (C) 2019 National Research Council Canada
+# Copyright (C) 2026 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -27,6 +27,8 @@ support for numpy ufunc functions.
 
 import numpy as np
 from numbers import Real,Integral
+from .util import _isscalar,_replq,_replu
+
 
 def _f_darctan2(x1,x2):
     return (x2/(x1**2 + x2**2),-x1/(x1**2 + x2**2))
@@ -134,6 +136,7 @@ fdict = {np.angle:  lambda x: x.angle(),
          np.power:  _f_pow,
          np.mod:  _f_mod,
          np.remainder: _f_mod,
+         np.round: _f_around,
          np.divmod:  lambda x1,x2: (_f_fdiv(x1,x2),_f_mod(x1,x2)),
          np.modf:  lambda x: (x%1,x//1),
          np.sqrt:  lambda x: x**0.5,
@@ -153,10 +156,6 @@ fdict = {np.angle:  lambda x: x.angle(),
          np.isneginf:  lambda x: np.isneginf(x.x),
          np.isposinf:  lambda x: np.isposinf(x.x)
         }
-if np.lib.NumpyVersion(np.__version__) >= '1.25.0':
-    fdict[np.round] =  _f_around
-else:
-    fdict[np.round_] =  _f_around
 
 
 try_fconvert = True
@@ -183,7 +182,6 @@ def _broadcast(f,x):
         return ret
     return _call(f,x)
 
-
 class Dfunc:
     """
     Class `Dfunc` is an abstract base class that provides some support for numpy
@@ -196,9 +194,9 @@ class Dfunc:
         # this should return a copy of self with the x and u properties 
         # converted to float values
         raise NotImplementedError()
-        
-    #@classmethod
-    #def apply(cls,function,derivative,*args):
+    
+    @classmethod
+    def apply(cls,function,derivative,*args,**kwds):
         """
         A classmethod that applies a function to one or more gummy or jummy 
         objects propagating the uncertainty.
@@ -209,7 +207,8 @@ class Dfunc:
               The the function to be applied. For `gummy.apply`, 'function'
               should take one or more float arguments and return a float value 
               or float array.  For `jummy.apply`, 'function' may also take and
-              return complex values.
+              return complex values.  If the function returns an array like 
+              value, it must be convertable to a numpy homogeneous array.
 
         derivative:  `function`
               The name of a second function that gives the derivatives
@@ -237,7 +236,7 @@ class Dfunc:
               
         Returns
         -------
-        `gummy`, `jummy`:
+        `gummy`, `jummy` or a `numpy.ndarray` of `gummy` or `jummy`:
             If none of the arguments are `gummy` or `jummy`
             then the return value is the same type as the return value of `function`.
             Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
@@ -261,16 +260,50 @@ class Dfunc:
         3.65 +/- 0.65
         """
         
-        #bargs = np.broadcast(*args)
-        #if bargs.shape == ():
-            #return _call(lambda *x: cls._apply(function,derivative,*x), *args) 
+        if np.all([_isscalar(a) for a in args]):
+            return cls._iapply(function,derivative,*args,**kwds)
         
-        #ret = np.array([_call(lambda *x: cls._apply(function,derivative,*x), *a) for a in bargs])
-        #ret = ret.reshape(bargs.shape)
-        #return ret
+        b = np.broadcast(*args)
+        ret = np.empty(b.shape,dtype=object)
+        ret = [cls._iapply(function,derivative,*a,**kwds) for a in b]
+        ret = np.array(ret)
+        
+        shape = b.shape
+        if isinstance(ret[0],np.ndarray):
+            shape += ret[0].shape
+        np.reshape(ret,shape)
+        
+        return ret
     
-    #@classmethod
-    #def napply(cls,function,*args):
+    @classmethod
+    def _iapply(cls,function,derivative,*args,**kwds):
+        args = [_replq(a) for a in args]
+        x = [_replu(a) for a in args]
+        
+        fx = function(*x,**kwds)
+        d = derivative(*x,**kwds)
+        if _isscalar(fx) and len(args) > 1:
+           d = [i[0] if not _isscalar(i) and len(i) == 1 else i for i in d]
+        
+        if _isscalar(fx):
+            r = cls._apply(function,derivative,fx,d,*args,**kwds)
+        else:
+            fx = np.asarray(fx)
+            d = np.asarray(d)
+            r = np.empty(fx.shape,dtype=object)
+            with np.nditer(fx,flags=['multi_index']) as it:
+                for i in it:
+                    idx = tuple(it.multi_index)
+                    r[idx] = cls._apply(function,derivative,fx[idx],d[idx],
+                                        *args,**kwds)
+        return r
+    
+    @classmethod
+    def _apply(cls,function,derivative,fx,d,*a,**kwds):
+        raise NotImplementedError()
+    
+    @classmethod
+    def napply(cls,function,*args,**kwds):
         """
         gummy.napply(function, arg1, arg2, ...) and
         jummy.napply(function, arg1, arg2, ...)
@@ -286,7 +319,8 @@ class Dfunc:
             The the function to be applied. For `gummy.apply`, 'function'
             should take one or more float arguments and return a float value
             r float array.  For `jummy.apply`, 'function' may also take and
-            return complex values.
+            return complex values.  If the function returns an array like 
+            value, it must be convertable to a numpy homogeneous array.
 
         *args:  `gummy`, `jummy`, or `float`
               One or more arguments to which `function` will be applied.  These
@@ -297,7 +331,7 @@ class Dfunc:
 
         Returns
         -------
-        `gummy`, `jummy`:
+        `gummy`, `jummy` or a `numpy.ndarray` of `gummy` or `jummy`:
             If none of the arguments are `gummy` or `jummy`
             then the return value is the same type as the return value of `function`.
             Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
@@ -319,14 +353,43 @@ class Dfunc:
         3.65 +/- 0.65
         """
         
-        #bargs = np.broadcast(*args)
-        #if bargs.shape == ():
-            #return _call(lambda *x: cls._napply(function,*x), *args)
+        if np.all([_isscalar(a) for a in args]):
+            return cls._inapply(function,*args,**kwds)
         
-        #ret = np.array([_call(lambda *x: cls._napply(function,*x), *a) for a in bargs])
-        #ret = ret.reshape(bargs.shape)
-        #return ret
+        b = np.broadcast(*args)
+        ret = np.empty(b.shape,dtype=object)
+        ret = [cls._inapply(function,*a,**kwds) for a in b]
+        ret = np.array(ret)
+        
+        shape = b.shape
+        if isinstance(ret[0],np.ndarray):
+            shape += ret[0].shape
+        np.reshape(ret,shape)
+        
+        return ret
     
+    @classmethod
+    def _inapply(cls,function,*args,**kwds):
+        args = [_replq(a) for a in args]
+        x = [_replu(a) for a in args]
+        
+        fxx = function(*x,**kwds)
+        
+        if _isscalar(fxx):
+            r = cls._napply(function,fxx,*args,**kwds)
+        else:
+            fxx = np.asarray(fxx)
+            r = np.empty(fxx.shape,dtype=object)
+            with np.nditer(fxx,flags=['multi_index']) as it:
+                for i in it:
+                    idx = tuple(it.multi_index)
+                    r[idx] = cls._napply(lambda *x:np.asarray(function(*x))[idx],
+                                         fxx[idx],*args)
+        return r
+        
+    @classmethod
+    def _napply(cls,function,fxx,*args,**kwds):
+        raise NotImplementedError()
     def _ufunc(self,ufunc,*args,**kwds):
         if any(isinstance(a,np.ndarray) for a in args):
             args = [np.array(a) if isinstance(a,Dfunc) else a for a in args]

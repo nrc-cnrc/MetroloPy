@@ -885,6 +885,10 @@ class Unit(AbcUnit,PrettyPrinter,Indexed,metaclass = MetaUnit):
         return (abs(a),self)
     
     def __mul__(self,v):
+        if isinstance(v,AbcQuantity):
+            x,u = self._mul(1,v.unit,v.value,v.aconv)
+            return type(v)(x,unit=u)
+        
         if v == 1:
             return self
         
@@ -897,6 +901,10 @@ class Unit(AbcUnit,PrettyPrinter,Indexed,metaclass = MetaUnit):
         return _CompositeUnit(self.units + v.units)
     
     def __rmul__(self,v):
+        if isinstance(v,AbcQuantity):
+            x,u = self._rmul(1,v.unit,v.value,v.aconv)
+            return type(v)(x,unit=u)
+        
         if v == 1:
             return self
         
@@ -909,6 +917,10 @@ class Unit(AbcUnit,PrettyPrinter,Indexed,metaclass = MetaUnit):
         return _CompositeUnit(self.units + v.units)
         
     def __truediv__(self,v):
+        if isinstance(v,AbcQuantity):
+            x,u = self._truediv(1,v.unit,v.value,v.aconv)
+            return type(v)(x,unit=u)
+        
         if v == 1:
             return self
         
@@ -922,6 +934,10 @@ class Unit(AbcUnit,PrettyPrinter,Indexed,metaclass = MetaUnit):
         return _CompositeUnit(self.units + vi)
 
     def __rtruediv__(self,v):
+        if isinstance(v,AbcQuantity):
+            x,u = self._rtruediv(1,v.unit,v.value,v.aconv)
+            return type(v)(x,unit=u)
+        
         if v == 1:
             return _CompositeUnit([(e[0],-e[1]) for e in self.units])
         
@@ -945,7 +961,10 @@ class Unit(AbcUnit,PrettyPrinter,Indexed,metaclass = MetaUnit):
         return _CompositeUnit([(e[0],v*e[1]) for e in self.units])
     
     def __hash__(self):
-        return hash((hash(type(self)),9))
+        return hash((type(self),9))
+    
+    def tostring(self,fmt=None,strip=True,**kwds):
+        return super(PrettyPrinter,self).tostring(fmt=fmt,strip=strip,**kwds)
         
     
 class _CompositeUnit(Unit):
@@ -1368,6 +1387,9 @@ class _One(Unit):
     @property
     def is_dimensionless(self):
         return True
+    
+    def __hash__(self):
+        return hash((type(self),9))
     
 with Unit._builtin():
     one = _One('1','',add_symbol=False)

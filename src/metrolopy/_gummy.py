@@ -35,15 +35,17 @@ from math import isnan, isinf
 from numbers import Integral,Rational,Real,Complex
 from decimal import Decimal,localcontext,InvalidOperation
 
-from ._ummy import (ummy,immy,_isscalar,_format_exp,_to_decimal,MantissaFormatter,
-                   _UncertainValue)
+from ._ummy import ummy,immy,_format_exp,_to_decimal,MantissaFormatter
+from .dof import DoF,_DoF_inf
 from ._nummy import nummy,get_name
 from .exceptions import IncompatibleUnitsError
 from .quantity import Quantity,MetaQuantity
-from .abc import AbcUnit
+from .abc import AbcUnit,UncertainValue
 from .distributions import Distribution,MultivariateDistribution
 from .pmethod import _Pmthd,loc_from_k
 from .mfraction import MFraction
+from .util import _isscalar
+from .dfunc import Dfunc
 
 def _ku(k,u):
     try:
@@ -457,24 +459,24 @@ class MetaGummy(MetaQuantity):
         
     @property
     def solidus(cls):
-        from .unit import Unit
+        from ._unit import Unit
         return Unit.solidus
     @solidus.setter
     def solidus(cls,v):
-        from .unit import Unit
+        from ._unit import Unit
         Unit.solidus = bool(v)
         
     @property
     def mulsep(cls):
-        from .unit import Unit
+        from ._unit import Unit
         return Unit.mulsep
     @mulsep.setter
     def mulsep(cls,v):
-        from .unit import Unit
+        from ._unit import Unit
         Unit.mulsep = bool(v)
         
     
-class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
+class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
     """
     A gummy object represents a numerical value with an uncertainty and (or) a
     unit.  They can be used in place of float values in Python expressions and 
@@ -583,7 +585,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
                                     
     _arraytype = None
     
-    def __init__(self,x,u=0,unit=1,dof=float('inf'),k=1,p=None,uunit=None,
+    def __init__(self,x,u=0,unit=1,dof=_DoF_inf,k=1,p=None,uunit=None,
                  utype=None,name=None):
         self._old = None
         self.autoconvert = False
@@ -609,7 +611,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
             x = x.value
 
         if unit != 1:
-            from .unit import Unit
+            from ._unit import Unit
             unit = Unit.unit(unit)
         self._unit = unit
         
@@ -623,7 +625,11 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
         
         if p is not None:
             p = float(p)
-            self._k = self._p_method.fptok(p,dof,gummy.bayesian)
+            if isinstance(dof,DoF):
+                df = dof.value
+            else:
+                df = dof
+            self._k = self._p_method.fptok(p,df,gummy.bayesian)
             self._pm = p
             self._set_k = False
         else:
@@ -879,7 +885,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
                             #raise IncompatibleUnitsError('no conversion found from unit ' + str(unit) + ' to one')
                         return Quantity(float('inf'),unit=unit)
             else:
-                return Quantity(self.unit.to_uunit(_ku(k,u),unit),unit)
+                raise IncompatibleUnitsError('uunit may not be set if the unit is not linear')
 
                     
     @property
@@ -897,7 +903,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
             return self._value.Usim(self.p)
             
         if self.uunit_is_rel:
-            from .unit import one
+            from ._unit import one
             x = self.xsim
             ci = self.cisim
             try:
@@ -1082,15 +1088,19 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
         """
 
         if not isinstance(self._unit,AbcUnit):
-            from .unit import Unit
+            from ._unit import Unit
             self._unit = Unit.unit(self._unit)
         return self._unit
     @unit.setter
     def unit(self,u):
-        Quantity.unit.fset(self,u)
-        self._U = None
-        self._set_U()
-        self._value.clear()
+        if u == 1:
+            self._unit = 1
+        else:
+            from ._unit import Unit
+            self._unit = Unit.unit(u)
+            self._U = None
+            self._set_U()
+            self._value.clear()
             
     @property
     def uunit(self):
@@ -1152,7 +1162,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
         if unit is None:
             unit = self._unit
         else:
-            from .unit import Unit
+            from ._unit import Unit
             unit = Unit.unit(unit)
         self._U = None
         self._set_U(None,unit)
@@ -1168,8 +1178,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
         try:
             if self._U.unit_is_one:
                 return False
-            from .unit import one
-            self._U.unit.convert(self._U,one)
+            self._U.unit.convert(self._U,1)
             return True
         except:
             return False
@@ -1599,7 +1608,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
     @property
     def solidus(self):
         if self._solidus is None:
-            from .unit import Unit
+            from ._unit import Unit
             return Unit.solidus
         return self._solidus
     @solidus.setter
@@ -1609,7 +1618,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
     @property
     def mulsep(self):
         if self._mulsep is None:
-            from .unit import Unit
+            from ._unit import Unit
             return Unit.mulsep
     @mulsep.setter
     def mulsep(self,v):
@@ -1792,7 +1801,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
             integer 1.  Both 1 and `None` will be interpreted as the Unit
             instance `one`.
         """     
-        from .unit import Unit
+        from ._unit import Unit
         return self*Unit.unit(unit)/self.unit
         
     @staticmethod
@@ -3094,7 +3103,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
         return tuple([style,xret]+uret)
         
     @classmethod
-    def create(cls,x,u=0,unit=1,dof=float('inf'),k=1,p=None,uunit=None,
+    def create(cls,x,u=0,unit=1,dof=_DoF_inf,k=1,p=None,uunit=None,
                utype=None,name=None,correlation_matrix=None,
                covariance_matrix=None):
         """
@@ -3151,7 +3160,7 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
                 if isinstance(unit,str) or isinstance(unit,AbcUnit):
                     unit = [unit]*len(x)
                 for i,r in enumerate(ret):
-                    from .unit import Unit
+                    from ._unit import Unit
                     r._unit = Unit.unit(unit[i])
                 
             if p is not None:
@@ -3175,11 +3184,13 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
                 
         if correlation_matrix is not None or covariance_matrix is not None:
             if any([isinstance(v,Distribution) for v in x]):
-                raise TypeError('Distribtuion instances may not be used in x if a correlation_matrix nor a covariance_matrix is defined')
-            if dof is not None and not _isscalar(dof):
-                raise TypeError('dof cannot be set individually of a correlation of covariance matrix is specified')
-            if utype is not None and not isinstance(utype,str):
-                raise TypeError('utype cannot be set individually of a correlation of covariance matrix is specified')
+                raise TypeError('Distribtuion instances may not be used in x if a correlation_matrix or a covariance_matrix is defined')
+            
+            if not isinstance(dof,DoF):
+                raise TypeError('if a correlation of covariance matrix is specified then dof must either be a single DoF instance (that will be used for all returned gummys) or ommited')
+            
+            if not _isscalar(utype):
+                raise TypeError('if a correlation of covariance matrix is specified then utpe must be a single value (that will be used for all returned gummys) or ommited')
 
 
         if covariance_matrix is not None:
@@ -3189,6 +3200,8 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
                 raise TypeError('covariance_matrix and u cannot both be specified')
                 
         n = len(x)
+        if n == 0:
+            raise ValueError('x cannot be an empty list')
         
         if _isscalar(u):
             u = [u]*n
@@ -3196,10 +3209,8 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
         if _isscalar(unit):
             unit = [unit]*n
             
-        if dof is None:
-            dof = [float('inf')]*n
-        elif _isscalar(dof):
-            dof = [dof]*n
+        if _isscalar(dof):
+            ndof = [dof]*n
             
         if p is None:
             p = [None]*n
@@ -3215,20 +3226,20 @@ class gummy(Quantity,_UncertainValue,metaclass=MetaGummy):
             uunit = [uunit]*n
             
         if utype is None:
-            utype = [None]*n
+            nutype = [None]*n
         elif isinstance(utype,str):
-            utype = [utype]*n
+            nutype = [utype]*n
             
         if name is None:
             name = [None]*n
             
-        ret = [cls(x[i],u=u[i],unit=unit[i],dof=dof[i],k=k[i],p=p[i],
-                   uunit=uunit[i],utype=utype[i],name=name[i]) for i in range(n)]
+        ret = [cls(x[i],u=u[i],unit=unit[i],dof=ndof[i],k=k[i],p=p[i],
+                   uunit=uunit[i],utype=nutype[i],name=name[i]) for i in range(n)]
             
         if correlation_matrix is not None or covariance_matrix is not None:
             x = [r.x for r in ret]
             u = [r.u for r in ret]
-            nret = nummy.create(x,u=u,dof=dof[0],utype=utype[0],name=name,
+            nret = nummy.create(x,u=u,dof=dof,utype=utype,name=name,
                                 correlation_matrix=correlation_matrix,
                                 covariance_matrix=covariance_matrix)
             

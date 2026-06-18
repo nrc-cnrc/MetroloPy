@@ -83,7 +83,7 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
         if unit == 1:
             self._unit = 1
         else:
-            from .unit import Unit
+            from ._unit import Unit
             if isinstance(unit,Unit):
                 self._unit = unit
             else:
@@ -117,7 +117,7 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
         1000.0 uV
         """
         if not isinstance(self._unit,AbcUnit):
-            from .unit import Unit
+            from ._unit import Unit
             self._unit = Unit.unit(self._unit)
         return self._unit
     @unit.setter
@@ -127,7 +127,7 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
         if self.unit == 1 and self._unit == 1:
             return
         
-        from .unit import Unit
+        from ._unit import Unit
         if self._old is None:
             self._old = (self.value,self.unit)
         else:
@@ -166,7 +166,7 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
         if self.unit == 1 and self._unit == 1:
             return type(self)(self.value)
         
-        from .unit import Unit
+        from ._unit import Unit
         unit = Unit.unit(unit)
         value = self.unit.convert(self.value,unit)
         return type(self)(value,unit=unit)
@@ -184,7 +184,7 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
         >>> x
         0.005
         """
-        from .unit import one
+        from ._unit import one
         un,f = self._unit._mul_cancel(one)
         self._unit = un
         self._value *= f
@@ -285,13 +285,13 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
         return self
         
     def _bop(self,v,f):
-        from .unit import one
+        from ._unit import one
         if issubclass(type(v),type(self)):
             make =  v._make
         else:
             make =  self._make
             
-        if isinstance(v,Quantity):
+        if isinstance(v,AbcQuantity):
             vunit = v._unit
             v = v.value
             aconv = self.autoconvert
@@ -341,7 +341,8 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
     
     def __mul__(self, v):
         if isinstance(v,AbcUnit):
-            return type(self)(self.value,self.unit*v)
+            x,u = v._rmul(1,self.unit,self.value,self.autoconvert)
+            return type(self)(x,unit=u)
         
         if self.unit_is_one:
             if not isinstance(v,AbcQuantity):
@@ -353,7 +354,8 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
                 
     def __rmul__(self, v):
         if isinstance(v,AbcUnit):
-            return type(self)(self.value,v*self.unit)
+            x,u = v._mul(1,self.unit,self.value,self.autoconvert)
+            return type(self)(x,unit=u)
         
         if self.unit_is_one:
             if not isinstance(v,AbcQuantity):
@@ -365,7 +367,8 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
     
     def __truediv__(self, v):
         if isinstance(v,AbcUnit):
-            return type(self)(self.value,self.unit/v)
+            x,u = v._rtruediv(1,self.unit,self.value,self.autoconvert)
+            return type(self)(x,unit=u)
         
         if self.unit_is_one:
             if not isinstance(v,AbcQuantity):
@@ -377,7 +380,8 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
                 
     def __rtruediv__(self, v):
         if isinstance(v,AbcUnit):
-            return type(self)(self.value,v/self.unit)
+            x,u = v._truediv(1,self.unit,self.value,self.autoconvert)
+            return type(self)(x,unit=u)
         
         if self.unit_is_one:
             if not isinstance(v,AbcQuantity):

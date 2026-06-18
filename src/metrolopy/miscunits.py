@@ -31,7 +31,7 @@ obsolete SI units, and a few other units.
 
 from numpy import sqrt,log,log2,log10
 from ._gummy import gummy
-from .unit import Unit,Conversion,MFraction
+from ._unit import Unit,Conversion,MFraction
 from .prefixedunit import PrefixedUnit,BinaryPrefixedUnit
 from .logunit import LogUnit,LogConversion
 from .siunits import (_kg,_V,_ohm,_s,_K,_J,_m,_d,_min,_h,_W,_Hz,_C,_A,_N,_cm,

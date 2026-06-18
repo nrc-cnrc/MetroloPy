@@ -42,6 +42,8 @@ from .dfunc import Dfunc
 from .exceptions import UncertiantyPrecisionWarning
 from .mfraction import MFraction
 from .abc import UncertainValue,AbcUnit,AbcQuantity,UncertainComplexValue
+from .util import _isscalar
+from .dof import DoF,_DoF_inf
 
 
 import lazy_loader as lazy
@@ -120,19 +122,6 @@ def _combu(a,b,c):
         return abs(a)*x.sqrt()
     return abs(a)*x**0.5   
 
-def _isscalar(x):
-    #try:
-        #return np.ndim(x) == 0
-    #except:
-        #return True
-    if isinstance(x,str):
-        return True
-    try:
-        len(x)
-        return False
-    except:
-        return True
-
 def sign(x):
     return copysign(1,x)
 
@@ -185,32 +174,6 @@ def _to_decimal(x,max_digits=None):
                 xd = Decimal(float(x))
     return xd
 
-def _replq(x):
-    if _isscalar(x):
-        if isinstance(x,np.ndarray):
-            return _replq(x.item())
-        if isinstance(x,AbcQuantity):
-            return _replq(x.convert(1).value)
-        return x
-    
-    x = np.array(x)
-    with np.nditer(x,flags=['refs_ok'],op_flags=['readwrite']) as it:
-        for r in it:
-            r[...] = _replq(r)
-    return x
-
-def _replu(x):
-    if _isscalar(x):
-        if isinstance(x,np.ndarray):
-            return _replu(x.item())
-        if isinstance(x,UncertainValue):
-            return x.x
-        return x
-    
-    x = np.array(x)
-    with np.nditer(x,flags=['refs_ok'],op_flags=['readwrite']) as it:
-        for r in it:
-            r[...] = _replu(r)
 
 class MantissaFormatter:
     use_th_separator = True
@@ -352,15 +315,6 @@ def _combrd(xl,du):
 # those variables divided by the combined standard uncertainty of the ummy.
 class _udict(dict):
     pass
-    #def __init__(self,*p,neg=None):
-        #super.__init__(*p)
-        #self._neg = neg
-    
-    #def neg(self):
-        #if self._neg is None:
-            #self._neg = _udict(((k,-v) for k,v in self.items()),neg=self)
-        #return self._neg
-        
 
 class _UmmyRef:
     __slots__ = 'dof','utype'
@@ -372,204 +326,7 @@ class _UmmyRef:
 class MetaUmmy(MetaPrettyPrinter,ABCMeta):
     pass
 
-class _UncertainValue(UncertainValue):
-    @classmethod
-    def apply(cls,function,derivative,*args,**kwds):
-        """
-        A classmethod that applies a function to one or more gummy or jummy 
-        objects propagating the uncertainty.
-        
-        Parameters
-        ----------
-        function: `function`
-              The the function to be applied. For `gummy.apply`, 'function'
-              should take one or more float arguments and return a float value 
-              or float array.  For `jummy.apply`, 'function' may also take and
-              return complex values.  If the function returns an array like 
-              value, it must be convertable to a numpy homogeneous array.
-
-        derivative:  `function`
-              The name of a second function that gives the derivatives
-              with respect to the arguments of `function`.  `derivative` should
-              take an equal number of arguments as `function`.  If `function`
-              takes one argument `derivative` should return a float and if
-              `function` takes more than one argument then `derivative` should
-              return a tuple, list or array of floats that contains the derivatives
-              with respect to each argument.  In the case of `jummy.apply`, the
-              derivatives with respect to each argument may be real or complex
-              values, in which case `function` is assumed to be holomorphic.  Or
-              the derivative may be a 2 x 2 matrix of the form:
-
-                              [[ du/dx, du/dy ],
-                               [ dv/dx, dv/dy ]]
-
-             where function(x + j*y) = u + j*v.
-
-        *args:  `gummy`, `jummy`, or `float`
-              One or more arguments to which `function` will be applied.  These
-              arguments need not all be `Dfunc` objects; arguments  such as
-              floats will be taken to be constants with no uncertainty.
-              They may also be numpy ndarrays in which case the usual numpy
-              broadcasting rules apply.
-              
-        Returns
-        -------
-        `gummy`, `jummy` or a `numpy.ndarray` of `gummy` or `jummy`:
-            If none of the arguments are `gummy` or `jummy`
-            then the return value is the same type as the return value of `function`.
-            Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
-            `gummy` or a `jummy` depending on whether `function` has a float or
-            a complex return value.
-            
-        
-        Examples
-        --------
-            
-        >>> import numpy as np
-        >>> x = gummy(0.678,u=0.077)
-        >>> gummy.apply(np.sin,np.cos,x)
-        0.627 +/- 0.060
-        
-        >>> x = gummy(1.22,u=0.44)
-        >>> y = gummy(3.44,u=0.67)
-        >>> def dhypot(x,y):
-        ...     return (x1/sqrt(x1**2 + x2**2),x2/np.sqrt(x1**2 + x2**2))
-        >>> gummy.apply(np.hypot,dhypot,x,y)
-        3.65 +/- 0.65
-        """
-        
-        if np.all([_isscalar(a) for a in args]):
-            return cls._iapply(function,derivative,*args,**kwds)
-        
-        b = np.broadcast(*args)
-        ret = np.empty(b.shape,dtype=object)
-        ret = [cls._iapply(function,derivative,*a,**kwds) for a in b]
-        ret = np.array(ret)
-        
-        shape = b.shape
-        if isinstance(ret[0],np.ndarray):
-            shape += ret[0].shape
-        np.reshape(ret,shape)
-        
-        return ret
-    
-    @classmethod
-    def _iapply(cls,function,derivative,*args,**kwds):
-        args = [_replq(a) for a in args]
-        x = [_replu(a) for a in args]
-        
-        fx = function(*x,**kwds)
-        d = derivative(*x,**kwds)
-        if _isscalar(fx) and len(args) > 1:
-           d = [i[0] if not _isscalar(i) and len(i) == 1 else i for i in d]
-        
-        if _isscalar(fx):
-            r = cls._apply(function,derivative,fx,d,*args,**kwds)
-        else:
-            fx = np.asarray(fx)
-            d = np.asarray(d)
-            r = np.empty(fx.shape,dtype=object)
-            with np.nditer(fx,flags=['multi_index']) as it:
-                for i in it:
-                    idx = tuple(it.multi_index)
-                    r[idx] = cls._apply(function,derivative,fx[idx],d[idx],
-                                        *args,**kwds)
-        return r
-    
-    @classmethod
-    def _apply(cls,function,derivative,fx,d,*a,**kwds):
-        raise NotImplementedError()
-    
-    @classmethod
-    def napply(cls,function,*args,**kwds):
-        """
-        gummy.napply(function, arg1, arg2, ...) and
-        jummy.napply(function, arg1, arg2, ...)
-        
-        A classmethod that applies a function to one or more gummy or jummy 
-        objects propagating the uncertainty.  This method is similar to apply 
-        except that the derivatives are computed numerically so a derivative 
-        function does not need to be supplied.
-        
-        Parameters
-        ----------
-        function: `function`
-            The the function to be applied. For `gummy.apply`, 'function'
-            should take one or more float arguments and return a float value
-            r float array.  For `jummy.apply`, 'function' may also take and
-            return complex values.  If the function returns an array like 
-            value, it must be convertable to a numpy homogeneous array.
-
-        *args:  `gummy`, `jummy`, or `float`
-              One or more arguments to which `function` will be applied.  These
-              arguments need not all be `Dfunc` objects; arguments  such as
-              floats will be taken to be constants with no uncertainty.
-              They may also be numpy ndarrays in which case the usual numpy
-              broadcasting rules apply.
-
-        Returns
-        -------
-        `gummy`, `jummy` or a `numpy.ndarray` of `gummy` or `jummy`:
-            If none of the arguments are `gummy` or `jummy`
-            then the return value is the same type as the return value of `function`.
-            Otherwise `gummy.apply` returns a `gummy` and `jummy.apply` returns either a
-            `gummy` or a `jummy` depending on whether `function` has a float or
-            a complex return value.
-            
-        
-        Examples
-        --------
-            
-        >>> import numpy as np
-        >>> x = gummy(0.678,u=0.077)
-        >>> gummy.napply(np.sin,x)
-        0.627 +/- 0.060
-        
-        >>> x = gummy(1.22,u=0.44)
-        >>> y = gummy(3.44,u=0.67)
-        >>> gummy.napply(np.hypot,x,y)
-        3.65 +/- 0.65
-        """
-        
-        if np.all([_isscalar(a) for a in args]):
-            return cls._inapply(function,*args,**kwds)
-        
-        b = np.broadcast(*args)
-        ret = np.empty(b.shape,dtype=object)
-        ret = [cls._inapply(function,*a,**kwds) for a in b]
-        ret = np.array(ret)
-        
-        shape = b.shape
-        if isinstance(ret[0],np.ndarray):
-            shape += ret[0].shape
-        np.reshape(ret,shape)
-        
-        return ret
-    
-    @classmethod
-    def _inapply(cls,function,*args,**kwds):
-        args = [_replq(a) for a in args]
-        x = [_replu(a) for a in args]
-        
-        fxx = function(*x,**kwds)
-        
-        if _isscalar(fxx):
-            r = cls._napply(function,fxx,*args,**kwds)
-        else:
-            fxx = np.asarray(fxx)
-            r = np.empty(fxx.shape,dtype=object)
-            with np.nditer(fxx,flags=['multi_index']) as it:
-                for i in it:
-                    idx = tuple(it.multi_index)
-                    r[idx] = cls._napply(lambda *x:np.asarray(function(*x))[idx],
-                                         fxx[idx],*args)
-        return r
-        
-    @classmethod
-    def _napply(cls,function,fxx,*args,**kwds):
-        raise NotImplementedError()
-
-class ummy(Dfunc,PrettyPrinter,_UncertainValue,metaclass=MetaUmmy):
+class ummy(Dfunc,PrettyPrinter,UncertainValue,metaclass=MetaUmmy):
     max_dof = 10000 # any larger dof will be rounded to float('inf')
     nsig = 2 # The number of digits to quote the uncertainty to
     thousand_spaces = True # If true spaces will be placed between groups of three digits.
@@ -597,7 +354,7 @@ class ummy(Dfunc,PrettyPrinter,_UncertainValue,metaclass=MetaUmmy):
                                     # print the will cause _ret_something() to 
                                     # be called.  Can be set to True for debugging
     
-    def __init__(self,x,u=0,dof=float('inf'),utype=None):
+    def __init__(self,x,u=0,dof=_DoF_inf,utype=None):
         if isinstance(x,AbcQuantity):
             x = x.convert(1).value
             
@@ -679,24 +436,16 @@ class ummy(Dfunc,PrettyPrinter,_UncertainValue,metaclass=MetaUmmy):
                 except ValueError:
                     raise ValueError('u must be a real number >= 0') from None
                     
-                try:
+                if not isinstance(dof,DoF):
                     if dof > self.max_dof:
-                        dof = float('inf')
+                        dof = _DoF_inf
                     else:
-                        if isinstance(dof,Integral):
-                            dof = int(dof)
-                        else:
-                            dof = float(dof)
-                        if dof <= 0 or isnan(dof):
-                            raise ValueError()
-                except ValueError:
-                    raise ValueError('dof must be a real number > 0') from None
-                except TypeError:
-                    raise TypeError('dof must be a real number > 0') from None
+                        dof = DoF(dof)
+
                 if utype is not None and not isinstance(utype,str):
                     raise TypeError('utype must be str or None')
                 
-                self._dof = dof
+                self._dof = dof.value
                 if utype is None:
                     self._utype = [None]
                 else:
@@ -712,7 +461,7 @@ class ummy(Dfunc,PrettyPrinter,_UncertainValue,metaclass=MetaUmmy):
             # float('inf')
             
             self._ref = None
-            self._dof = None
+            self._dof = float('inf')
             self._utype = [None]
         
     @property
@@ -734,12 +483,8 @@ class ummy(Dfunc,PrettyPrinter,_UncertainValue,metaclass=MetaUmmy):
         number of degrees of freedom calculated using the Welch-Satterthwaite 
         approximation.
         """
-        if self._dof is not None:
-            return self._dof
-        
-        if self._ref is None:
-            self._dof = float('inf')
-        else:
+
+        if self._dof is None:
             # if _dof has not been set yet, calculate it using the 
             # Welch-Satterthwaite approximation and store the result in 
             # self._dof.  self._ref is a dictionary and the keys are _UmmyRef
@@ -749,10 +494,21 @@ class ummy(Dfunc,PrettyPrinter,_UncertainValue,metaclass=MetaUmmy):
             # are equal to the derivative of self with respect to each 
             # independent variable divided by self.u.
             
-            rdof = 0
+            df = {}
             for k,v in self._ref.items():
-                if k.dof is not None:
-                    rdof += v**4/k.dof
+                if k.dof.value <= self.max_dof:
+                    if k.dof in df:
+                        df[k.dof] += v**2
+                    else:
+                        df[k.dof] = v**2
+                        
+            if len(df) == 1 and next(iter(df.values())) > 0.999999:
+                return next(iter(df.keys())).value
+            
+            rdof = 0
+            for k,v in df.items():
+                rdof += v**2/k.value
+                
             if rdof > 0:
                 rdof = 1/rdof
                 if rdof > self.max_dof:
@@ -894,7 +650,7 @@ class ummy(Dfunc,PrettyPrinter,_UncertainValue,metaclass=MetaUmmy):
                 for a in gummys]
         
     @classmethod
-    def create(cls,x,u=None,dof=None,utype=None,correlation_matrix=None,
+    def create(cls,x,u=None,dof=_DoF_inf,utype=None,correlation_matrix=None,
                covariance_matrix=None):
         """
         A class method that creates a list of (possibly) correlated ummys.
@@ -902,7 +658,7 @@ class ummy(Dfunc,PrettyPrinter,_UncertainValue,metaclass=MetaUmmy):
         Parameters
         ----------
         x:
-            A list of floats corresponding to the x-value of each ummy.
+            A list or array of numbers corresponding to the x-value of each ummy.
         u, dof, k, loc, utype:  optional
             Lists that correspond to the
             parameters in the ummy initializer (with the i-th value in each
@@ -946,14 +702,11 @@ class ummy(Dfunc,PrettyPrinter,_UncertainValue,metaclass=MetaUmmy):
                 u = [u]*n
             
         if correlation_matrix is not None:
-            if not _isscalar(dof):
-                if any(i != dof[0] for i in dof):
-                    raise TypeError('dof cannot be set individually of a correlation of covariance matrix is specified')
-                dof = dof[0]
+            if not isinstance(dof,DoF):
+                raise TypeError('if a correlation of covariance matrix is specified then dof must either be a single DoF instance (that will be used for all returned gummys) or ommited')
+            
             if not _isscalar(utype):
-                if any(i != utype[0] for i in utype):
-                    raise TypeError('utype cannot be set individually of a correlation of covariance matrix is specified')
-                utype = utype[0]
+                raise TypeError('if a correlation of covariance matrix is specified then utpe must be a single value (that will be used for all returned gummys) or ommited')
                 
             m = np.asarray(correlation_matrix)
             
@@ -991,9 +744,7 @@ class ummy(Dfunc,PrettyPrinter,_UncertainValue,metaclass=MetaUmmy):
             ret = [cls(x[i],u=u[i],dof=idof[i]) for i in range(n)]
             
         else:
-            if dof is None:
-                dof = [float('inf')]*n
-            elif _isscalar(dof):
+            if _isscalar(dof):
                 dof = [dof]*n
                 
             if utype is None or isinstance(utype,str):

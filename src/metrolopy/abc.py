@@ -34,10 +34,16 @@ class UncertainValue(Number):
     def u(self):
         pass
     
+    @abstractmethod
+    def tostring(fmt=None,**kwds):
+        pass
+    
 class UncertainComplexValue(UncertainValue):
     pass
     
 class AbcQuantity(Number):
+    autoconvert = False
+    
     @property
     @abstractmethod
     def value(self):
@@ -48,6 +54,48 @@ class AbcQuantity(Number):
     def unit(self):
         pass
     
+    @property
+    @abstractmethod
+    def unit_is_one(self):
+        pass
+    
+    @property
+    @abstractmethod
+    def c(self):
+        pass
+    
+    @abstractmethod
+    def convert(self,unit):
+        pass
+    
+    @abstractmethod
+    def tostring(fmt=None,**kwds):
+        pass
+    
+    @abstractmethod
+    def copy(self,unit):
+        pass
+    
+    @abstractmethod
+    def tofloat(self,unit):
+        pass
+    
+    @abstractmethod
+    def tobaseunit(self,unit):
+        pass
+    
+    @abstractmethod
+    def totuple(self,unit):
+        pass
+    
+    @abstractmethod
+    def splonk(self,unit):
+        pass
+    
+    @abstractmethod
+    def _cmp(self,v):
+        pass
+    
 class AbcQuantityArray(AbcQuantity):
     pass
     
@@ -55,4 +103,52 @@ class AbcUnit(Number):
     @property
     @abstractmethod
     def conversion(self):
+        pass
+    
+    @property
+    @abstractmethod
+    def is_dimensionless(self):
+        pass
+    
+    @property
+    @abstractmethod
+    def linear(self):
+        pass
+    
+    @property
+    @abstractmethod
+    def base(self):
+        pass
+    
+    @property
+    @abstractmethod
+    def units(self):
+        pass
+    
+    @abstractmethod
+    def convert(self,unit):
+        pass
+    
+    @abstractmethod
+    def _mul(self,v):
+        pass
+    
+    @abstractmethod
+    def _rmul(self,v):
+        pass
+    
+    @abstractmethod
+    def _truediv(self,v):
+        pass
+    
+    @abstractmethod
+    def _rtruediv(self,v):
+        pass
+    
+    @abstractmethod
+    def _mul_cancel(self,v):
+        pass
+    
+    @abstractmethod
+    def tostring(fmt=None,**kwds):
         pass
