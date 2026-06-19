@@ -23,7 +23,7 @@
 import numpy as np
 import unittest
 from metrolopy import immy,ummy,jummy,gummy
-from metrolopy.tests.common import display
+from .common import display
 
 rand = np.random.RandomState()
 

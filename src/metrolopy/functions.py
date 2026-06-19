@@ -26,8 +26,8 @@ gummys.
 """
 
 import numpy as np
-from .gummy import gummy,jummy
-from .ummy import ummy
+from ._gummy import gummy,jummy
+from ._ummy import ummy
 from numbers import Complex
 from .dfunc import _call
 

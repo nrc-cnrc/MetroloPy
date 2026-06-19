@@ -24,7 +24,7 @@ import metrolopy as uc
 import numpy as np
 import unittest
 
-from metrolopy.tests.common import rand,make_gummy,make_number
+from .common import rand,make_gummy,make_number
 
 
 class TestOperations(unittest.TestCase):

@@ -33,7 +33,7 @@ class TestGummy(unittest.TestCase):
     Various unit tests of gummy properties and methods.
     """
     def test_ku(self):
-        from metrolopy.gummy import _ku
+        from metrolopy._gummy import _ku
         from decimal import Decimal
         
         self.assertTrue(_ku(2.1,3.3) == 2.1*3.3)

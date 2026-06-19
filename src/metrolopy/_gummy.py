@@ -641,7 +641,7 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
             self._pm = None
             self._set_k = True
                 
-        if isinstance(x,Distribution):
+        if isinstance(x,Distribution) or type(x).__name__ in ('rv_continuous_frozen','rv_discrete_frozen'):
             self._value = nummy(x,utype=utype,name=name)
             if uunit is None:
                 self._U = _ku(self._k,self._value.u)
@@ -668,7 +668,9 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
         
         if uunit is not None:
             if u != 0:
-                uunit = Unit.unit(uunit)
+                if uunit != 1:
+                    from ._unit import Unit
+                    uunit = Unit.unit(uunit)
                 if uunit is unit:
                     uunit = None
             else:
@@ -1086,21 +1088,13 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
         >>> x
         1000.0 uV
         """
-
-        if not isinstance(self._unit,AbcUnit):
-            from ._unit import Unit
-            self._unit = Unit.unit(self._unit)
-        return self._unit
+        return Quantity.unit.fget(self)
     @unit.setter
     def unit(self,u):
-        if u == 1:
-            self._unit = 1
-        else:
-            from ._unit import Unit
-            self._unit = Unit.unit(u)
-            self._U = None
-            self._set_U()
-            self._value.clear()
+        Quantity.unit.fset(self,u)
+        self._U = None
+        self._set_U()
+        self._value.clear()
             
     @property
     def uunit(self):

@@ -163,11 +163,9 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
             The unit for the uncertainty `U`.  If this is `None` then `U`
             will have the same units as `x`.  The default is `None`.
         """
-        if self.unit == 1 and self._unit == 1:
+        if unit == 1 and self._unit == 1:
             return type(self)(self.value)
         
-        from ._unit import Unit
-        unit = Unit.unit(unit)
         value = self.unit.convert(self.value,unit)
         return type(self)(value,unit=unit)
         

@@ -22,7 +22,7 @@
 
 import numpy as np
 
-from .abc import AbcQuantity,UncertainValue
+from .abc import AbcQuantity,UncertainValue,UncertainComplexValue
 
 def _isscalar(x):
     #try:
@@ -55,7 +55,7 @@ def _replu(x):
     if _isscalar(x):
         if isinstance(x,np.ndarray):
             return _replu(x.item())
-        if isinstance(x,UncertainValue):
+        if isinstance(x,(UncertainValue,UncertainComplexValue)):
             return x.x
         return x
     

@@ -887,10 +887,10 @@ class ummy(Dfunc,PrettyPrinter,UncertainValue,metaclass=MetaUmmy):
             
         try:
             ad = [(a,a._u*p) for a,p in zip(args,d) 
-                  if isinstance(a,ummy) and a._u != 0]
+                  if isinstance(a,UncertainValue) and a._u != 0]
         except TypeError:
             ad = [(a,xtype(a._u)*p) for a,p in zip(args,d) 
-                  if isinstance(a,ummy) and a._u != 0]
+                  if isinstance(a,UncertainValue) and a._u != 0]
         if len(ad) == 0:
             return cls(fx)
         args,du = list(map(list, zip(*ad)))
@@ -1524,24 +1524,6 @@ class ummy(Dfunc,PrettyPrinter,UncertainValue,metaclass=MetaUmmy):
         >>>  d.ufrom('A')
         0.53851648071345048
         """
-       
-        #x = ummy._toummylist(x)
-        #x = [i for i in x if self.correlation(i) != 0]
-        #if len(x) == 0:
-            #return 0
-
-        #v = ummy.correlation_matrix(x)
-            
-        #b = [self.correlation(z) for z in x]
-        #s = np.linalg.lstsq(v,b,rcond=None)[0]
-        #u = 0
-        
-        #d = [i*self.u/j.u for i,j in zip(s,x)]
-        #for i in range(len(x)):
-            #for j in range(len(x)):
-                #u += d[i]*d[j]*x[i].correlation(x[j])*x[i].u*x[j].u
-                
-        #return u**0.5
         
         return float(self.u*np.sqrt(sum(v for v in self._ufromrefs(x).values())))
         
@@ -1569,42 +1551,32 @@ class ummy(Dfunc,PrettyPrinter,UncertainValue,metaclass=MetaUmmy):
         >>>  d.doffrom('A')
         9.0932962619709627
         """
-        #x = ummy._toummylist(x)
-        #x = [i for i in x if self.correlation(i) != 0]
-        #if len(x) == 0:
-            #return float('inf')
-            
-        #v = ummy.correlation_matrix(x)
-        #b = [self.correlation(z) for z in x]
-        #s = np.linalg.lstsq(v,b,rcond=None)[0]
-        #d = [i*self.u/j.u for i,j in zip(s,x)]
-        #usq = 0
-        #dm = 0
-        #for i in range(len(x)):
-            #for j in range(len(x)):
-                #usqi = d[i]*d[j]*x[i].correlation(x[j])*x[i].u*x[j].u
-                #usq += usqi
-                #dm += usqi**2/x[i].dof
-                
-        #if dm == 0:
-           # return float('inf')
-        #dof = usq**2/dm
-        #if dof > ummy.max_dof:
-            #return float('inf')
-        #if dof < 1:
-            #return 1
-        #return dof
         
-        dof = sum(v**2/k.dof for k,v in self._ufromrefs(x).items() if k.dof is not None)
-        if dof > 0:
-            dof = sum(v for v in self._ufromrefs(x).values())**2/dof
+        df = {}
+        for k,v in self._ufromrefs(x).items():
+            if k.dof.value <= self.max_dof:
+                if k.dof in df:
+                    df[k.dof] += v**2
+                else:
+                    df[k.dof] = v**2
+                    
+        if len(df) == 1 and next(iter(df.values())) > 0.999999:
+            return next(iter(df.keys())).value
+        
+        rdof = 0
+        for k,v in df.items():
+            rdof += v**2/k.value
+            
+        if rdof > 0:
+            rdof = 1/rdof
+            if rdof > self.max_dof:
+                rdof = float('inf')
+            elif rdof < 1:
+                rdof = 1
         else:
-            return float('inf')
-        if dof > ummy.max_dof:
-            return float('inf')
-        if dof < 1:
-            return 1
-        return float(dof)
+            rdof = float('inf')
+
+        return rdof
     
 def njacobian(function,*args):
     # computes the numerical derivative of function with respect to args.
@@ -1903,32 +1875,21 @@ class immy(PrettyPrinter,Dfunc,UncertainComplexValue,metaclass=MetaImmy):
         if self.imag == 0:
             return self.real
         return self
-            
+    
     @classmethod
-    def _apply(cls,function,derivative,fxdx,*args,rjd=None):
-        
+    def _iapply(cls,function,derivative,*args,**kwds):
         n = len(args)
-        if fxdx is None:
-            rargs = [a.real for a in args]
-            jargs = [a.imag for a in args]
-            args = rargs + jargs
-            args = [a.convert(1).value if isinstance(a,AbcQuantity) else a for 
-                    a in args]
-            x = [a.x if isinstance(a,ummy) else a for a in args]
-            func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
-            der = lambda *a: derivative(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
-            fx = func(*x)
-        else:
-            fx,x = fxdx
-            
-        if not _isscalar(fx):
-            return [cls._apply(lambda *y: func(*y)[i],
-                               lambda *y: der(*y)[i],
-                               *args,fxx=(fx[i],x)) 
-                    for i in range(len(fx))]
-        
-        d = der(*x)
-        
+        rargs = [a.real for a in args]
+        jargs = [a.imag for a in args]
+        args = rargs + jargs
+        func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
+        der = lambda *a: derivative(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
+        return super(immy,cls)._iapply(func,der,*args,**kwds)
+    
+    @classmethod
+    def _apply(cls,function,derivative,fx,d,*args):
+        n = len(args)
+
         if n == 1:
             d = [d]
 
@@ -1958,42 +1919,32 @@ class immy(PrettyPrinter,Dfunc,UncertainComplexValue,metaclass=MetaImmy):
             jd = jd[0]
             
         if not isinstance(fx,Real) and isinstance(fx,Complex):
-            r = cls._element_type._apply(lambda *a: func(*a).real,None,*args,
-                                         fxdx=(fx.real,rd,x))
-            j = cls._element_type._apply(lambda *a: func(*a).imag,None,*args,
-                                         fxdx=(fx.imag,jd,x))
-            if (isinstance(r,(ummy,cls._element_type)) or 
-                isinstance(j,(ummy,cls._element_type))):
+            r = cls._element_type._apply(lambda *a: function(*a).real,None,fx.real,rd,*args)
+            j = cls._element_type._apply(lambda *a: function(*a).imag,None,fx.imag,jd,*args)
+            if (isinstance(r,(UncertainValue,cls._element_type)) or 
+                isinstance(j,(UncertainValue,cls._element_type))):
                 return cls(real=r,imag=j)
             return complex(r,j)
         
-        return cls._element_type._apply(function,der,*args,fxdx=(fx,rd,x))
+        return cls._element_type._apply(function,derivative,fx,d,*args)
     
     @classmethod
-    def _napply(cls,function,fxx,*args,**kw):
+    def _inapply(cls,function,*args,**kwds):
         n = len(args)
-        if fxx is None:
-            rargs = [a.real for a in args]
-            jargs = [a.imag for a in args]
-            args = rargs + jargs
-            args = [a.convert(1).value if isinstance(a,AbcQuantity) else a for 
-                    a in args]
-            x = [a.x if isinstance(a,ummy) else a for a in args]
-            func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
-            fx = func(*x)
-        else:
-            fx,x = fxx
+        rargs = [a.real for a in args]
+        jargs = [a.imag for a in args]
+        args = rargs + jargs
+        func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
+        return super(immy,cls)._inapply(func,*args,**kwds)
         
-        if not _isscalar(fx):
-            return [cls._napply(lambda *y: func(*y)[i],*args,fxx=(fx[i],x)) 
-                    for i in range(len(fx))]
-            
+    @classmethod
+    def _napply(cls,function,fx,*args,**kw):
         if not isinstance(fx,Real) and isinstance(fx,Complex):
-            r = cls._element_type._napply(lambda *a: func(*a).real,(fx.real,x),*args,**kw)
-            j = cls._element_type._napply(lambda *a: func(*a).imag,(fx.imag,x)*args,**kw)
+            r = cls._element_type._napply(lambda *a: function(*a).real,fx.real,*args,**kw)
+            j = cls._element_type._napply(lambda *a: function(*a).imag,fx.imag,*args,**kw)
             return cls(real=r,imag=j)
         
-        return cls._element_type._napply(func,*args,fxx=(fx,x))
+        return cls._element_type._napply(function,fx,*args)
             
     @property
     def style(self):

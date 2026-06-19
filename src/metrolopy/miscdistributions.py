@@ -515,6 +515,10 @@ class LogNormalDist(Distribution):
         
     def u(self):
        return self.sigma*np.exp(self.mu)
+   
+    def cdf(self,z,mu,sigma):
+        from scipy.stats import lognorm
+        return lognorm.cdf(z,sigma,loc=mu)
         
 class WeibullDist(Distribution):
     def __init__(self,shape,scale):
@@ -538,6 +542,10 @@ class WeibullDist(Distribution):
         
     def u(self):
         return self.scale*np.sqrt(self._gamma(1+2/self.shape) - self._gamma(1+1/self.shape)**2)
+    
+    def cdf(self,z,shape,scale):
+        from scipy.stats import weibull_min
+        return weibull_min.cdf(z,shape,scale=scale)
         
 class AveragedFrom(Distribution):
     def __init__(self,distribution,nsamples):
@@ -557,4 +565,3 @@ class AveragedFrom(Distribution):
     
     def u(self):
         return self._dist.u()/np.sqrt(self.nsamples)
-    

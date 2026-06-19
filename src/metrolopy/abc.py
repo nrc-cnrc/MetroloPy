@@ -38,8 +38,45 @@ class UncertainValue(Number):
     def tostring(fmt=None,**kwds):
         pass
     
-class UncertainComplexValue(UncertainValue):
-    pass
+class UncertainComplexValue(Number):
+    @property
+    @abstractmethod
+    def x(self):
+        pass
+    
+    @property
+    @abstractmethod
+    def cov(self):
+        pass
+    
+    @property
+    @abstractmethod
+    def real(self):
+        pass
+    
+    @property
+    @abstractmethod
+    def imag(self):
+        pass
+    
+    @property
+    @abstractmethod
+    def r(self):
+        pass
+    
+    @property
+    @abstractmethod
+    def phi(self):
+        pass
+    
+    @abstractmethod
+    def conjugate(self):
+        pass
+    
+    @abstractmethod
+    def angle(self):
+        pass
+    
     
 class AbcQuantity(Number):
     autoconvert = False

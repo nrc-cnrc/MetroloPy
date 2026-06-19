@@ -30,7 +30,8 @@ import numpy as np
 from ._ummy import ummy,_udict
 from .dof import DoF,_DoF_inf
 from .distributions import (Distribution,TDist,NormalDist,MultivariateElement,
-                            MultivariateDistribution,Convolution)
+                            MultivariateDistribution,Convolution,
+                            ScipyStatsDist)
 from .util import _isscalar
 from .exceptions import NoSimulatedDataError
 from math import isinf,isnan,sqrt
@@ -123,6 +124,10 @@ class nummy(ummy):
             return
         
         self.name = name
+        
+        if type(x).__name__ in ('rv_continuous_frozen','rv_discrete_frozen'):
+            x = ScipyStatsDist(x)
+            
         if isinstance(x,Distribution):
             if x._used or not x.isindependent:
                 raise ValueError('Distribution instances may only be used as the x parameter of a new gummy only if they\nrepresent independant variables and have not previously been used with another gummy')                
@@ -147,7 +152,6 @@ class nummy(ummy):
                 u = float(x.u())
                 
             super().__init__(x.x(),u=u,dof=ndof,utype=utype)
-            
         else:
             super().__init__(x,u=u,dof=dof,utype=utype)
             x = float(x)

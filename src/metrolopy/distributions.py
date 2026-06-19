@@ -891,3 +891,20 @@ class TDist(Distribution):
     def cdf(z,x,s,dof):
         from scipy.stats import t as tdist
         return tdist.cdf(z,dof,loc=x,scale=s)
+    
+
+class ScipyStatsDist(Distribution):
+    def __init__(self,distribution):
+        self.distribution = distribution
+
+    def random(self,n=None):
+        return self.distribution.rvs(size=n,random_state=self.random_rng())
+    
+    def x(self):
+        return self.distribution.mean()
+    
+    def u(self):
+        return self.distribution.std()
+    
+    def cdf(self,z,*params):
+        return self.distribution.dist.cdf(z,*params)
