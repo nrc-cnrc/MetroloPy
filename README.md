@@ -45,23 +45,24 @@ See:
 ## new in version 1.1.0
 
 * The continuous and discrete distributions defined in `scipy.stats` can now be 
-  directly used with gummys.
+  used directly used with gummys.
   
-* Added the `DistFit` class for fitting distributions and the `DoF` class for 
-  descibing quantities drawn from the same underlying distribution.
+* The `DistFit` class for fitting distributions and the `DoF` class for 
+  descibing quantities drawn from the same underlying distribution have
+  been added.
 
 * The legacy `numpy.random.RandomState` random number generator has been 
   replaced with the newer `numpy.random.Generator` for Monte-Carlo uncertainty 
   propagation. The `scipy.optimize.leastsq` function has been replaced with the 
   newer `scipy.optimize.least_squares` function as the solver for nonlinear least 
   squares fitting.  And the depreciated `scipy.odr` package has been replaced 
-  with `odrpack` for orthogonal distance regression fitting.
+  with `odrpack` for orthogonal distance regression.
   
-* Added gummy class properties to control the separator between the groups of three 
-  digits when displaying long numbers.
+* A class properties has been added to `gummy` to control the separator between the 
+  digit groupings when displaying long numbers.
   
-* Implemented lazy loading for gummy module components and added `lazy_loader` as
-  a dependancy.
+* Lazy loading for gummy module components has been implemented and added 
+  `lazy_loader` as a dependancy.
   
 * Fixed issues that affected the `gummy.apply` and `gummy.napply` method when 
   broadcasing over arguments and and applying functions that have array like return 
