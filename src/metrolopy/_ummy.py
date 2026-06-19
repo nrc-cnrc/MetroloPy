@@ -1553,12 +1553,14 @@ class ummy(Dfunc,PrettyPrinter,UncertainValue,metaclass=MetaUmmy):
         """
         
         df = {}
+        u = 0
         for k,v in self._ufromrefs(x).items():
+            u += v
             if k.dof.value <= self.max_dof:
                 if k.dof in df:
-                    df[k.dof] += v**2
+                    df[k.dof] += v
                 else:
-                    df[k.dof] = v**2
+                    df[k.dof] = v
                     
         if len(df) == 1 and next(iter(df.values())) > 0.999999:
             return next(iter(df.keys())).value
@@ -1568,7 +1570,7 @@ class ummy(Dfunc,PrettyPrinter,UncertainValue,metaclass=MetaUmmy):
             rdof += v**2/k.value
             
         if rdof > 0:
-            rdof = 1/rdof
+            rdof = u**2/rdof
             if rdof > self.max_dof:
                 rdof = float('inf')
             elif rdof < 1:
