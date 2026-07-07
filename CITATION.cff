@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-- family-names: "Parks"
-  given-names: "Harold V."
+family-names: "Parks"
+given-names: "Harold V."
 title: "MetroloPy"
 version: 1.1.0
 10.5281/zenodo.21247379
