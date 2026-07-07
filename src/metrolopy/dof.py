@@ -23,7 +23,6 @@
 from math import isnan
 
 class DoF:
-<<<<<<< HEAD
     """
     Represents the degrees of freedom for an uncertainty.  ummy or gummy
     instances that share the same DoF instance are assumed to have uncertainties
@@ -49,8 +48,6 @@ class DoF:
     d.
     """
     
-=======
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     __slots__ = '_value'
 
     def __init__(self,value):

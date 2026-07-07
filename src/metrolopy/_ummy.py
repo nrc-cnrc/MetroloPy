@@ -735,17 +735,10 @@ class ummy(Dfunc,PrettyPrinter,UncertainValue,metaclass=MetaUmmy):
                     val[i] = 0
             
             # matrix sqaure root of m        
-<<<<<<< HEAD
             sqrtm = np.real(vec*np.sqrt(val)@np.linalg.inv(vec)) 
             
             ind = [_UmmyRef(dof,utype) for _ in range(n)]
             idof = [_udict(((ind[j],sqrtm[i][j]) for j in range(n))) 
-=======
-            sqrtm = vec*np.sqrt(val)@np.linalg.inv(vec) 
-            
-            ind = [_UmmyRef(dof,utype) for _ in range(n)]
-            idof = [_udict(((ind[j],float(sqrtm[i][j])) for j in range(n))) 
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
                     for i in range(n)]
                         
             ret = [cls(x[i],u=u[i],dof=idof[i]) for i in range(n)]
