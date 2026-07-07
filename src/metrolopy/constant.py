@@ -25,7 +25,7 @@ constant
 """
 
 from .indexed import Indexed
-from .gummy import gummy,jummy
+from ._gummy import gummy,jummy
 from .unitutils import _mrtxt
 from importlib import import_module
 from .printing import PrettyPrinter

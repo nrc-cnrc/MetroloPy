@@ -25,34 +25,20 @@ This module contains code to support pretty printing of gummys using LaTex and
 HTML.
 """
 
-try:
-    from IPython.display import display,Math,HTML,Markdown
-    ipython_installed = True
-except ImportError:
-    ipython_installed = False
+import lazy_loader as lazy
+ipy = lazy.load('IPython.display')
 
 
 def print_html(text):
-    if ipython_installed:
-        display(HTML(text))
-    else:
-        raise NotImplementedError('ipython must be installed to print in HTML format')
+    ipy.display(ipy.HTML(text))
         
 def print_latex(text):
-    if ipython_installed:
-        display(Math(text))
-    else:
-        raise NotImplementedError('ipython must be installed to print in HTML format')
+    ipy.display(ipy.Math(text))
         
 def print_markdown(text):
-    if ipython_installed:
-        display(Markdown(text))
-    else:
-        raise NotImplementedError('ipython must be installed to print in Markdown format')
+    ipy.display(ipy.Markdown(text))
         
 
-        
-    
 # Called from _repr_latex_ or Ipyhton.display.Math and gummy.latex_math 
 # Not sure if this is necessary; may depend on the version of Ipython.
 def _latex_math(text):

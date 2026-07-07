@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# module dof
+
 # Copyright (C) 2026 National Research Council Canada
 # Author:  Harold Parks
 
@@ -18,9 +20,26 @@
 # You should have received a copy of the GNU General Public License along with 
 # MetroloPy. If not, see <http://www.gnu.org/licenses/>.
 
+from math import isnan
 
-import lazy_loader as _lazy
-__getattr__, __dir__, __all__ = _lazy.attach_stub(__name__, __file__)
+class DoF:
+    __slots__ = '_value'
 
-from importlib.metadata import version
-__version__ = version('metrolopy')
+    def __init__(self,value):
+        if not isinstance(value,int):
+            value = float(value)
+        if value <= 0:
+            raise ValueError('dof value ' + str(value) + ' cannot be less than or equal to zero')
+        if isnan(value):
+            raise ValueError('dof value cannot be NaN')
+        self._value = value
+        
+    @property
+    def value(self):
+        return self._value
+
+    def __repr__(self):
+        return 'DoF(' + str(self._value) + ')'
+
+    
+_DoF_inf = DoF(float('inf'))

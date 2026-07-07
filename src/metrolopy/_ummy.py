@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# module ummy
+# module _ummy
 
-# Copyright (C) 2025 National Research Council Canada
+# Copyright (C) 2026 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -34,17 +34,20 @@ from warnings import warn
 from math import isnan,isinf,log,pi,sqrt,copysign,floor
 from fractions import Fraction
 from numbers import Rational,Integral,Real,Complex,Number
-from .printing import PrettyPrinter,MetaPrettyPrinter
-from .dfunc import Dfunc
-from .exceptions import UncertiantyPrecisionWarning
-from .unit import Unit,one,Quantity,MFraction
 from decimal import Decimal,localcontext,InvalidOperation
 from abc import ABCMeta
 
-try:
-    from mpmath import mp,mpf
-except:
-    mp = mpf = None
+from .printing import PrettyPrinter,MetaPrettyPrinter
+from .dfunc import Dfunc
+from .exceptions import UncertiantyPrecisionWarning
+from .mfraction import MFraction
+from .abc import UncertainValue,AbcUnit,AbcQuantity,UncertainComplexValue
+from .util import _isscalar
+from .dof import DoF,_DoF_inf
+
+
+import lazy_loader as lazy
+mpm = lazy.load('mpmath')
 
 
 _FInfo = namedtuple('_FIinfo','rel_u precision warn_u ')
@@ -54,17 +57,20 @@ def _getfinfo(x):
     if isinstance(x,Rational) or isinstance(x,Decimal):
         return (_iinfo,x)
     
-    if mpf is not None and isinstance(x,mpf):
-        n = mp.prec
-        x = mpf(x)
-        try:
-            return (_finfodict[n],x)
-        except:
-            f = _FInfo(rel_u=0.4222/2**n,
-                       precision=mp.dps,
-                       warn_u = 0)
-            _finfodict[n] = f
-            return (f,x)
+    try:
+        if x.__class__.startswith('mpmath.') and isinstance(x,mpm.mpf):
+            n = mpm.mp.prec
+            x = mpm.mpf(x)
+            try:
+                return (_finfodict[n],x)
+            except:
+                f = _FInfo(rel_u=0.4222/2**n,
+                           precision=mpm.mp.dps,
+                           warn_u = 0)
+                _finfodict[n] = f
+                return (f,x)
+    except:
+        pass
         
     t = type(x)
     try:
@@ -116,15 +122,6 @@ def _combu(a,b,c):
         return abs(a)*x.sqrt()
     return abs(a)*x**0.5   
 
-def _isscalar(x):
-    if isinstance(x,str):
-        return True
-    try:
-        len(x)
-        return False
-    except:
-        return True
-
 def sign(x):
     return copysign(1,x)
 
@@ -147,8 +144,13 @@ def _to_decimal(x,max_digits=None):
     # The Decimal data type has some convinent methods for rounding numbers to
     # show a given number of significant figures.
     
-    if mpf is not None and isinstance(x,mpf):
-         xd = Decimal(mp.nstr(x,n=mp.dps))
+    try:
+        mp = x.__class__.startswith('mpmath.')
+    except:
+        mp = False
+        
+    if mp and isinstance(x,mpm.mpf):
+         xd = Decimal(mpm.mp.nstr(x,n=mpm.mp.dps))
     elif isinstance(x,Rational):
         if max_digits is None:
             max_digits = ummy.max_digits
@@ -172,78 +174,90 @@ def _to_decimal(x,max_digits=None):
                 xd = Decimal(float(x))
     return xd
 
-def _decimal_str(x,fmt='unicode',rtrim=False,dplace=0,dalign=None,th_spaces=True):
-    # string formats a Decimal number, putting digits in groups of three
-    # separated by spaces if necessary
+
+class MantissaFormatter:
+    use_th_separator = True
+    th_separator = ' '
+    html_th_separator = '&thinsp;'
+    latex_th_separator = r'\,'
+    decimal_separator = '.'
     
-    if x.is_nan():
-        return 'nan'
-    if x.is_infinite() and x > 0:
-        if fmt == 'html':
-            return '&infin;'
-        if fmt == 'latex':
-            return r'\infty'
-        if fmt == 'ascii':
-            return 'inf'
-        return '\u221E'
-    if x.is_infinite() and x < 0:
-        if fmt == 'html':
-            return '-&infin;'
-        if fmt == 'latex':
-            return r'-\infty'
-        if fmt == 'ascii':
-            return '-inf'
-        return '-\u221E'
-    
-    s,d,e = x.as_tuple()
-    
-    if dalign is not None:
-        dplace = len(d) + e - 1 - dalign
+    @staticmethod
+    def decimal_str(x,fmt='unicode',rtrim=False,dplace=0,dalign=None,th_spaces=None):
+        # string formats a Decimal number, putting digits in groups of three
+        # separated by spaces if necessary
         
-    if rtrim:
-        if dplace is not None and dplace > 0:
-            dp = dplace
-        else:
-            dp = 0
+        if x.is_nan():
+            return 'nan'
+        if x.is_infinite() and x > 0:
+            if fmt == 'html':
+                return '&infin;'
+            if fmt == 'latex':
+                return r'\infty'
+            if fmt == 'ascii':
+                return 'inf'
+            return '\u221E'
+        if x.is_infinite() and x < 0:
+            if fmt == 'html':
+                return '-&infin;'
+            if fmt == 'latex':
+                return r'-\infty'
+            if fmt == 'ascii':
+                return '-inf'
+            return '-\u221E'
+        
+        s,d,e = x.as_tuple()
+        
+        if dalign is not None:
+            dplace = len(d) + e - 1 - dalign
             
-        i = len(d)
-        while i > dp + 1 and d[i-1] == 0:
-            i -= 1
-        if i != len(d):
-            d = d[:i]
+        if rtrim:
+            if dplace is not None and dplace > 0:
+                dp = dplace
+            else:
+                dp = 0
+                
+            i = len(d)
+            while i > dp + 1 and d[i-1] == 0:
+                i -= 1
+            if i != len(d):
+                d = d[:i]
+                
+        if th_spaces is None:
+            th_spaces = MantissaFormatter.use_th_separator
             
-    if dplace is None:
-        th_spaces = False
-    else:
-        th_spaces &= (dplace > 3 or len(d) - dplace > 5)
-        if dplace < 0:
-            d = (0,)*(-dplace) + d
-            dplace = 0
-        elif x != 0 and dplace > len(d) - 1:
-            d = d + (0,)*(dplace - len(d) + 1)
-        
-    if th_spaces:
-        if fmt == 'html':
-            sp = '&thinsp;'
-        elif fmt == 'latex':
-            sp = r'\,'
+        if dplace is None:
+            th_spaces = False
         else:
-            sp = ' '
+            th_spaces &= (dplace > 3 or len(d) - dplace > 5)
+            if dplace < 0:
+                d = (0,)*(-dplace) + d
+                dplace = 0
+            elif x != 0 and dplace > len(d) - 1:
+                d = d + (0,)*(dplace - len(d) + 1)
+            
+        if th_spaces:
+            if fmt == 'html':
+                sp = MantissaFormatter.html_th_separator
+            elif fmt == 'latex':
+                sp = MantissaFormatter.latex_th_separator
+            else:
+                sp = MantissaFormatter.th_separator
+            
+        if s and x != 0:
+            txt = '-'
+        else:
+            txt = ''
         
-    if s and x != 0:
-        txt = '-'
-    else:
-        txt = ''
-    
-    for i in range(len(d)):
-        if i > 0 and dplace is not None:
-            if i == dplace + 1:
-                txt += '.'
-            elif th_spaces and (i - dplace - 1) % 3 == 0:
-                txt += sp
-        txt += chr(48 + d[i])
-    
-    return txt
+        for i in range(len(d)):
+            if i > 0 and dplace is not None:
+                if i == dplace + 1:
+                    txt += MantissaFormatter.decimal_separator
+                elif th_spaces and (i - dplace - 1) % 3 == 0:
+                    txt += sp
+            txt += chr(48 + d[i])
+        
+        return txt
                 
 def _xtype(x):
     # this is used when type conversions are needed, e.g. to convert float 
@@ -312,7 +326,7 @@ class _UmmyRef:
 class MetaUmmy(MetaPrettyPrinter,ABCMeta):
     pass
 
-class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
+class ummy(Dfunc,PrettyPrinter,UncertainValue,metaclass=MetaUmmy):
     max_dof = 10000 # any larger dof will be rounded to float('inf')
     nsig = 2 # The number of digits to quote the uncertainty to
     thousand_spaces = True # If true spaces will be placed between groups of three digits.
@@ -336,9 +350,13 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
     # bigger than 1 - correlation_tolerance are rounded to -1 or 1 respectively.
     correlation_tolerance = 1e-14
     
-    def __init__(self,x,u=0,dof=float('inf'),utype=None):
-        if isinstance(x,Quantity):
-            x = x.convert(one).value
+    exception_on_fmt_error = False  # if False, an exception while trying to 
+                                    # print the will cause _ret_something() to 
+                                    # be called.  Can be set to True for debugging
+    
+    def __init__(self,x,u=0,dof=_DoF_inf,utype=None):
+        if isinstance(x,AbcQuantity):
+            x = x.convert(1).value
             
         if isinstance(x,ummy):
              self._copy(x,self,formatting=False)
@@ -418,24 +436,16 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
                 except ValueError:
                     raise ValueError('u must be a real number >= 0') from None
                     
-                try:
+                if not isinstance(dof,DoF):
                     if dof > self.max_dof:
-                        dof = float('inf')
+                        dof = _DoF_inf
                     else:
-                        if isinstance(dof,Integral):
-                            dof = int(dof)
-                        else:
-                            dof = float(dof)
-                        if dof <= 0 or isnan(dof):
-                            raise ValueError()
-                except ValueError:
-                    raise ValueError('dof must be a real number > 0') from None
-                except TypeError:
-                    raise TypeError('dof must be a real number > 0') from None
+                        dof = DoF(dof)
+
                 if utype is not None and not isinstance(utype,str):
                     raise TypeError('utype must be str or None')
                 
-                self._dof = dof
+                self._dof = dof.value
                 if utype is None:
                     self._utype = [None]
                 else:
@@ -451,7 +461,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
             # float('inf')
             
             self._ref = None
-            self._dof = None
+            self._dof = float('inf')
             self._utype = [None]
         
     @property
@@ -473,12 +483,8 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         number of degrees of freedom calculated using the Welch-Satterthwaite 
         approximation.
         """
-        if self._dof is not None:
-            return self._dof
-        
-        if self._ref is None:
-            self._dof = float('inf')
-        else:
+
+        if self._dof is None:
             # if _dof has not been set yet, calculate it using the 
             # Welch-Satterthwaite approximation and store the result in 
             # self._dof.  self._ref is a dictionary and the keys are _UmmyRef
@@ -488,10 +494,21 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
             # are equal to the derivative of self with respect to each 
             # independent variable divided by self.u.
             
-            rdof = 0
+            df = {}
             for k,v in self._ref.items():
-                if k.dof is not None:
-                    rdof += v**4/k.dof
+                if k.dof.value <= self.max_dof:
+                    if k.dof in df:
+                        df[k.dof] += v**2
+                    else:
+                        df[k.dof] = v**2
+                        
+            if len(df) == 1 and next(iter(df.values())) > 0.999999:
+                return next(iter(df.keys())).value
+            
+            rdof = 0
+            for k,v in df.items():
+                rdof += v**2/k.value
+                
             if rdof > 0:
                 rdof = 1/rdof
                 if rdof > self.max_dof:
@@ -633,7 +650,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
                 for a in gummys]
         
     @classmethod
-    def create(cls,x,u=None,dof=None,utype=None,correlation_matrix=None,
+    def create(cls,x,u=None,dof=_DoF_inf,utype=None,correlation_matrix=None,
                covariance_matrix=None):
         """
         A class method that creates a list of (possibly) correlated ummys.
@@ -641,7 +658,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         Parameters
         ----------
         x:
-            A list of floats corresponding to the x-value of each ummy.
+            A list or array of numbers corresponding to the x-value of each ummy.
         u, dof, k, loc, utype:  optional
             Lists that correspond to the
             parameters in the ummy initializer (with the i-th value in each
@@ -677,7 +694,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
                 raise ValueError('the diagonal elements of the covariance matrix must be positive real numbers')
             except IndexError:
                 raise ValueError('covariance must have shape len(gummys) x len(gummys)')
-            correlation_matrix = [[covariance_matrix[i][j]/(u[i]*u[j]) for i in range(n)] for j in range(n)]
+            correlation_matrix = [[covariance_matrix[i][j]/(u[i]*u[j]) if u[i] != 0 and u[j] != 0 else 0 for i in range(n)] for j in range(n)]
         else:
             if u is None:
                 u = [0]*n
@@ -685,14 +702,11 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
                 u = [u]*n
             
         if correlation_matrix is not None:
-            if not _isscalar(dof):
-                if any(i != dof[0] for i in dof):
-                    raise TypeError('dof cannot be set individually of a correlation of covariance matrix is specified')
-                dof = dof[0]
+            if not isinstance(dof,DoF):
+                raise TypeError('if a correlation of covariance matrix is specified then dof must either be a single DoF instance (that will be used for all returned gummys) or ommited')
+            
             if not _isscalar(utype):
-                if any(i != utype[0] for i in utype):
-                    raise TypeError('utype cannot be set individually of a correlation of covariance matrix is specified')
-                utype = utype[0]
+                raise TypeError('if a correlation of covariance matrix is specified then utpe must be a single value (that will be used for all returned gummys) or ommited')
                 
             m = np.asarray(correlation_matrix)
             
@@ -703,7 +717,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
                 raise ValueError('the correlation matrix must have shape len(gummys) x len(gummys)')
             
             for i in range(n):
-                if abs(m[i][i] - 1.0) > sqrt(ummy.correlation_tolerance):
+                if u[i] != 0 and abs(m[i][i] - 1.0) > sqrt(ummy.correlation_tolerance):
                     raise ValueError('correlation matrix diagonal elements must be 1')
                     
             # The correlated values can be constructed from a linear combination
@@ -730,9 +744,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
             ret = [cls(x[i],u=u[i],dof=idof[i]) for i in range(n)]
             
         else:
-            if dof is None:
-                dof = [float('inf')]*n
-            elif _isscalar(dof):
+            if _isscalar(dof):
                 dof = [dof]*n
                 
             if utype is None or isinstance(utype,str):
@@ -811,21 +823,23 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
                 xexp = 0
                 
             if xexp == 0:
-                txt =_decimal_str(xd,dalign=0,fmt=fmt)
+                txt =MantissaFormatter.decimal_str(xd,dalign=0,fmt=fmt)
             else:
-                txt = _decimal_str(xd,dplace=dp,fmt=fmt)
+                txt = MantissaFormatter.decimal_str(xd,dplace=dp,fmt=fmt)
                 
             if xd.is_finite():
                 if ud != 0:
-                    txt += '(' + _decimal_str(ud,dplace=None,fmt=fmt) + ')'
+                    txt += '(' + MantissaFormatter.decimal_str(ud,dplace=None,fmt=fmt) + ')'
                 txt += _format_exp(fmt,xexp)
             else:
                 if ud != 0:
-                    txt += '(' + _decimal_str(ud,dplace=None,fmt=fmt)
+                    txt += '(' + MantissaFormatter.decimal_str(ud,dplace=None,fmt=fmt)
                     txt += _format_exp(fmt,xexp) + ')'
             return txt
        
         except:
+            if self.exception_on_fmt_error:
+                raise
             try:
                 return(str(self.x) + '{' + str(self.u) + '}' + '??')
             except:
@@ -865,13 +879,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         #return r
     
     @classmethod
-    def _apply(cls,function,derivative,*args,fxdx=None):
-        if fxdx is None:
-            x = [a.x if isinstance(a,ummy) else a for a in args]
-            fx = function(*x)
-            d = derivative(*x)
-        else:
-            fx,d,x = fxdx
+    def _apply(cls,function,derivative,fx,d,*args,**kw):
         if len(args) == 1:
             d = [d]
             
@@ -879,10 +887,10 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
             
         try:
             ad = [(a,a._u*p) for a,p in zip(args,d) 
-                  if isinstance(a,ummy) and a._u != 0]
+                  if isinstance(a,UncertainValue) and a._u != 0]
         except TypeError:
             ad = [(a,xtype(a._u)*p) for a,p in zip(args,d) 
-                  if isinstance(a,ummy) and a._u != 0]
+                  if isinstance(a,UncertainValue) and a._u != 0]
         if len(ad) == 0:
             return cls(fx)
         args,du = list(map(list, zip(*ad)))
@@ -935,20 +943,17 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         return r
         
     @classmethod
-    def _napply(cls,function,*args,fxx=None):      
+    def _napply(cls,function,fxx,*args):      
         n = len(args)
         if n == 0:
             return cls(function(),0)
         
-        d = _der(function,*args)
-        
-        if fxx is not None:
-            fxx = (fxx[0],d,fxx[1])
+        d = njacobian(function,*args)
         
         if n == 1:
-            return cls._apply(function,lambda x: d,args[0],fxdx=fxx)
+            return cls._apply(function,None,fxx,d,args[0])
 
-        return cls._apply(function,lambda *x: d,*args,fxdx=fxx)
+        return cls._apply(function,None,fxx,d,*args)
     
     def _aop(self,b,f,d1,d2):
         # computes the result of a binary operation f(self,b).  d1 and d2 are 
@@ -1032,7 +1037,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
     def __add__(self,b):
         if isinstance(b,np.ndarray):
             return np.array(self) + b
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__radd__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1062,7 +1067,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         if isinstance(b,np.ndarray):
             return np.array(self) - b
           
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rsub__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1093,7 +1098,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         if isinstance(b,np.ndarray):
             return np.array(self)*b
         
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rmul__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1135,7 +1140,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
     def __truediv__(self,b):
         if isinstance(b,np.ndarray):
             return np.array(self)/b
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rtruediv__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1197,7 +1202,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         if isinstance(b,np.ndarray):
             return np.array(self)**b
         
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rpow__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1280,7 +1285,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         if isinstance(b,np.ndarray):
             return np.array(self) // b
         
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rmfloordiv__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
@@ -1304,13 +1309,13 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         if isinstance(b,np.ndarray):
             return np.array(self) % b
         
-        if isinstance(b,(immy,Unit,Quantity)):
+        if isinstance(b,(immy,AbcUnit,AbcQuantity)):
             return b.__rmod__(self)
         
         if isinstance(b,Complex) and not isinstance(b,Real):
             return immy(self) % b
         
-        ret = ummy._apply(lambda x1,x2: x1%x2,
+        ret = ummy.apply(lambda x1,x2: x1%x2,
                           lambda x1,x2: (1,copysign(abs(x1//x2),x2)),self,b)
         return type(self)(ret)
         
@@ -1321,7 +1326,7 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         if isinstance(b,ummy):
             return b.__mod__(self)
         
-        ret = ummy._apply(lambda x1,x2: x1%x2,
+        ret = ummy.apply(lambda x1,x2: x1%x2,
                           lambda x1,x2: (1,copysign(abs(x1//x2),x2)),b,self)
         return type(self)(ret)
     
@@ -1462,10 +1467,10 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         if self._ref is None:
             return dict()
         
-        if isinstance(x,ummy) or isinstance(x,str) or isinstance(x,Quantity):
+        if isinstance(x,ummy) or isinstance(x,str) or isinstance(x,AbcQuantity):
             x = [x]
         
-        x = [i.value if isinstance(i,Quantity) else i for i in x]
+        x = [i.value if isinstance(i,AbcQuantity) else i for i in x]
             
         d = dict()
         for g in x:
@@ -1519,24 +1524,6 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         >>>  d.ufrom('A')
         0.53851648071345048
         """
-       
-        #x = ummy._toummylist(x)
-        #x = [i for i in x if self.correlation(i) != 0]
-        #if len(x) == 0:
-            #return 0
-
-        #v = ummy.correlation_matrix(x)
-            
-        #b = [self.correlation(z) for z in x]
-        #s = np.linalg.lstsq(v,b,rcond=None)[0]
-        #u = 0
-        
-        #d = [i*self.u/j.u for i,j in zip(s,x)]
-        #for i in range(len(x)):
-            #for j in range(len(x)):
-                #u += d[i]*d[j]*x[i].correlation(x[j])*x[i].u*x[j].u
-                
-        #return u**0.5
         
         return float(self.u*np.sqrt(sum(v for v in self._ufromrefs(x).values())))
         
@@ -1564,50 +1551,42 @@ class ummy(Dfunc,PrettyPrinter,Number,metaclass=MetaUmmy):
         >>>  d.doffrom('A')
         9.0932962619709627
         """
-        #x = ummy._toummylist(x)
-        #x = [i for i in x if self.correlation(i) != 0]
-        #if len(x) == 0:
-            #return float('inf')
-            
-        #v = ummy.correlation_matrix(x)
-        #b = [self.correlation(z) for z in x]
-        #s = np.linalg.lstsq(v,b,rcond=None)[0]
-        #d = [i*self.u/j.u for i,j in zip(s,x)]
-        #usq = 0
-        #dm = 0
-        #for i in range(len(x)):
-            #for j in range(len(x)):
-                #usqi = d[i]*d[j]*x[i].correlation(x[j])*x[i].u*x[j].u
-                #usq += usqi
-                #dm += usqi**2/x[i].dof
-                
-        #if dm == 0:
-           # return float('inf')
-        #dof = usq**2/dm
-        #if dof > ummy.max_dof:
-            #return float('inf')
-        #if dof < 1:
-            #return 1
-        #return dof
         
-        dof = sum(v**2/k.dof for k,v in self._ufromrefs(x).items() if k.dof is not None)
-        if dof > 0:
-            dof = sum(v for v in self._ufromrefs(x).values())**2/dof
+        df = {}
+        u = 0
+        for k,v in self._ufromrefs(x).items():
+            u += v
+            if k.dof.value <= self.max_dof:
+                if k.dof in df:
+                    df[k.dof] += v
+                else:
+                    df[k.dof] = v
+                    
+        if len(df) == 1 and next(iter(df.values())) > 0.999999:
+            return next(iter(df.keys())).value
+        
+        rdof = 0
+        for k,v in df.items():
+            rdof += v**2/k.value
+            
+        if rdof > 0:
+            rdof = u**2/rdof
+            if rdof > self.max_dof:
+                rdof = float('inf')
+            elif rdof < 1:
+                rdof = 1
         else:
-            return float('inf')
-        if dof > ummy.max_dof:
-            return float('inf')
-        if dof < 1:
-            return 1
-        return float(dof)
+            rdof = float('inf')
+
+        return rdof
     
-def _der(function,*args):
+def njacobian(function,*args):
     # computes the numerical derivative of function with respect to args.
-    # puts zeros for any of args that are not an ummy
+    # puts zeros for any of args that are not an UncertainValue or has u == 0
     n = len(args)
     if n == 1:
         arg = args[0]
-        if not isinstance(arg,ummy) or arg._u == 0:
+        if not isinstance(arg,UncertainValue) or arg.u == 0:
             return 0
                 
         df = None
@@ -1633,13 +1612,13 @@ def _der(function,*args):
         
     v = np.empty(n)
     for i,a in enumerate(args):
-        if isinstance(a,ummy):
+        if isinstance(a,UncertainValue):
             v[i] = a.x
         else:
             v[i] = a
     d = np.zeros(n)
     for i,p in enumerate(args):
-        if isinstance(p,ummy) and p._u != 0:          
+        if isinstance(p,UncertainValue) and p.u != 0:          
             df = None
             s = 2*p.u
             x1 = np.array(v)
@@ -1703,7 +1682,7 @@ class MetaImmy(MetaPrettyPrinter,ABCMeta):
     def imag_symbol(cls,value):
         immy._imag_symbol = str(value)
     
-class immy(PrettyPrinter,Dfunc,Number,metaclass=MetaImmy):
+class immy(PrettyPrinter,Dfunc,UncertainComplexValue,metaclass=MetaImmy):
     
     _style = 'cartesian'
     _imag_symbol = 'j'
@@ -1898,32 +1877,21 @@ class immy(PrettyPrinter,Dfunc,Number,metaclass=MetaImmy):
         if self.imag == 0:
             return self.real
         return self
-            
+    
     @classmethod
-    def _apply(cls,function,derivative,*args,fxx=None,rjd=None):
-        
+    def _iapply(cls,function,derivative,*args,**kwds):
         n = len(args)
-        if fxx is None:
-            rargs = [a.real for a in args]
-            jargs = [a.imag for a in args]
-            args = rargs + jargs
-            args = [a.convert(one).value if isinstance(a,Quantity) else a for 
-                    a in args]
-            x = [a.x if isinstance(a,ummy) else a for a in args]
-            func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
-            der = lambda *a: derivative(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
-            fx = func(*x)
-        else:
-            fx,x = fxx
-            
-        if not _isscalar(fx):
-            return [cls._apply(lambda *y: func(*y)[i],
-                               lambda *y: der(*y)[i],
-                               *args,fxx=(fx[i],x)) 
-                    for i in range(len(fx))]
-        
-        d = der(*x)
-        
+        rargs = [a.real for a in args]
+        jargs = [a.imag for a in args]
+        args = rargs + jargs
+        func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
+        der = lambda *a: derivative(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
+        return super(immy,cls)._iapply(func,der,*args,**kwds)
+    
+    @classmethod
+    def _apply(cls,function,derivative,fx,d,*args):
+        n = len(args)
+
         if n == 1:
             d = [d]
 
@@ -1953,44 +1921,32 @@ class immy(PrettyPrinter,Dfunc,Number,metaclass=MetaImmy):
             jd = jd[0]
             
         if not isinstance(fx,Real) and isinstance(fx,Complex):
-            r = cls._element_type._apply(lambda *a: func(*a).real,None,*args,
-                                         fxdx=(fx.real,rd,x))
-            j = cls._element_type._apply(lambda *a: func(*a).imag,None,*args,
-                                         fxdx=(fx.imag,jd,x))
-            if (isinstance(r,(ummy,cls._element_type)) or 
-                isinstance(j,(ummy,cls._element_type))):
+            r = cls._element_type._apply(lambda *a: function(*a).real,None,fx.real,rd,*args)
+            j = cls._element_type._apply(lambda *a: function(*a).imag,None,fx.imag,jd,*args)
+            if (isinstance(r,(UncertainValue,cls._element_type)) or 
+                isinstance(j,(UncertainValue,cls._element_type))):
                 return cls(real=r,imag=j)
             return complex(r,j)
         
-        return cls._element_type._apply(function,der,*args,fxdx=(fx,rd,x))
+        return cls._element_type._apply(function,derivative,fx,d,*args)
     
     @classmethod
-    def _napply(cls,function,*args,fxx=None):
+    def _inapply(cls,function,*args,**kwds):
         n = len(args)
-        if fxx is None:
-            rargs = [a.real for a in args]
-            jargs = [a.imag for a in args]
-            args = rargs + jargs
-            args = [a.convert(one).value if isinstance(a,Quantity) else a for 
-                    a in args]
-            x = [a.x if isinstance(a,ummy) else a for a in args]
-            func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
-            fx = func(*x)
-        else:
-            fx,x = fxx
+        rargs = [a.real for a in args]
+        jargs = [a.imag for a in args]
+        args = rargs + jargs
+        func = lambda *a: function(*[complex(r,j) for r,j in zip(a[:n],a[n:])])
+        return super(immy,cls)._inapply(func,*args,**kwds)
         
-        if not _isscalar(fx):
-            return [cls._napply(lambda *y: func(*y)[i],*args,fxx=(fx[i],x)) 
-                    for i in range(len(fx))]
-            
+    @classmethod
+    def _napply(cls,function,fx,*args,**kw):
         if not isinstance(fx,Real) and isinstance(fx,Complex):
-            r = cls._element_type._napply(lambda *a: func(*a).real,*args,
-                                          fxx=(fx.real,x))
-            j = cls._element_type._napply(lambda *a: func(*a).imag,*args,
-                                          fxx=(fx.imag,x))
+            r = cls._element_type._napply(lambda *a: function(*a).real,fx.real,*args,**kw)
+            j = cls._element_type._napply(lambda *a: function(*a).imag,fx.imag,*args,**kw)
             return cls(real=r,imag=j)
         
-        return cls._element_type._napply(func,*args,fxx=(fx,x))
+        return cls._element_type._napply(function,fx,*args)
             
     @property
     def style(self):

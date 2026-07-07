@@ -26,8 +26,9 @@ constant definitions
 
 from numpy import sqrt
 from .constant import GummyConstant
-from .unit import unit,MFraction
-from .gummy import gummy
+from ._unit import unit
+from .mfraction import MFraction
+from ._gummy import gummy
 from .constcom import h,c,e,hbar,k,dalton,me,mp,a0,G,pi,euler,sqrt2
 from .constcom import (alph,aral,ryd,ae,rd,ghn,arh,sigmah,mmu,amu,
                        arn,gnn,ard,gdn,gp,sigmapp,mtu,gtn)

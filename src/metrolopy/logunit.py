@@ -26,14 +26,15 @@ units.
 """
 
 import numpy as np
-from .unit import one,_CompositeUnit,Quantity
-from .ummy import ummy
+from ._unit import one,_CompositeUnit
+from .abc import AbcQuantity
+from ._ummy import ummy
 from .nonlinearunit import NonlinearConversion,NonlinearUnit
 from .exceptions import IncompatibleUnitsError
 
 class LogConversion(NonlinearConversion):   
     def __init__(self,reference,multiplier,log_base,log_func,offset=0):
-        if isinstance(reference,Quantity):
+        if isinstance(reference,AbcQuantity):
             self._unit = reference.unit
             self._rf = reference.value
             if self._unit.is_dimensionless:
@@ -54,7 +55,7 @@ class LogConversion(NonlinearConversion):
         self.offset = offset
     
     def log_func(self,x):
-        if isinstance(x,Quantity):
+        if isinstance(x,AbcQuantity):
             x = x.value
             if isinstance(x,ummy):
                 x = x.x

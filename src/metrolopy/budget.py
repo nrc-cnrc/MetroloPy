@@ -26,14 +26,14 @@ uncertainty contributions to a gummy.
 """
 
 import numpy as np
-from .gummy import gummy,_dof_to_str,_k_to_str
-from .unit import one
+from ._gummy import gummy,_dof_to_str,_k_to_str
 from .exceptions import BudgetWarning
 from .printing import PrettyPrinter
 
 
 import warnings
 from collections import OrderedDict
+
 
 def append_utype(a,utype):
     if isinstance(utype,list):
@@ -305,7 +305,7 @@ class Budget(PrettyPrinter):
         x = [gummy(g) for g in xlist]
         
         got_dof = np.isfinite(y.dof) or any(np.isfinite(g.dof) for g in x)
-        got_unit = (y.unit is not one) or any(g.unit is not one for g in x)
+        got_unit = (y.unit != 1) or any(g.unit != 1 for g in x)
         got_uunit = (((y.uunit is not None) or any(g.uunit is not None for g in x))
                      and uunit is None)
         got_tag = any(g.utype is not None for g in x)

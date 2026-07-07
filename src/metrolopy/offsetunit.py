@@ -24,7 +24,7 @@
 The OffsetUnit class was created to handle Celsius and Fahrenheit units.
 """
 
-from .unit import Unit,Conversion
+from ._unit import Unit,Conversion
 from .nonlinearunit import NonlinearUnit,NonlinearConversion
 from .exceptions import IncompatibleUnitsError
 

@@ -27,9 +27,11 @@ imported directly.
 The most of the units here are from the SI Brochure, 9th edition.
 """
 
+
 from numpy import pi
-from .nummy import nummy
-from .unit import Conversion,Unit,MFraction
+from ._nummy import nummy
+from ._unit import Conversion,Unit
+from .mfraction import MFraction
 from .prefixedunit import PrefixedUnit
 from .offsetunit import OffsetUnit,OffsetConversion
 

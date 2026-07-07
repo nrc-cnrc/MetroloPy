@@ -31,7 +31,9 @@ NIST Special Publication 1038, "The International System of Units (SI) –
 Conversion Factors for General Use", May 2006.
 """
 
-from .unit import Unit,Conversion,MFraction
+
+from ._unit import Unit,Conversion
+from .mfraction import MFraction
 from .offsetunit import OffsetUnit,OffsetConversion
 from .prefixedunit import PrefixedUnit
 

@@ -24,7 +24,7 @@ import metrolopy as uc
 import numpy as np
 import unittest
 
-from metrolopy.tests.common import rand,make_gummy
+from .common import rand,make_gummy
 
 class TestUbreakdown(unittest.TestCase):
     def test_ubreakdown(self,n=None,prnt=False,budget=False):

@@ -23,9 +23,10 @@
 """
 the search_units, shadow_units, and convert functions are defined here
 """
-from .gummy import gummy
-from .ummy import ummy
-from .unit import Unit,one,Quantity
+from ._gummy import gummy
+from ._ummy import ummy
+from ._unit import Unit,one
+from .quantity import Quantity
 from .printing import PrettyPrinter
 
 

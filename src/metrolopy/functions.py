@@ -2,7 +2,7 @@
 
 # module functions
 
-# Copyright (C) 2025 National Research Council Canada
+# Copyright (C) 2026 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -26,8 +26,8 @@ gummys.
 """
 
 import numpy as np
-from .gummy import gummy,jummy
-from .ummy import ummy
+from ._gummy import gummy,jummy
+from ._ummy import ummy
 from numbers import Complex
 from .dfunc import _call
 
@@ -427,5 +427,4 @@ def cross(*args,**kwds):
     Alias for numpy.cross
     """
     return np.cross(*args,**kwds)
-    
 

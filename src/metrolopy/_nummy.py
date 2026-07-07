@@ -27,9 +27,12 @@ class is not intended to be used directly; rather it is utilized by the gummy
 class.
 """
 import numpy as np
-from .ummy import ummy,_udict,_isscalar
+from ._ummy import ummy,_udict
+from .dof import DoF,_DoF_inf
 from .distributions import (Distribution,TDist,NormalDist,MultivariateElement,
-                            MultivariateDistribution,Convolution)
+                            MultivariateDistribution,Convolution,
+                            ScipyStatsDist)
+from .util import _isscalar
 from .exceptions import NoSimulatedDataError
 from math import isinf,isnan,sqrt
 from html import escape
@@ -113,7 +116,7 @@ class nummy(ummy):
     _bayesian = False # see the gummy bayesian property
     _nsim = None
     
-    def __init__(self,x,u=0,dof=float('inf'),utype=None,name=None):
+    def __init__(self,x,u=0,dof=_DoF_inf,utype=None,name=None):
         self._bayesian = nummy._bayesian
         
         if isinstance(x,ummy):
@@ -121,6 +124,10 @@ class nummy(ummy):
             return
         
         self.name = name
+        
+        if type(x).__name__ in ('rv_continuous_frozen','rv_discrete_frozen'):
+            x = ScipyStatsDist(x)
+            
         if isinstance(x,Distribution):
             if x._used or not x.isindependent:
                 raise ValueError('Distribution instances may only be used as the x parameter of a new gummy only if they\nrepresent independant variables and have not previously been used with another gummy')                
@@ -145,24 +152,23 @@ class nummy(ummy):
                 u = float(x.u())
                 
             super().__init__(x.x(),u=u,dof=ndof,utype=utype)
-            
         else:
             super().__init__(x,u=u,dof=dof,utype=utype)
             x = float(x)
             u = float(self.u)
             if u == 0 or isnan(x) or isinf(x) or isnan(u) or isinf(u):
                 self._dist = x
-                return
-            if isinstance(dof,_udict):
+            elif isinstance(dof,_udict):
                 self._dist = None
             else:
-                if dof is None or dof > self.max_dof:
+                df = self.dof
+                if df > self.max_dof:
                     self._dist = NormalDist(x,u)
                 else:
                     if nummy._bayesian:
-                        self._dist = TDist(x,u*np.sqrt((dof-2)/dof),dof)
+                        self._dist = TDist(x,u*np.sqrt((df-2)/df),df)
                     else:
-                        self._dist = TDist(x,u,dof)
+                        self._dist = TDist(x,u,df)
                 self._dist.utype = utype
             
     @property
@@ -401,7 +407,6 @@ class nummy(ummy):
         """
         r = ummy(self.x,u=self.u)
         r._ref = self._ref
-        r._refs = self._refs
         return r
     
     def splonk(self):
@@ -438,7 +443,7 @@ class nummy(ummy):
                     r._dist = TDist(s.x,s.u,dof)
         
     @classmethod
-    def _apply(cls,function,derivative,*args,fxdx=None):
+    def _apply(cls,function,derivative,fx,dx,*args):
         # called from ummpy.apply()
 
         a = list(args)
@@ -447,13 +452,13 @@ class nummy(ummy):
                 a[i] = e._dist
             elif isinstance(e,ummy):
                 a[i] = nummy(e)._dist
-        r = super(nummy,cls)._apply(function,derivative,*args,fxdx=fxdx)
+        r = super(nummy,cls)._apply(function,derivative,fx,dx,*args)
         if isinstance(r,nummy):
             r._dist = Distribution.apply(function,*a)
         return r
         
     @classmethod
-    def _napply(cls,function,*args,fxx=None):
+    def _napply(cls,function,fxx,*args):
         # called from ummpy.napply()
             
         a = list(args)
@@ -462,13 +467,13 @@ class nummy(ummy):
                 a[i] = e._dist
             elif isinstance(e,ummy):
                 a[i] = nummy(e)._dist
-        r = super(nummy,cls)._napply(function,*args,fxx=fxx)
+        r = super(nummy,cls)._napply(function,fxx,*args)
         if isinstance(r,nummy):
             r._dist = Distribution.apply(function,*a)
         return r
         
     @classmethod
-    def create(cls,x,u=0,dof=float('inf'),name=None,utype=None,
+    def create(cls,x,u=0,dof=_DoF_inf,name=None,utype=None,
                correlation_matrix=None,covariance_matrix=None):
         if _isscalar(name):
             name = [name]*len(x)
@@ -487,9 +492,9 @@ class nummy(ummy):
                     for i,uu in u:
                         u[i] *= np.sqrt(x.dof[i]/(x.dof[i]-2))
                 else:
-                    dof = x.dof
+                    dof = DoF(x.dof)
             else:
-                dof = float('inf')
+                dof = _DoF_inf
             
             ret = super(nummy,cls).create(x.x(),u=u,dof=dof,utype=utype,
                                           covariance_matrix=x.cov)
@@ -500,46 +505,42 @@ class nummy(ummy):
                 
             return ret
                 
-        if any([isinstance(v,Distribution) for v in x]):
+        d = [None]*len(x)
+        if any([isinstance(i,Distribution) for i in x]):
             if correlation_matrix is not None or covariance_matrix is not None:
                 raise TypeError('Distribtuion instances may not be used in x if a correlation_matrix nor a covariance_matrix is defined')
+
+            if _isscalar(u):
+                u = [u]*len(x)
+                
+            if _isscalar(dof):
+                dof = [dof]*len(x)
             
-        if dof is None:
-            dof = [float('inf')]*len(x)
-        elif _isscalar(dof):
-            dof = [dof]*len(x)
-        else:
-            dof = [float('inf') if i is None else i for i in dof]
-            
-        if u is None:
-            u = [0]*len(x)
-        d = [None]*len(x)
-        for i,v in enumerate(x):
-            if isinstance(v,Distribution):
-                d[i] = v
-                x[i] = v.x()
-                u[i] = v.u()
-                if hasattr(v,'dof'):
-                    dof[i] = v.dof
-                    if nummy._bayesian:
-                        u[i] = u[i]*np.sqrt(v.dof/(v.dof-2))
-                        dof[i] = float('inf')
+            for i,v in enumerate(x):
+                if isinstance(v,Distribution):
+    
+                    d[i] = v
+                    x[i] = v.x()
+                    u[i] = v.u()
+                    if hasattr(v,DoF):
+                        dof[i] = v.DoF
             
         ret = super(nummy,cls).create(x,u=u,dof=dof,utype=utype,
                                       correlation_matrix=correlation_matrix,
                                       covariance_matrix=covariance_matrix)
         for i,r in enumerate(ret):
             r.name = name[i]
+            dofi = r.dof
             if d[i] is None:
                 if u[i] == 0:
                     r._dist = x[i]
-                elif isinf(dof[i]):
+                elif isinf(dofi):
                     r._dist = NormalDist(x[i],u[i])
                 else:
                     if nummy._bayesian:
-                        r._dist = TDist(x,u[i]*np.sqrt((dof[i]-2)/dof[i]),dof[i])
+                        r._dist = TDist(x,u[i]*np.sqrt((dofi-2)/dofi),dofi)
                     else:
-                        r._dist = TDist(x,u[i],dof[i])
+                        r._dist = TDist(x,u[i],dofi)
             else:
                 r._dist = d[i]
                     

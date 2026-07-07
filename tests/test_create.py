@@ -5,7 +5,7 @@ import numpy as np
 import warnings
 import unittest
 
-from metrolopy.tests.common import rand,display
+from .common import rand,display
 
 class TestCreate(unittest.TestCase):
     def test_gummy_init(self,n=None,exception_on_warning=True,prnt=False,plot=False):

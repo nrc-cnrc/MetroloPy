@@ -26,7 +26,6 @@ Simple unit tests for the gummy module
 import metrolopy as uc
 import numpy as np
 import unittest
-import sys
 
 
 class TestGummy(unittest.TestCase):
@@ -34,7 +33,7 @@ class TestGummy(unittest.TestCase):
     Various unit tests of gummy properties and methods.
     """
     def test_ku(self):
-        from metrolopy.gummy import _ku
+        from metrolopy._gummy import _ku
         from decimal import Decimal
         
         self.assertTrue(_ku(2.1,3.3) == 2.1*3.3)
@@ -83,25 +82,6 @@ class TestGummy(unittest.TestCase):
             pass
         
         uc.gummy.style = b
-        
-        k = uc.gummy.cmp_k
-        p = uc.gummy.cmp_p
-        if p is None:
-            self.assertTrue(k >= 0)
-        else:
-            self.assertTrue(k is None)
-            self.assertTrue(p >= 0)
-            self.assertTrue(p <= 1)
-            
-        
-        uc.gummy.cmp_k = 2.1
-        self.assertTrue(uc.gummy.cmp_p is None)
-        self.assertTrue(uc.gummy.cmp_k == 2.1)
-        
-        if k is None:
-            uc.gummy.cmp_p = p
-        else:
-            uc.gummy.cmp_k = k
             
         try:
             uc.gummy.p_method = 'ccp'
