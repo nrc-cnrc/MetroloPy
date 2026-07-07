@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-<<<<<<< HEAD
 
 # module distfit
 
@@ -218,59 +217,11 @@ class DistFit(Fit):
         -------
         Figure,Axes
         """
-=======
-"""
-Created on Fri Jun 12 10:08:11 2026
-
-@author: Parksh
-"""
-
-import numpy as np
-from .fit import Fit
-from .distributions import Distribution
-
-class DistFit(Fit):
-    def __init__(self,x,cdf,p0,**kwds):
-        
-        if isinstance(cdf,Distribution):
-            c = type(cdf)
-        elif isinstance(cdf,type) and issubclass(cdf,Distribution):
-            c = cdf
-        else:
-            c = None
-            
-        if c is not None:
-            self.p_names = c.p_names
-            self.p_names_html = c.p_names_html
-            self.p_names_latex = c.p_names_latex
-            self.p_names_ascii = c.p_names_ascii
-            self.cdf = lambda *args:c.cdf(*args)
-            self.Dist = c
-        else:
-            self.cdf = cdf
-            self.p_names = None
-            self.p_names_html = None
-            self.p_names_latex = None
-            self.p_names_ascii = None
-            self.Dist = None
-            
-        x = np.sort(x)
-        super().__init__(x,p0=p0,**kwds)
-        
-    def f(self,x,*p,**kwds):
-        z = len(x)*np.diff(self.cdf(x,*p,**kwds),prepend=0)
-        return np.log(z*np.exp(z)) - 1
-    
-    def plot(self,ylabel=None,xlabel=None,title=None,hold=False,
-             plot_points=None,show_fit=True,show_data=True,xmin=None,xmax=None,fit_options={},
-             fig_options={},sub_plot_options={},hist_options={}):
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         import matplotlib.pyplot as plt
         
         if plot_points is None:
             plot_points = self.plot_points
             
-<<<<<<< HEAD
         if 'ylabel' not in subplot_options and ylabel is not None:
             subplot_options['ylabel'] = ylabel
             
@@ -282,10 +233,6 @@ class DistFit(Fit):
             
         fig = plt.figure(**fig_options)
         ax = fig.add_subplot(**subplot_options)
-=======
-        fig = plt.figure(**fig_options)
-        ax = fig.add_subplot(**sub_plot_options)
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             
         if show_fit:
             if xmin is None:
@@ -320,7 +267,6 @@ class DistFit(Fit):
                 hist_options['histtype'] ='stepfilled'
             ax.hist(self.xf,**hist_options)
             
-<<<<<<< HEAD
         if not hold:
             plt.show()
             
@@ -374,27 +320,11 @@ class DistFit(Fit):
         -------
         Figure, Axes
         """
-=======
-        if ylabel is not None:
-            ax.ylabel(ylabel)
-        if xlabel is not None:
-            ax.xlabel(xlabel)
-        if title is not None:
-            ax.title(title)
-        if not hold:
-            plt.show()
-            
-    def plot_cdf(self,ylabel=None,xlabel=None,title=None,hold=False,
-                 plot_points=None,show_fit=True,show_data=True,xmin=None,
-                 xmax=None,fit_options={},fit_format='k-',
-                 fig_options={},sub_plot_options={},data_options={},data_format='ko'):
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         import matplotlib.pyplot as plt
         
         if plot_points is None:
             plot_points = self.plot_points
             
-<<<<<<< HEAD
         if 'ylabel' not in subplot_options and ylabel is not None:
             subplot_options['ylabel'] = ylabel
             
@@ -406,10 +336,6 @@ class DistFit(Fit):
             
         fig = plt.figure(**fig_options)
         ax = fig.add_subplot(**subplot_options)
-=======
-        fig = plt.figure(**fig_options)
-        ax = fig.add_subplot(**sub_plot_options)
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             
         if show_fit:
             if xmin is None:
@@ -447,7 +373,6 @@ class DistFit(Fit):
             if 'ls' not in data_options and 'linestyle' not in data_options:
                 data_options['ls'] = 'none'
                     
-<<<<<<< HEAD
             nx = len(self.xf)
             if data_format is None:
                 ax.plot(self.xf,(np.arange(nx) + 1)/nx,**data_options)
@@ -458,19 +383,4 @@ class DistFit(Fit):
             plt.show()
             
         return fig,ax
-=======
-            if data_format is None:
-                ax.plot(self.xf,(np.arange(self.count) + 1)/self.count,**data_options)
-            else:
-                ax.plot(self.xf,(np.arange(self.count) + 1)/self.count,data_format,**data_options)
-        
-        if ylabel is not None:
-            ax.ylabel(ylabel)
-        if xlabel is not None:
-            ax.xlabel(xlabel)
-        if title is not None:
-            ax.title(title)
-        if not hold:
-            plt.show()
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         

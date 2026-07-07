@@ -24,12 +24,8 @@ This module contains the classes that represent distributions for Monte Carlo
 calculations.
 """
 import numpy as np
-<<<<<<< HEAD
 from .distributions import (Distribution,MultivariateDistribution,
                             MultivariateElement,ScipyStatsDist)
-=======
-from .distributions import Distribution,MultivariateDistribution,MultivariateElement
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 from .dof import DoF
 
 class MultiNormalDist(MultivariateDistribution):
@@ -107,11 +103,8 @@ class MultiTDist(MultivariateDistribution):
         return self._cov
         
 class UniformDist(Distribution):
-<<<<<<< HEAD
     _param_names = ('center','half_width')
     
-=======
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def __init__(self,center=None,half_width=None,lower_limit=None,upper_limit=None):
         """
         A uniform distribution.  Two and only two of the parameters `center`,
@@ -165,7 +158,6 @@ class UniformDist(Distribution):
     def u(self):
         return self._u
     
-<<<<<<< HEAD
     @staticmethod
     def cdf(z,center,half_width):
         from scipy.stats import uniform
@@ -180,13 +172,6 @@ class UniformDist(Distribution):
 class GammaDist(Distribution):
     _param_names = ('shape','scale')
     
-=======
-    def cdf(self,z,center,half_width):
-        from scipy.stats import uniform
-        return uniform.cdf(z,loc=center-half_width,scale=2*half_width)
-    
-class GammaDist(Distribution):
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def __init__(self,shape,scale):
         """
         Gamma distribution with the `shape` and `scale` parameters.
@@ -207,7 +192,6 @@ class GammaDist(Distribution):
     def u(self):
         return self.shape*np.sqrt(self.scale)
     
-<<<<<<< HEAD
     @staticmethod
     def cdf(z,shape,scale):
         from scipy.stats import gamma
@@ -222,13 +206,6 @@ class GammaDist(Distribution):
 class LaplaceDist(Distribution):
     _param_names = ('x','scale')
     
-=======
-    def cdf(self,z,shape,scale):
-        from scipy.stats import gamma
-        return gamma.cdf(z,shape,scale=scale)
-        
-class LaplaceDist(Distribution):
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def __init__(self,x,scale):
         """
         Laplace distribution with location parameter `x` and `scale` parameter.
@@ -247,7 +224,6 @@ class LaplaceDist(Distribution):
     def u(self):
         return self.scale*np.sqrt(2)
     
-<<<<<<< HEAD
     @staticmethod
     def cdf(z,x,scale):
         from scipy.stats import laplace
@@ -262,22 +238,11 @@ class TriangularDist(Distribution):
     _param_names = ('mode','left_width','right_width')
     
     def __init__(self,mode,left_width=None,right_width=None,half_width=None,lower_limit=None,upper_limit=None):
-=======
-    def cdf(self,z,x,scale):
-        from scipy.stats import laplace
-        return laplace.cdf(z,loc=x,scale=scale)
-        
-class TriangularDist(Distribution):
-    def __init__(self,mode,half_width=None,left_width=None,right_width=None,lower_limit=None,upper_limit=None):
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         """
         Triangular distribution.  `mode` is required, then, for a symmetric distribution
         specify `half_width`,  and for non-symmetric distributions specify two and only
         two of the parameters `left_width`, `right_width`, `lower_limit`, `upper_limit`.
-<<<<<<< HEAD
         The x value is taken to be the mode.
-=======
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         """
         self.mode = mode
         if half_width is not None:
@@ -334,7 +299,6 @@ class TriangularDist(Distribution):
     def u(self):
         return np.sqrt((self.left_width**2+self.right_width**2+self.left_width*self.right_width)/18)
     
-<<<<<<< HEAD
     @staticmethod
     def cdf(z,mode,left_width,right_width):
         from scipy.stats import triang
@@ -348,22 +312,11 @@ class TriangularDist(Distribution):
 class ExponentialDist(Distribution):
     _param_names = ('scale',)
     
-=======
-    def cdf(self,z,mode,left_width,right_width):
-        from scipy.stats import triang
-        return triang.cdf(z,left_width/(left_width+right_width),loc=mode-left_width,scale=left_width+right_width)
-        
-class ExponentialDist(Distribution):
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def __init__(self,scale=None,rate=None):
         """
         Exponential distribution:
         
-<<<<<<< HEAD
         f(x;scale) = exp(-scale*x)/scale
-=======
-        f(x;rate) = rate*exp(-rate*x)
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
         Specify either `scale` or `rate` (`scale` = 1/`rate`).
         """
@@ -389,7 +342,6 @@ class ExponentialDist(Distribution):
     def u(self):
         return self.scale
     
-<<<<<<< HEAD
     @staticmethod
     def cdf(z,scale):
         from scipy.stats import expon
@@ -402,24 +354,12 @@ class ExponentialDist(Distribution):
 class PoissonDist(Distribution):
     discrete = True
     
-=======
-    def cdf(self,z,scale):
-        from scipy.stats import expon
-        return expon.cdf(z,scale=scale)
-        
-class PoissonDist(Distribution):
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def __init__(self,lam):
         """
         Poisson distribution with rate parameter `lam`.
         """
         if lam <= 0:
             raise ValueError('lam <= 0')
-<<<<<<< HEAD
-=======
-        if np.modf(lam)[1] != 0:
-            raise ValueError('lam is not an integer')
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         self.lam = lam
             
     def random(self,n=None):
@@ -433,28 +373,16 @@ class PoissonDist(Distribution):
         
         
 class BinomialDist(Distribution):
-<<<<<<< HEAD
     discrete = True
     
-=======
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def __init__(self,n,p):
         """
         Binomial distribution with number of trials `n` and success probability `p`.
         """
         if n <= 0:
             raise ValueError('n <= 0')
-<<<<<<< HEAD
         if p <= 0:
             raise ValueError('p <= 0')
-=======
-        if np.modf(n)[1] != 0:
-            raise ValueError('n is not an integer')
-        if p <= 0:
-            raise ValueError('p <= 0')
-        if np.modf(p)[1] != 0:
-            raise ValueError('p is not an integer')
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         self.n = n
         self.p = p
             
@@ -465,11 +393,7 @@ class BinomialDist(Distribution):
         return self.n*self.p
         
     def u(self):
-<<<<<<< HEAD
         return np.sqrt(self.n*self.p*(1-self.p))
-=======
-        return np.sqrt(self.n*self.p(1-self.p))
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
 
 class CurvlinearTrapDist(Distribution):
@@ -527,11 +451,7 @@ class CurvlinearTrapDist(Distribution):
     def random(self,n=None):
         r1 = Distribution.random_rng().uniform(0,1,n)
         r2 = Distribution.random_rng().uniform(0,1,n)
-<<<<<<< HEAD
         sa = (self.lower_limit - self.limit_half_range) + 2*self.limit_half_range*r1
-=======
-        sa = (self.lower_limt - self.limit_half_range) + 2*self.limit_half_range*r1
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         sb = (self.lower_limit + self.upper_limit) - sa
         return sa+(sb - sa)*r2
 
@@ -542,17 +462,11 @@ class CurvlinearTrapDist(Distribution):
         return np.sqrt(self.half_width**2/3 + self.limit_half_range**2/9)
         
 class TrapezoidalDist(Distribution):
-<<<<<<< HEAD
     _param_names = ('lower_limit','upper_limit','top_to_base_ratio')
     
     def __init__(self,lower_limit,upper_limit,top_to_base_ratio):
         """
         Symmetric trapezoidal distribution
-=======
-    def __init__(self,lower_limit,upper_limit,top_to_base_ratio):
-        """
-        Trapezoidal distribution
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         """
         if top_to_base_ratio > 1:
             raise ValueError('top_to_base_ratio > 1')
@@ -560,10 +474,7 @@ class TrapezoidalDist(Distribution):
             raise ValueError('lower_limit >= upper_limit')
         self.lower_limit = lower_limit
         self.upper_limit = upper_limit
-<<<<<<< HEAD
         self.top_to_base_ratio = top_to_base_ratio
-=======
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
     def random(self,n=None):
         r1 = Distribution.random_rng().uniform(0,1,n)
@@ -572,7 +483,6 @@ class TrapezoidalDist(Distribution):
                 ((1+self.top_to_base_ratio)*r1 + (1-self.top_to_base_ratio)*r2))
     
     def x(self):
-<<<<<<< HEAD
         return (self.upper_limit + self.lower_limit)/2
         
     def u(self):
@@ -590,12 +500,6 @@ class TrapezoidalDist(Distribution):
     @staticmethod
     def _est_params(z):
         return [np.min(z),np.max(z),0.5]
-=======
-        return (self.upper_limit - self.lower_limit)/2
-        
-    def u(self):
-        return (self.upper_limit - self.lower_limit)*np.sqrt((1+self.top_to_base_ratio**2)/24)
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
 class ArcSinDist(Distribution):
     def __init__(self,center=None,half_width=None,lower_limit=None,upper_limit=None):
@@ -652,11 +556,8 @@ class ArcSinDist(Distribution):
         return self.half_width/(2*np.sqrt(2))
         
 class LogNormalDist(Distribution):
-<<<<<<< HEAD
     _param_names = ('mu','sigma')
     
-=======
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def __init__(self,mu,sigma):
         """
         Log-normal distribution, `mu` and `sigma` are the mean and standard deviation
@@ -669,7 +570,6 @@ class LogNormalDist(Distribution):
         return Distribution.random_rng().lognormal(self.mu,self.sigma,n)
         
     def x(self):
-<<<<<<< HEAD
         return np.exp(self.mu + self.sigma**2/2)
         
     def u(self):
@@ -689,18 +589,6 @@ class LogNormalDist(Distribution):
 class WeibullDist(Distribution):
     _param_names = ('shape','scale')
     
-=======
-        return np.exp(self.mu)
-        
-    def u(self):
-       return self.sigma*np.exp(self.mu)
-   
-    def cdf(self,z,mu,sigma):
-        from scipy.stats import lognorm
-        return lognorm.cdf(z,sigma,loc=mu)
-        
-class WeibullDist(Distribution):
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def __init__(self,shape,scale):
         """
         Weibull distribution with `shape` and `scale` parameters.
@@ -723,7 +611,6 @@ class WeibullDist(Distribution):
     def u(self):
         return self.scale*np.sqrt(self._gamma(1+2/self.shape) - self._gamma(1+1/self.shape)**2)
     
-<<<<<<< HEAD
     @staticmethod
     def cdf(z,shape,scale):
         from scipy.stats import weibull_min
@@ -736,18 +623,10 @@ class WeibullDist(Distribution):
         return [p[0],p[2]]
         
 class AveragedDist(Distribution):
-=======
-    def cdf(self,z,shape,scale):
-        from scipy.stats import weibull_min
-        return weibull_min.cdf(z,shape,scale=scale)
-        
-class AveragedFrom(Distribution):
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def __init__(self,distribution,nsamples):
         """
         Each sample from is the average of `nsamples` drawn from `distribution`.
         """
-<<<<<<< HEAD
         if not isinstance(distribution,Distribution):
             from scipy.stats.distributions import rv_frozen
             if not isinstance(distribution,rv_frozen):
@@ -759,21 +638,12 @@ class AveragedFrom(Distribution):
         
     def random(self,n=None):
         ret = self.dist.random(n*self.nsamples)
-=======
-        self._dist = distribution
-        self.nsamples = nsamples
-        self.dof = nsamples - 1
-        
-    def random(self,n=None):
-        ret = self._dist.random(n*self.nsamples)
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         return np.mean(np.reshape(ret,(self.nsamples,n)),axis=0)
     
     def x(self):
         return self._dist.x()
     
     def u(self):
-<<<<<<< HEAD
         return self._dist.u()/np.sqrt(self.nsamples)
     
     @property
@@ -811,6 +681,3 @@ class AveragedErrDist(Distribution):
     @property
     def dist(self):
         return self._dist
-=======
-        return self._dist.u()/np.sqrt(self.nsamples)
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5

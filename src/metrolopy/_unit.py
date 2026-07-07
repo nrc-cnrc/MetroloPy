@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-<<<<<<< HEAD
 # module _unit
-=======
-# module unit
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 # Copyright (C) 2026 National Research Council Canada
 # Author:  Harold Parks
@@ -707,11 +703,7 @@ class Unit(AbcUnit,PrettyPrinter,Indexed,metaclass = MetaUnit):
             bunit = b
             b = 1
         
-<<<<<<< HEAD
         if bunit !=1 and not bunit.linear:
-=======
-        if not bunit.linear:
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             return bunit._rmul(b,self,a,not aconv)
 
         if aconv:
@@ -726,11 +718,7 @@ class Unit(AbcUnit,PrettyPrinter,Indexed,metaclass = MetaUnit):
             bunit = b
             b = 1
             
-<<<<<<< HEAD
         if bunit !=1 and not bunit.linear:
-=======
-        if not bunit.linear:
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             return bunit._mul(b,self,a,not aconv)
 
         if aconv:
@@ -884,11 +872,7 @@ class Unit(AbcUnit,PrettyPrinter,Indexed,metaclass = MetaUnit):
         try:
             f = type(self)._ufunc_dict[func]
         except KeyError:
-<<<<<<< HEAD
             raise NotImplementedError('no definition for applying ufunc ' + str(func) + ', try gummy.apply or gummy.napply')
-=======
-            raise NotImplementedError()
->>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         return f(*args,**kwds)
     
     def _neg(self,a):
