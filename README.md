@@ -4,10 +4,12 @@ tools for dealing with physical quantities:  uncertainty propagation and unit co
 
 ---
 
-MetroloPy is a pure python package and requires Python 3.5 or later and the SciPy stack (NumPy, SciPy and Pandas).  It looks best in a Jupyter Notebook.
+MetroloPy requires Python 3.10 or later and depends on NumPy, SciPy, pandas, matplotlib and ipython.
+It looks best in a Jupyter Notebook.
 
-Install MetroloPy with `pip install metrolopy`  or 
+Install MetroloPy with `pip install metrolopy` or
 `conda install -c conda-forge metrolopy`.
+Alternatively, add it to your project, e.g. uv or pixi.
 
 Physical quantities can then be represented in Python as `gummy` objects with an uncertainty and (or) a unit:
 
@@ -28,14 +30,66 @@ Physical quantities can then be represented in Python as `gummy` objects with an
 25.0 kPa &plusmn; 8.5%
 </code></pre>
 
-MetroloPy can do much more including Monte-Carlo uncertainty propagation, generating uncertainty budget tables, and curve fitting.  It can also handle expanded uncertainties, degrees of freedom, correlated quantities, and complex valued quantities. See:
+MetroloPy can do much more including Monte-Carlo uncertainty propagation, generating uncertainty budget tables, and curve fitting.
+It can also handle expanded uncertainties, degrees of freedom, correlated quantities, and complex valued quantities. 
+Also gummys work with many numpy functions with no wrapping.
 
-* [a tutorial](https://nrc-cnrc.github.io/MetroloPy/_build/html/_static/tutorial.html) (or  <a href="https://nrc-cnrc.github.io/MetroloPy/_build/html/_downloads/tutorial.ipynb" download> download the tutorial as Jupyter notebook</a>)
-* [the documentation](https://nrc-cnrc.github.io/MetroloPy/)
+See:
+
+* [a tutorial](https://nrc-cnrc.github.io/MetroloPy/_build/html/_static/tutorial.html) (or  <a href="https://nrc-cnrc.github.io/MetroloPy/_build/html/_downloads/tutorial.ipynb" target="_blank"> download the tutorial as Jupyter notebook</a>)
+* [the documentation](https://nrc-cnrc.github.io/MetroloPy/_build/html/index.html)
 * [the issues page on GitHub](https://github.com/nrc-cnrc/Metrolopy/issues)
 * [a list of the units built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/units.html)
 * [a list of the physical constants built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/constants.html)
 
+## new in version 1.1.0
+
+* The continuous and discrete distributions defined in `scipy.stats` can now be 
+  used directly used with gummys.
+  
+* The `DistFit` class for fitting distributions and the `DoF` class for 
+  descibing quantities drawn from the same underlying distribution have
+  been added.
+
+* The legacy `numpy.random.RandomState` random number generator has been 
+  replaced with the newer `numpy.random.Generator` for Monte-Carlo uncertainty 
+  propagation. The `scipy.optimize.leastsq` function has been replaced with the 
+  newer `scipy.optimize.least_squares` function as the solver for nonlinear least 
+  squares fitting.  And the depreciated `scipy.odr` package has been replaced 
+  with `odrpack` for orthogonal distance regression.
+  
+* A class properties has been added to `gummy` to control the separator between the 
+  digit groupings when displaying long numbers.
+  
+* Lazy loading for gummy module components has been implemented and added 
+  `lazy_loader` as a dependancy.
+  
+* Fixed issues that affected the `gummy.apply` and `gummy.napply` method when 
+  broadcasing over arguments and and applying functions that have array like return 
+  values.
+  
+* Fixed an number of bugs in the fitting module, bugs affecting some built-in distributions
+  and incorrect derviatives for arccos and arccosh.
+
+
+## new in version 1.0.0
+
+* The calculation of effective degrees of freedom has been improved. In
+  previous versions, in a multi-step calculation, the effective degree of freedom 
+  were calculated at each step based on the degrees of freedom calculated for the 
+  previous step (using a modified Welch-Satterthwaite approximation).  Now 
+  effective degrees of freedom are always calculated directly from the independent 
+  variables using the standard Welch-Satterthwaite approximation.
+
+* CODATA 2022 values instead of 2018 values are used in the Constants module.
+
+* The significance value in budget table has been redefined from
+  (sensitivity coefficient * standard uncertainty/combined uncertainty) to the 
+  square of that value so that the significance values in a budget sum to one.
+  
+* Units can now be raised to a fractional power and many other bug fixes.
+  
+  
 ## new in version 0.6.0
 
 * A constant library has been added with physical constants that can be accessed

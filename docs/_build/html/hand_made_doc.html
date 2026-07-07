@@ -1,22 +1,20 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>MetroloPy &#8212; metrolopy 0.6.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/nature.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <title>MetroloPy &#8212; metrolopy 1.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <script src="_static/documentation_options.js?v=fc837d61"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -25,7 +23,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">MetroloPy</a></li> 
       </ul>
     </div>  
@@ -36,16 +34,16 @@
           <div class="body" role="main">
             
   <section id="metrolopy">
-<span id="hand-made-doc"></span><h1>MetroloPy<a class="headerlink" href="#metrolopy" title="Permalink to this headline">¶</a></h1>
+<span id="hand-made-doc"></span><h1>MetroloPy<a class="headerlink" href="#metrolopy" title="Link to this heading">¶</a></h1>
 <p>Most of the functionality in the MetroloPy package lies in the
-<a class="reference internal" href="#gummy">gummy</a> object which combines the functionality of the <a href="#id2"><span class="problematic" id="id3">Unit_</span></a> and <code class="docutils literal notranslate"><span class="pre">Quantity</span></code>
-classes for dealing with units, the <a href="#id4"><span class="problematic" id="id5">ummy_</span></a> class for first order propagation
+<a class="reference internal" href="#gummy">gummy</a> object which combines the functionality of the <a href="#id4"><span class="problematic" id="id5">Unit_</span></a> and <code class="docutils literal notranslate"><span class="pre">Quantity</span></code>
+classes for dealing with units, the <a href="#id6"><span class="problematic" id="id7">ummy_</span></a> class for first order propagation
 of uncertainty, and the <a class="reference internal" href="#distribution">Distribution</a> class for Monte Carlo propagation of
 uncertianty.  The <code class="docutils literal notranslate"><span class="pre">immy</span></code> and <a class="reference internal" href="#jummy">jummy</a> classes support calculations with
 complex numbers.</p>
 </section>
 <section id="class-gummy">
-<span id="gummy"></span><h1>class gummy<a class="headerlink" href="#class-gummy" title="Permalink to this headline">¶</a></h1>
+<span id="gummy"></span><h1>class gummy<a class="headerlink" href="#class-gummy" title="Link to this heading">¶</a></h1>
 <p>class metrolopy.<strong>gummy(x, u=0, unit=one, dof=float(‘inf’), k=1, p=None,
 uunit=None, utype=None, name=None)</strong></p>
 <p>A gummy object represents a numerical value with an uncertainty and (or)
@@ -55,24 +53,29 @@ Monte-Carlo methods. Correlations between gummys are tracked. gummys
 must be real valued; the <a class="reference internal" href="#jummy">jummy</a> class is an extension of the
 gummy class to complex numbers.</p>
 <section id="gummy-parameters">
-<h2>gummy parameters<a class="headerlink" href="#gummy-parameters" title="Permalink to this headline">¶</a></h2>
+<h2>gummy parameters<a class="headerlink" href="#gummy-parameters" title="Link to this heading">¶</a></h2>
 <p>(all parameters except <em>x</em> are optional)</p>
 <ul>
-<li><p><strong>x</strong>: (real number or <a class="reference internal" href="#distribution">Distribution</a> ) Either a
+<li><p><strong>x</strong>: (real number, <a class="reference internal" href="#distribution">Distribution</a> or a scipy.stats distribtuion) Either a
 number representing the value of the gummy or a
-<a class="reference internal" href="#distribution">Distribution</a> instance that represents the
+disribution instance that represents the
 probability distribution of the gummy. If <em>x</em> is a
 <a class="reference internal" href="#distribution">Distribution</a> any value given for <em>u</em> or <em>dof</em>
 will be ignored. The same <a class="reference internal" href="#distribution">Distribution</a> instance
 should never be used as the <em>x</em> parameter for two different gummys,
-e.g. to define a gummy with a <a class="reference internal" href="#uniformdist"><span class="std std-ref">uniform distribution</span></a>,
+e.g. to define a gummy with a <a class="reference internal" href="#uniformdist"><span class="std std-ref">gummy.UniformDist</span></a>,
 use:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="n">UniformDist</span><span class="p">(</span><span class="n">center</span> <span class="o">=</span> <span class="mf">2.25</span><span class="p">,</span> <span class="n">half_width</span> <span class="o">=</span> <span class="mf">0.12</span><span class="p">))</span>
 </pre></div>
 </div>
+<p>This is equivalent to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">uniform</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="n">uniform</span><span class="p">(</span><span class="n">loc</span> <span class="o">=</span> <span class="mf">2.13</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="mf">0.24</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>Note that if <em>x</em> is a number, the uncertainty distribution is
 assumed to be either a <a class="reference internal" href="#normaldist"><span class="std std-ref">Normal distribution</span></a> or a
-<a class="reference internal" href="#tdist"><span class="std std-ref">shifted and scaled Students’s t distribution</span></a> depending on
+<a class="reference internal" href="#tdist"><span class="std std-ref">shifted and scaled Student’s t distribution</span></a> depending on
 the value of the <em>dof</em> parameter.  In addition to a float or
 Distribution, <em>x</em> can be int, numpy.floating, numpy.integer,
 fraction.Fraction, or mpmath.mpf.</p>
@@ -163,7 +166,7 @@ no other function.</p></li>
 </ul>
 </section>
 <section id="basic-gummy-properties">
-<h2>basic gummy properties<a class="headerlink" href="#basic-gummy-properties" title="Permalink to this headline">¶</a></h2>
+<h2>basic gummy properties<a class="headerlink" href="#basic-gummy-properties" title="Link to this heading">¶</a></h2>
 <ul class="simple" id="x">
 <li><p><strong>x</strong>: (read-only) Gets the value of the gummy. This property is
 read-only, but changing the <a class="reference internal" href="#property-unit"><span class="std std-ref">unit</span></a> property will
@@ -288,7 +291,7 @@ if c.x &gt; k*c.u where c = b - a.  Set only at the class level.</p></li>
 </ul>
 </section>
 <section id="basic-gummy-methods">
-<h2>basic gummy methods<a class="headerlink" href="#basic-gummy-methods" title="Permalink to this headline">¶</a></h2>
+<h2>basic gummy methods<a class="headerlink" href="#basic-gummy-methods" title="Link to this heading">¶</a></h2>
 <ul>
 <li><p><strong>correlation(g)</strong>: Returns the correlation coefficient between
 <code class="docutils literal notranslate"><span class="pre">self</span></code> and <em>g</em>.</p></li>
@@ -396,7 +399,7 @@ Budget.df_latex return DataFrames with formatted strings as entries
 rather than numerical values.</p>
 <p><strong>metrolopy.gummy.budget parameters</strong> (<em>xlist</em> is required, all others are
 optional):</p>
-<ul class="simple">
+<ul>
 <li><p><strong>xlist</strong>: (list of gummy) The independent variables.
 Warnings will be generated if the gummys in this list over
 determine <code class="docutils literal notranslate"><span class="pre">self</span></code> (that is if not all variables in this list can
@@ -432,7 +435,12 @@ default if any uncertainty has finite degrees of freedom</p></li>
 <li><p>“type”: the uncertainty type, displayed by default if any gummy
 has a <a class="reference internal" href="#utype">utype</a> defined</p></li>
 <li><p>“s” or “significance”: the sensitivity coefficient (below)
-multiplied by the standard uncertainty, displayed by default</p></li>
+multiplied by the standard uncertainty for the component</p>
+<blockquote>
+<div><p>and divided by the combined standard uncertainty all squared,
+displayed by default</p>
+</div></blockquote>
+</li>
 <li><p>“d”, “derivative” or “partial”: the partial derivative of
 <code class="docutils literal notranslate"><span class="pre">self</span></code> with respect to the gummy in that row</p></li>
 <li><p>“c” or “sensitivity coefficient”: the absolute value of “d”</p></li>
@@ -513,7 +521,7 @@ attributes <a class="reference internal" href="#solidus">solidus</a> and <a clas
 </ul>
 </section>
 <section id="arithmetic-operations-and-functions-involving-gummys">
-<h2>arithmetic operations and functions involving gummys<a class="headerlink" href="#arithmetic-operations-and-functions-involving-gummys" title="Permalink to this headline">¶</a></h2>
+<h2>arithmetic operations and functions involving gummys<a class="headerlink" href="#arithmetic-operations-and-functions-involving-gummys" title="Link to this heading">¶</a></h2>
 <p>The standard Python arithmetic operations are allowed between gummys and
 between gummys and floats or integers: addition, subtraction,
 multiplication, division, floor division, exponentiation, modulus,
@@ -537,9 +545,9 @@ operation of function is tried again. Set
 <code class="docutils literal notranslate"><span class="pre">metrolopy.dfunc.try_fconvert</span> <span class="pre">=</span> <span class="pre">False</span></code> to disable this automatic
 conversion to float values.</p>
 <p>The gummy module installs a number of common mathematical
-<a class="reference internal" href="#functions">functions</a> that can be applied directly to dimensionless
+<a href="#id8"><span class="problematic" id="id9">functions_</span></a> that can be applied directly to dimensionless
 gummys, e.g:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">gummy</span> <span class="k">as</span> <span class="nn">uc</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">gummy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">uc</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">gummy</span><span class="p">(</span><span class="mf">0.123</span><span class="p">,</span><span class="mf">0.022</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">uc</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
 <span class="go">0.123(22)</span>
@@ -547,8 +555,8 @@ gummys, e.g:</p>
 </div>
 <p>For numpy version 1.13 or later, many numpy functions can be applied
 directly to dimensionless gummys, e.g:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">gummy</span> <span class="k">as</span> <span class="nn">uc</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">gummy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">uc</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">gummy</span><span class="p">(</span><span class="mf">0.123</span><span class="p">,</span><span class="mf">0.022</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
 <span class="go">0.9924(27)</span>
@@ -557,7 +565,7 @@ directly to dimensionless gummys, e.g:</p>
 <p>The two class methods immediately below may also be used to apply an
 arbitrary numerical function to one or more gummys.</p>
 <section id="gummy-methods-for-applying-numerical-functions">
-<h3>gummy methods for applying numerical functions<a class="headerlink" href="#gummy-methods-for-applying-numerical-functions" title="Permalink to this headline">¶</a></h3>
+<h3>gummy methods for applying numerical functions<a class="headerlink" href="#gummy-methods-for-applying-numerical-functions" title="Link to this heading">¶</a></h3>
 <ul id="apply">
 <li><p>classmethod <strong>apply(function, derivative, arg1, arg2, …)</strong>:
 Applies a function to one or more dimensionless gummy objects
@@ -586,14 +594,14 @@ gummy then the return value is <em>function</em> directly applied to the
 arguments. Otherwise the return value is a gummy.</p></li>
 </ul>
 <p>Examples:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.678</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.077</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
 <span class="go">0.627(60)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">1.22</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.44</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">3.44</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.67</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">dhypot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">dhypot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="p">(</span><span class="n">x1</span><span class="o">/</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span><span class="n">x2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x2</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">,</span><span class="n">dhypot</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
 <span class="go">3.65(65)</span>
@@ -634,7 +642,7 @@ gummy then the return value is <em>function</em> directly applied to the
 arguments. Otherwise the return value is a gummy.</p></li>
 </ul>
 <p>Examples:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gummy</span><span class="p">(</span><span class="mf">0.678</span><span class="p">,</span><span class="n">u</span><span class="o">=</span><span class="mf">0.077</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gummy</span><span class="o">.</span><span class="n">napply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
 <span class="go">0.627(60)</span>
@@ -650,14 +658,14 @@ arguments. Otherwise the return value is a gummy.</p></li>
 </section>
 </section>
 <section id="gummy-properties-and-methods-related-to-units-and-unit-conversion">
-<h2>gummy properties and methods related to units and unit conversion<a class="headerlink" href="#gummy-properties-and-methods-related-to-units-and-unit-conversion" title="Permalink to this headline">¶</a></h2>
+<h2>gummy properties and methods related to units and unit conversion<a class="headerlink" href="#gummy-properties-and-methods-related-to-units-and-unit-conversion" title="Link to this heading">¶</a></h2>
 <p>Units are represented by instances of the <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a> class or
 sub-classes, however the user rarely needs to interact directly with
 these objects as strings can be used in place of <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a>
 objects in all properties and methods dealing with units. It is,
 however, straight forward for to create custom units.</p>
 <section id="gummy-properties-related-to-units">
-<h3>gummy properties related to units<a class="headerlink" href="#gummy-properties-related-to-units" title="Permalink to this headline">¶</a></h3>
+<h3>gummy properties related to units<a class="headerlink" href="#gummy-properties-related-to-units" title="Link to this heading">¶</a></h3>
 <ul id="property-unit">
 <li><p><strong>unit</strong>: Gets or sets the units for the values of the
 <a class="reference internal" href="#x">x</a> and <a class="reference internal" href="#lower-u"><span class="std std-ref">u</span></a> properties, also sets the
@@ -711,7 +719,7 @@ gummy to make the choice. For example:</p>
 </ul>
 </section>
 <section id="gummy-methods-related-to-units">
-<h3>gummy methods related to units<a class="headerlink" href="#gummy-methods-related-to-units" title="Permalink to this headline">¶</a></h3>
+<h3>gummy methods related to units<a class="headerlink" href="#gummy-methods-related-to-units" title="Link to this heading">¶</a></h3>
 <ul>
 <li><p><strong>convert(unit,uunit=None)</strong>: Returns a copy of the original gummy
 with converted units. <em>unit</em> and <em>uunit</em> are either a strings or Unit
@@ -735,7 +743,7 @@ example:</p>
 </ul>
 </section>
 <section id="unit-search-function">
-<span id="search-units"></span><h3>unit search function<a class="headerlink" href="#unit-search-function" title="Permalink to this headline">¶</a></h3>
+<span id="search-units"></span><h3>unit search function<a class="headerlink" href="#unit-search-function" title="Link to this heading">¶</a></h3>
 <p>The following function is not part of the gummy class but is useful when
 dealing with units.</p>
 <ul>
@@ -770,7 +778,7 @@ The default is True.</p></li>
 </section>
 </section>
 <section id="gummy-properties-and-methods-related-to-monte-carlo-simulation">
-<h2>gummy properties and methods related to Monte-Carlo simulation<a class="headerlink" href="#gummy-properties-and-methods-related-to-monte-carlo-simulation" title="Permalink to this headline">¶</a></h2>
+<h2>gummy properties and methods related to Monte-Carlo simulation<a class="headerlink" href="#gummy-properties-and-methods-related-to-monte-carlo-simulation" title="Link to this heading">¶</a></h2>
 <p>Gummy allows uncertainty propagation using Monte-Carlo simulation in
 addition to first order error propagation. Before using many of the
 properties and methods in this section, Monte-Carlo data must be
@@ -784,7 +792,7 @@ rather than the <a class="reference internal" href="#sim">sim</a> method. A <cod
 exception will be raised if no simulated data is available when a
 property is accessed or a method called that needs Monte-Carlo data.</p>
 <section id="gummy-properties-related-to-monte-carlo-simulation">
-<h3>gummy properties related to Monte-Carlo simulation<a class="headerlink" href="#gummy-properties-related-to-monte-carlo-simulation" title="Permalink to this headline">¶</a></h3>
+<h3>gummy properties related to Monte-Carlo simulation<a class="headerlink" href="#gummy-properties-related-to-monte-carlo-simulation" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>xsim</strong>: (read-only) Gets the mean of the simulated data.</p></li>
 <li><p><strong>usim</strong>: (read-only) Gets the standard deviation of the simulated
@@ -827,7 +835,7 @@ sub-classes of <a class="reference internal" href="#distribution">Distribution</
 </ul>
 </section>
 <section id="gummy-methods-related-to-monte-carlo-simulation">
-<h3>gummy methods related to Monte-Carlo simulation<a class="headerlink" href="#gummy-methods-related-to-monte-carlo-simulation" title="Permalink to this headline">¶</a></h3>
+<h3>gummy methods related to Monte-Carlo simulation<a class="headerlink" href="#gummy-methods-related-to-monte-carlo-simulation" title="Link to this heading">¶</a></h3>
 <ul class="simple" id="sim">
 <li><p><strong>sim(n=100000,ufrom=None)</strong>: Generates Monte-Carlo data for the
 calling gummy. Calling this method erases previously generated
@@ -939,9 +947,9 @@ size of the dots in the plot.</p></li>
 </section>
 </section>
 <section id="gummy-properties-and-methods-related-to-display-and-formatting">
-<h2>gummy properties and methods related to display and formatting<a class="headerlink" href="#gummy-properties-and-methods-related-to-display-and-formatting" title="Permalink to this headline">¶</a></h2>
+<h2>gummy properties and methods related to display and formatting<a class="headerlink" href="#gummy-properties-and-methods-related-to-display-and-formatting" title="Link to this heading">¶</a></h2>
 <section id="gummy-formatting-properties-and-attributes">
-<h3>gummy formatting properties and attributes<a class="headerlink" href="#gummy-formatting-properties-and-attributes" title="Permalink to this headline">¶</a></h3>
+<h3>gummy formatting properties and attributes<a class="headerlink" href="#gummy-formatting-properties-and-attributes" title="Link to this heading">¶</a></h3>
 <p>All of these properties and attributes can be set at either the class or
 instance level.</p>
 <ul>
@@ -1045,7 +1053,7 @@ for the x value.</p></li>
 </ul>
 </section>
 <section id="gummy-display-methods">
-<h3>gummy display methods<a class="headerlink" href="#gummy-display-methods" title="Permalink to this headline">¶</a></h3>
+<h3>gummy display methods<a class="headerlink" href="#gummy-display-methods" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>latex(style=None, k=None, p=None, show_k=None, show_p=None,
 show_dof=None, show_name=None, nsig=None, solidus=None,
@@ -1106,7 +1114,7 @@ with the <em>fmt</em> parameter set ‘ascii’.</p></li>
 </section>
 </section>
 <section id="class-distribution-and-sub-classes">
-<span id="distribution"></span><h1>class Distribution and sub-classes<a class="headerlink" href="#class-distribution-and-sub-classes" title="Permalink to this headline">¶</a></h1>
+<span id="distribution"></span><h1>class Distribution and sub-classes<a class="headerlink" href="#class-distribution-and-sub-classes" title="Link to this heading">¶</a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">Distribution</span></code> class is the abstract base class for objects which
 represent the the probability distributions that the gummy Monte-Carlo
 samples are drawn from. Instances of these <code class="docutils literal notranslate"><span class="pre">Distributions</span></code> can used as
@@ -1217,7 +1225,7 @@ A uniform distribution. Specify two, and only two, of the parameters
 <em>shape</em> and <em>scale</em> parameters.</p></li>
 </ul>
 <section id="custom-distributions">
-<h2>custom distributions<a class="headerlink" href="#custom-distributions" title="Permalink to this headline">¶</a></h2>
+<h2>custom distributions<a class="headerlink" href="#custom-distributions" title="Link to this heading">¶</a></h2>
 <p>Custom distributions can be implemented by creating a class that
 inherits from the <code class="docutils literal notranslate"><span class="pre">Distribution</span></code> class and implements the following
 methods:</p>
@@ -1235,23 +1243,23 @@ distribution.</p></li>
 <a class="reference internal" href="#lower-u"><span class="std std-ref">u</span></a> value of a gummy defined with the distribution.</p></li>
 </ul>
 <p>for example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ChiSquaredDist</span><span class="p">(</span><span class="n">Distribution</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dof</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ChiSquaredDist</span><span class="p">(</span><span class="n">Distribution</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dof</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dof</span> <span class="o">=</span> <span class="n">dof</span>
 
-    <span class="k">def</span> <span class="nf">random</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">random</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">random_state</span><span class="p">()</span><span class="o">.</span><span class="n">chisquare</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dof</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dof</span>
 
-    <span class="k">def</span> <span class="nf">u</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">u</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dof</span>
 </pre></div>
 </div>
 </section>
 <section id="custom-multi-variate-distributions">
-<h2>custom multi-variate distributions<a class="headerlink" href="#custom-multi-variate-distributions" title="Permalink to this headline">¶</a></h2>
+<h2>custom multi-variate distributions<a class="headerlink" href="#custom-multi-variate-distributions" title="Link to this heading">¶</a></h2>
 <p>To create a multi-variate distribution, inherit from the
 <code class="docutils literal notranslate"><span class="pre">MultivariateDistribution</span></code> class and define the following methods:</p>
 <ul class="simple">
@@ -1278,8 +1286,8 @@ with the distribution.</p></li>
 <code class="docutils literal notranslate"><span class="pre">MultivariateDistribution</span></code> <code class="docutils literal notranslate"><span class="pre">__init__</span></code> with the number of
 dimensions nd of the distribution e.g. <code class="docutils literal notranslate"><span class="pre">super().__init__(nd)</span></code>.</p>
 <p>for example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DirechletDist</span><span class="p">(</span><span class="n">MultivariateDistribution</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">alpha</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">DirechletDist</span><span class="p">(</span><span class="n">MultivariateDistribution</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">alpha</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
 
         <span class="n">a0</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
@@ -1292,92 +1300,24 @@ dimensions nd of the distribution e.g. <code class="docutils literal notranslate
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">_simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simdata</span> <span class="o">=</span> <span class="n">Distribution</span><span class="o">.</span><span class="n">random_state</span><span class="p">()</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
-    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
 
-    <span class="k">def</span> <span class="nf">u</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">u</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_u</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">cov</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cov</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cov</span>
 </pre></div>
 </div>
 </section>
 </section>
-<section id="built-in-mathematical-functions">
-<span id="functions"></span><h1>built-in mathematical functions<a class="headerlink" href="#built-in-mathematical-functions" title="Permalink to this headline">¶</a></h1>
-<p>The following functions are installed as part of the gummy package can
-take gummy, jummy, or float arguments. Arguments must be
-dimensionless for transcendental functions.</p>
-<p>metrolopy.<strong>absolute(x)</strong>: equivalent to abs(x)</p>
-<p>metrolopy.<strong>add(x1,x2)</strong>: equivalent to z1 + x2</p>
-<p>metrolopy.<strong>angle(x)</strong>: returns the complex argument of x</p>
-<p>metrolopy.<strong>arccos(x)</strong>: inverse cosine of x</p>
-<p>metrolopy.<strong>arccosh(x)</strong>: inverse hyperbolic cosine of x</p>
-<p>metrolopy.<strong>arcsin(x)</strong>: inverse sine of x</p>
-<p>metrolopy.<strong>arcsinh(x)</strong>: inverse hyperbolic sine of x</p>
-<p>metrolopy.<strong>arctan(x)</strong>: inverse tangent of x</p>
-<p>metrolopy.<strong>arctanh(x)</strong>: inverse hyperbolic tangent of x</p>
-<p>metrolopy.<strong>arctan2(x,y)</strong>: arctan of x/y and giving the correct quadrant</p>
-<p>metrolopy.<strong>araound(x,n=0)</strong>: x rounded to n digits</p>
-<p>metrolopy.<strong>cbrt(x)</strong>: cube root of x</p>
-<p>metrolopy.<strong>ceil(x)</strong>: ceiling of x</p>
-<p>metrolopy.<strong>conj(x)</strong>: complex conjugate of x</p>
-<p>metrolopy.<strong>cos(x)</strong>: cosine of x</p>
-<p>metrolopy.<strong>cosh(x)</strong>: hyperbolic cosine of x</p>
-<p>metrolopy.<strong>cross(*args,**kwds)</strong>: alias for numpy.cross</p>
-<p>metrolopy.<strong>cumpord(*args,**kwds)</strong>: alias for numpy.cumprod</p>
-<p>metrolopy.<strong>cumsum(*args,**kwds)</strong>: alias for numpy.cumsum</p>
-<p>metrolopy.<strong>diff(*args,**kwds)</strong>: alias for numpy.diff</p>
-<p>metrolopy.<strong>divide(x1,x2)</strong>: equivalent to x1 / x2</p>
-<p>metrolopy.<strong>divmod(x1,x2)</strong>: returns (x1 // x2, x1 % x2)</p>
-<p>metrolopy.<strong>ediff1d(*args,**kwds)</strong>: alias for numpy.ediff1d</p>
-<p>metrolopy.<strong>exp(x)</strong>: natural exponential function</p>
-<p>metrolopy.<strong>expm1(x)</strong>: exp(x) - 1</p>
-<p>metrolopy.<strong>exp2(x)</strong>: exponential function with base 2</p>
-<p>metrolopy.<strong>fabs(x)</strong>: equivalent to the built-in python function abs</p>
-<p>metrolopy.<strong>fix(x)</strong>: returns x rounded towards zero</p>
-<p>metrolopy.<strong>floor(x)</strong>: floor of x</p>
-<p>metrolopy.<strong>floor_divide(x1,x2)</strong>: equivalent to x1 // x2</p>
-<p>metrolopy.<strong>gradient(*args,**kwds)</strong>: alias for numpy.gradient</p>
-<p>metrolopy.<strong>heaviside(x,h0)</strong>: Heavyside function: 0 for x &lt; 0, h0 at x
-== 0, and 1 for x &gt; 0</p>
-<p>metrolopy.<strong>imag(x)</strong>: returns the imaginary part of x</p>
-<p>metrolopy.<strong>log(x)</strong>: natural logarithm of x</p>
-<p>metrolopy.<strong>logaddexp(x,y)</strong>: loge(ex + ey)</p>
-<p>metrolopy.<strong>logaddexp2(x,y)</strong>: log2(2x + 2y)</p>
-<p>metrolopy.<strong>log1p(x)</strong>: natural logarithm of 1 + x</p>
-<p>metrolopy.<strong>log2(x)</strong>: logarithm base 2 of x</p>
-<p>metrolopy.<strong>log10(x)</strong>: logarithm base 10 of x</p>
-<p>metrolopy.<strong>mod(x)</strong>: x1 % x2</p>
-<p>metrolopy.<strong>modf(x1,x2)</strong>: returns (x1 % 1, x1 // 1)</p>
-<p>metrolopy.<strong>multiply(x1,x2)</strong>: equivalent to x1 * x2</p>
-<p>metrolopy.<strong>negative(x)</strong>: equivalent to -x</p>
-<p>metrolopy.<strong>power(x1,x2)</strong>: equivalent to x1**x2</p>
-<p>metrolopy.<strong>prod(*args,**kwds)</strong>: alias for numpy.prod</p>
-<p>metrolopy.<strong>real(x)</strong>: returns the real part of x</p>
-<p>metrolopy.<strong>reciprocal(x)</strong>: equivalent to 1/x</p>
-<p>metrolopy.<strong>remainder(x)</strong>: x1 % x2</p>
-<p>metrolopy.<strong>rint(x)</strong>: x rounded to the nearest integer value</p>
-<p>metrolopy.<strong>sin(x)</strong>: sine of x</p>
-<p>metrolopy.<strong>sign(x)</strong>: sign function, -1 for x &lt; 0, 0 for x == 0, and 1
-for x &gt; 0</p>
-<p>metrolopy.<strong>sinh(x)</strong>: hyperbolic sine of x</p>
-<p>metrolopy.<strong>square(x)</strong>: square of x</p>
-<p>metrolopy.<strong>sqrt(x)</strong>: the square root of x</p>
-<p>metrolopy.<strong>subtract(x1,x2)</strong>: equivalent to x1 - x2</p>
-<p>metrolopy.<strong>sum(*args,**kwds)</strong>: alias for numpy.sum</p>
-<p>metrolopy.<strong>tan(x)</strong>: tangent of x</p>
-<p>metrolopy.<strong>tanh(x)</strong>: hyperbolic tangent of x</p>
-<p>metrolopy.<strong>true_divide(x1,x2)</strong>: equivalent to x1 / x2</p>
-<p>metrolopy.<strong>trunc(x)</strong>: x rounded towards zero</p>
-</section>
 <section id="class-unit">
-<span id="id1"></span><h1>class Unit<a class="headerlink" href="#class-unit" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>class Unit<a class="headerlink" href="#class-unit" title="Link to this heading">¶</a></h1>
 <p>The gummy class uses <code class="docutils literal notranslate"><span class="pre">Unit</span></code> instances to represent physical units or units
 cns be multiplied or divided by other <code class="docutils literal notranslate"><span class="pre">Unit</span></code> instances to create composite
 units or multiply or divider numerical values to create <code class="docutils literal notranslate"><span class="pre">Quantity</span></code> instances.
@@ -1406,7 +1346,7 @@ do not need to call the <a class="reference internal" href="#unit-unit"><span cl
 will automatically call this method when a gummy property or method is
 passed a string that references a unit).</p>
 <section id="unit-parameters">
-<h2>Unit parameters<a class="headerlink" href="#unit-parameters" title="Permalink to this headline">¶</a></h2>
+<h2>Unit parameters<a class="headerlink" href="#unit-parameters" title="Link to this heading">¶</a></h2>
 <ul>
 <li><p><strong>name</strong>: (str) The name of the unit. The name can be used access
 the unit with the <a class="reference internal" href="#unit-unit"><span class="std std-ref">unit</span></a> method, but
@@ -1467,7 +1407,7 @@ this behavior is overridden with the <a class="reference internal" href="#unit-r
 </ul>
 </section>
 <section id="unit-static-methods">
-<h2>Unit static methods<a class="headerlink" href="#unit-static-methods" title="Permalink to this headline">¶</a></h2>
+<h2>Unit static methods<a class="headerlink" href="#unit-static-methods" title="Link to this heading">¶</a></h2>
 <ul class="simple" id="unit-unit">
 <li><p>static <strong>unit(text, exception=True)</strong>: This method is called whenever a
 string referencing a Unit is
@@ -1512,7 +1452,7 @@ assigned the alias.</p></li>
 </ul>
 </section>
 <section id="unit-properties">
-<h2>Unit properties<a class="headerlink" href="#unit-properties" title="Permalink to this headline">¶</a></h2>
+<h2>Unit properties<a class="headerlink" href="#unit-properties" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><strong>aliases</strong>: (read-only) Returns a set of the unshadowed aliases of the unit.</p></li>
 <li><p><strong>shadowed_aliases</strong>: (read-only) Returns a set of any aliases that have
@@ -1524,7 +1464,7 @@ exponents, e.g. for kg m**2/s <em>units</em> would return [(kg, 1), (m, 2), (s, 
 </ul>
 </section>
 <section id="unit-sub-classes">
-<h2>Unit sub-classes<a class="headerlink" href="#unit-sub-classes" title="Permalink to this headline">¶</a></h2>
+<h2>Unit sub-classes<a class="headerlink" href="#unit-sub-classes" title="Link to this heading">¶</a></h2>
 <p>For examples of unit definitions using the following Unit sub-classes
 see the siunit.py and usunits.py modules in the gummy package</p>
 <ul>
@@ -1599,14 +1539,14 @@ defined as any Unit where a conversion to <em>one</em> exists.</p></li>
 </section>
 </section>
 <section id="class-jummy">
-<span id="jummy"></span><h1>class jummy<a class="headerlink" href="#class-jummy" title="Permalink to this headline">¶</a></h1>
+<span id="jummy"></span><h1>class jummy<a class="headerlink" href="#class-jummy" title="Link to this heading">¶</a></h1>
 <p>class
 metrolopy.<strong>jummy(real=None,imag=None,r=None,phi=None,cov=None,unit=one</strong></p>
 <p>A jummy object represents a complex valued quantity with gummy real and
 imaginary components.  See the <code class="docutils literal notranslate"><span class="pre">immy</span></code> class in the autogenerated docs for
 a class with <code class="docutils literal notranslate"><span class="pre">ummy</span></code> real and imaginary components.</p>
 <section id="jummy-parameters">
-<h2>jummy parameters<a class="headerlink" href="#jummy-parameters" title="Permalink to this headline">¶</a></h2>
+<h2>jummy parameters<a class="headerlink" href="#jummy-parameters" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><strong>real,imag,r,phi</strong>: (float or gummy) The value may be specified
 in either Cartesian coordinates using the <em>real</em> and <em>imag</em>
@@ -1625,7 +1565,7 @@ the two units. Units for <em>phi</em> must be dimensionless.</p></li>
 </ul>
 </section>
 <section id="jummy-properties">
-<h2>jummy properties<a class="headerlink" href="#jummy-properties" title="Permalink to this headline">¶</a></h2>
+<h2>jummy properties<a class="headerlink" href="#jummy-properties" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><strong>x</strong>: (read-only) returns <code class="docutils literal notranslate"><span class="pre">complex(jummy.real.x,jummy.imag.x)</span></code></p></li>
 <li><p><strong>cov</strong>: (read-only) returns the variance-covariance matrix between
@@ -1640,7 +1580,7 @@ is returned.</p></li>
 </ul>
 </section>
 <section id="jummy-methods">
-<h2>jummy methods<a class="headerlink" href="#jummy-methods" title="Permalink to this headline">¶</a></h2>
+<h2>jummy methods<a class="headerlink" href="#jummy-methods" title="Link to this heading">¶</a></h2>
 <p>In addition to the methods below, the <a class="reference external" href="#gummy-display-methods">gummy class display
 methods</a> can also be used with the jummy
 class</p>
@@ -1698,9 +1638,9 @@ supplied.</p></li>
 </section>
 </section>
 <section id="curve-fitting">
-<h1>curve fitting<a class="headerlink" href="#curve-fitting" title="Permalink to this headline">¶</a></h1>
+<h1>curve fitting<a class="headerlink" href="#curve-fitting" title="Link to this heading">¶</a></h1>
 <section id="class-fit">
-<span id="fit"></span><h2>class Fit<a class="headerlink" href="#class-fit" title="Permalink to this headline">¶</a></h2>
+<span id="fit"></span><h2>class Fit<a class="headerlink" href="#class-fit" title="Link to this heading">¶</a></h2>
 <p>class metrolopy.<strong>Fit(x, y=None, f=None, p0=None, ux=None, uy=None,
 sigma_is_known=True, xunit=None, yunit=None, solver=None,
 maxiter=None, nprop=False, **keywords)</strong></p>
@@ -1708,119 +1648,191 @@ maxiter=None, nprop=False, **keywords)</strong></p>
 passed in the parameter <em>f</em> or may be specified by sub-classing <code class="docutils literal notranslate"><span class="pre">Fit</span></code>
 and overriding the <a class="reference internal" href="#f">f</a> method.</p>
 <section id="fit-parameters">
-<h3>Fit parameters<a class="headerlink" href="#fit-parameters" title="Permalink to this headline">¶</a></h3>
+<h3>Fit parameters<a class="headerlink" href="#fit-parameters" title="Link to this heading">¶</a></h3>
 <p>All parameters except x are optional</p>
 <ul>
-<li><p><strong>x</strong>: The x-coordinates of the data. This is a list or
-numpy.ndarray of floats or gummys (all point must be of the same
-type, floats and gummys may not be mixed). The x-coordinates may be
-one dimensional or may be multi-dimensional. For d-dimensional
-coordinates with (with N total data points) this parameter should be
-of the form:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">x1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x1</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">...</span> <span class="p">,</span> <span class="n">x1</span><span class="p">[</span><span class="n">N</span><span class="p">]],</span>
- <span class="p">[</span><span class="n">x2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x2</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">...</span> <span class="p">,</span> <span class="n">x2</span><span class="p">[</span><span class="n">N</span><span class="p">]],</span>
- <span class="o">.</span>
- <span class="o">.</span>
- <span class="o">.</span>
- <span class="p">[</span><span class="n">xd</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">xd</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">...</span> <span class="p">,</span> <span class="n">xd</span><span class="p">[</span><span class="n">N</span><span class="p">]]]</span>
-</pre></div>
-</div>
-<p>If gummys are given, then the must be dimensionless unless the
-get_puints method is implemented in a subclass.</p>
+<li><dl>
+<dt><strong>x</strong>: The indepenant variables x.  For n data points this should be an</dt><dd><p>array of shape (n,) for a one-dimensional fit or shape (m,n) for an
+m-dimensional fit.</p>
+<p>The x-values may be all <cite>float</cite> or all <cite>gummy</cite>,  If uncertainties
+u are defined for the x-values, the xweights will be set to 1/u**2
+for each point.  To override this behavior set the keyword parameter
+“xweights = 1”.  If uncertainties are defined for the x-values,
+the default solver is odr.  If the nls or ols solver is manually
+selected then the uncertainties in the x-values will be ignored.
+For an m-dimential fit, the odr solver will take into account
+correlations between the m elements of the x-values for each data
+point, but ignores correlations between different data points and
+bewteen the x- and y-values.</p>
+</dd>
+</dl>
 </li>
-<li><p><strong>y</strong>: The y-coordinates of the data (shape and type requirements are
-the same as for the x-coordinates). This may be omitted only if the
-odr solver is used.</p></li>
-<li><p><strong>f</strong>: The fit function. For d dimensional x-coordinates and k fit
-parameters it should be of the form f(x1,x2,…,xd,p1,p2,…,pk) and
-return a float or (if <em>y</em> is multi-dimensional) a list or array of
-floats. This parameter is required unless the f method is overridden
-in a subclass.</p></li>
-<li><p><strong>p0</strong>: (list or numpy.ndarray of float) The inital
-values for the fit parameters. This parameter is required unless the
-get_p0 method is overridden in a subclass.</p></li>
-<li><p><strong>ux</strong>: (float or list or numpy.ndarray of float)
-Uncertainty in the x values. This should not be specified if the <em>x</em>
-argument contains gummys. If <em>ux</em> is specified then only the odr
-solver may be used. The default is None.</p></li>
-<li><p><strong>uy</strong>: (float or list or numpy.ndarray of float)
-Uncertainty in the y values. This should not be specified if the y
-argument contains gummys. The default is None.</p></li>
-<li><p><strong>sigma_is_known</strong>: (bool) If this is <code class="docutils literal notranslate"><span class="pre">True</span></code> then any
-uncertainties in the data (either as gummys in the <em>x</em> or <em>y</em> values
-or in the <em>ux</em> or <em>uy</em> parameters) are used to calculate the
-uncertainties in the fit. Otherwise, the uncertainties are based on
-the standard deviation of the residuals and the uncertainties in the
-data are used only for weighting the data points. This parameter is
-ignored if <em>nprop</em> is True.</p></li>
-<li><p><strong>xunits</strong>, <strong>yunits</strong> (str, default None) units for the x
-and y coordinates. These should not be specified if the <em>x</em> and <em>y</em>
-parameters contain gummys. These may only be specified if the
-get_punits method is overridden in a subclass.</p></li>
-<li><p><strong>solver</strong>: ({‘nls’ , ‘odr’, None}) If
-<em>solver</em> = ‘nls’ then scipy.optimize.leastsq is used to perform the
-fit. If <em>solver</em> = ‘odr’ then scipy.odr is used. ‘nls’ may not be
-used if the y-coordinate is None or multi-dimensional or if there is
-uncertainty in the x-coordinates. If this is None, then ‘nls’ will be
-used when possible. Any keyword parameters not recognized by <code class="docutils literal notranslate"><span class="pre">Fit</span></code>
-will be passed to the solver.</p></li>
-<li><p><strong>maxiter</strong>: (int) The maximum number of iterations that the
-solver may use. f this is None or omitted then the default value for
-the solver will be used.</p></li>
-<li><p><strong>nprop</strong>: (bool, default <code class="docutils literal notranslate"><span class="pre">False</span></code>) If this is <code class="docutils literal notranslate"><span class="pre">True</span></code> then
-uncertainties in the fit will be numerically calculated by varying
-each data point. This will not work if there are more than a few data
-points or if the fit is not very stable. If this is <code class="docutils literal notranslate"><span class="pre">False</span></code> than
-the covariance matrix generated by the solver will be used to
-calculate the uncertainties.</p></li>
-<li><p><strong>other keywords</strong>: Any additional keyword parameters will be passed
-to the solver.</p></li>
-</ul>
-</section>
-<section id="fit-properties">
-<h3>Fit properties<a class="headerlink" href="#fit-properties" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p><strong>p</strong>: (read-only, list of gummy) The fitted values for the fit
-function parameters as correlated gummys</p></li>
-<li><p><strong>pf</strong>: (read-only, list of float) The fitted values for the
-fit function parameters as floats</p></li>
-<li><p><strong>res</strong>: (read-only, numpy.ndarray of float ) the fit residuals</p></li>
-<li><p><strong>s</strong>: (read-only,float) the standard deviation (or, when there
-are uncertainties for the input data, the square root of the reduced
-chi-squared) of the residuals</p></li>
-<li><p><strong>cov</strong>: (read-only, numpy.ndarray) the covariance matrix
-generated by the solver</p></li>
-<li><p><strong>fit_output</strong>: (read-only) the raw output of the solver</p></li>
-<li><p><strong>x</strong>: (read-only, numpy.ndarray of float or of gummy)
+<li><dl>
+<dt><strong>y</strong>: array or <cite>Number</cite>, optional</dt><dd><p>Response variables y. Usually this is an array of shape (n,) but
+this can be omitted or a scalar <cite>Number</cite> if the nls or odr solvers
+are used or an array of shape (k,n) if the odr solver is used.  The
+shape must match the shape of the array returned by f.</p>
+<p>The y-values may be all <cite>float</cite> or all <cite>gummy</cite>,  If uncertainties
+u are defined for the y-values, the weights will be set to 1/u**2
+for each point.  To override this behavior set the keyword parameter
+“weights = 1”.</p>
+<p>If the nls or odr solver is used, the weighting will take into
+account correlations between the different points.  However, the odr
+solver ignores correlations between different data points.  If the
+y-values are multi-dimensional, the odr solver will take into
+account correlations between the different elements at each point.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt><strong>f</strong>: function or method</dt><dd><p>The fit function.  This function can be passed as an argument to
+the fit initializer or it can be provided by implementing the
+f method in a derived class.</p>
+<p>For a one-dimensional fit witn N parameters,
+this function will be called as f(x,p1,p2,…,pN,*fargs,**fkwds)
+where x is usually a numpy float array with shape (n,) The fit
+parameters p1,p2,…,pN will always be scalar values.  For an M
+dimensional fit the function will be called as
+f(x1,x2,…,xM,p1,p2,…,pN,*fargs,**fkwds) and the x1,x2,..,xN all
+have shape (n,).</p>
+<p>Usually f will return an array of shape (n,), but if the nls sovler
+is used, the array length need not be n.</p>
+<p>(The one exception where the function will be called with scalar
+x-values is when the ols solver is used with no jacp defined; the
+function will be called with scalar values for x when numerically
+calculating the Jacobian.)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>p0</strong>: array of <cite>float</cite></dt><dd><p>The initial values for the fit parameters.  This parameter is
+required unless the get_p0 method is overridden in a subclass to
+provide an initial esitmate for the fit parameters.  If get_p0
+is implemented, then some elements of p0 can be set to <cite>None</cite> and
+they will be replaced with the estimated value from get_p0.</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>fix</strong>: array of <cite>bool</cite>
+A mask for the fit parameters.  For any element in <cite>fix</cite> that is
+<cite>True</cite>, the corresponding fit parameter will be held constant at
+its initial value.</p></li>
+<li><p><strong>solver</strong>:  {‘ols’,’nls’,’odr’}, optional
+A non-linear least squares (nls), ordinary least squares (ols) or
+othogonal distance regression solver (odr) can be used to perform
+the fit.</p>
+<p>nls is the default solver unless uncertainties are specified for
+the x-values, in which case the default solver is odr.</p>
+<p>The nls solver uses <cite>scipy.optimize.least_squares</cite> while the odr
+solver used <cite>odrpack.odr_fit</cite>.  The ols solver uses
+<cite>scipy.linag.pinvh</cite> to invert the normal equation matrix.</p>
+</li>
+<li><p><strong>uy</strong>: (array or <cite>float</cite>, optional)
+Uncertainties for the y-values.  Specifying uy is an alternative to
+passing gummys with uncerainties defined as the the y-values.  uy
+can be a number that applies to all the x-values or an array giving
+the uncertainty for each y-value.</p>
+<p>If uncertainties u are defined individually for the y-values, the
+weights will be set to 1/u**2 for each point.  To override this
+behavior set the keyword parameter “weights = 1”.</p>
+</li>
+<li><p><strong>jacp</strong>: (function, optional)
+The Jacobian of the fit function with respect to the fit parameters.
+If this is not provided the Jacobian will be calculated numerically.</p>
+<p>This function can be passed as an argument to the fit initializer
+or it can be provided by implementing the jacp method in a derived
+class.</p>
+<p>If provided jacp will be called as jacp(x,p1,p2,…,pN) if the
+x-values are a one-dimensional array and
+jacp(x1,x2,…,xM,p1,p2,…,pN) if the x-values are M dimensional.
+For n data points and N fit parameters, jacp should return an
+array of shape (N,n).</p>
+</li>
+<li><p><strong>variance_is_known</strong>: (<cite>bool</cite>, optional)
+If this is <cite>True</cite> then any uncertainties in the data  (either as
+gummys in the <cite>x</cite> or <cite>y</cite> values or in the ux or uy parameters)
+are used to calculate the uncertainties in the fit.  Otherwise,
+the uncertainties are based on the standard deviation of the
+residuals and the uncertainties in the data are used only for
+weighting the data points.  The default value is <cite>True</cite>.</p></li>
+<li><p><strong>xunits, yunits</strong>: (<cite>str</cite> or <cite>None</cite>, optional)
+units for the x and y coordinates. These should not be specified
+if the <cite>x</cite> and <cite>y</cite> parameters contain gummys. These may only be
+specified if the <cite>get_punits</cite> method is overridden in a subclass.</p></li>
+<li><p><strong>fargs</strong>:  (<cite>list</cite>, optional)
+Additional (fixed) arguments passed to the fit function after the
+fit parameters.</p></li>
+<li><p><strong>fkwds</strong>:  (<cite>list</cite>, optional)
+Fixed keyword arguments passed to the fit function.</p>
+<p>other keywords:  (optional)
+Any additional keyword parameters will be passed to the solver.</p>
+</li>
+<li><p><strong>p</strong>:  (<cite>numpy.array</cite> of <cite>gummy</cite>)
+The fitted values for the fit function parameters as gummys
+including uncertainties and units.</p></li>
+<li><p><strong>pf</strong>:  (<cite>numpy.array</cite> of <cite>float</cite>)
+The fitted values for the fit function parameters as floats</p></li>
+<li><p><strong>res</strong>:  (<cite>numpy.ndarray</cite> of <cite>float</cite>)
+the weighted fit residuals</p></li>
+<li><p><a href="#id2"><span class="problematic" id="id3">**</span></a>va**r:  (<cite>float</cite>)
+the variance of the weighted fit residuals</p></li>
+<li><p><strong>s</strong>:  (<cite>float</cite>)
+the standard deviation of weighted the residuals</p></li>
+<li><p><strong>cov</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite>
+the covariance matrix of the (non-fixed) parameters</p></li>
+<li><p><strong>known_var</strong>:  <cite>float</cite>
+If uncertainties are defined for the y-values (and possible the
+x-values), this is the predicted variance of the weighted fit
+residuals.  If uncertainites are not defined for the y- or x-values,
+this is <cite>None</cite>.</p></li>
+<li><p><strong>yvar</strong>:  <cite>float</cite>
+the variance of the residual differences between the fitted values
+and the weighted y-values. For the nls and ols solver this is the
+same as var.</p></li>
+<li><p><strong>xvar</strong>:  <cite>float</cite>
+the variance of the residual differences between the fitted values
+and the weighted x-values. For the nls and ols solver this is <cite>None</cite>.</p></li>
+<li><p><strong>rcov</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite>
+the covariance matrix of the (non-fixed) parameters divided by the
+variance</p></li>
+<li><p><strong>fit_output</strong>:
+the return value of <cite>scipy.optimize.least_squares</cite> for the nls
+solver of the return value of <cite>odr_fit.odrpack</cite> for the odr
+solver.  This is <cite>None</cite> if the ols solver is used.</p></li>
+<li><p><strong>x</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite> or of <cite>gummy</cite>
 numpy array of the x-coordinates of the data.</p></li>
-<li><p><strong>xf</strong>: (read-only, numpy.ndarray of float) numpy array of the
-x-coordinates of the data as floats</p></li>
-<li><p><strong>xdim</strong>: (read-only,int) the dimension of the x-coordinates</p></li>
-<li><p><strong>ux</strong>: (read-only, float, numpy.ndarray of float or
-None): uncertainties in the x-coordinates</p></li>
-<li><p><strong>y</strong>: (read-only, numpy.ndarray of float or of gummy)
+<li><p><strong>xf</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite>
+numpy array of the x-coordinates of the data as floats</p></li>
+<li><p><strong>xdim</strong>:  <cite>int</cite>
+the number of dimensions of the x-coordinates</p></li>
+<li><p><strong>ux</strong>:  <cite>float</cite>, <cite>numpy.ndarray</cite> of <cite>floats</cite> or <cite>None</cite>
+uncertainties in the x-coordinates</p></li>
+<li><p><strong>y</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite> or of <cite>gummy</cite>
 numpy array of the y-coordinates of the data.</p></li>
-<li><p><strong>yf</strong>: (read-only, numpy.ndarray of float) numpy array of the
-yx-coordinates of the data as floats</p></li>
-<li><p><strong>ydim</strong>: (read-only,int) the dimension of the y-coordinates</p></li>
-<li><p><strong>uy</strong>: (read-only, float, numpy.ndarray of float or
-None): uncertainties in they-coordinates</p></li>
-<li><p><strong>count</strong>: (read-only, int) the number of data points</p></li>
-<li><p><strong>p0</strong>: (read-only, list of float) The initial values for the
-fit function parameters</p></li>
-<li><p><strong>solver</strong>: (read-only, str) the solver used</p></li>
-<li><p><strong>punits</strong>: (read-only, list of <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a>) the units of
-the fit parameters</p></li>
-<li><p><strong>nparam</strong>: (read-only, int) the number of fit parameters</p></li>
-</ul>
-</section>
-<section id="fit-methods">
-<h3>Fit methods<a class="headerlink" href="#fit-methods" title="Permalink to this headline">¶</a></h3>
-<ul>
-<li><p><strong>ypred(x1,x2,…)</strong>: Takes xdim floats and returns a gummy
-representing the predicted value at that x-coordinate.</p></li>
-<li><p><strong>ypredf(x1,x2,…)</strong>: Takes xdim floats and returns a float giving
-the predicted value at that x-coordinate.</p></li>
+<li><p><strong>yf</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite>
+numpy array of the y-coordinates of the data as floats</p></li>
+<li><p><strong>ydim</strong>:  <cite>int</cite>
+the number of dimensions of the y-coordinates</p></li>
+<li><p><strong>uy</strong>:  <cite>float</cite>, <cite>numpy.ndarray</cite> of <cite>floats</cite> or <cite>None</cite>
+uncertainties in the y-coordinates</p></li>
+<li><p><strong>count</strong>:  <cite>int</cite>
+the number of (x) data points</p></li>
+<li><p><strong>p0</strong>:  <cite>list</cite> of <cite>float</cite>
+the initial values for the fit function parameters</p></li>
+<li><p><strong>solver</strong>:  <cite>str</cite>
+the solver used</p></li>
+<li><p><strong>punits</strong>:  <cite>list</cite> of <cite>Unit</cite>
+the units of the fit parameters</p></li>
+<li><p><strong>nparam</strong>:  <cite>int</cite>
+the number of (non-fixed) fit parameters</p></li>
+<li><p><strong>dof</strong>: <cite>float</cite>
+degrees of freedom for the fit</p></li>
+<li><p><strong>ypred(x1,x2,…)</strong>:
+Takes <cite>xdim</cite> floats (or arrays of float) and returns a gummy
+representing the predicted value(s) at that x-coordinate.</p></li>
+<li><p><strong>ypredf(x1,x2,…)</strong>:
+Takes <cite>xdim</cite> floats (or arrays of float) and returns a float giving
+the  predicted value(s) at that x-coordinate.</p></li>
 <li><p><strong>plot(data_format=’ko’, data_options={}, show_data=True,
 error_bars=True, error_bar_k=1, fit_format=’k-’, fit_options={},
 show_fit=True, cik=None, cip=None, ciformat=’g-’, cioptions={},
@@ -1893,7 +1905,7 @@ residuals.</p></li>
 </ul>
 </section>
 <section id="fit-abstract-methods">
-<h3>Fit abstract methods<a class="headerlink" href="#fit-abstract-methods" title="Permalink to this headline">¶</a></h3>
+<h3>Fit abstract methods<a class="headerlink" href="#fit-abstract-methods" title="Link to this heading">¶</a></h3>
 <p>These methods may be overridden when sub-classing <code class="docutils literal notranslate"><span class="pre">Fit</span></code></p>
 <ul id="f">
 <li><p><strong>f(self,x1,x2,…,xd,p1,p2,…,pk)</strong>: The fit function. The
@@ -1903,20 +1915,10 @@ variable <em>x</em> has one dimension, or f(self,x1,x2,…,xm,p1,p2,…,pn)
 where the independent variable x has m dimensions at each
 observation. <em>f</em> should return either a float or a 1-d array of
 floats depending on the dimension of the response variable <em>y</em>.</p></li>
-<li><p><strong>jac(self,x1,x2,…,xk,p1,p2,…,pk)</strong>: The Jacobian. This method
+<li><p><strong>jacp(self,x1,x2,…,xk,p1,p2,…,pk)</strong>: The Jacobian. This method
 may optionally be overridden in a derived class. If not overridden,
 this method throws a NotImplementedError() the derivatives will be
 calculated numerically.</p>
-<p>It must have the same signature as the <em>f</em> method and return a list
-of derivatives of the form:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">df</span><span class="o">/</span><span class="n">dx1</span><span class="p">,</span><span class="n">df</span><span class="o">/</span><span class="n">dx2</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">df</span><span class="o">/</span><span class="n">dp1</span><span class="p">,</span><span class="n">df</span><span class="o">/</span><span class="n">dp2</span><span class="p">,</span><span class="o">...</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>if f returns a scalar or:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">df1</span><span class="o">/</span><span class="n">dx1</span><span class="p">,</span><span class="n">df1</span><span class="o">/</span><span class="n">dx2</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">df1</span><span class="o">/</span><span class="n">dp1</span><span class="p">,</span><span class="n">df1</span><span class="o">/</span><span class="n">dp2</span><span class="p">,</span><span class="o">...</span><span class="p">],</span>
- <span class="p">[</span><span class="n">df2</span><span class="o">/</span><span class="n">dx1</span><span class="p">,</span><span class="n">df2</span><span class="o">/</span><span class="n">dx2</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">df2</span><span class="o">/</span><span class="n">dp1</span><span class="p">,</span><span class="n">df2</span><span class="o">/</span><span class="n">dp2</span><span class="p">,</span><span class="o">...</span><span class="p">],</span><span class="o">...</span><span class="p">]</span>
-</pre></div>
-</div>
 <p>if f returns a 1-d array [f1,f2,…].</p>
 </li>
 <li><p><strong>get_p0(self)</strong>: Returns an initial guess for the fit parameters
@@ -1935,7 +1937,7 @@ function.</p></li>
 </section>
 </section>
 <section id="sub-classes-of-fit-for-some-common-functions">
-<h2>sub-classes of Fit for some common functions<a class="headerlink" href="#sub-classes-of-fit-for-some-common-functions" title="Permalink to this headline">¶</a></h2>
+<h2>sub-classes of Fit for some common functions<a class="headerlink" href="#sub-classes-of-fit-for-some-common-functions" title="Link to this heading">¶</a></h2>
 <ul>
 <li><p>metrolopy.<strong>PolyFit(x, y, deg=1, p0=None, ux=None, uy=None,
 sigma_is_known=True, xunit=None, yunit=None, solver=None,
@@ -1949,7 +1951,8 @@ fit algorithm, ols, will be used by default if <em>x</em> and <em>y</em> are one
 dimensional and there is no uncertainty in the x-values. The odr
 solver must be used if there is uncertainty in the x-values or if the
 y-coordinates are multi-dimensional. By the nonlinear least squares
-solver, nls, will be used by if <em>x</em> is multi-dimensional. Initial
+solver, nls, will be used by if <em>x</em> is multi-dimensional
+(the maximum allowd dimension is 3). Initial
 values <em>p0</em> may be specified if the nls or odr solvers are used, but
 are not required. Both the <em>x</em> and <em>y</em> data may have units.</p></li>
 <li><p>metrolopy.<strong>SinFit(x, y, p0=None, ux=None, uy=None,
@@ -1992,7 +1995,80 @@ function of the form:</p>
 <p>See the <a class="reference internal" href="#fit">Fit</a> class for the parameters, properties and methods of
 this class.</p>
 </li>
+<li><dl class="simple">
+<dt>metrolopy.<strong>DistFit(x,cdf,p0=None,fix=None)*</strong></dt><dd><p>Fits a one-dimensional continuous distribution.
+Parameters
+———-</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>x</strong>: array of <cite>float</cite>
+samples from the distribution to be fitted</p></li>
+<li><dl>
+<dt><strong>cdf</strong>: <cite>Distribution</cite>, <cite>scipy.stats.rv_continuous</cite> distribution or</dt><dd><p>function or method</p>
+<blockquote>
+<div><p>This can be the distribution to be fit as represented by a
+<cite>gummy.Distribution</cite> (either the class or an instance of the class) or
+a <cite>scipy.stats.rv_continuous</cite> distribution (either the class or an
+instance of the class).</p>
+<p>It can also be a function or a method that gives the cumlative
+distribution function of the distribtion to be fit.</p>
+</div></blockquote>
+</dd>
+</dl>
+</li>
 </ul>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt><strong>fix</strong>: array of <cite>bool</cite></dt><dd><p>A mask for the fit parameters.  For any element in <cite>fix</cite> that is
+<cite>True</cite>, the corresponding fit parameter will be held constant at
+its initial value.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<ul>
+<li><dl>
+<dt><strong>p0</strong>: array of <cite>float</cite>, optional</dt><dd><p>Inital values for the fit parameters.</p>
+<p>This is required if cdf is a function or method, but optional for most
+<cite>Distribution</cite> or <cite>scipy.stats</cite> distributions.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>p</strong>:  <cite>numpy.array</cite> of <cite>gummy</cite></dt><dd><p>The fitted values for the fit function parameters as gummys
+including uncertainties and units.</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>pf</strong>:  <cite>numpy.array</cite> of <cite>float</cite>
+The fitted values for the fit function parameters as floats</p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>dist</strong>:  Returns a <cite>gummy.Distribution</cite> instance representing the fitted
+distribution.</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>plot(…)</strong>:</dt><dd><p>plots the histogram of the data and the fitted distribution</p>
+</dd>
+</dl>
+</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt><strong>cdf_plot(…)</strong>:</dt><dd><p>plots cumulative distribution function of the fitted distribution
+along with the data points.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
 </section>
 </section>
 
@@ -2001,10 +2077,11 @@ this class.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">MetroloPy</a></li>
 <li><a class="reference internal" href="#class-gummy">class gummy</a><ul>
 <li><a class="reference internal" href="#gummy-parameters">gummy parameters</a></li>
@@ -2037,7 +2114,6 @@ this class.</p>
 <li><a class="reference internal" href="#custom-multi-variate-distributions">custom multi-variate distributions</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#built-in-mathematical-functions">built-in mathematical functions</a></li>
 <li><a class="reference internal" href="#class-unit">class Unit</a><ul>
 <li><a class="reference internal" href="#unit-parameters">Unit parameters</a></li>
 <li><a class="reference internal" href="#unit-static-methods">Unit static methods</a></li>
@@ -2054,8 +2130,6 @@ this class.</p>
 <li><a class="reference internal" href="#curve-fitting">curve fitting</a><ul>
 <li><a class="reference internal" href="#class-fit">class Fit</a><ul>
 <li><a class="reference internal" href="#fit-parameters">Fit parameters</a></li>
-<li><a class="reference internal" href="#fit-properties">Fit properties</a></li>
-<li><a class="reference internal" href="#fit-methods">Fit methods</a></li>
 <li><a class="reference internal" href="#fit-abstract-methods">Fit abstract methods</a></li>
 </ul>
 </li>
@@ -2064,6 +2138,7 @@ this class.</p>
 </li>
 </ul>
 
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -2071,21 +2146,21 @@ this class.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -2094,13 +2169,13 @@ this class.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 0.6.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">MetroloPy</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, National Research Council Canada.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    &#169; Copyright 2026, National Research Council Canada.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

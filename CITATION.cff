@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Parks"
+  given-names: "Harold V."
+title: "MetroloPy"
+version: 1.1.0
+doi: 10.5281/zenodo.21246017
+date-released: 2026-07-07
+url: "https://github.com/nrc-cnrc/MetroloPy"

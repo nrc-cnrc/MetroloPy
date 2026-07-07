@@ -1,0 +1,55 @@
+[project]
+name = "metrolopy"
+version = "1.1.0"
+description = "tools for dealing with physical quantities: uncertainty propagation and unit conversion"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Operating System :: OS Independent",
+  "Framework :: Jupyter",
+  "Framework :: IPython",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Education",
+  "Topic :: Education",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Topic :: Software Development :: Libraries",
+]
+authors = [{ name = "Harold Parks", email = "harold.parks@nrc-cnrc.gc.ca" }]
+maintainers = [{ name = "Harold Parks", email = "harold.parks@nrc-cnrc.gc.ca" }]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+	"ipython>=7.9.0",
+    "matplotlib>=3.1.2",
+    "numpy>=1.25.0",
+    "pandas>=0.25.2",
+    "scipy>=1.3.2",
+	"odrpack>=0.5.0",
+	"lazy_loader>=0.5.0",
+]
+license = "GPL-3.0-only"
+license-files = ["LICENSE","CITATION.cff"]
+keywords = ["uncertainty","propagation","unit","conversion","physical","quantities","science"]
+
+[project.urls]
+Homepage = "https://nrc-cnrc.github.io/MetroloPy"
+Documentation = "https://nrc-cnrc.github.io/MetroloPy"
+Repository = "https://github.com/nrc-cnrc/MetroloPy"
+Issues = "https://github.com/nrc-cnrc/MetroloPy/issues"
+
+[dependency-groups]
+dev = ["sphinx>=7.0.0","jupyterlab>=2.0.0"]
+
+[build-backend]
+source-include = ["tests/**"]
+
+[build-system]
+requires = ["uv_build>=0.10.0,<0.12.0"]
+build-backend = "uv_build"
