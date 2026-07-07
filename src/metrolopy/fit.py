@@ -258,7 +258,11 @@ class _Fit:
     # Base class for fitting.  This implements plotting and unpacks any
     # uncertainty or unit information in the data.
     
+<<<<<<< HEAD
+    plot_points = 500
+=======
     plot_points = 100
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     over_plot = 0.05
     
     xlabel = None
@@ -333,8 +337,13 @@ class _Fit:
              fit_format='k-',fit_options={},show_fit=True,
              cik=None,cip=None,ciformat='g-',cioptions={},
              clk=None,clp=None,clformat='r-',cloptions = {},
+<<<<<<< HEAD
+             xmin=None,xmax=None,xlabel=None,ylabel=None,title=None,hold=False,
+             plot_points=None,fig_options={},subplot_options={}):
+=======
              xmin=None,xmax=None,xlabel=None,ylabel=None,hold=False,
              plot_points=None):
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         """
         Plots the data points, fitted curve, as well as confidence limits and 
         control limits around the fitted curve.
@@ -342,6 +351,33 @@ class _Fit:
         
         Parameters
         ----------
+<<<<<<< HEAD
+        show_data: `bool`, optional
+            Whether or not to plot the data points. The default is `True`.
+            
+        show_fit: `bool`, optional
+            Whether or not to plot the fitted curve. The default is `True`.
+            
+        error_bars: `bool`, optional
+            Whether or not to plot error bars on the data points (if uncertainty
+            values were defined for the data).  The default is `True`
+            
+        cik and cip: `Number`, optional
+            Specifying a value for cip or cik will add uncertainty bands for the
+            fitted curve to the plot.  These values give the coverage factor 
+            (cik) or confidence level (cip) for the uncertainty bands in the 
+            plot.  cik should be a float or int > 0 or cip should be a float 
+            between 0 and 1.  Do not specify both `cik` and `cip`.
+            
+        clk and clp: `Number`, optional
+            Specifying a value for clp or clk will add control limit bands for 
+            the fitted curve to the plot.  The control limit band is the region
+            where a new data point is expected to lie.  These values give the 
+            coverage factor (cik) or confidence level (cip) for the conrol limit 
+            in the plot.  clk should be a float or int > 0 or clp should be a 
+            float between 0 and 1.  Do not specify both `clk` and `clp`.
+            
+=======
         data_format: `str`, optional
             The format string passed to `pyplot.plot` or `pyplot.errorbar` when
             plotting the data points.  The default is 'ko'.
@@ -365,6 +401,7 @@ class _Fit:
             or `pyplot.errorbar` when plotting the fitted curve.
         show_fit: `bool`, optional
             Whether or not to plot the fitted curve. The default is `True`.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         xmin and xmax: `float`, optional
             The lower and upper limits of the fitted, confidence interval
             and control limit curves.  If this is None, the limits are equal
@@ -372,16 +409,60 @@ class _Fit:
             first data point, x2 is the x value of the last data  point and
             `Fit.over_plot` is an attribute of the `Fit` object with  default
             value 0.05.
+<<<<<<< HEAD
+            
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         xlabel and ylabel:  `str`, optional
             Labels for the x and y axes. If units are defined for the x or y axes,
             the unit symbol will be added to the end of the labels defined here.
             If these are set to `None`, then the values of the `Fit.xlabel` and
             `Fit.ylabel` attributes will be used.  The default is `None`.
+<<<<<<< HEAD
+            
+        hold: `bool`, optional
+            If hold is `False` then ``pyplot.show()`` is executed just before this
+            function returns.  The detault is `False`
+            
+        error_bar_k: `int` or `float`, optional
+            The length of the error bars are determined by multiplying the
+            uncertainty for each data point by this quantity. The default value
+            is 1.
+                
+        data_format: `str`, optional
+            The format string passed to `pyplot.plot` or `pyplot.errorbar` when
+            plotting the data points.  The default is 'ko'.
+            
+        data_options: `dict`, optional
+            A dictionary containing key words that are passed to `pyplot.plot` or
+            `pyplot.errorbar` when plotting the data points.
+            
+        fit_format: `str`, optional
+            The format string passed to `pyplot.plot` or` pyplot.errorbar` when
+            plotting the fitted curve.  The default is 'k-'.
+            
+        fit_options: `dict`, optional
+            A dictionary containing key words that are passed to `pyplot.plot`
+            or `pyplot.errorbar` when plotting the fitted curve.
+            
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         plot_points:  `int`, optional
             The number of points to use in each curve when plotting the fit,
             confidence interval, and control limit curves.  If this is set to
             `None`, then the value of the `Fit.plot_points` attribute will be used,
             which has a default value of 100.
+<<<<<<< HEAD
+            
+        ciformat: `str`, optional
+            Format string passes to the `pyplot.plot` command that plots the
+            uncertainty bands. The default is 'g-'.
+            
+        cioptions:  `dict`, optional
+            Keywork options passed to the `pyplot.plot` command that plots the
+            uncertainty bands.
+            
+=======
         hold: `bool`, optional
             If hold is `False` then ``pyplot.show()`` is executed just before this
             function returns.  The detault is `False`
@@ -399,10 +480,25 @@ class _Fit:
         cioptions:  `dict`, optional
             Keywork options passed to the `pyplot.plot` command that plots the
             uncertainty bands.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         clk,clp,clformat, cloptions:  optional
             Control limit options, same as above for the uncertainty bands.  The
             control limit band if the control limit k factor multiplied by the
             RSS of the fit uncertainty and the standard deviation of the residuals.
+<<<<<<< HEAD
+            
+        fig_options: `dict`, optional
+            keywords passed to `pyplot.figure` when creating the figure
+            
+        subplot_options: `dict`, options
+            keywords passed to `pyplot.figure.add_subplot` when creating the
+            subplot
+            
+        Returns
+        -------
+        Figure, Axes
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         """
         import matplotlib.pyplot as plt
          
@@ -422,6 +518,33 @@ class _Fit:
             
         yf = self.yf
         
+<<<<<<< HEAD
+        if self.xunit == 1:
+            xs = None
+        else:
+            xs = self.xunit.tostring(fmt='latex')
+        xlabel = gummy._plotlabel(xlabel,symbol=xs)
+            
+        if self.yunit == 1:
+            ys = None
+        else:
+            ys = self.yunit.tostring(fmt='latex')
+        ylabel = gummy._plotlabel(ylabel,symbol=ys)
+        
+        if 'ylabel' not in subplot_options and ylabel is not None:
+            subplot_options['ylabel'] = ylabel
+            
+        if 'xlabel' not in subplot_options and xlabel is not None:
+            subplot_options['xlabel'] = xlabel
+            
+        if 'title' not in subplot_options and title is not None:
+            subplot_options['title'] = title
+            
+        fig = plt.figure(**fig_options)
+        ax = fig.add_subplot(**subplot_options)
+        
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         if show_data:
             if 'ms' not in data_options and 'markersize' not in data_options:
                 if self.count > 100:
@@ -447,6 +570,15 @@ class _Fit:
                     data_format = ''
                 if 'ls' not in data_options and 'linestyle' not in data_options:
                     data_options['ls'] = 'none'
+<<<<<<< HEAD
+                ax.errorbar(xf,yf,xerr=ux,yerr=uy,fmt=data_format,
+                               **data_options)
+            else:
+                if data_format is None:
+                    ax.plot(xf,yf,**data_options)
+                else:
+                    ax.plot(xf,yf,data_format,**data_options)            
+=======
                 plt.errorbar(xf,yf,xerr=ux,yerr=uy,fmt=data_format,
                                **data_options)
             else:
@@ -454,6 +586,7 @@ class _Fit:
                     plt.plot(xf,yf,**data_options)
                 else:
                     plt.plot(xf,yf,data_format,**data_options)            
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             
         if show_fit or cik is not None or clk is not None or cip is not None or clp is not None:
             if xmin is None:
@@ -491,26 +624,47 @@ class _Fit:
         if show_fit:
             fy = self.ypredf(fx)
             if fit_format is None:
+<<<<<<< HEAD
+                ax.plot(fx,fy,**fit_options)
+            else:
+                ax.plot(fx,fy,fit_format,**fit_options)
+=======
                 plt.plot(fx,fy,**fit_options)
             else:
                 plt.plot(fx,fy,fit_format,**fit_options)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
         if cik is not None:
             u = np.array([self.ypred(x).u for x in fx])
             up = fy + u*cik
             un = fy - u*cik
             if ciformat is None:
+<<<<<<< HEAD
+                ax.plot(fx,up,**cioptions)
+                ax.plot(fx,un,**cioptions)
+            else:
+                ax.plot(fx,up, ciformat, **cioptions)
+                ax.plot(fx,un, ciformat, **cioptions)
+=======
                 plt.plot(fx,up,**cioptions)
                 plt.plot(fx,un,**cioptions)
             else:
                 plt.plot(fx,up, ciformat, **cioptions)
                 plt.plot(fx,un, ciformat, **cioptions)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
         if clk is not None:
             u = np.array([self.control_limit(x, clk) for x in fx])
             upl = fy + u
             unl = fy - u
             if clformat is None:
+<<<<<<< HEAD
+                ax.plot(fx,upl,**cloptions)
+                ax.plot(fx,unl,**cloptions)
+            else:
+                ax.plot(fx,upl,clformat,**cloptions)
+                ax.plot(fx,unl,clformat,**cloptions)
+=======
                 plt.plot(fx,upl,**cloptions)
                 plt.plot(fx,unl,**cloptions)
             else:
@@ -532,10 +686,16 @@ class _Fit:
         ylabel = gummy._plotlabel(ylabel,symbol=ys)
         if ylabel is not None:
             plt.ylabel(ylabel)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             
         if not hold:
             plt.show()
             
+<<<<<<< HEAD
+        return fig,ax
+            
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def control_limit(self,x,k=2):
         if self.known_var is None:
             s = self.s
@@ -553,12 +713,133 @@ class Fit(_Fit,PrettyPrinter):
                  xweights=None,weights=None,xcov=None,ycov=None,
                  ignore_correlations=False,fix=None, fargs=[],fkwds={},**kw):
         """
+<<<<<<< HEAD
+        Performs a least squares fit.  The function may be passed in the arguments
+=======
         Performs a non-linear fit.  The function may be passed in the arguments
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         or may be specified by overriding the Fit.f(...) method in a subclass.
         The fitting is performed as soon as the instance is created.
         
         Parameters
         ----------
+<<<<<<< HEAD
+        x: array
+            The indepenant variables x.  For n data points this should be an
+            array of shape (n,) for a one-dimensional fit or shape (m,n) for an
+            m-dimensional fit.
+            
+            The x-values may be all `float` or all `gummy`,  If uncertainties
+            u are defined for the x-values, the xweights will be set to 1/u**2
+            for each point.  To override this behavior set the keyword parameter
+            "xweights = 1".  If uncertainties are defined for the x-values,
+            the default solver is odr.  If the nls or ols solver is manually
+            selected then the uncertainties in the x-values will be ignored.
+            For an m-dimential fit, the odr solver will take into account 
+            correlations between the m elements of the x-values for each data 
+            point, but ignores correlations between different data points and 
+            bewteen the x- and y-values.
+            
+        y:  array or `Number`, optional
+            Response variables y. Usually this is an array of shape (n,) but 
+            this can be omitted or a scalar `Number` if the nls or odr solvers 
+            are used or an array of shape (k,n) if the odr solver is used.  The
+            shape must match the shape of the array returned by f.
+            
+            The y-values may be all `float` or all `gummy`,  If uncertainties
+            u are defined for the y-values, the weights will be set to 1/u**2
+            for each point.  To override this behavior set the keyword parameter
+            "weights = 1".
+            
+            If the nls or odr solver is used, the weighting will take into
+            account correlations between the different points.  However, the odr
+            solver ignores correlations between different data points.  If the
+            y-values are multi-dimensional, the odr solver will take into
+            account correlations between the different elements at each point.
+            
+        f:  function or method
+            The fit function.  This function can be passed as an argument to
+            the fit initializer or it can be provided by implementing the
+            f method in a derived class.
+            
+            For a one-dimensional fit witn N parameters,
+            this function will be called as f(x,p1,p2,...,pN,*fargs,**fkwds)
+            where x is usually a numpy float array with shape (n,) The fit 
+            parameters p1,p2,...,pN will always be scalar values.  For an M 
+            dimensional fit the function will be called as 
+            f(x1,x2,...,xM,p1,p2,...,pN,*fargs,**fkwds) and the x1,x2,..,xN all
+            have shape (n,).
+            
+            Usually f will return an array of shape (n,), but if the nls sovler
+            is used, the array length need not be n. 
+            
+            (The one exception where the function will be called with scalar 
+            x-values is when the ols solver is used with no jacp defined; the
+            function will be called with scalar values for x when numerically 
+            calculating the Jacobian.) 
+            
+        p0: array of `float`
+            The initial values for the fit parameters.  This parameter is 
+            required unless the get_p0 method is overridden in a subclass to 
+            provide an initial esitmate for the fit parameters.  If get_p0
+            is implemented, then some elements of p0 can be set to `None` and
+            they will be replaced with the estimated value from get_p0.
+            
+        fix: array of `bool`
+            A mask for the fit parameters.  For any element in `fix` that is
+            `True`, the corresponding fit parameter will be held constant at
+            its initial value.
+            
+        solver:  {'ols','nls','odr'}, optional
+            A non-linear least squares (nls), ordinary least squares (ols) or
+            othogonal distance regression solver (odr) can be used to perform
+            the fit.
+            
+            nls is the default solver unless uncertainties are specified for
+            the x-values, in which case the default solver is odr.
+            
+            The nls solver uses `scipy.optimize.least_squares` while the odr
+            solver used `odrpack.odr_fit`.  The ols solver uses 
+            `scipy.linag.pinvh` to invert the normal equation matrix.
+            
+        ux: array or `float`, optional
+            Uncertainties for the x-values.  Specifying ux is an alternative to 
+            passing gummys with uncerainties defined as the the x-values.  ux 
+            can be a number that applies to all the x-values or an array giving
+            the uncertainty for each x-value.
+            
+            If uncertainties u are defined individually for the x-values, the 
+            xweights will be set to 1/u**2 for each point.  To override this 
+            behavior set the keyword parameter "xweights = 1".  If 
+            uncertainties are defined for the x-values, the default solver is 
+            odr.  If the nls or ols solver is manually selected then the 
+            uncertainties in the x-values will be ignored.
+            
+        uy: array or `float`, optional
+            Uncertainties for the y-values.  Specifying uy is an alternative to 
+            passing gummys with uncerainties defined as the the y-values.  uy 
+            can be a number that applies to all the x-values or an array giving
+            the uncertainty for each y-value.
+            
+            If uncertainties u are defined individually for the y-values, the 
+            weights will be set to 1/u**2 for each point.  To override this 
+            behavior set the keyword parameter "weights = 1".
+            
+        jacp: function, optional
+            The Jacobian of the fit function with respect to the fit parameters.
+            If this is not provided the Jacobian will be calculated numerically.
+            
+            This function can be passed as an argument to the fit initializer 
+            or it can be provided by implementing the jacp method in a derived 
+            class.
+            
+            If provided jacp will be called as jacp(x,p1,p2,...,pN) if the
+            x-values are a one-dimensional array and 
+            jacp(x1,x2,...,xM,p1,p2,...,pN) if the x-values are M dimensional.
+            For n data points and N fit parameters, jacp should return an
+            array of shape (N,n).
+            
+=======
         x: array_like
            The x-coordinates of the data.  This is a list or numpy array of
            floats or gummys (all point must be of the same type, floats and gummys 
@@ -612,6 +893,7 @@ class Fit(_Fit,PrettyPrinter):
         uy: `float`, array_like of `float`  or `None`, optional
             Uncertainty in the `y` values. This should not be specified if the y
             argument contains gummys.  The default is `None`.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         variance_is_known: `bool`, optional
             If this is `True` then any uncertainties in the data  (either as
             gummys in the `x` or `y` values or in the ux or uy parameters)
@@ -619,21 +901,122 @@ class Fit(_Fit,PrettyPrinter):
             the uncertainties are based on the standard deviation of the
             residuals and the uncertainties in the data are used only for
             weighting the data points.  The default value is `True`.
+<<<<<<< HEAD
+            
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         xunits, yunits: `str` or `None`, optional
             units for the x and y coordinates. These should not be specified
             if the `x` and `y` parameters contain gummys. These may only be
             specified if the `get_punits` method is overridden in a subclass.
+<<<<<<< HEAD
+            
+        fargs:  `list`, optional
+            Additional (fixed) arguments passed to the fit function after the 
+            fit parameters.
+            
+        fkwds:  `list`, optional
+            Fixed keyword arguments passed to the fit function.
+        
+=======
         solver:  {'ols','nls','odr'}, optional
             If this is 'nls' then `scipy.optimize.least_squares` is used to perform
             the fit.  If it is 'odr' then `odrpack.odr_fit` is used.  'nls' may 
             not be used if the y-coordinate is `None` or multi-dimensional or if
             there is uncertainty in the x-coordinates.  If this is `None`,
             then 'nls' will be used when possible.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         other keywords:  optional
             Any additional keyword parameters will be passed to the solver.
         
         Attributes
         ----------
+<<<<<<< HEAD
+        p:  `numpy.array` of `gummy`
+            The fitted values for the fit function parameters as gummys
+            including uncertainties and units.
+            
+        pf:  `numpy.array` of `float`
+            The fitted values for the fit function parameters as floats
+            
+        res:  `numpy.ndarray` of `float`
+            the weighted fit residuals
+            
+        var:  `float`
+            the variance of the weighted fit residuals
+            
+        s:  `float`
+            the standard deviation of weighted the residuals
+            
+        cov:  `numpy.ndarray` of `float`
+            the covariance matrix of the (non-fixed) parameters
+            
+        known_var:  `float`
+            If uncertainties are defined for the y-values (and possible the
+            x-values), this is the predicted variance of the weighted fit
+            residuals.  If uncertainites are not defined for the y- or x-values,
+            this is `None`.
+            
+        yvar:  `float`
+            the variance of the residual differences between the fitted values
+            and the weighted y-values. For the nls and ols solver this is the 
+            same as var.
+        
+        xvar:  `float`
+            the variance of the residual differences between the fitted values
+            and the weighted x-values. For the nls and ols solver this is `None`.
+            
+        rcov:  `numpy.ndarray` of `float`
+            the covariance matrix of the (non-fixed) parameters divided by the
+            variance
+        
+        fit_output:
+            the return value of `scipy.optimize.least_squares` for the nls
+            solver of the return value of `odr_fit.odrpack` for the odr
+            solver.  This is `None` if the ols solver is used.
+            
+        x:  `numpy.ndarray` of `float` or of `gummy`
+            numpy array of the x-coordinates of the data.
+            
+        xf:  `numpy.ndarray` of `float`
+            numpy array of the x-coordinates of the data as floats
+            
+        xdim:  `int`
+            the number of dimensions of the x-coordinates
+            
+        ux:  `float`, `numpy.ndarray` of `floats` or `None`
+            uncertainties in the x-coordinates
+            
+        y:  `numpy.ndarray` of `float` or of `gummy`
+            numpy array of the y-coordinates of the data.
+            
+        yf:  `numpy.ndarray` of `float`
+            numpy array of the y-coordinates of the data as floats
+            
+        ydim:  `int`
+            the number of dimensions of the y-coordinates
+            
+        uy:  `float`, `numpy.ndarray` of `floats` or `None`
+            uncertainties in the y-coordinates
+            
+        count:  `int`
+            the number of (x) data points
+            
+        p0:  `list` of `float`
+            the initial values for the fit function parameters
+            
+        solver:  `str`
+            the solver used
+            
+        punits:  `list` of `Unit`
+            the units of the fit parameters
+            
+        nparam:  `int`
+            the number of (non-fixed) fit parameters
+            
+        dof: `float`
+            degrees of freedom for the fit
+=======
         p:  `list` of `gummy`
             The fitted values for the fit function parameters as gummys
         pf:  `list` of `float`
@@ -674,10 +1057,22 @@ class Fit(_Fit,PrettyPrinter):
             the units of the fit parameters
         nparam:  `int`
             the number of fit parameters
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
         Methods
         -------
         ypred(x1,x2,...):
+<<<<<<< HEAD
+            Takes `xdim` floats (or arrays of float) and returns a gummy 
+            representing the predicted value(s) at that x-coordinate.
+            
+        ypredf(x1,x2,...):
+            Takes `xdim` floats (or arrays of float) and returns a float giving 
+            the  predicted value(s) at that x-coordinate.
+            
+        plot(...):
+            plots the data (only available if x and y are one-dimensional)
+=======
             Takes `xdim` floats and returns a gummy representing the predicted
             value at that x-coordinate.
         ypredf(x1,x2,...):
@@ -760,6 +1155,7 @@ class Fit(_Fit,PrettyPrinter):
         funicode, flatex, fhtml:
             Returns a `str` containing unicode, latex, and html representations of
             the fit function.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         """
         super().__init__(x,y,ux=ux,uy=uy,variance_is_known=variance_is_known,
                          xunit=xunit,yunit=yunit, xweights=xweights,
@@ -810,6 +1206,21 @@ class Fit(_Fit,PrettyPrinter):
                 p0 = self.get_p0()
             except NotImplementedError:
                 raise ValueError('initial values p0 must be specified for this fit')
+<<<<<<< HEAD
+        else:
+            if np.any([i is None for i in p0]):
+                try:
+                    gp0 = self.get_p0()
+                except NotImplementedError:
+                    raise ValueError('all the initial values p0 must be specified for this fit (None is not allowed in p0)')
+                    
+                if _isscalar(p0) or len(gp0) < len(p0):
+                    raise TypeError('p0 must be a list with length equal to the number of fit parameters')
+                    
+                p0 = [gp0[i] if p0[i] is None else p0[i] for i in range(len(p0))]
+                
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         self.p0 = np.asarray(p0,dtype=float)
 
         getpu = False
@@ -853,7 +1264,11 @@ class Fit(_Fit,PrettyPrinter):
                 
         except NotImplementedError:
             raise TypeError('the fit function f has not been sepecified')
+<<<<<<< HEAD
+        except Exception as e:
+=======
         except:
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             try:
                 if self.count is None:
                     raise
@@ -865,7 +1280,11 @@ class Fit(_Fit,PrettyPrinter):
                     ot = [np.float64]*self.ydim
                 self.f = np.vectorize(self.f,ot)#,excluded=list(range(self.xdim,self.xdim+self.nparam)))
             except:
+<<<<<<< HEAD
+                raise e
+=======
                 raise TypeError('the calling the fit function with the initial parameters raises an error')
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             
         jp = True
         try:
@@ -913,6 +1332,19 @@ class Fit(_Fit,PrettyPrinter):
         
         if fix is None:
             if self.xdim == 1:
+<<<<<<< HEAD
+                self._f = lambda x,p:np.asarray(self.f(x,*p,*fargs,**fkwds))
+                if jp:
+                    self._jacp = lambda x,p:np.asarray(self.jacp(x,*p))
+                if jx:
+                    self._jacx = lambda x,p:np.asarray(self.jacx(x,*p))
+            else:
+                self._f = lambda x,p:np.asarray(self.f(*x,*p,*fargs,**fkwds))
+                if jp:
+                    self._jacp = lambda x,p:np.asarray(self.jacp(*x,*p))
+                if jx:
+                    self._jacx = lambda x,p:np.asarray(self.jacx(*x,*p))
+=======
                 self._f = lambda x,p:self.f(x,*p,*fargs,**fkwds)
                 if jp:
                     self._jacp = lambda x,p:self.jacp(x,*p)
@@ -924,11 +1356,25 @@ class Fit(_Fit,PrettyPrinter):
                     self._jacp = lambda x,p:self.jacp(*x,*p)
                 if jx:
                     self._jacx = lambda x,p:self.jacx(*x,*p)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             self._p0 = self.p0
         else:
             fix = np.asarray(fix,dtype=bool)
             self._p0 = self.p0[~fix]
             if self.xdim == 1:
+<<<<<<< HEAD
+                self._f = lambda x,p:np.asarray(self.f(x,*repl(p,self.p0,fix),*fargs,**fkwds))
+                if jp:
+                    self._jacp = lambda x,p:np.asarray(self.jacp(x,*repl(p,self.p0,fix))[~fix])
+                if jx:
+                    self._jacx = lambda x,p:np.asarray(self.jacx(x,*repl(p,self.p0,fix)))
+            else:
+                self._f = lambda x,p:np.asarray(self.f(*x,*repl(p,self.p0,fix),*fargs,**fkwds))
+                if jp:
+                    self._jacp = lambda x,p:np.asarray(self.jacp(*x,*repl(p,self.p0,fix))[~fix])
+                if jx:
+                    self._jacx = lambda x,p:np.asarray(self.jacx(*x,*repl(p,self.p0,fix)))
+=======
                 self._f = lambda x,p:self.f(x,*repl(p,self.p0,fix),*fargs,**fkwds)
                 if jp:
                     self._jacp = lambda x,p:self.jacp(x,*repl(p,self.p0,fix))[~fix]
@@ -940,6 +1386,7 @@ class Fit(_Fit,PrettyPrinter):
                     self._jacp = lambda x,p:self.jacp(*x,*repl(p,self.p0,fix))[~fix]
                 if jx:
                     self._jacx = lambda x,p:self.jacx(*x,*repl(p,self.p0,fix))
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         self.fix = fix
                     
         self.nparam = len(self._p0)
@@ -1048,6 +1495,17 @@ class Fit(_Fit,PrettyPrinter):
             odr = self.solver.startswith('odr') and self.xvar > 0
             
             uy = self.uy
+<<<<<<< HEAD
+            if self.uy is None:
+                if self.yvar is None:
+                    yvar = self.var
+                else:
+                    yvar = self.yvar
+                if yvar is not None:
+                    uy = np.sqrt(yvar)
+                
+            if not self.y_is_gummies and uy is not None:
+=======
             if self.yvar is None:
                 yvar = self.var
             else:
@@ -1060,6 +1518,7 @@ class Fit(_Fit,PrettyPrinter):
             if not self.y_is_gummies and uy is not None:
                 if self.ydim == 0:
                     y = [self.y]
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
                 y = np.empty(np.shape(self.yf),dtype=np.dtype('O'))
                 scl = _isscalar(uy)
                 rd = not scl and np.shape(uy) == (self.ydim,)
@@ -1072,14 +1531,31 @@ class Fit(_Fit,PrettyPrinter):
                         else:
                             iuy = uy[it.multi_index]
                         i[...] = gummy(0,iuy,dof=dof)
+<<<<<<< HEAD
+            elif self.y_is_gummies:
+                y = np.array([i/i.unit for i in self.y])
+            else:
+                y = self.y
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
                         
             if self.weights is not None:
                 y = mmul(self.sqrt_weights,y)
                             
+<<<<<<< HEAD
+            if odr:
+                if not self.variance_is_known:
+                    ux = np.sqrt(self.xvar)
+                else:
+                    ux = self.ux
+            else:
+                ux = None
+=======
             if odr and not self.variance_is_known:
                 ux = np.sqrt(self.xvar)
             else:
                 ux = self.ux
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     
             if odr:
                 if self.xdim == 1:
@@ -1091,11 +1567,16 @@ class Fit(_Fit,PrettyPrinter):
                 
             p = self.rcov@(y@self.njacp).T
     
+<<<<<<< HEAD
+            if ux is not None:
+                if not self.x_is_gummies:
+=======
             if ux is not None and self.x is not None:
                 x = self.x
                 if not self.x_is_gummies and ux is not None and x is not None:
                     if self.xdim == 0:
                         x = [x]
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
                     x = np.empty(np.shape(self.xf),dtype=np.dtype('O'))
                     scl = _isscalar(ux)
                     rd = not scl and np.shape(ux) == (self.xdim,)
@@ -1108,12 +1589,25 @@ class Fit(_Fit,PrettyPrinter):
                             else:
                                 iux = ux[it.multi_index]
                             i[...] = gummy(0,iux,dof=dof)
+<<<<<<< HEAD
+                else:
+                    x = np.array([i/i.unit for i in self.x])
+                            
+                #if self.xweights is not None:
+                    #x = mmul(self.sqrt_xweights,x)
+
+                if odr:
+                    x = cjx*x
+                    if self.xweights is not None:
+                        x = mmul(self.sqrt_xweights,x)
+=======
                             
                 if self.xweights is not None:
                     x = mmul(self.sqrt_xweights,x)
 
                 if odr:
                     x = cjx*x
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
                 else:
                     x = mmul(self.njacx,x)
     
@@ -1133,6 +1627,8 @@ class Fit(_Fit,PrettyPrinter):
             except np.linalg.LinAlgError:
                 warn('the covariance matrix returned by the solver is not positive semidefinate; uncertainties cannot be calculated',FitWarning)
                 p = gummy.create(self._pf)
+<<<<<<< HEAD
+=======
             # If we have a jacobian, calculate effiective degrees of freedom for each
             # parameter as sum(weights)**2/sum(weights**2) where the weights are the
             # square of the elements of the jacobian.
@@ -1161,6 +1657,7 @@ class Fit(_Fit,PrettyPrinter):
             #except np.linalg.LinAlgError:
                 #warn('unable to calculate the effective degrees of freedom for the fit parameters')
                 #p = gummy.create(self._pf,cov=cov)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             
         self._p = p
         if self.fix is None:
@@ -1296,7 +1793,11 @@ class Fit(_Fit,PrettyPrinter):
 
         self._pf = self.fit_output.beta
 
+<<<<<<< HEAD
+        self.res = [self.fit_output.delta,self.fit_output.eps]
+=======
         self.res = np.array([self.fit_output.delta,self.fit_output.eps])
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         self.xres = self.fit_output.delta
         self.yres = self.fit_output.eps
         
@@ -1471,7 +1972,11 @@ class Fit(_Fit,PrettyPrinter):
             try:
                 r = gummy.apply(lambda *z:self.f(*x,*z),lambda *z:self.jacp(*x,*z),*self.pd)
             except NotImplementedError:
+<<<<<<< HEAD
+                r = gummy.napply(lambda *z:self.f(*x,*z),*self.pd)
+=======
                 r = gummy.napply(lambda *z:self.f(*x,*z),*self.p)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             
         if self.ydim <= 1 and self._yunit != 1:
             if _isscalar(r):

@@ -2,7 +2,11 @@
 
 # module printing
 
+<<<<<<< HEAD
+# Copyright (C) 2026 National Research Council Canada
+=======
 # Copyright (C) 2019 National Research Council Canada
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.

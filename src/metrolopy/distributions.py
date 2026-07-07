@@ -78,12 +78,20 @@ class Distribution:
     _random_rng = None
     simdata = None
     
+<<<<<<< HEAD
+    discrete = False
+    
+    utype = None
+    
+    _param_names = None
+=======
     utype = None
     
     p_names = None
     p_names_html = None
     p_names_latex = None
     p_names_ascii = None
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     
     _called = []
     _mean = None
@@ -196,6 +204,17 @@ class Distribution:
                 #d.clear()
                 #Distribution._called.remove(d)
                 
+<<<<<<< HEAD
+    @staticmethod
+    def _est_params(cls,z):
+        raise NotImplementedError()
+            
+    @classmethod
+    def param_names(cls,fmt='unicode'):
+        return cls._param_names
+                
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def sim(self,n=100000,ufrom=None):
         self.simulate([self],n=n,ufrom=ufrom)
                 
@@ -341,8 +360,14 @@ class Distribution:
         self._cisym = (lower, upper)
         return (lower, upper)
         
+<<<<<<< HEAD
+    def hist(self,hold=False,title=None,xlabel='$ \\mathrm{value} $',
+             ylabel='$ \\mathrm{probability\\:density} $',
+             fig_options={},subplot_options={},**kwds):
+=======
     def hist(self,hold=False,xlabel='$ \\mathrm{value} $',ylabel='$ \\mathrm{probability\\:density} $',
              title=None,**kwds):
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         """
         Generates a histogram from the simulated data.
         
@@ -361,10 +386,27 @@ class Distribution:
             
         title: `str` or `None`
             a title for the histogram, the default is `None`
+<<<<<<< HEAD
+            
+        fig_options: `dict`, optional
+            keywords passed to `pyplot.figure` when creating the figure
+        
+        subplot_options: `dict`, options
+            keywords passed to `pyplot.figure.add_subplot` when creating the
+            subplot
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
         kwds:
             additional key words that will be passed to the `pyplot.hist` method
             that actually created the histogram
+<<<<<<< HEAD
+            
+        Returns
+        -------
+        Figure, Axes
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
         Raises
         ------
@@ -381,6 +423,30 @@ class Distribution:
             kwds['density'] = True
         if not 'histtype' in kwds:
             kwds['histtype'] ='stepfilled'
+<<<<<<< HEAD
+            
+        if 'xmargin' not in subplot_options:
+            subplot_options['xmargin'] = 0
+            
+        fig = plt.figure(**fig_options)
+        ax = fig.add_subplot(**subplot_options)
+            
+        ax.hist(self.simsorted[np.abs(self.simsorted) != np.inf],**kwds)
+        
+        if title is not None:
+            ax.set_title(title)
+            
+        if xlabel is not None:
+            ax.set_xlabel(xlabel)
+            
+        if ylabel is not None:
+            ax.set_ylabel(ylabel)
+            
+        if not hold:
+            fig.show()
+            
+        return fig,ax
+=======
         plt.hist(self.simsorted[np.abs(self.simsorted) != np.inf],**kwds)
         if ylabel is not None:
             plt.ylabel(ylabel)
@@ -390,6 +456,7 @@ class Distribution:
             plt.title(title)
         if not hold:
             plt.show()
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
                 
     def clear(self):
         """
@@ -443,7 +510,12 @@ class Distribution:
         return np.cov([v.simdata for v in d])
         
     @staticmethod
+<<<<<<< HEAD
+    def covplot(x,y,fmt='ko',xlabel=None,ylabel=None,title=None,hold=False,
+                fig_options={},subplot_options={},**kwds):
+=======
     def covplot(x,y,fmt='ko',xlabel=None,ylabel=None,title=None,hold=False,**kwds):
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         """
         Plots the Distribution `x` versus the Distribution `y`
 
@@ -491,7 +563,16 @@ class Distribution:
                 kwds['ms'] = 0.5
             else:
                 kwds['ms'] = 1
+<<<<<<< HEAD
+        
+        fig = plt.figure(**fig_options)
+        ax = fig.add_subplot(**subplot_options)
+
+        ax.plot(x.simdata,y.simdata,fmt,**kwds)
+        
+=======
         plt.plot(x.simdata,y.simdata,fmt,**kwds)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         if title is None:
             cov = Distribution.covsim_matrix(x,y)
             cor = cov[1][0]/np.sqrt(cov[1][1]*cov[0][0])
@@ -502,6 +583,24 @@ class Distribution:
             else:
                 cor = '{:.2f}'.format(cor)
             title = '$ \\mathrm{correlation} = ' + cor + ' $'
+<<<<<<< HEAD
+        ax.set_title(title)
+        
+        if xlabel is not None:
+            ax.set_xlabel(xlabel)
+        else:
+            ax.set_xlabel('$ x $')
+            
+        if ylabel is not None:
+            ax.set_ylabel(ylabel)
+        else:
+            ax.set_ylabel('$ y $')
+
+        if not hold:
+            plt.show()
+            
+        return fig,ax
+=======
             plt.title(title)
         if xlabel is None:
             xlabel = '$ x $'
@@ -511,6 +610,7 @@ class Distribution:
         plt.ylabel(ylabel)
         if not hold:
             plt.show()
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
     def _simulate(self,n,ufrom):
         if ufrom is not None and self not in ufrom and self.utype not in ufrom:
@@ -829,6 +929,11 @@ class MultivariateElement(Distribution):
         return self.parent.cov.diagonal()[self.index]
 
 class NormalDist(Distribution):
+<<<<<<< HEAD
+    _param_names = ('x','s')
+    
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def __init__(self,x,s):
         """
         Normal distribution with mean `x` and standard deviation `s`.
@@ -852,13 +957,27 @@ class NormalDist(Distribution):
     def u(self):
         return self._u
     
+<<<<<<< HEAD
+    def cdf(z,x,s):
+        from scipy.stats import norm
+        return norm.cdf(z,loc=x,scale=s)
+    
+    @staticmethod
+    def _est_params(z):
+        return (np.mean(z),np.std(z,ddof=1))
+=======
     def cdf(self,z,x,s):
         from scipy.stats import norm
         return norm.cdf(z,loc=x,scale=s)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
         
 class TDist(Distribution):
     bayesian_default = False
+<<<<<<< HEAD
+    _param_names = ('x','s','dof')
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     
     def __init__(self,x,s,dof):
         """
@@ -892,9 +1011,25 @@ class TDist(Distribution):
         from scipy.stats import t as tdist
         return tdist.cdf(z,dof,loc=x,scale=s)
     
+<<<<<<< HEAD
+    @staticmethod
+    def _est_params(z):
+        from scipy.stats import t
+        p = t.fit(z)
+        return [p[1],p[2],p[0]]
+    
 
 class ScipyStatsDist(Distribution):
     def __init__(self,distribution):
+        from scipy.stats.distributions import rv_frozen,rv_discrete
+        if not isinstance(distribution,rv_frozen):
+            raise TypeError('distribution is not an rv_frozen instance')
+        self._discrete = issubclass(type(distribution.dist),rv_discrete)
+=======
+
+class ScipyStatsDist(Distribution):
+    def __init__(self,distribution):
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         self.distribution = distribution
 
     def random(self,n=None):
@@ -904,7 +1039,11 @@ class ScipyStatsDist(Distribution):
         return self.distribution.mean()
     
     def u(self):
+<<<<<<< HEAD
+        return self.distribution.std()
+=======
         return self.distribution.std()
     
     def cdf(self,z,*params):
         return self.distribution.dist.cdf(z,*params)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5

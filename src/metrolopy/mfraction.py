@@ -42,9 +42,15 @@ class MFraction(Fraction):
             return ret.numerator
         return ret
     
+<<<<<<< HEAD
+    #def _mpmath_(self,p,r):
+        #from mpmath import rational
+        #return rational.mpq(self.numerator,self.denominator)
+=======
     def _mpmath_(self,p,r):
         from mpmath import rational
         return rational.mpq(self.numerator,self.denominator)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     
     def todecimal(self):
         return Decimal(self.numerator)/Decimal(self.denominator)

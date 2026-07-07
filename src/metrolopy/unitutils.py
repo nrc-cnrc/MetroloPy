@@ -58,7 +58,11 @@ class search_units_result(PrettyPrinter):
         from .nonlinearunit import NonlinearUnit
         from .offsetunit import OffsetUnit
         from .logunit import LogUnit
+<<<<<<< HEAD
+        from ._unit import _CompositeUnit
+=======
         from .unit import _CompositeUnit
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
         if fmt == 'latex':
             txt = "<ul style=\"font-family: 'Times New Roman', Times, serif;font-size:1.2em\">\n"
@@ -227,7 +231,11 @@ def search_units(search=None,fmt=None,show_all=False,units=None,
     """
     from importlib import import_module
 
+<<<<<<< HEAD
+    from ._unit import _CompositeUnit
+=======
     from .unit import _CompositeUnit
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     
     if fmt is not None:
         fmt = fmt.lower().strip()

@@ -31,25 +31,26 @@ from .nonlinearunit import NonlinearUnit,NonlinearConversion
 from .offsetunit import OffsetUnit,OffsetConversion
 from .logunit import LogUnit,LogConversion
 from .functions import (sin,cos,tan,arcsin,arccos,arctan,arctan2,sinh,cosh,
-                        tanh,arcsinh,arccosh,arctanh,exp,exp2,expm1,log2,
-                        log10,log1p,logaddexp,logaddexp2,sqrt,crt,square,add,
-                        subtract,negative,multiply,divide,true_divide,
+                        tanh,arcsinh,arccosh,arctanh,exp,exp2,expm1,log,log2,
+                        log10,log1p,logaddexp,logaddexp2,sqrt,cbrt,square,add,
+                        subtract,negative,multiply,divide,true_divide,ciel,
                         floor_divide,reciprocal,power,absolute,mod,remainder,
                         divmod,modf,angle,real,imag,conj,around,rint,fix,floor,
                         ceil,trunc,heaviside,sign,sum,prod,cumsum,cumprod,
-                        diff,ediff1d,gradient,cross)
+                        diff,ediff1d,cross)
 from .misc import (correlation_matrix,covariance_matrix,
                    correlation_matrix_sim,covariance_matrix_sim,
                    simulate,clear_all_sim,covplot)
 from ._mean import (autocorrelation,n_eff,wmean,mean,sigma_trim,delta_diff,
                    delta_diff_mean,delta_sum,delta_sum_mean,mean_datetime)
 from .distributions import (Distribution,Convolution,MultivariateDistribution,
-                            MultivariateElement,NormalDist,TDist)
+                            MultivariateElement,NormalDist,TDist,SciyStatsDist)
 from .miscdistributions import (MultiNormalDist,MultiTElement,MultiTDist,
                                 UniformDist,GammaDist,LaplaceDist,TriangularDist,
                                 ExponentialDist,PoissonDist,BinomialDist,
                                 CurvlinearTrapDist,TrapezoidalDist,ArcSinDist,
-                                LogNormalDist,WeibullDist,AveragedFrom)
+                                LogNormalDist,WeibullDist,AveragedDist,
+                                AveragedErrDist)
 from .exceptions import  (UnitError,IncompatibleUnitsError,UnitLibError,
                           UnitNotFoundError,CircularUnitConversionError,
                           UnitLibNotFoundError,ConstantNotFoundError,
@@ -57,8 +58,8 @@ from .exceptions import  (UnitError,IncompatibleUnitsError,UnitLibError,
                           FitWarning,BudgetWarning,UncertiantyPrecisionWarning)
 from .printing import set_printer
 from .unitutils import search_units,shadowed_units,convert,search_units_result
-from .constant import (GummyConstant,JummyConstant,constant,search_constants,
-                       shadowed_constants,search_constants_result)
+from ._constant import (GummyConstant,JummyConstant,constant,search_constants,
+                        shadowed_constants,search_constants_result)
 
 from .fit import Fit
 from .polyfit import PolyFit

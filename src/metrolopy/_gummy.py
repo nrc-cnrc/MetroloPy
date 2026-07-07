@@ -2,7 +2,7 @@
 
 # module _gummy
 
-# Copyright (C) 2025 National Research Council Canada
+# Copyright (C) 2026 National Research Council Canada
 # Author:  Harold Parks
 
 # This file is part of MetroloPy.
@@ -46,6 +46,7 @@ from .pmethod import _Pmthd,loc_from_k
 from .mfraction import MFraction
 from .util import _isscalar
 from .dfunc import Dfunc
+from numbers import Number
 
 def _ku(k,u):
     try:
@@ -486,6 +487,17 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
     
     Parameters
     ----------
+<<<<<<< HEAD
+    x:  `Number`, `Distribution`,`scipy.stats.rv_frozen` or `gummy`
+        A number representing the value of the gummy or a distribution,
+        either a `Distribution` instance or a scipy.stats rv_frozen distribution,
+        that represents the probability distribution of the gummy.  
+        If `x` is a distribution neither `u` nor `dof` should be specified.    
+        If `x` is a gummy then all other parameters are ignored and a
+        (correlated) copy is produced.
+
+    u:  `Number` >= 0, optional,
+=======
     x:  `float`, `Distribution` or `gummy`
         Either a float representing the value of the gummy or a sub-class of 
         `Distribution` that represents the probability distribution of the gummy.  
@@ -494,6 +506,7 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
         is equivalent to ``x.copy(formatting=True)``.
 
     u:  `float` >= 0, optional,
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         A number representing the uncertainty in `x`.  By default `u` 
         is taken to be the standard ("1-sigma") uncertainty.  But if `k` or `p`
         are specified then `u` is taken to be the corresponding expanded 
@@ -504,7 +517,11 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
         string that references a Unit object, e.g. ``gummy(1,unit='kg')`` or
         ``gummy(3.67,0.22,unit='m/s')``.  The default is `one`.
 
+<<<<<<< HEAD
+    dof:  `Number` > 0, optional
+=======
     dof:  `float` or `int` > 0, optional
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         The number of degrees of freedom upon which the uncertainty is based.  
         The default is ``float('inf')``.
 
@@ -641,11 +658,21 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
             self._pm = None
             self._set_k = True
                 
+<<<<<<< HEAD
+        if not isinstance(x,Number):
+            if not _isscalar(x):
+                raise TypeError('x must be a scalar Number or a distribution instance')
+=======
         if isinstance(x,Distribution) or type(x).__name__ in ('rv_continuous_frozen','rv_discrete_frozen'):
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             self._value = nummy(x,utype=utype,name=name)
             if uunit is None:
                 self._U = _ku(self._k,self._value.u)
             else:
+<<<<<<< HEAD
+                from ._unit import Unit
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
                 uunit = Unit.unit(uunit)
                 if uunit is unit:
                     uunit = None
@@ -1920,7 +1947,12 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
         
     def hist(self,title=None,xlabel=None,p=None,show_p=True,title_style=None,
              mean_marker=True,mean_marker_options={},ci_marker=True,
+<<<<<<< HEAD
+             ci_marker_options={},hold=False,math=None,norm=None,fig_options={},
+             subplot_options={},**hist_options):
+=======
              ci_marker_options={},hold=False,math=None,norm=None,**plot_options):
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         """
         Plots a histogram of the Monte-Carlo data for the gummy.  Before calling
         this method gummy.sim or gummy.simulate must be called to generate the
@@ -1981,11 +2013,28 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
             If this is `False` ``pyplot.show()`` is called before this method exits.
             If it is `True` ``pyplot.show()`` is not called.  The default is
             `False`.
+<<<<<<< HEAD
+            
+        fig_options: `dict`, optional
+            keywords passed to `pyplot.figure` when creating the figure
+        
+        subplot_options: `dict`, options
+            keywords passed to `pyplot.figure.add_subplot` when creating the
+            subplot
+           
+        **kwds:
+             Any additional keywords are passed to `pyplot.hist`.
+             
+        Returns
+        -------
+        Figure, Axes
+=======
            
         plot_options:
              These are optional keyword arguments that are passed to the `pyplot.hist`
              method.  For example bins=50 overrides the default number of bins (100).
              For other options see the `pyplot.hist` documentation.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         """
         import matplotlib.pyplot as plt
                     
@@ -2024,6 +2073,23 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
             title1 = math(title1)
             title = title0 + '\n' + title1
             
+<<<<<<< HEAD
+        if 'range' not in hist_options and ci_marker:
+            if self.p < 0.95:
+                gg = self.copy()
+                gg.p = 0.95
+            else:
+                gg = self
+            
+            ici = gg.cisim
+            a = (ici[1] - ici[0])/3
+            hist_options['range'] = (ici[0] - a,ici[1] + a)
+        
+        fig,ax = self.value.hist(hold=True,title=title,xlabel=xlabel,
+                                 **hist_options,**fig_options,
+                                 **subplot_options)
+            
+=======
         if xlabel is not None:
             plot_options['xlabel'] = xlabel
         if title is not None:
@@ -2037,6 +2103,7 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
         
         self.value.hist(hold=True,**plot_options)
         
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         if mean_marker:
             if 'linewidth' not in mean_marker_options and 'lw' not in mean_marker_options:
                 mean_marker_options['linewidth'] = 1
@@ -2046,7 +2113,11 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
                 mean_marker_options['zorder'] = 3
                 
             xsim = g.xsim
+<<<<<<< HEAD
+            ax.axvline(xsim,**mean_marker_options)
+=======
             plt.axvline(xsim,**mean_marker_options)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
         if ci_marker:
             if 'linewidth' not in mean_marker_options and 'lw' not in ci_marker_options:
@@ -2056,6 +2127,16 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
             if 'zorder' not in ci_marker_options:
                 ci_marker_options['zorder'] = 3
                 
+<<<<<<< HEAD
+            ci = g.cisim
+            ax.axvline(ci[0],**ci_marker_options)
+            ax.axvline(ci[1],**ci_marker_options)
+        
+        if not hold:
+            plt.show()
+            
+        return fig,ax
+=======
             if ci is None:
                 ci = g.cisim
             plt.axvline(ci[0],**ci_marker_options)
@@ -2063,6 +2144,7 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
         
         if not hold:
             plt.show()
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
     @staticmethod
     def covplot(x,y,title=None,xlabel=None,ylabel=None,mean_marker=False,
@@ -2118,8 +2200,13 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
         if ylabel is None:
             ylabel =  gummy._plotlabel(y,math=math)
             
+<<<<<<< HEAD
+        fig,ax = nummy.covplot(x,y,title=title,xlabel=xlabel,ylabel=ylabel,
+                               hold=True,**plot_options)
+=======
         nummy.covplot(x,y,title=title,xlabel=xlabel,ylabel=ylabel,
                                    hold=True,**plot_options)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
         if mean_marker:
             if 'linewidth' not in mean_marker_options and 'lw' not in mean_marker_options:
@@ -2128,12 +2215,22 @@ class gummy(Quantity,UncertainValue,Dfunc,metaclass=MetaGummy):
                 mean_marker_options['color'] = '0.5'
             if 'zorder' not in mean_marker_options:
                 mean_marker_options['zorder'] = 3
+<<<<<<< HEAD
+            ax.axvline(x.xsim,**mean_marker_options)
+            ax.axhline(y.xsim,**mean_marker_options)
+=======
             plt.axvline(x.xsim,**mean_marker_options)
             plt.axhline(y.xsim,**mean_marker_options)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             
         if not hold:
             plt.show()
             
+<<<<<<< HEAD
+        return fig,ax
+            
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     def toummy(self):
         """
         returns a `Quantity` with an `ummy` value.

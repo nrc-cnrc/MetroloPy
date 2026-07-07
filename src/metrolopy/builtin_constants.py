@@ -25,7 +25,11 @@ constant definitions
 """
 
 from numpy import sqrt
+<<<<<<< HEAD
+from ._constant import GummyConstant
+=======
 from .constant import GummyConstant
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 from ._unit import unit
 from .mfraction import MFraction
 from ._gummy import gummy

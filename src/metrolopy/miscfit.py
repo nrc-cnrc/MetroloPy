@@ -1,9 +1,32 @@
 # -*- coding: utf-8 -*-
+<<<<<<< HEAD
+
+# module miscfit
+
+# Copyright (C) 2026 National Research Council Canada
+# Author:  Harold Parks
+
+# This file is part of MetroloPy.
+
+# MetroloPy is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software 
+# Foundation, either version 3 of the License, or (at your option) any later 
+# version.
+
+# MetroloPy is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more 
+# details.
+
+# You should have received a copy of the GNU General Public License along with 
+# MetroloPy. If not, see <http://www.gnu.org/licenses/>.
+=======
 """
 Created on Fri Jun 12 09:58:43 2026
 
 @author: Parksh
 """
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 import numpy as np
 from .fit import Fit
@@ -20,6 +43,78 @@ class DoubleExpFit(Fit):
    
     Parameters
     ----------
+<<<<<<< HEAD
+    x: array
+        The indepenant variables x.  For n data points this should be an
+        array of shape (n,) for a one-dimensional fit or shape (m,n) for an
+        m-dimensional fit.  The maximum dimension m is 3.
+        
+        The x-values may be all `float` or all `gummy`,  If uncertainties
+        u are defined for the x-values, the xweights will be set to 1/u**2
+        for each point.  To override this behavior set the keyword parameter
+        "xweights = 1".  If uncertainties are defined for the x-values,
+        the default solver is odr.  If the nls or ols solver is manually
+        selected then the uncertainties in the x-values will be ignored.
+        For an m-dimential fit, the odr solver will take into account 
+        correlations between the m elements of the x-values for each data 
+        point, but ignores correlations between different data points and 
+        bewteen the x- and y-values.
+        
+    y:  array
+        Response variables y. 
+        
+        The y-values may be all `float` or all `gummy`,  If uncertainties
+        u are defined for the y-values, the weights will be set to 1/u**2
+        for each point.  To override this behavior set the keyword parameter
+        "weights = 1".
+        
+        If the nls or odr solver is used, the weighting will take into
+        account correlations between the different points.  However, the odr
+        solver ignores correlations between different data points.  If the
+        y-values are multi-dimensional, the odr solver will take into
+        account correlations between the different elements at each point.
+        
+    fix: array of `bool`
+        A mask for the fit parameters.  For any element in `fix` that is
+        `True`, the corresponding fit parameter will be held constant at
+        its initial value.
+        
+    solver:  {'ols','nls','odr'}, optional
+        A non-linear least squares (nls), ordinary least squares (ols) or
+        othogonal distance regression solver (odr) can be used to perform
+        the fit.
+        
+        ols is the default solver unless uncertainties are specified for
+        the x-values, in which case the default solver is odr.
+        
+        The nls solver uses `scipy.optimize.least_squares` while the odr
+        solver used `odrpack.odr_fit`.  The ols solver uses 
+        `scipy.linag.pinvh` to invert the normal equation matrix.
+        
+    ux: array or `float`, optional
+        Uncertainties for the x-values.  Specifying ux is an alternative to 
+        passing gummys with uncerainties defined as the the x-values.  ux 
+        can be a number that applies to all the x-values or an array giving
+        the uncertainty for each x-value.
+        
+        If uncertainties u are defined individually for the x-values, the 
+        xweights will be set to 1/u**2 for each point.  To override this 
+        behavior set the keyword parameter "xweights = 1".  If 
+        uncertainties are defined for the x-values, the default solver is 
+        odr.  If the nls or ols solver is manually selected then the 
+        uncertainties in the x-values will be ignored.
+        
+    uy: array or `float`, optional
+        Uncertainties for the y-values.  Specifying uy is an alternative to 
+        passing gummys with uncerainties defined as the the y-values.  uy 
+        can be a number that applies to all the x-values or an array giving
+        the uncertainty for each y-value.
+        
+        If uncertainties u are defined individually for the y-values, the 
+        weights will be set to 1/u**2 for each point.  To override this 
+        behavior set the keyword parameter "weights = 1"
+        
+=======
     x: array_like
        The x-coordinates of the data.  This is a list or numpy array of
        floats or gummys (all point must be of the same type, floats and gummys
@@ -36,6 +131,7 @@ class DoubleExpFit(Fit):
     uy: `float`, array_like of `float`  or `None`, optional
         Uncertainty in the `y` values. This should not be specified if the y
         argument contains gummys.  The default is `None`.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     variance_is_known: `bool`, optional
         If this is `True` then any uncertainties in the data  (either as
         gummys in the `x` or `y` values or in the ux or uy parameters)
@@ -43,6 +139,98 @@ class DoubleExpFit(Fit):
         the uncertainties are based on the standard deviation of the
         residuals and the uncertainties in the data are used only for
         weighting the data points.  The default value is `True`.
+<<<<<<< HEAD
+        
+    p0: array of `float`, optional
+        initial values for the fit parameters.
+
+    Attributes
+    ----------
+    p:  `numpy.array` of `gummy`
+        The fitted values for the fit function parameters as gummys
+        including uncertainties and units.
+        
+    pf:  `numpy.array` of `float`
+        The fitted values for the fit function parameters as floats
+        
+    res:  `numpy.ndarray` of `float`
+        the weighted fit residuals
+        
+    var:  `float`
+        the variance of the weighted fit residuals
+        
+    s:  `float`
+        the standard deviation of weighted the residuals
+        
+    cov:  `numpy.ndarray` of `float`
+        the covariance matrix of the (non-fixed) parameters
+        
+    known_var:  `float`
+        If uncertainties are defined for the y-values (and possible the
+        x-values), this is the predicted variance of the weighted fit
+        residuals.  If uncertainites are not defined for the y- or x-values,
+        this is `None`.
+        
+    yvar:  `float`
+        the variance of the residual differences between the fitted values
+        and the weighted y-values. For the nls and ols solver this is the 
+        same as var.
+    
+    xvar:  `float`
+        the variance of the residual differences between the fitted values
+        and the weighted x-values. For the nls and ols solver this is `None`.
+        
+    rcov:  `numpy.ndarray` of `float`
+        the covariance matrix of the (non-fixed) parameters divided by the
+        variance
+    
+    fit_output:
+        the return value of `scipy.optimize.least_squares` for the nls
+        solver of the return value of `odr_fit.odrpack` for the odr
+        solver.  This is `None` if the ols solver is used.
+        
+    x:  `numpy.ndarray` of `float` or of `gummy`
+        numpy array of the x-coordinates of the data.
+        
+    xf:  `numpy.ndarray` of `float`
+        numpy array of the x-coordinates of the data as floats
+        
+    xdim:  `int`
+        the number of dimensions of the x-coordinates
+        
+    ux:  `float`, `numpy.ndarray` of `floats` or `None`
+        uncertainties in the x-coordinates
+        
+    y:  `numpy.ndarray` of `float` or of `gummy`
+        numpy array of the y-coordinates of the data.
+        
+    yf:  `numpy.ndarray` of `float`
+        numpy array of the y-coordinates of the data as floats
+        
+    ydim:  `int`
+        the number of dimensions of the y-coordinates
+        
+    uy:  `float`, `numpy.ndarray` of `floats` or `None`
+        uncertainties in the y-coordinates
+        
+    count:  `int`
+        the number of (x) data points
+        
+    p0:  `list` of `float`
+        the initial values for the fit function parameters
+        
+    solver:  `str`
+        the solver used
+        
+    punits:  `list` of `Unit`
+        the units of the fit parameters
+        
+    nparam:  `int`
+        the number of (non-fixed) fit parameters
+        
+    dof: `float`
+        degrees of freedom for the fit
+=======
     xunits, yunits: `str` or `None`, optional
         units for the x and y coordinates. These should not be specified
         if the `x` and `y` parameters contain gummys. These may only be
@@ -98,15 +286,26 @@ class DoubleExpFit(Fit):
         the units of the fit parameters
     nparam:  `int`
         the number of fit parameters
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
     Methods
     -------
     ypred(x1,x2,...):
+<<<<<<< HEAD
+        Takes `xdim` floats (or arrays of float) and returns a gummy 
+        representing the predicted value(s) at that x-coordinate.
+        
+    ypredf(x1,x2,...):
+        Takes `xdim` floats (or arrays of float) and returns a float giving 
+        the  predicted value(s) at that x-coordinate.
+        
+=======
         Takes `xdim` floats and returns a gummy representing the predicted
         value at that x-coordinate.
     ypredf(x1,x2,...):
         Takes `xdim` floats and returns a float giving the  predicted value
         at that x-coordinate.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     plot(...):
         plots the data (only available if x and y are one-dimensional)
     """
@@ -114,6 +313,18 @@ class DoubleExpFit(Fit):
     def get_p0(self):
         ft = ExpFit(self.xf,self.yf)
         r = np.abs(ft.pf[1])/(np.max(self.xf) - np.min(self.xf))
+<<<<<<< HEAD
+        count = len(self.yf)
+        if r < 0.33:
+            a = int(count*2*r)
+            b = count
+        elif r < 1:
+            a = int(2*count/3)
+            b = count
+        else:
+            a = 0
+            b = int(count/3)
+=======
         if r < 0.33:
             a = int(self.count*2*r)
             b = self.count
@@ -123,6 +334,7 @@ class DoubleExpFit(Fit):
         else:
             a = 0
             b = int(self.count/3)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         ft2 = ExpFit(self.xf[a:b],ft.yf[a:b])
         return[ft.pf[0],ft.pf[1],ft2.pf[0],ft2.pf[1],ft.pf[2]]
         
@@ -157,6 +369,78 @@ class ExpFit(Fit):
    
     Parameters
     ----------
+<<<<<<< HEAD
+    x: array
+        The indepenant variables x.  For n data points this should be an
+        array of shape (n,) for a one-dimensional fit or shape (m,n) for an
+        m-dimensional fit.  The maximum dimension m is 3.
+        
+        The x-values may be all `float` or all `gummy`,  If uncertainties
+        u are defined for the x-values, the xweights will be set to 1/u**2
+        for each point.  To override this behavior set the keyword parameter
+        "xweights = 1".  If uncertainties are defined for the x-values,
+        the default solver is odr.  If the nls or ols solver is manually
+        selected then the uncertainties in the x-values will be ignored.
+        For an m-dimential fit, the odr solver will take into account 
+        correlations between the m elements of the x-values for each data 
+        point, but ignores correlations between different data points and 
+        bewteen the x- and y-values.
+        
+    y:  array
+        Response variables y. 
+        
+        The y-values may be all `float` or all `gummy`,  If uncertainties
+        u are defined for the y-values, the weights will be set to 1/u**2
+        for each point.  To override this behavior set the keyword parameter
+        "weights = 1".
+        
+        If the nls or odr solver is used, the weighting will take into
+        account correlations between the different points.  However, the odr
+        solver ignores correlations between different data points.  If the
+        y-values are multi-dimensional, the odr solver will take into
+        account correlations between the different elements at each point.
+        
+    fix: array of `bool`
+        A mask for the fit parameters.  For any element in `fix` that is
+        `True`, the corresponding fit parameter will be held constant at
+        its initial value.
+        
+    solver:  {'ols','nls','odr'}, optional
+        A non-linear least squares (nls), ordinary least squares (ols) or
+        othogonal distance regression solver (odr) can be used to perform
+        the fit.
+        
+        ols is the default solver unless uncertainties are specified for
+        the x-values, in which case the default solver is odr.
+        
+        The nls solver uses `scipy.optimize.least_squares` while the odr
+        solver used `odrpack.odr_fit`.  The ols solver uses 
+        `scipy.linag.pinvh` to invert the normal equation matrix.
+        
+    ux: array or `float`, optional
+        Uncertainties for the x-values.  Specifying ux is an alternative to 
+        passing gummys with uncerainties defined as the the x-values.  ux 
+        can be a number that applies to all the x-values or an array giving
+        the uncertainty for each x-value.
+        
+        If uncertainties u are defined individually for the x-values, the 
+        xweights will be set to 1/u**2 for each point.  To override this 
+        behavior set the keyword parameter "xweights = 1".  If 
+        uncertainties are defined for the x-values, the default solver is 
+        odr.  If the nls or ols solver is manually selected then the 
+        uncertainties in the x-values will be ignored.
+        
+    uy: array or `float`, optional
+        Uncertainties for the y-values.  Specifying uy is an alternative to 
+        passing gummys with uncerainties defined as the the y-values.  uy 
+        can be a number that applies to all the x-values or an array giving
+        the uncertainty for each y-value.
+        
+        If uncertainties u are defined individually for the y-values, the 
+        weights will be set to 1/u**2 for each point.  To override this 
+        behavior set the keyword parameter "weights = 1"
+        
+=======
     x: array_like
        The x-coordinates of the data.  This is a list or numpy array of
        floats or gummys (all point must be of the same type, floats and gummys
@@ -173,6 +457,7 @@ class ExpFit(Fit):
     uy: `float`, array_like of `float`  or `None`, optional
         Uncertainty in the `y` values. This should not be specified if the y
         argument contains gummys.  The default is `None`.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     variance_is_known: `bool`, optional
         If this is `True` then any uncertainties in the data  (either as
         gummys in the `x` or `y` values or in the ux or uy parameters)
@@ -180,6 +465,98 @@ class ExpFit(Fit):
         the uncertainties are based on the standard deviation of the
         residuals and the uncertainties in the data are used only for
         weighting the data points.  The default value is `True`.
+<<<<<<< HEAD
+        
+    p0: array of `float`, optional
+        initial values for the fit parameters.
+
+    Attributes
+    ----------
+    p:  `numpy.array` of `gummy`
+        The fitted values for the fit function parameters as gummys
+        including uncertainties and units.
+        
+    pf:  `numpy.array` of `float`
+        The fitted values for the fit function parameters as floats
+        
+    res:  `numpy.ndarray` of `float`
+        the weighted fit residuals
+        
+    var:  `float`
+        the variance of the weighted fit residuals
+        
+    s:  `float`
+        the standard deviation of weighted the residuals
+        
+    cov:  `numpy.ndarray` of `float`
+        the covariance matrix of the (non-fixed) parameters
+        
+    known_var:  `float`
+        If uncertainties are defined for the y-values (and possible the
+        x-values), this is the predicted variance of the weighted fit
+        residuals.  If uncertainites are not defined for the y- or x-values,
+        this is `None`.
+        
+    yvar:  `float`
+        the variance of the residual differences between the fitted values
+        and the weighted y-values. For the nls and ols solver this is the 
+        same as var.
+    
+    xvar:  `float`
+        the variance of the residual differences between the fitted values
+        and the weighted x-values. For the nls and ols solver this is `None`.
+        
+    rcov:  `numpy.ndarray` of `float`
+        the covariance matrix of the (non-fixed) parameters divided by the
+        variance
+    
+    fit_output:
+        the return value of `scipy.optimize.least_squares` for the nls
+        solver of the return value of `odr_fit.odrpack` for the odr
+        solver.  This is `None` if the ols solver is used.
+        
+    x:  `numpy.ndarray` of `float` or of `gummy`
+        numpy array of the x-coordinates of the data.
+        
+    xf:  `numpy.ndarray` of `float`
+        numpy array of the x-coordinates of the data as floats
+        
+    xdim:  `int`
+        the number of dimensions of the x-coordinates
+        
+    ux:  `float`, `numpy.ndarray` of `floats` or `None`
+        uncertainties in the x-coordinates
+        
+    y:  `numpy.ndarray` of `float` or of `gummy`
+        numpy array of the y-coordinates of the data.
+        
+    yf:  `numpy.ndarray` of `float`
+        numpy array of the y-coordinates of the data as floats
+        
+    ydim:  `int`
+        the number of dimensions of the y-coordinates
+        
+    uy:  `float`, `numpy.ndarray` of `floats` or `None`
+        uncertainties in the y-coordinates
+        
+    count:  `int`
+        the number of (x) data points
+        
+    p0:  `list` of `float`
+        the initial values for the fit function parameters
+        
+    solver:  `str`
+        the solver used
+        
+    punits:  `list` of `Unit`
+        the units of the fit parameters
+        
+    nparam:  `int`
+        the number of (non-fixed) fit parameters
+        
+    dof: `float`
+        degrees of freedom for the fit
+=======
     xunits, yunits: `str` or `None`, optional
         units for the x and y coordinates. These should not be specified
         if the `x` and `y` parameters contain gummys. These may only be
@@ -235,15 +612,26 @@ class ExpFit(Fit):
         the units of the fit parameters
     nparam:  `int`
         the number of fit parameters
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
     Methods
     -------
     ypred(x1,x2,...):
+<<<<<<< HEAD
+        Takes `xdim` floats (or arrays of float) and returns a gummy 
+        representing the predicted value(s) at that x-coordinate.
+        
+    ypredf(x1,x2,...):
+        Takes `xdim` floats (or arrays of float) and returns a float giving 
+        the  predicted value(s) at that x-coordinate.
+        
+=======
         Takes `xdim` floats and returns a gummy representing the predicted
         value at that x-coordinate.
     ypredf(x1,x2,...):
         Takes `xdim` floats and returns a float giving the  predicted value
         at that x-coordinate.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     plot(...):
         plots the data (only available if x and y are one-dimensional)
     """
@@ -289,6 +677,78 @@ class OneOverTFit(Fit):
    
     Parameters
     ----------
+<<<<<<< HEAD
+    x: array
+        The indepenant variables x.  For n data points this should be an
+        array of shape (n,) for a one-dimensional fit or shape (m,n) for an
+        m-dimensional fit.  The maximum dimension m is 3.
+        
+        The x-values may be all `float` or all `gummy`,  If uncertainties
+        u are defined for the x-values, the xweights will be set to 1/u**2
+        for each point.  To override this behavior set the keyword parameter
+        "xweights = 1".  If uncertainties are defined for the x-values,
+        the default solver is odr.  If the nls or ols solver is manually
+        selected then the uncertainties in the x-values will be ignored.
+        For an m-dimential fit, the odr solver will take into account 
+        correlations between the m elements of the x-values for each data 
+        point, but ignores correlations between different data points and 
+        bewteen the x- and y-values.
+        
+    y:  array
+        Response variables y. 
+        
+        The y-values may be all `float` or all `gummy`,  If uncertainties
+        u are defined for the y-values, the weights will be set to 1/u**2
+        for each point.  To override this behavior set the keyword parameter
+        "weights = 1".
+        
+        If the nls or odr solver is used, the weighting will take into
+        account correlations between the different points.  However, the odr
+        solver ignores correlations between different data points.  If the
+        y-values are multi-dimensional, the odr solver will take into
+        account correlations between the different elements at each point.
+        
+    fix: array of `bool`
+        A mask for the fit parameters.  For any element in `fix` that is
+        `True`, the corresponding fit parameter will be held constant at
+        its initial value.
+        
+    solver:  {'ols','nls','odr'}, optional
+        A non-linear least squares (nls), ordinary least squares (ols) or
+        othogonal distance regression solver (odr) can be used to perform
+        the fit.
+        
+        ols is the default solver unless uncertainties are specified for
+        the x-values, in which case the default solver is odr.
+        
+        The nls solver uses `scipy.optimize.least_squares` while the odr
+        solver used `odrpack.odr_fit`.  The ols solver uses 
+        `scipy.linag.pinvh` to invert the normal equation matrix.
+        
+    ux: array or `float`, optional
+        Uncertainties for the x-values.  Specifying ux is an alternative to 
+        passing gummys with uncerainties defined as the the x-values.  ux 
+        can be a number that applies to all the x-values or an array giving
+        the uncertainty for each x-value.
+        
+        If uncertainties u are defined individually for the x-values, the 
+        xweights will be set to 1/u**2 for each point.  To override this 
+        behavior set the keyword parameter "xweights = 1".  If 
+        uncertainties are defined for the x-values, the default solver is 
+        odr.  If the nls or ols solver is manually selected then the 
+        uncertainties in the x-values will be ignored.
+        
+    uy: array or `float`, optional
+        Uncertainties for the y-values.  Specifying uy is an alternative to 
+        passing gummys with uncerainties defined as the the y-values.  uy 
+        can be a number that applies to all the x-values or an array giving
+        the uncertainty for each y-value.
+        
+        If uncertainties u are defined individually for the y-values, the 
+        weights will be set to 1/u**2 for each point.  To override this 
+        behavior set the keyword parameter "weights = 1"
+        
+=======
     x: array_like
        The x-coordinates of the data.  This is a list or numpy array of
        floats or gummys (all point must be of the same type, floats and gummys
@@ -305,6 +765,7 @@ class OneOverTFit(Fit):
     uy: `float`, array_like of `float`  or `None`, optional
         Uncertainty in the `y` values. This should not be specified if the y
         argument contains gummys.  The default is `None`.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     variance_is_known: `bool`, optional
         If this is `True` then any uncertainties in the data  (either as
         gummys in the `x` or `y` values or in the ux or uy parameters)
@@ -312,6 +773,98 @@ class OneOverTFit(Fit):
         the uncertainties are based on the standard deviation of the
         residuals and the uncertainties in the data are used only for
         weighting the data points.  The default value is `True`.
+<<<<<<< HEAD
+        
+    p0: array of `float`, optional
+        initial values for the fit parameters.
+
+    Attributes
+    ----------
+    p:  `numpy.array` of `gummy`
+        The fitted values for the fit function parameters as gummys
+        including uncertainties and units.
+        
+    pf:  `numpy.array` of `float`
+        The fitted values for the fit function parameters as floats
+        
+    res:  `numpy.ndarray` of `float`
+        the weighted fit residuals
+        
+    var:  `float`
+        the variance of the weighted fit residuals
+        
+    s:  `float`
+        the standard deviation of weighted the residuals
+        
+    cov:  `numpy.ndarray` of `float`
+        the covariance matrix of the (non-fixed) parameters
+        
+    known_var:  `float`
+        If uncertainties are defined for the y-values (and possible the
+        x-values), this is the predicted variance of the weighted fit
+        residuals.  If uncertainites are not defined for the y- or x-values,
+        this is `None`.
+        
+    yvar:  `float`
+        the variance of the residual differences between the fitted values
+        and the weighted y-values. For the nls and ols solver this is the 
+        same as var.
+    
+    xvar:  `float`
+        the variance of the residual differences between the fitted values
+        and the weighted x-values. For the nls and ols solver this is `None`.
+        
+    rcov:  `numpy.ndarray` of `float`
+        the covariance matrix of the (non-fixed) parameters divided by the
+        variance
+    
+    fit_output:
+        the return value of `scipy.optimize.least_squares` for the nls
+        solver of the return value of `odr_fit.odrpack` for the odr
+        solver.  This is `None` if the ols solver is used.
+        
+    x:  `numpy.ndarray` of `float` or of `gummy`
+        numpy array of the x-coordinates of the data.
+        
+    xf:  `numpy.ndarray` of `float`
+        numpy array of the x-coordinates of the data as floats
+        
+    xdim:  `int`
+        the number of dimensions of the x-coordinates
+        
+    ux:  `float`, `numpy.ndarray` of `floats` or `None`
+        uncertainties in the x-coordinates
+        
+    y:  `numpy.ndarray` of `float` or of `gummy`
+        numpy array of the y-coordinates of the data.
+        
+    yf:  `numpy.ndarray` of `float`
+        numpy array of the y-coordinates of the data as floats
+        
+    ydim:  `int`
+        the number of dimensions of the y-coordinates
+        
+    uy:  `float`, `numpy.ndarray` of `floats` or `None`
+        uncertainties in the y-coordinates
+        
+    count:  `int`
+        the number of (x) data points
+        
+    p0:  `list` of `float`
+        the initial values for the fit function parameters
+        
+    solver:  `str`
+        the solver used
+        
+    punits:  `list` of `Unit`
+        the units of the fit parameters
+        
+    nparam:  `int`
+        the number of (non-fixed) fit parameters
+        
+    dof: `float`
+        degrees of freedom for the fit
+=======
     xunits, yunits: `str` or `None`, optional
         units for the x and y coordinates. These should not be specified
         if the `x` and `y` parameters contain gummys. These may only be
@@ -367,10 +920,27 @@ class OneOverTFit(Fit):
         the units of the fit parameters
     nparam:  `int`
         the number of fit parameters
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
     Methods
     -------
     ypred(x1,x2,...):
+<<<<<<< HEAD
+        Takes `xdim` floats (or arrays of float) and returns a gummy 
+        representing the predicted value(s) at that x-coordinate.
+        
+    ypredf(x1,x2,...):
+        Takes `xdim` floats (or arrays of float) and returns a float giving 
+        the  predicted value(s) at that x-coordinate.
+        
+    plot(...):
+        plots the data (only available if x and y are one-dimensional)
+    """
+    
+    def get_p0(self):
+        count = len(self.yf)
+        b = np.mean(self.yf[(count-2-int(count/10)):(count-1)])
+=======
         Takes `xdim` floats and returns a gummy representing the predicted
         value at that x-coordinate.
     ypredf(x1,x2,...):
@@ -381,6 +951,7 @@ class OneOverTFit(Fit):
     
     def get_p0(self):
         b = np.mean(self.yf[(self.count-2-int(self.count/10)):(self.count-1)])
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         a = (self.xf[-1]-self.xf[0])/3.0
         return[a,b]
         
@@ -414,6 +985,78 @@ class SinFit(Fit):
    
     Parameters
     ----------
+<<<<<<< HEAD
+    x: array
+        The indepenant variables x.  For n data points this should be an
+        array of shape (n,) for a one-dimensional fit or shape (m,n) for an
+        m-dimensional fit.  The maximum dimension m is 3.
+        
+        The x-values may be all `float` or all `gummy`,  If uncertainties
+        u are defined for the x-values, the xweights will be set to 1/u**2
+        for each point.  To override this behavior set the keyword parameter
+        "xweights = 1".  If uncertainties are defined for the x-values,
+        the default solver is odr.  If the nls or ols solver is manually
+        selected then the uncertainties in the x-values will be ignored.
+        For an m-dimential fit, the odr solver will take into account 
+        correlations between the m elements of the x-values for each data 
+        point, but ignores correlations between different data points and 
+        bewteen the x- and y-values.
+        
+    y:  array
+        Response variables y. 
+        
+        The y-values may be all `float` or all `gummy`,  If uncertainties
+        u are defined for the y-values, the weights will be set to 1/u**2
+        for each point.  To override this behavior set the keyword parameter
+        "weights = 1".
+        
+        If the nls or odr solver is used, the weighting will take into
+        account correlations between the different points.  However, the odr
+        solver ignores correlations between different data points.  If the
+        y-values are multi-dimensional, the odr solver will take into
+        account correlations between the different elements at each point.
+        
+    fix: array of `bool`
+        A mask for the fit parameters.  For any element in `fix` that is
+        `True`, the corresponding fit parameter will be held constant at
+        its initial value.
+        
+    solver:  {'ols','nls','odr'}, optional
+        A non-linear least squares (nls), ordinary least squares (ols) or
+        othogonal distance regression solver (odr) can be used to perform
+        the fit.
+        
+        ols is the default solver unless uncertainties are specified for
+        the x-values, in which case the default solver is odr.
+        
+        The nls solver uses `scipy.optimize.least_squares` while the odr
+        solver used `odrpack.odr_fit`.  The ols solver uses 
+        `scipy.linag.pinvh` to invert the normal equation matrix.
+        
+    ux: array or `float`, optional
+        Uncertainties for the x-values.  Specifying ux is an alternative to 
+        passing gummys with uncerainties defined as the the x-values.  ux 
+        can be a number that applies to all the x-values or an array giving
+        the uncertainty for each x-value.
+        
+        If uncertainties u are defined individually for the x-values, the 
+        xweights will be set to 1/u**2 for each point.  To override this 
+        behavior set the keyword parameter "xweights = 1".  If 
+        uncertainties are defined for the x-values, the default solver is 
+        odr.  If the nls or ols solver is manually selected then the 
+        uncertainties in the x-values will be ignored.
+        
+    uy: array or `float`, optional
+        Uncertainties for the y-values.  Specifying uy is an alternative to 
+        passing gummys with uncerainties defined as the the y-values.  uy 
+        can be a number that applies to all the x-values or an array giving
+        the uncertainty for each y-value.
+        
+        If uncertainties u are defined individually for the y-values, the 
+        weights will be set to 1/u**2 for each point.  To override this 
+        behavior set the keyword parameter "weights = 1"
+        
+=======
     x: array_like
        The x-coordinates of the data.  This is a list or numpy array of
        floats or gummys (all point must be of the same type, floats and gummys
@@ -430,6 +1073,7 @@ class SinFit(Fit):
     uy: `float`, array_like of `float`  or `None`, optional
         Uncertainty in the `y` values. This should not be specified if the y
         argument contains gummys.  The default is `None`.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     variance_is_known: `bool`, optional
         If this is `True` then any uncertainties in the data  (either as
         gummys in the `x` or `y` values or in the ux or uy parameters)
@@ -437,6 +1081,98 @@ class SinFit(Fit):
         the uncertainties are based on the standard deviation of the
         residuals and the uncertainties in the data are used only for
         weighting the data points.  The default value is `True`.
+<<<<<<< HEAD
+        
+    p0: array of `float`, optional
+        initial values for the fit parameters.
+
+    Attributes
+    ----------
+    p:  `numpy.array` of `gummy`
+        The fitted values for the fit function parameters as gummys
+        including uncertainties and units.
+        
+    pf:  `numpy.array` of `float`
+        The fitted values for the fit function parameters as floats
+        
+    res:  `numpy.ndarray` of `float`
+        the weighted fit residuals
+        
+    var:  `float`
+        the variance of the weighted fit residuals
+        
+    s:  `float`
+        the standard deviation of weighted the residuals
+        
+    cov:  `numpy.ndarray` of `float`
+        the covariance matrix of the (non-fixed) parameters
+        
+    known_var:  `float`
+        If uncertainties are defined for the y-values (and possible the
+        x-values), this is the predicted variance of the weighted fit
+        residuals.  If uncertainites are not defined for the y- or x-values,
+        this is `None`.
+        
+    yvar:  `float`
+        the variance of the residual differences between the fitted values
+        and the weighted y-values. For the nls and ols solver this is the 
+        same as var.
+    
+    xvar:  `float`
+        the variance of the residual differences between the fitted values
+        and the weighted x-values. For the nls and ols solver this is `None`.
+        
+    rcov:  `numpy.ndarray` of `float`
+        the covariance matrix of the (non-fixed) parameters divided by the
+        variance
+    
+    fit_output:
+        the return value of `scipy.optimize.least_squares` for the nls
+        solver of the return value of `odr_fit.odrpack` for the odr
+        solver.  This is `None` if the ols solver is used.
+        
+    x:  `numpy.ndarray` of `float` or of `gummy`
+        numpy array of the x-coordinates of the data.
+        
+    xf:  `numpy.ndarray` of `float`
+        numpy array of the x-coordinates of the data as floats
+        
+    xdim:  `int`
+        the number of dimensions of the x-coordinates
+        
+    ux:  `float`, `numpy.ndarray` of `floats` or `None`
+        uncertainties in the x-coordinates
+        
+    y:  `numpy.ndarray` of `float` or of `gummy`
+        numpy array of the y-coordinates of the data.
+        
+    yf:  `numpy.ndarray` of `float`
+        numpy array of the y-coordinates of the data as floats
+        
+    ydim:  `int`
+        the number of dimensions of the y-coordinates
+        
+    uy:  `float`, `numpy.ndarray` of `floats` or `None`
+        uncertainties in the y-coordinates
+        
+    count:  `int`
+        the number of (x) data points
+        
+    p0:  `list` of `float`
+        the initial values for the fit function parameters
+        
+    solver:  `str`
+        the solver used
+        
+    punits:  `list` of `Unit`
+        the units of the fit parameters
+        
+    nparam:  `int`
+        the number of (non-fixed) fit parameters
+        
+    dof: `float`
+        degrees of freedom for the fit
+=======
     xunits, yunits: `str` or `None`, optional
         units for the x and y coordinates. These should not be specified
         if the `x` and `y` parameters contain gummys. These may only be
@@ -492,15 +1228,26 @@ class SinFit(Fit):
         the units of the fit parameters
     nparam:  `int`
         the number of fit parameters
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
     Methods
     -------
     ypred(x1,x2,...):
+<<<<<<< HEAD
+        Takes `xdim` floats (or arrays of float) and returns a gummy 
+        representing the predicted value(s) at that x-coordinate.
+        
+    ypredf(x1,x2,...):
+        Takes `xdim` floats (or arrays of float) and returns a float giving 
+        the  predicted value(s) at that x-coordinate.
+        
+=======
         Takes `xdim` floats and returns a gummy representing the predicted
         value at that x-coordinate.
     ypredf(x1,x2,...):
         Takes `xdim` floats and returns a float giving the  predicted value
         at that x-coordinate.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     plot(...):
         plots the data (only available if x and y are one-dimensional)
     """
