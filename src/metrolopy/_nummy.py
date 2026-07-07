@@ -36,7 +36,10 @@ from .util import _isscalar
 from .exceptions import NoSimulatedDataError
 from math import isinf,isnan,sqrt
 from html import escape
+<<<<<<< HEAD
 from numbers import Number
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 def _bop(f,npf,s,b):    
     if isinstance(b,nummy):
@@ -126,6 +129,7 @@ class nummy(ummy):
         
         self.name = name
         
+<<<<<<< HEAD
         if not isinstance(x,Number):
             if not isinstance(x,Distribution):
                 try:
@@ -133,6 +137,12 @@ class nummy(ummy):
                 except TypeError:
                     raise TypeError('x must be a Number, Distribution or an rv_frozen distribution instance')
                     
+=======
+        if type(x).__name__ in ('rv_continuous_frozen','rv_discrete_frozen'):
+            x = ScipyStatsDist(x)
+            
+        if isinstance(x,Distribution):
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             if x._used or not x.isindependent:
                 raise ValueError('Distribution instances may only be used as the x parameter of a new gummy only if they\nrepresent independant variables and have not previously been used with another gummy')                
             x._used = True
@@ -553,7 +563,11 @@ class nummy(ummy):
     def hist(self,**kwds):
         if not isinstance(self._dist,Distribution):
             raise TypeError('hist may not be called from a constant nummy')
+<<<<<<< HEAD
         return self.distribution.hist(**kwds)
+=======
+        self.distribution.hist(**kwds)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
     def covariance_sim(self,g):
         """

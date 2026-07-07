@@ -5,10 +5,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
+<<<<<<< HEAD
     <title>MetroloPy &#8212; metrolopy 1.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
     <script src="_static/documentation_options.js?v=fc837d61"></script>
+=======
+    <title>MetroloPy &#8212; metrolopy 1.0.4 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <script src="_static/documentation_options.js?v=71272d9f"></script>
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -23,7 +30,11 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+<<<<<<< HEAD
         <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.1.0 documentation</a> &#187;</li>
+=======
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.0.4 documentation</a> &#187;</li>
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         <li class="nav-item nav-item-this"><a href="">MetroloPy</a></li> 
       </ul>
     </div>  
@@ -1316,6 +1327,77 @@ dimensions nd of the distribution e.g. <code class="docutils literal notranslate
 </div>
 </section>
 </section>
+<<<<<<< HEAD
+=======
+<section id="built-in-mathematical-functions">
+<span id="functions"></span><h1>built-in mathematical functions<a class="headerlink" href="#built-in-mathematical-functions" title="Link to this heading">¶</a></h1>
+<p>The following functions are installed as part of the gummy package can
+take gummy, jummy, or float arguments. Arguments must be
+dimensionless for transcendental functions.</p>
+<p>metrolopy.<strong>absolute(x)</strong>: equivalent to abs(x)</p>
+<p>metrolopy.<strong>add(x1,x2)</strong>: equivalent to z1 + x2</p>
+<p>metrolopy.<strong>angle(x)</strong>: returns the complex argument of x</p>
+<p>metrolopy.<strong>arccos(x)</strong>: inverse cosine of x</p>
+<p>metrolopy.<strong>arccosh(x)</strong>: inverse hyperbolic cosine of x</p>
+<p>metrolopy.<strong>arcsin(x)</strong>: inverse sine of x</p>
+<p>metrolopy.<strong>arcsinh(x)</strong>: inverse hyperbolic sine of x</p>
+<p>metrolopy.<strong>arctan(x)</strong>: inverse tangent of x</p>
+<p>metrolopy.<strong>arctanh(x)</strong>: inverse hyperbolic tangent of x</p>
+<p>metrolopy.<strong>arctan2(x,y)</strong>: arctan of x/y and giving the correct quadrant</p>
+<p>metrolopy.<strong>araound(x,n=0)</strong>: x rounded to n digits</p>
+<p>metrolopy.<strong>cbrt(x)</strong>: cube root of x</p>
+<p>metrolopy.<strong>ceil(x)</strong>: ceiling of x</p>
+<p>metrolopy.<strong>conj(x)</strong>: complex conjugate of x</p>
+<p>metrolopy.<strong>cos(x)</strong>: cosine of x</p>
+<p>metrolopy.<strong>cosh(x)</strong>: hyperbolic cosine of x</p>
+<p>metrolopy.<strong>cross(*args,**kwds)</strong>: alias for numpy.cross</p>
+<p>metrolopy.<strong>cumpord(*args,**kwds)</strong>: alias for numpy.cumprod</p>
+<p>metrolopy.<strong>cumsum(*args,**kwds)</strong>: alias for numpy.cumsum</p>
+<p>metrolopy.<strong>diff(*args,**kwds)</strong>: alias for numpy.diff</p>
+<p>metrolopy.<strong>divide(x1,x2)</strong>: equivalent to x1 / x2</p>
+<p>metrolopy.<strong>divmod(x1,x2)</strong>: returns (x1 // x2, x1 % x2)</p>
+<p>metrolopy.<strong>ediff1d(*args,**kwds)</strong>: alias for numpy.ediff1d</p>
+<p>metrolopy.<strong>exp(x)</strong>: natural exponential function</p>
+<p>metrolopy.<strong>expm1(x)</strong>: exp(x) - 1</p>
+<p>metrolopy.<strong>exp2(x)</strong>: exponential function with base 2</p>
+<p>metrolopy.<strong>fabs(x)</strong>: equivalent to the built-in python function abs</p>
+<p>metrolopy.<strong>fix(x)</strong>: returns x rounded towards zero</p>
+<p>metrolopy.<strong>floor(x)</strong>: floor of x</p>
+<p>metrolopy.<strong>floor_divide(x1,x2)</strong>: equivalent to x1 // x2</p>
+<p>metrolopy.<strong>gradient(*args,**kwds)</strong>: alias for numpy.gradient</p>
+<p>metrolopy.<strong>heaviside(x,h0)</strong>: Heavyside function: 0 for x &lt; 0, h0 at x
+== 0, and 1 for x &gt; 0</p>
+<p>metrolopy.<strong>imag(x)</strong>: returns the imaginary part of x</p>
+<p>metrolopy.<strong>log(x)</strong>: natural logarithm of x</p>
+<p>metrolopy.<strong>logaddexp(x,y)</strong>: loge(ex + ey)</p>
+<p>metrolopy.<strong>logaddexp2(x,y)</strong>: log2(2x + 2y)</p>
+<p>metrolopy.<strong>log1p(x)</strong>: natural logarithm of 1 + x</p>
+<p>metrolopy.<strong>log2(x)</strong>: logarithm base 2 of x</p>
+<p>metrolopy.<strong>log10(x)</strong>: logarithm base 10 of x</p>
+<p>metrolopy.<strong>mod(x)</strong>: x1 % x2</p>
+<p>metrolopy.<strong>modf(x1,x2)</strong>: returns (x1 % 1, x1 // 1)</p>
+<p>metrolopy.<strong>multiply(x1,x2)</strong>: equivalent to x1 * x2</p>
+<p>metrolopy.<strong>negative(x)</strong>: equivalent to -x</p>
+<p>metrolopy.<strong>power(x1,x2)</strong>: equivalent to x1**x2</p>
+<p>metrolopy.<strong>prod(*args,**kwds)</strong>: alias for numpy.prod</p>
+<p>metrolopy.<strong>real(x)</strong>: returns the real part of x</p>
+<p>metrolopy.<strong>reciprocal(x)</strong>: equivalent to 1/x</p>
+<p>metrolopy.<strong>remainder(x)</strong>: x1 % x2</p>
+<p>metrolopy.<strong>rint(x)</strong>: x rounded to the nearest integer value</p>
+<p>metrolopy.<strong>sin(x)</strong>: sine of x</p>
+<p>metrolopy.<strong>sign(x)</strong>: sign function, -1 for x &lt; 0, 0 for x == 0, and 1
+for x &gt; 0</p>
+<p>metrolopy.<strong>sinh(x)</strong>: hyperbolic sine of x</p>
+<p>metrolopy.<strong>square(x)</strong>: square of x</p>
+<p>metrolopy.<strong>sqrt(x)</strong>: the square root of x</p>
+<p>metrolopy.<strong>subtract(x1,x2)</strong>: equivalent to x1 - x2</p>
+<p>metrolopy.<strong>sum(*args,**kwds)</strong>: alias for numpy.sum</p>
+<p>metrolopy.<strong>tan(x)</strong>: tangent of x</p>
+<p>metrolopy.<strong>tanh(x)</strong>: hyperbolic tangent of x</p>
+<p>metrolopy.<strong>true_divide(x1,x2)</strong>: equivalent to x1 / x2</p>
+<p>metrolopy.<strong>trunc(x)</strong>: x rounded towards zero</p>
+</section>
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 <section id="class-unit">
 <span id="id1"></span><h1>class Unit<a class="headerlink" href="#class-unit" title="Link to this heading">¶</a></h1>
 <p>The gummy class uses <code class="docutils literal notranslate"><span class="pre">Unit</span></code> instances to represent physical units or units
@@ -1667,6 +1749,7 @@ bewteen the x- and y-values.</p>
 </dd>
 </dl>
 </li>
+<<<<<<< HEAD
 <li><dl>
 <dt><strong>y</strong>: array or <cite>Number</cite>, optional</dt><dd><p>Response variables y. Usually this is an array of shape (n,) but
 this can be omitted or a scalar <cite>Number</cite> if the nls or odr solvers
@@ -1800,6 +1883,72 @@ the return value of <cite>scipy.optimize.least_squares</cite> for the nls
 solver of the return value of <cite>odr_fit.odrpack</cite> for the odr
 solver.  This is <cite>None</cite> if the ols solver is used.</p></li>
 <li><p><strong>x</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite> or of <cite>gummy</cite>
+=======
+<li><p><strong>y</strong>: The y-coordinates of the data (shape and type requirements are
+the same as for the x-coordinates). This may be omitted only if the
+odr solver is used.</p></li>
+<li><p><strong>f</strong>: The fit function. For d dimensional x-coordinates and k fit
+parameters it should be of the form f(x1,x2,…,xd,p1,p2,…,pk) and
+return a float or (if <em>y</em> is multi-dimensional) a list or array of
+floats. This parameter is required unless the f method is overridden
+in a subclass.</p></li>
+<li><p><strong>p0</strong>: (list or numpy.ndarray of float) The inital
+values for the fit parameters. This parameter is required unless the
+get_p0 method is overridden in a subclass.</p></li>
+<li><p><strong>ux</strong>: (float or list or numpy.ndarray of float)
+Uncertainty in the x values. This should not be specified if the <em>x</em>
+argument contains gummys. If <em>ux</em> is specified then only the odr
+solver may be used. The default is None.</p></li>
+<li><p><strong>uy</strong>: (float or list or numpy.ndarray of float)
+Uncertainty in the y values. This should not be specified if the y
+argument contains gummys. The default is None.</p></li>
+<li><p><strong>sigma_is_known</strong>: (bool) If this is <code class="docutils literal notranslate"><span class="pre">True</span></code> then any
+uncertainties in the data (either as gummys in the <em>x</em> or <em>y</em> values
+or in the <em>ux</em> or <em>uy</em> parameters) are used to calculate the
+uncertainties in the fit. Otherwise, the uncertainties are based on
+the standard deviation of the residuals and the uncertainties in the
+data are used only for weighting the data points. This parameter is
+ignored if <em>nprop</em> is True.</p></li>
+<li><p><strong>xunits</strong>, <strong>yunits</strong> (str, default None) units for the x
+and y coordinates. These should not be specified if the <em>x</em> and <em>y</em>
+parameters contain gummys. These may only be specified if the
+get_punits method is overridden in a subclass.</p></li>
+<li><p><strong>solver</strong>: ({‘nls’ , ‘odr’, None}) If
+<em>solver</em> = ‘nls’ then scipy.optimize.leastsq is used to perform the
+fit. If <em>solver</em> = ‘odr’ then scipy.odr is used. ‘nls’ may not be
+used if the y-coordinate is None or multi-dimensional or if there is
+uncertainty in the x-coordinates. If this is None, then ‘nls’ will be
+used when possible. Any keyword parameters not recognized by <code class="docutils literal notranslate"><span class="pre">Fit</span></code>
+will be passed to the solver.</p></li>
+<li><p><strong>maxiter</strong>: (int) The maximum number of iterations that the
+solver may use. f this is None or omitted then the default value for
+the solver will be used.</p></li>
+<li><p><strong>nprop</strong>: (bool, default <code class="docutils literal notranslate"><span class="pre">False</span></code>) If this is <code class="docutils literal notranslate"><span class="pre">True</span></code> then
+uncertainties in the fit will be numerically calculated by varying
+each data point. This will not work if there are more than a few data
+points or if the fit is not very stable. If this is <code class="docutils literal notranslate"><span class="pre">False</span></code> than
+the covariance matrix generated by the solver will be used to
+calculate the uncertainties.</p></li>
+<li><p><strong>other keywords</strong>: Any additional keyword parameters will be passed
+to the solver.</p></li>
+</ul>
+</section>
+<section id="fit-properties">
+<h3>Fit properties<a class="headerlink" href="#fit-properties" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>p</strong>: (read-only, list of gummy) The fitted values for the fit
+function parameters as correlated gummys</p></li>
+<li><p><strong>pf</strong>: (read-only, list of float) The fitted values for the
+fit function parameters as floats</p></li>
+<li><p><strong>res</strong>: (read-only, numpy.ndarray of float ) the fit residuals</p></li>
+<li><p><strong>s</strong>: (read-only,float) the standard deviation (or, when there
+are uncertainties for the input data, the square root of the reduced
+chi-squared) of the residuals</p></li>
+<li><p><strong>cov</strong>: (read-only, numpy.ndarray) the covariance matrix
+generated by the solver</p></li>
+<li><p><strong>fit_output</strong>: (read-only) the raw output of the solver</p></li>
+<li><p><strong>x</strong>: (read-only, numpy.ndarray of float or of gummy)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 numpy array of the x-coordinates of the data.</p></li>
 <li><p><strong>xf</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite>
 numpy array of the x-coordinates of the data as floats</p></li>
@@ -1809,6 +1958,7 @@ the number of dimensions of the x-coordinates</p></li>
 uncertainties in the x-coordinates</p></li>
 <li><p><strong>y</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite> or of <cite>gummy</cite>
 numpy array of the y-coordinates of the data.</p></li>
+<<<<<<< HEAD
 <li><p><strong>yf</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite>
 numpy array of the y-coordinates of the data as floats</p></li>
 <li><p><strong>ydim</strong>:  <cite>int</cite>
@@ -1833,6 +1983,29 @@ representing the predicted value(s) at that x-coordinate.</p></li>
 <li><p><strong>ypredf(x1,x2,…)</strong>:
 Takes <cite>xdim</cite> floats (or arrays of float) and returns a float giving
 the  predicted value(s) at that x-coordinate.</p></li>
+=======
+<li><p><strong>yf</strong>: (read-only, numpy.ndarray of float) numpy array of the
+yx-coordinates of the data as floats</p></li>
+<li><p><strong>ydim</strong>: (read-only,int) the dimension of the y-coordinates</p></li>
+<li><p><strong>uy</strong>: (read-only, float, numpy.ndarray of float or
+None): uncertainties in they-coordinates</p></li>
+<li><p><strong>count</strong>: (read-only, int) the number of data points</p></li>
+<li><p><strong>p0</strong>: (read-only, list of float) The initial values for the
+fit function parameters</p></li>
+<li><p><strong>solver</strong>: (read-only, str) the solver used</p></li>
+<li><p><strong>punits</strong>: (read-only, list of <a class="reference internal" href="#class-unit"><span class="std std-ref">Unit</span></a>) the units of
+the fit parameters</p></li>
+<li><p><strong>nparam</strong>: (read-only, int) the number of fit parameters</p></li>
+</ul>
+</section>
+<section id="fit-methods">
+<h3>Fit methods<a class="headerlink" href="#fit-methods" title="Link to this heading">¶</a></h3>
+<ul>
+<li><p><strong>ypred(x1,x2,…)</strong>: Takes xdim floats and returns a gummy
+representing the predicted value at that x-coordinate.</p></li>
+<li><p><strong>ypredf(x1,x2,…)</strong>: Takes xdim floats and returns a float giving
+the predicted value at that x-coordinate.</p></li>
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 <li><p><strong>plot(data_format=’ko’, data_options={}, show_data=True,
 error_bars=True, error_bar_k=1, fit_format=’k-’, fit_options={},
 show_fit=True, cik=None, cip=None, ciformat=’g-’, cioptions={},
@@ -2169,7 +2342,11 @@ along with the data points.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+<<<<<<< HEAD
         <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.1.0 documentation</a> &#187;</li>
+=======
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.0.4 documentation</a> &#187;</li>
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         <li class="nav-item nav-item-this"><a href="">MetroloPy</a></li> 
       </ul>
     </div>

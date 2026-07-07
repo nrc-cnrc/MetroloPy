@@ -22,7 +22,11 @@
 """
 Misc functions.
 """
+<<<<<<< HEAD
 from ._gummy import gummy
+=======
+from .gummy import gummy
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 def correlation_matrix(gummys):
     """

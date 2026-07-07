@@ -10,7 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-#dist/
+dist/
 downloads/
 eggs/
 .eggs/
@@ -106,4 +106,4 @@ venv.bak/
 doctrees/
 .buildinfo
 
-.DS_Store
+uv.lock

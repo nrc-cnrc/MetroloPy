@@ -38,18 +38,31 @@ def _f_dlogaddexp(x1,x2):
             np.exp(x2)/(np.exp(x1) + np.exp(x2)))
     
 def _f_dlogaddexp2(x1,x2):
+<<<<<<< HEAD
     return (2**x1/(2**x1 + 2**x2),
             2**x2/(2**x1 + 2**x2))
+=======
+    return (2**x1*np.log(2)/(2**x1 + 2**x2),
+           2**x2*np.log(2)/(2**x1 + 2**x2))
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 def _f_heaviside(x,h0):
     if not isinstance(h0,Real):
         raise TypeError('h0 must be a real number')
+<<<<<<< HEAD
     return x.apply(np.heaviside,lambda *x:[0,0],x,h0)
+=======
+    return x._apply(np.heaviside,0,x,h0)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 def _f_around(x,n=0):
     if not isinstance(n,Integral):
         raise TypeError('n must be an int')
+<<<<<<< HEAD
     return x._nprnd(lambda y: np.around(y,decimals=n))
+=======
+    return x._nprnd(lambda y: np.around(y,n))
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 
 def _f_add(x1,x2):
@@ -93,12 +106,15 @@ def _f_mod(x1,x2):
         return x1.__mod__(x2)
     else:
         return x2.__rmod__(x1)
+<<<<<<< HEAD
     
 def _f_fmod(x1,x2):
     if isinstance(x1,Dfunc):
         return np.sign(x1)*np.abs(x1.__mod__(x2))
     else:
         return np.sign(x1)*np.abs(x2.__rmod__(x1))
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 
 ddict = {np.sin: np.cos,
@@ -106,13 +122,21 @@ ddict = {np.sin: np.cos,
          np.tan:  lambda x: 1/np.cos(x)**2,
          np.arctan2: _f_darctan2,
          np.arcsin: lambda x: 1/np.sqrt(1 - x**2),
+<<<<<<< HEAD
          np.arccos: lambda x: -1/np.sqrt(1 - x**2),
+=======
+         np.arccos: lambda x: -1/np.sqrt(1 + x**2),
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
          np.arctan: lambda x: 1/(1 + x**2),
          np.sinh:  np.cosh,
          np.cosh:  np.sinh,
          np.tanh:  lambda x: -np.tanh(x)**2 + 1,
          np.arcsinh:  lambda x: 1/np.sqrt(1 + x**2),
+<<<<<<< HEAD
          np.arccosh:  lambda x: 1/np.sqrt(x**2 - 1),
+=======
+         np.arccosh:  lambda x: 1/np.sqrt(1 - x**2),
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
          np.arctanh:  lambda x: 1/(1 - x**2),
          np.exp:  np.exp,
          np.exp2:  lambda x: np.log(2)*2**x,
@@ -123,6 +147,10 @@ ddict = {np.sin: np.cos,
          np.log1p:  lambda x: 1/(1+x),
          np.logaddexp:  _f_dlogaddexp,
          np.logaddexp2:  _f_dlogaddexp2,
+<<<<<<< HEAD
+=======
+         np.heaviside: lambda x: 0, 
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
          np.sign:  lambda x: 0, 
         }
 
@@ -141,7 +169,10 @@ fdict = {np.angle:  lambda x: x.angle(),
          np.power:  _f_pow,
          np.mod:  _f_mod,
          np.remainder: _f_mod,
+<<<<<<< HEAD
          np.fmod: _f_fmod,
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
          np.round: _f_around,
          np.divmod:  lambda x1,x2: (_f_fdiv(x1,x2),_f_mod(x1,x2)),
          np.modf:  lambda x: (x%1,x//1),
@@ -266,18 +297,34 @@ class Dfunc:
         3.65 +/- 0.65
         """
         
+<<<<<<< HEAD
 
         b = np.broadcast(*args)
         if b.shape == ():
             return cls._iapply(function,derivative,*args,**kwds)
 
         ret = np.array([cls._iapply(function,derivative,*a,**kwds) for a in b])
+=======
+        if np.all([_isscalar(a) for a in args]):
+            return cls._iapply(function,derivative,*args,**kwds)
+        
+        b = np.broadcast(*args)
+        ret = np.empty(b.shape,dtype=object)
+        ret = [cls._iapply(function,derivative,*a,**kwds) for a in b]
+        ret = np.array(ret)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
         shape = b.shape
         if isinstance(ret[0],np.ndarray):
             shape += ret[0].shape
+<<<<<<< HEAD
             
         return np.reshape(ret,shape)
+=======
+        np.reshape(ret,shape)
+        
+        return ret
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     
     @classmethod
     def _iapply(cls,function,derivative,*args,**kwds):
@@ -357,17 +404,33 @@ class Dfunc:
         3.65 +/- 0.65
         """
         
+<<<<<<< HEAD
         b = np.broadcast(*args)
         if b.shape == ():
             return cls._inapply(function,*args,**kwds)
         
         ret = np.array([cls._inapply(function,*a,**kwds) for a in b])
+=======
+        if np.all([_isscalar(a) for a in args]):
+            return cls._inapply(function,*args,**kwds)
+        
+        b = np.broadcast(*args)
+        ret = np.empty(b.shape,dtype=object)
+        ret = [cls._inapply(function,*a,**kwds) for a in b]
+        ret = np.array(ret)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         
         shape = b.shape
         if isinstance(ret[0],np.ndarray):
             shape += ret[0].shape
+<<<<<<< HEAD
             
         return np.reshape(ret,shape)
+=======
+        np.reshape(ret,shape)
+        
+        return ret
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     
     @classmethod
     def _inapply(cls,function,*args,**kwds):
@@ -408,6 +471,11 @@ class Dfunc:
         
         return self._ufunc(ufunc,*args,**kwds)
             
+<<<<<<< HEAD
     def __array_function__(self,func,method,*args,**kwds): 
         #return self._ufunc(func,*args,**kwds)
         return self._ufunc(func,*args[0],**args[1])
+=======
+    def __array_function__(self,func,method,*args,**kwds):        
+        return self._ufunc(func,*args,**kwds)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5

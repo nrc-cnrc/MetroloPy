@@ -10,7 +10,10 @@ from abc import ABCMeta
 from .printing import PrettyPrinter,MetaPrettyPrinter
 from .abc import AbcQuantity,AbcQuantityArray,AbcUnit
 from .exceptions import IncompatibleUnitsError
+<<<<<<< HEAD
 from .util import _isscalar
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 class MetaQuantity(MetaPrettyPrinter,ABCMeta):
     pass
@@ -49,6 +52,7 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
     
     @classmethod
     def _make(cls,value,unit=1):
+<<<<<<< HEAD
         if _isscalar(value):
             return cls(value,unit=unit)
         if cls._arraytype is None:
@@ -57,6 +61,13 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
             return tuple(cls._make(v,unit=unit) for v in value)
         else:
             return cls._arraytype(value,unit=unit)
+=======
+        if (isinstance(value,np.ndarray) or isinstance(value,list) or
+            isinstance(value,tuple)) and cls._arraytype is not None:
+            return cls._arraytype(value,unit=unit)
+        return cls(value,unit=unit)
+            
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     
     @staticmethod
     def _add_unit_sp(fmt,unit):
@@ -238,20 +249,31 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
             value = str(self.value)
         return value + unit
     
+<<<<<<< HEAD
     def copy(self,totype=None):
+=======
+    def copy(self,tofloat=False):
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         """
         copy(tofloat=False)
         
         returns a copy of self.  If tofloat is True, the self.value will be
         converted to float.  The default is False.
         """
+<<<<<<< HEAD
         if totype is float:
+=======
+        if tofloat:
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             try:
                 return type(self)(self.value.tofloat(),unit=self.unit)
             except:
                 return type(self)(float(self._value),unit=self._unit)
+<<<<<<< HEAD
         elif totype is not None:
             return type(self)(totype(self._value),unit=self._unit)
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             
         try:
             return type(self)(self.value.copy(),unit=self.unit)
@@ -263,7 +285,11 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
         returns a copy of self with value float(self.value) equivalent to 
         copy(tofloat=True)
         """
+<<<<<<< HEAD
         return self.copy(totype=float)
+=======
+        return self.copy(tofloat=True)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     
     def totuple(self):
         """
@@ -296,7 +322,11 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
             make =  self._make
             
         if isinstance(v,AbcQuantity):
+<<<<<<< HEAD
             vunit = v.unit
+=======
+            vunit = v._unit
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             v = v.value
             aconv = self.autoconvert
         else:
@@ -510,6 +540,7 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
         return self._cmp(v,lambda x,y: x >= y)
     
     def _ufunc(self,func,*args,**kwds):
+<<<<<<< HEAD
         b = np.broadcast(*args)
         if b.shape == ():
             return self._iufunc(func,*args,**kwds)
@@ -540,6 +571,16 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
         if uone:
             return make(func(*af,**kwds))
         
+=======
+        # handles numpy functions applied to Quantity arguments
+        
+        s = self
+        for a in args:
+            if issubclass(type(a),type(s)):
+                s = a
+        make = s._make
+        
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
         try:
             x,xunit = self.unit._ufunc(func,*args,**kwds)
             return make(x,unit=xunit)
@@ -560,9 +601,14 @@ class Quantity(PrettyPrinter,AbcQuantity,metaclass=MetaQuantity):
         
         return self._ufunc(ufunc,*args,**kwds)
     
+<<<<<<< HEAD
     def __array_function__(self,func,method,*args,**kwds):   
         #return self._ufunc(func,*args,**kwds)
         return self._ufunc(func,*args[0],**args[1])
+=======
+    def __array_function__(self,func,method,*args,**kwds):        
+        return self._ufunc(func,*args,**kwds)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
     
     def __float__(self):
         s = self.convert(1)

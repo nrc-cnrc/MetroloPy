@@ -147,7 +147,10 @@ version history
 * Version 1.0.2 built 05 February 2026, fixed a bug that broke formatting for Python versions 3.10 and earier.
 * Version 1.0.3 built 16 February 2026, updated dependency versions, added ipython as a required depenency.
 * Version 1.0.4 build 25 February 2026, fixed a bug that broke unit conversion for a few constants and units.
+<<<<<<< HEAD
 * Version 1.1.0 build 07 July 2026, added support for scipy.stats distributions to be used directly with gummys, bug fixes
+=======
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 
 author

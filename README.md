@@ -9,7 +9,11 @@ It looks best in a Jupyter Notebook.
 
 Install MetroloPy with `pip install metrolopy` or
 `conda install -c conda-forge metrolopy`.
+<<<<<<< HEAD
 Alternatively, add it to your project, e.g. uv or pixi.
+=======
+Alternatively, add it to your uv or pixi project.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 Physical quantities can then be represented in Python as `gummy` objects with an uncertainty and (or) a unit:
 
@@ -33,10 +37,17 @@ Physical quantities can then be represented in Python as `gummy` objects with an
 MetroloPy can do much more including Monte-Carlo uncertainty propagation, generating uncertainty budget tables, and curve fitting.
 It can also handle expanded uncertainties, degrees of freedom, correlated quantities, and complex valued quantities. 
 Also gummys work with many numpy functions with no wrapping.
+<<<<<<< HEAD
 
 See:
 
 * [a tutorial](https://nrc-cnrc.github.io/MetroloPy/_build/html/_static/tutorial.html) (or  <a href="https://nrc-cnrc.github.io/MetroloPy/_build/html/_downloads/tutorial.ipynb" target="_blank"> download the tutorial as Jupyter notebook</a>)
+=======
+
+See:
+
+* [a tutorial](https://nrc-cnrc.github.io/MetroloPy/_build/html/_static/tutorial.html) (or  <a href="https://nrc-cnrc.github.io/MetroloPy/_build/html/_downloads/tutorial.ipynb" download> download the tutorial as Jupyter notebook</a>)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 * [the documentation](https://nrc-cnrc.github.io/MetroloPy/_build/html/index.html)
 * [the issues page on GitHub](https://github.com/nrc-cnrc/Metrolopy/issues)
 * [a list of the units built into MetroloPy](https://nrc-cnrc.github.io/MetroloPy/_static/units.html)
@@ -68,8 +79,12 @@ See:
   broadcasing over arguments and and applying functions that have array like return 
   values.
   
+<<<<<<< HEAD
 * Fixed an number of bugs in the fitting module, bugs affecting some built-in distributions
   and incorrect derviatives for arccos and arccosh.
+=======
+* Fixed an number of bugs in the fitting module.
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 
 ## new in version 1.0.0

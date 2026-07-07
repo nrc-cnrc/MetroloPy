@@ -28,6 +28,10 @@ gummys.
 import numpy as np
 from ._gummy import gummy,jummy
 from ._ummy import ummy
+<<<<<<< HEAD
+=======
+from numbers import Complex
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 from .dfunc import _call
 
 def _callg(f,*args):
@@ -42,7 +46,11 @@ def _callg(f,*args):
             g = a
         elif isinstance(a,ummy):
             u = a
+<<<<<<< HEAD
         elif np.iscomplex(a):
+=======
+        elif isinstance(a,Complex):
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
             c = True
     if g is not None:
         if c:
@@ -58,7 +66,12 @@ def _bcallg(f,*args):
     if bargs.shape == ():
         return _callg(f,*args)
     ret = np.array([_callg(f,*a) for a in bargs])
+<<<<<<< HEAD
     return ret.reshape(bargs.shape)
+=======
+    ret = ret.reshape(bargs.shape)
+    return ret
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 
 def sin(x):
@@ -296,11 +309,19 @@ def divmod(x1,x2):
     """
     return _bcallg(np.divmod,x1,x2)
 
+<<<<<<< HEAD
 def modf(x1):
     """
     returns (x1 % 1, x1 // 1), a tuple of integer and fractional parts
     """
     return _bcallg(np.modf,x1)
+=======
+def modf(x1,x2):
+    """
+    returns (x1 % 1, x1 // 1), a tuple of integer and fractional parts
+    """
+    return _bcallg(np.modf,x1,x2)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 def angle(x):
     """
@@ -370,7 +391,11 @@ def heaviside(x,h0):
     """
     Heavyside function of x, h0 is the value at x = 0
     """
+<<<<<<< HEAD
     return _bcallg(np.heaviside,x,h0)
+=======
+    return _bcallg(np.heavyside,x,h0)
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 
 def sign(x):
     """
@@ -414,6 +439,15 @@ def ediff1d(*args,**kwds):
     """
     return np.ediff1d(*args,**kwds)
 
+<<<<<<< HEAD
+=======
+def gradient(*args,**kwds):
+    """
+    Alias for numpy.gradient
+    """
+    return np.gradient(*args,**kwds)
+
+>>>>>>> 521c361ba2fc57e9677804d95b4bb16b2095dfa5
 def cross(*args,**kwds):
     """
     Alias for numpy.cross
