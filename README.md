@@ -58,7 +58,7 @@ See:
   squares fitting.  And the depreciated `scipy.odr` package has been replaced 
   with `odrpack` for orthogonal distance regression.
   
-* A class properties has been added to `gummy` to control the separator between the 
+* A class property has been added to `gummy` to control the separator between the 
   digit groupings when displaying long numbers.
   
 * Lazy loading for gummy module components has been implemented and added 
