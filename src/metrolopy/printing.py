@@ -26,17 +26,17 @@ HTML.
 """
 
 import lazy_loader as lazy
-ipy = lazy.load('IPython.display')
+ipy = lazy.load('IPython')
 
 
 def print_html(text):
-    ipy.display(ipy.HTML(text))
+    ipy.display.display(ipy.display.HTML(text))
         
 def print_latex(text):
-    ipy.display(ipy.Math(text))
+    ipy.display.display(ipy.display.Math(text))
         
 def print_markdown(text):
-    ipy.display(ipy.Markdown(text))
+    ipy.display.display(ipy.display.Markdown(text))
         
 
 # Called from _repr_latex_ or Ipyhton.display.Math and gummy.latex_math 

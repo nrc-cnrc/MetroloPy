@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>MetroloPy &#8212; metrolopy 1.1.0 documentation</title>
+    <title>MetroloPy &#8212; metrolopy 1.1.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
-    <script src="_static/documentation_options.js?v=fc837d61"></script>
+    <script src="_static/documentation_options.js?v=58fbf978"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -23,7 +23,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.1.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">MetroloPy</a></li> 
       </ul>
     </div>  
@@ -36,8 +36,8 @@
   <section id="metrolopy">
 <span id="hand-made-doc"></span><h1>MetroloPy<a class="headerlink" href="#metrolopy" title="Link to this heading">¶</a></h1>
 <p>Most of the functionality in the MetroloPy package lies in the
-<a class="reference internal" href="#gummy">gummy</a> object which combines the functionality of the <a href="#id4"><span class="problematic" id="id5">Unit_</span></a> and <code class="docutils literal notranslate"><span class="pre">Quantity</span></code>
-classes for dealing with units, the <a href="#id6"><span class="problematic" id="id7">ummy_</span></a> class for first order propagation
+<a class="reference internal" href="#gummy">gummy</a> object which combines the functionality of the <a href="#id2"><span class="problematic" id="id3">Unit_</span></a> and <code class="docutils literal notranslate"><span class="pre">Quantity</span></code>
+classes for dealing with units, the <a href="#id4"><span class="problematic" id="id5">ummy_</span></a> class for first order propagation
 of uncertainty, and the <a class="reference internal" href="#distribution">Distribution</a> class for Monte Carlo propagation of
 uncertianty.  The <code class="docutils literal notranslate"><span class="pre">immy</span></code> and <a class="reference internal" href="#jummy">jummy</a> classes support calculations with
 complex numbers.</p>
@@ -545,7 +545,7 @@ operation of function is tried again. Set
 <code class="docutils literal notranslate"><span class="pre">metrolopy.dfunc.try_fconvert</span> <span class="pre">=</span> <span class="pre">False</span></code> to disable this automatic
 conversion to float values.</p>
 <p>The gummy module installs a number of common mathematical
-<a href="#id8"><span class="problematic" id="id9">functions_</span></a> that can be applied directly to dimensionless
+<a href="#id6"><span class="problematic" id="id7">functions_</span></a> that can be applied directly to dimensionless
 gummys, e.g:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">gummy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">uc</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="n">gummy</span><span class="p">(</span><span class="mf">0.123</span><span class="p">,</span><span class="mf">0.022</span><span class="p">)</span>
@@ -1713,12 +1713,15 @@ they will be replaced with the estimated value from get_p0.</p>
 </dd>
 </dl>
 </li>
-<li><p><strong>fix</strong>: array of <cite>bool</cite>
-A mask for the fit parameters.  For any element in <cite>fix</cite> that is
+<li><dl class="simple">
+<dt><strong>fix</strong>: array of <cite>bool</cite></dt><dd><p>A mask for the fit parameters.  For any element in <cite>fix</cite> that is
 <cite>True</cite>, the corresponding fit parameter will be held constant at
-its initial value.</p></li>
-<li><p><strong>solver</strong>:  {‘ols’,’nls’,’odr’}, optional
-A non-linear least squares (nls), ordinary least squares (ols) or
+its initial value.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt><strong>solver</strong>:  {‘ols’,’nls’,’odr’}, optional</dt><dd><p>A non-linear least squares (nls), ordinary least squares (ols) or
 othogonal distance regression solver (odr) can be used to perform
 the fit.</p>
 <p>nls is the default solver unless uncertainties are specified for
@@ -1726,18 +1729,49 @@ the x-values, in which case the default solver is odr.</p>
 <p>The nls solver uses <cite>scipy.optimize.least_squares</cite> while the odr
 solver used <cite>odrpack.odr_fit</cite>.  The ols solver uses
 <cite>scipy.linag.pinvh</cite> to invert the normal equation matrix.</p>
+</dd>
+</dl>
 </li>
-<li><p><strong>uy</strong>: (array or <cite>float</cite>, optional)
-Uncertainties for the y-values.  Specifying uy is an alternative to
+<li><dl>
+<dt><strong>uy</strong>: (array or <cite>float</cite>, optional)</dt><dd><p>Uncertainties for the y-values.  Specifying uy is an alternative to
 passing gummys with uncerainties defined as the the y-values.  uy
 can be a number that applies to all the x-values or an array giving
 the uncertainty for each y-value.</p>
 <p>If uncertainties u are defined individually for the y-values, the
 weights will be set to 1/u**2 for each point.  To override this
 behavior set the keyword parameter “weights = 1”.</p>
+</dd>
+</dl>
 </li>
-<li><p><strong>jacp</strong>: (function, optional)
-The Jacobian of the fit function with respect to the fit parameters.
+<li><dl>
+<dt><strong>ux</strong>: array or <cite>float</cite>, optional</dt><dd><p>Uncertainties for the x-values.  Specifying ux is an alternative to
+passing gummys with uncerainties defined as the the x-values.  ux
+can be a number that applies to all the x-values or an array giving
+the uncertainty for each x-value.</p>
+<p>If uncertainties u are defined individually for the x-values, the
+xweights will be set to 1/u**2 for each point.  To override this
+behavior set the keyword parameter “xweights = 1”.  If
+uncertainties are defined for the x-values, the default solver is
+odr.  If the nls or ols solver is manually selected then the
+uncertainties in the x-values will be ignored.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>weights</strong>: array or float, optional</dt><dd><p>Weights for each point, this may be an array the same size as y
+or a scalar value.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>xweights</strong>:  array or float, options</dt><dd><p>Weights for the x-values, this may be an array the same size as x
+or a scalar value. This argument is only used of the odr solver is
+selected.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt><strong>jacp</strong>: (function, optional)</dt><dd><p>The Jacobian of the fit function with respect to the fit parameters.
 If this is not provided the Jacobian will be calculated numerically.</p>
 <p>This function can be passed as an argument to the fit initializer
 or it can be provided by implementing the jacp method in a derived
@@ -1747,92 +1781,194 @@ x-values are a one-dimensional array and
 jacp(x1,x2,…,xM,p1,p2,…,pN) if the x-values are M dimensional.
 For n data points and N fit parameters, jacp should return an
 array of shape (N,n).</p>
+</dd>
+</dl>
 </li>
-<li><p><strong>variance_is_known</strong>: (<cite>bool</cite>, optional)
-If this is <cite>True</cite> then any uncertainties in the data  (either as
+<li><dl class="simple">
+<dt><strong>variance_is_known</strong>: (<cite>bool</cite>, optional)</dt><dd><p>If this is <cite>True</cite> then any uncertainties in the data  (either as
 gummys in the <cite>x</cite> or <cite>y</cite> values or in the ux or uy parameters)
 are used to calculate the uncertainties in the fit.  Otherwise,
 the uncertainties are based on the standard deviation of the
 residuals and the uncertainties in the data are used only for
-weighting the data points.  The default value is <cite>True</cite>.</p></li>
-<li><p><strong>xunits, yunits</strong>: (<cite>str</cite> or <cite>None</cite>, optional)
-units for the x and y coordinates. These should not be specified
-if the <cite>x</cite> and <cite>y</cite> parameters contain gummys. These may only be
-specified if the <cite>get_punits</cite> method is overridden in a subclass.</p></li>
-<li><p><strong>fargs</strong>:  (<cite>list</cite>, optional)
-Additional (fixed) arguments passed to the fit function after the
-fit parameters.</p></li>
-<li><p><strong>fkwds</strong>:  (<cite>list</cite>, optional)
-Fixed keyword arguments passed to the fit function.</p>
-<p>other keywords:  (optional)
-Any additional keyword parameters will be passed to the solver.</p>
+weighting the data points.  The default value is <cite>True</cite>.</p>
+</dd>
+</dl>
 </li>
-<li><p><strong>p</strong>:  (<cite>numpy.array</cite> of <cite>gummy</cite>)
-The fitted values for the fit function parameters as gummys
-including uncertainties and units.</p></li>
-<li><p><strong>pf</strong>:  (<cite>numpy.array</cite> of <cite>float</cite>)
-The fitted values for the fit function parameters as floats</p></li>
-<li><p><strong>res</strong>:  (<cite>numpy.ndarray</cite> of <cite>float</cite>)
-the weighted fit residuals</p></li>
-<li><p><a href="#id2"><span class="problematic" id="id3">**</span></a>va**r:  (<cite>float</cite>)
-the variance of the weighted fit residuals</p></li>
-<li><p><strong>s</strong>:  (<cite>float</cite>)
-the standard deviation of weighted the residuals</p></li>
-<li><p><strong>cov</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite>
-the covariance matrix of the (non-fixed) parameters</p></li>
-<li><p><strong>known_var</strong>:  <cite>float</cite>
-If uncertainties are defined for the y-values (and possible the
+<li><dl class="simple">
+<dt><strong>xunits, yunits</strong>: (<cite>str</cite> or <cite>None</cite>, optional)</dt><dd><p>units for the x and y coordinates. These should not be specified
+if the <cite>x</cite> and <cite>y</cite> parameters contain gummys. These may only be
+specified if the <cite>get_punits</cite> method is overridden in a subclass.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>fargs</strong>:  (<cite>list</cite>, optional)</dt><dd><p>Additional (fixed) arguments passed to the fit function after the
+fit parameters.</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>fkwds</strong>:  (<cite>list</cite>, optional)</p></li>
+<li><dl class="simple">
+<dt><strong>other keywords</strong>:</dt><dd><p>Any other keywords will be passed to the solver,
+<cite>scipy.optimize.least_squares</cite> for the nls solver,
+<cite>odr_fit.odrpack</cite> for the odr solver and
+<cite>scipy.linalg.pinvh</cite> for the ols solver.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="fit-attributes">
+<h3>Fit attributes<a class="headerlink" href="#fit-attributes" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>p</strong>:  (<cite>numpy.array</cite> of <cite>gummy</cite>)</dt><dd><p>The fitted values for the fit function parameters as gummys
+including uncertainties and units.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>pf</strong>:  (<cite>numpy.array</cite> of <cite>float</cite>)</dt><dd><p>The fitted values for the fit function parameters as floats</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>res</strong>:  (<cite>numpy.ndarray</cite> of <cite>float</cite>)</dt><dd><p>the weighted fit residuals</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>var</strong>:  (<cite>float</cite>)</dt><dd><p>the variance of the weighted fit residuals</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>s</strong>:  (<cite>float</cite>)</dt><dd><p>the standard deviation of weighted the residuals</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>cov</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite></dt><dd><p>the covariance matrix of the (non-fixed) parameters</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>known_var</strong>:  <cite>float</cite></dt><dd><p>If uncertainties are defined for the y-values (and possible the
 x-values), this is the predicted variance of the weighted fit
 residuals.  If uncertainites are not defined for the y- or x-values,
-this is <cite>None</cite>.</p></li>
-<li><p><strong>yvar</strong>:  <cite>float</cite>
-the variance of the residual differences between the fitted values
+this is <cite>None</cite>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>yvar</strong>:  <cite>float</cite></dt><dd><p>the variance of the residual differences between the fitted values
 and the weighted y-values. For the nls and ols solver this is the
-same as var.</p></li>
-<li><p><strong>xvar</strong>:  <cite>float</cite>
-the variance of the residual differences between the fitted values
-and the weighted x-values. For the nls and ols solver this is <cite>None</cite>.</p></li>
-<li><p><strong>rcov</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite>
-the covariance matrix of the (non-fixed) parameters divided by the
-variance</p></li>
-<li><p><strong>fit_output</strong>:
-the return value of <cite>scipy.optimize.least_squares</cite> for the nls
+same as var.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>xvar</strong>:  <cite>float</cite></dt><dd><p>the variance of the residual differences between the fitted values
+and the weighted x-values. For the nls and ols solver this is <cite>None</cite>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>rcov</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite></dt><dd><p>the covariance matrix of the (non-fixed) parameters divided by the
+variance</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>fit_output</strong>:</dt><dd><p>the return value of <cite>scipy.optimize.least_squares</cite> for the nls
 solver of the return value of <cite>odr_fit.odrpack</cite> for the odr
-solver.  This is <cite>None</cite> if the ols solver is used.</p></li>
-<li><p><strong>x</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite> or of <cite>gummy</cite>
-numpy array of the x-coordinates of the data.</p></li>
-<li><p><strong>xf</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite>
-numpy array of the x-coordinates of the data as floats</p></li>
-<li><p><strong>xdim</strong>:  <cite>int</cite>
-the number of dimensions of the x-coordinates</p></li>
-<li><p><strong>ux</strong>:  <cite>float</cite>, <cite>numpy.ndarray</cite> of <cite>floats</cite> or <cite>None</cite>
-uncertainties in the x-coordinates</p></li>
-<li><p><strong>y</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite> or of <cite>gummy</cite>
-numpy array of the y-coordinates of the data.</p></li>
-<li><p><strong>yf</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite>
-numpy array of the y-coordinates of the data as floats</p></li>
-<li><p><strong>ydim</strong>:  <cite>int</cite>
-the number of dimensions of the y-coordinates</p></li>
-<li><p><strong>uy</strong>:  <cite>float</cite>, <cite>numpy.ndarray</cite> of <cite>floats</cite> or <cite>None</cite>
-uncertainties in the y-coordinates</p></li>
-<li><p><strong>count</strong>:  <cite>int</cite>
-the number of (x) data points</p></li>
-<li><p><strong>p0</strong>:  <cite>list</cite> of <cite>float</cite>
-the initial values for the fit function parameters</p></li>
-<li><p><strong>solver</strong>:  <cite>str</cite>
-the solver used</p></li>
-<li><p><strong>punits</strong>:  <cite>list</cite> of <cite>Unit</cite>
-the units of the fit parameters</p></li>
-<li><p><strong>nparam</strong>:  <cite>int</cite>
-the number of (non-fixed) fit parameters</p></li>
-<li><p><strong>dof</strong>: <cite>float</cite>
-degrees of freedom for the fit</p></li>
-<li><p><strong>ypred(x1,x2,…)</strong>:
-Takes <cite>xdim</cite> floats (or arrays of float) and returns a gummy
-representing the predicted value(s) at that x-coordinate.</p></li>
-<li><p><strong>ypredf(x1,x2,…)</strong>:
-Takes <cite>xdim</cite> floats (or arrays of float) and returns a float giving
-the  predicted value(s) at that x-coordinate.</p></li>
+solver.  This is <cite>None</cite> if the ols solver is used.</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>x</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite> or of <cite>gummy</cite></p></li>
+<li><dl class="simple">
+<dt><strong>xf</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite></dt><dd><p>numpy array of the x-coordinates of the data as floats</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>xdim</strong>:  <cite>int</cite></dt><dd><p>the number of dimensions of the x-coordinates</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>ux</strong>:  <cite>float</cite>, <cite>numpy.ndarray</cite> of <cite>floats</cite> or <cite>None</cite></dt><dd><p>uncertainties in the x-coordinates</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>y</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite> or of <cite>gummy</cite></dt><dd><p>numpy array of the y-coordinates of the data.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>yf</strong>:  <cite>numpy.ndarray</cite> of <cite>float</cite></dt><dd><p>numpy array of the y-coordinates of the data as floats</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>ydim</strong>:  <cite>int</cite></dt><dd><p>the number of dimensions of the y-coordinates</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>uy</strong>:  <cite>float</cite>, <cite>numpy.ndarray</cite> of <cite>floats</cite> or <cite>None</cite></dt><dd><p>uncertainties in the y-coordinates</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>count</strong>:  <cite>int</cite></dt><dd><p>the number of (x) data points</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>p0</strong>:  <cite>list</cite> of <cite>float</cite></dt><dd><p>the initial values for the fit function parameters</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>solver</strong>:  <cite>str</cite></dt><dd><p>the solver used</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>punits</strong>:  <cite>list</cite> of <cite>Unit</cite></dt><dd><p>the units of the fit parameters</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>nparam</strong>:  <cite>int</cite></dt><dd><p>the number of (non-fixed) fit parameters</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>dof</strong>: <cite>float</cite></dt><dd><p>degrees of freedom for the fit</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="fit-methods">
+<h3>Fit methods<a class="headerlink" href="#fit-methods" title="Link to this heading">¶</a></h3>
+<ul>
+<li><dl class="simple">
+<dt><strong>ypred(x1,x2,…)</strong>:</dt><dd><p>Takes <cite>xdim</cite> floats (or arrays of float) and returns a gummy
+representing the predicted value(s) at that x-coordinate.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>ypredf(x1,x2,…)</strong>:</dt><dd><p>Takes <cite>xdim</cite> floats (or arrays of float) and returns a float giving
+the  predicted value(s) at that x-coordinate.</p>
+</dd>
+</dl>
+</li>
 <li><p><strong>plot(data_format=’ko’, data_options={}, show_data=True,
 error_bars=True, error_bar_k=1, fit_format=’k-’, fit_options={},
 show_fit=True, cik=None, cip=None, ciformat=’g-’, cioptions={},
@@ -1995,31 +2131,28 @@ function of the form:</p>
 <p>See the <a class="reference internal" href="#fit">Fit</a> class for the parameters, properties and methods of
 this class.</p>
 </li>
+<li><dl>
+<dt>metrolopy.<strong>DistFit(x,cdf,p0=None,fix=None)</strong>:</dt><dd><dl>
+<dt>Fits a one-dimensional continuous distribution.</dt><dd><p><strong>DistFit Parameters</strong></p>
+<ul>
 <li><dl class="simple">
-<dt>metrolopy.<strong>DistFit(x,cdf,p0=None,fix=None)*</strong></dt><dd><p>Fits a one-dimensional continuous distribution.
-Parameters
-———-</p>
+<dt><strong>x</strong>: array of <cite>float</cite></dt><dd><p>samples from the distribution to be fitted</p>
 </dd>
 </dl>
 </li>
-<li><p><strong>x</strong>: array of <cite>float</cite>
-samples from the distribution to be fitted</p></li>
 <li><dl>
-<dt><strong>cdf</strong>: <cite>Distribution</cite>, <cite>scipy.stats.rv_continuous</cite> distribution or</dt><dd><p>function or method</p>
-<blockquote>
-<div><p>This can be the distribution to be fit as represented by a
+<dt><strong>cdf</strong>: <cite>Distribution</cite>, <cite>scipy.stats.rv_continuous</cite> distribution or</dt><dd><blockquote>
+<div><p>function or method</p>
+</div></blockquote>
+<p>This can be the distribution to be fit as represented by a
 <cite>gummy.Distribution</cite> (either the class or an instance of the class) or
 a <cite>scipy.stats.rv_continuous</cite> distribution (either the class or an
 instance of the class).</p>
 <p>It can also be a function or a method that gives the cumlative
 distribution function of the distribtion to be fit.</p>
-</div></blockquote>
 </dd>
 </dl>
 </li>
-</ul>
-<blockquote>
-<div><ul class="simple">
 <li><dl class="simple">
 <dt><strong>fix</strong>: array of <cite>bool</cite></dt><dd><p>A mask for the fit parameters.  For any element in <cite>fix</cite> that is
 <cite>True</cite>, the corresponding fit parameter will be held constant at
@@ -2027,9 +2160,6 @@ its initial value.</p>
 </dd>
 </dl>
 </li>
-</ul>
-</div></blockquote>
-<ul>
 <li><dl>
 <dt><strong>p0</strong>: array of <cite>float</cite>, optional</dt><dd><p>Inital values for the fit parameters.</p>
 <p>This is required if cdf is a function or method, but optional for most
@@ -2043,13 +2173,19 @@ including uncertainties and units.</p>
 </dd>
 </dl>
 </li>
-<li><p><strong>pf</strong>:  <cite>numpy.array</cite> of <cite>float</cite>
-The fitted values for the fit function parameters as floats</p></li>
+<li><dl class="simple">
+<dt><strong>pf</strong>:  <cite>numpy.array</cite> of <cite>float</cite></dt><dd><p>The fitted values for the fit function parameters as floats</p>
+</dd>
+</dl>
+</li>
 </ul>
 <blockquote>
 <div><ul class="simple">
-<li><p><strong>dist</strong>:  Returns a <cite>gummy.Distribution</cite> instance representing the fitted
-distribution.</p></li>
+<li><dl class="simple">
+<dt><strong>dist</strong>:  Returns a <cite>gummy.Distribution</cite> instance representing the fitted</dt><dd><p>distribution.</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 <ul class="simple">
@@ -2069,6 +2205,12 @@ along with the data points.</p>
 </li>
 </ul>
 </div></blockquote>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ul>
 </section>
 </section>
 
@@ -2130,6 +2272,8 @@ along with the data points.</p>
 <li><a class="reference internal" href="#curve-fitting">curve fitting</a><ul>
 <li><a class="reference internal" href="#class-fit">class Fit</a><ul>
 <li><a class="reference internal" href="#fit-parameters">Fit parameters</a></li>
+<li><a class="reference internal" href="#fit-attributes">Fit attributes</a></li>
+<li><a class="reference internal" href="#fit-methods">Fit methods</a></li>
 <li><a class="reference internal" href="#fit-abstract-methods">Fit abstract methods</a></li>
 </ul>
 </li>
@@ -2169,7 +2313,7 @@ along with the data points.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">metrolopy 1.1.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">MetroloPy</a></li> 
       </ul>
     </div>

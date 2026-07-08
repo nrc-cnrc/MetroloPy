@@ -702,6 +702,15 @@ class Fit(_Fit,PrettyPrinter):
             weights will be set to 1/u**2 for each point.  To override this 
             behavior set the keyword parameter "weights = 1".
             
+        weights: array or float, optional
+            Weights for each point, this may be an array the same size as y
+            or a scalar value.
+            
+        xweights:  array or float, options
+            Weights for the x-values, this may be an array the same size as x
+            or a scalar value. This argument is only used of the odr solver is
+            selected.
+            
         jacp: function, optional
             The Jacobian of the fit function with respect to the fit parameters.
             If this is not provided the Jacobian will be calculated numerically.

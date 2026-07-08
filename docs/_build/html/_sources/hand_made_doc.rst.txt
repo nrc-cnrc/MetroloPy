@@ -1811,7 +1811,7 @@ All parameters except x are optional
 	point, but ignores correlations between different data points and 
 	bewteen the x- and y-values.
 
--  **y**: array or `Number`, optional
+-  **y**: array or `Number`, optional  
 	Response variables y. Usually this is an array of shape (n,) but 
 	this can be omitted or a scalar `Number` if the nls or odr solvers 
 	are used or an array of shape (k,n) if the odr solver is used.  The
@@ -1828,7 +1828,7 @@ All parameters except x are optional
 	y-values are multi-dimensional, the odr solver will take into
 	account correlations between the different elements at each point.
 
--  **f**: function or method
+-  **f**: function or method  
 	The fit function.  This function can be passed as an argument to
 	the fit initializer or it can be provided by implementing the
 	f method in a derived class.
@@ -1849,173 +1849,199 @@ All parameters except x are optional
 	function will be called with scalar values for x when numerically 
 	calculating the Jacobian.) 
 
--  **p0**: array of `float`
+-  **p0**: array of `float`  
 	The initial values for the fit parameters.  This parameter is 
 	required unless the get_p0 method is overridden in a subclass to 
 	provide an initial esitmate for the fit parameters.  If get_p0
 	is implemented, then some elements of p0 can be set to `None` and
 	they will be replaced with the estimated value from get_p0.
 	
--	**fix**: array of `bool`
-	A mask for the fit parameters.  For any element in `fix` that is
-	`True`, the corresponding fit parameter will be held constant at
-	its initial value.
+-	**fix**: array of `bool`  
+		A mask for the fit parameters.  For any element in `fix` that is
+		`True`, the corresponding fit parameter will be held constant at
+		its initial value.
 	
--	**solver**:  {'ols','nls','odr'}, optional
-	A non-linear least squares (nls), ordinary least squares (ols) or
-	othogonal distance regression solver (odr) can be used to perform
-	the fit.
-	
-	nls is the default solver unless uncertainties are specified for
-	the x-values, in which case the default solver is odr.
-	
-	The nls solver uses `scipy.optimize.least_squares` while the odr
-	solver used `odrpack.odr_fit`.  The ols solver uses 
-	`scipy.linag.pinvh` to invert the normal equation matrix.
-	
--	**uy**: (array or `float`, optional)
-	Uncertainties for the y-values.  Specifying uy is an alternative to 
-	passing gummys with uncerainties defined as the the y-values.  uy 
-	can be a number that applies to all the x-values or an array giving
-	the uncertainty for each y-value.
-	
-	If uncertainties u are defined individually for the y-values, the 
-	weights will be set to 1/u**2 for each point.  To override this 
-	behavior set the keyword parameter "weights = 1".
+-	**solver**:  {'ols','nls','odr'}, optional  
+		A non-linear least squares (nls), ordinary least squares (ols) or
+		othogonal distance regression solver (odr) can be used to perform
+		the fit.
 		
--	**jacp**: (function, optional)
-	The Jacobian of the fit function with respect to the fit parameters.
-	If this is not provided the Jacobian will be calculated numerically.
-	
-	This function can be passed as an argument to the fit initializer 
-	or it can be provided by implementing the jacp method in a derived 
-	class.
-	
-	If provided jacp will be called as jacp(x,p1,p2,...,pN) if the
-	x-values are a one-dimensional array and 
-	jacp(x1,x2,...,xM,p1,p2,...,pN) if the x-values are M dimensional.
-	For n data points and N fit parameters, jacp should return an
-	array of shape (N,n).
+		nls is the default solver unless uncertainties are specified for
+		the x-values, in which case the default solver is odr.
 		
--	**variance_is_known**: (`bool`, optional)
-	If this is `True` then any uncertainties in the data  (either as
-	gummys in the `x` or `y` values or in the ux or uy parameters)
-	are used to calculate the uncertainties in the fit.  Otherwise,
-	the uncertainties are based on the standard deviation of the
-	residuals and the uncertainties in the data are used only for
-	weighting the data points.  The default value is `True`.
-		
--	**xunits, yunits**: (`str` or `None`, optional)
-	units for the x and y coordinates. These should not be specified
-	if the `x` and `y` parameters contain gummys. These may only be
-	specified if the `get_punits` method is overridden in a subclass.
-		
--	**fargs**:  (`list`, optional)
-	Additional (fixed) arguments passed to the fit function after the 
-	fit parameters.
-		
--	**fkwds**:  (`list`, optional)
-	Fixed keyword arguments passed to the fit function.
+		The nls solver uses `scipy.optimize.least_squares` while the odr
+		solver used `odrpack.odr_fit`.  The ols solver uses 
+		`scipy.linag.pinvh` to invert the normal equation matrix.
 	
-	other keywords:  (optional)
-	Any additional keyword parameters will be passed to the solver.
+-	**uy**: (array or `float`, optional)  
+		Uncertainties for the y-values.  Specifying uy is an alternative to 
+		passing gummys with uncerainties defined as the the y-values.  uy 
+		can be a number that applies to all the x-values or an array giving
+		the uncertainty for each y-value.
+		
+		If uncertainties u are defined individually for the y-values, the 
+		weights will be set to 1/u**2 for each point.  To override this 
+		behavior set the keyword parameter "weights = 1".
 	
-	Attributes
-	----------
+-	**ux**: array or `float`, optional  
+		Uncertainties for the x-values.  Specifying ux is an alternative to 
+		passing gummys with uncerainties defined as the the x-values.  ux 
+		can be a number that applies to all the x-values or an array giving
+		the uncertainty for each x-value.
+		
+		If uncertainties u are defined individually for the x-values, the 
+		xweights will be set to 1/u**2 for each point.  To override this 
+		behavior set the keyword parameter "xweights = 1".  If 
+		uncertainties are defined for the x-values, the default solver is 
+		odr.  If the nls or ols solver is manually selected then the 
+		uncertainties in the x-values will be ignored.
+		
+-	**weights**: array or float, optional  
+		Weights for each point, this may be an array the same size as y
+		or a scalar value.
+		
+-	**xweights**:  array or float, options  
+		Weights for the x-values, this may be an array the same size as x
+		or a scalar value. This argument is only used of the odr solver is
+		selected.
+		
+-	**jacp**: (function, optional)  
+		The Jacobian of the fit function with respect to the fit parameters.
+		If this is not provided the Jacobian will be calculated numerically.
+		
+		This function can be passed as an argument to the fit initializer 
+		or it can be provided by implementing the jacp method in a derived 
+		class.
+		
+		If provided jacp will be called as jacp(x,p1,p2,...,pN) if the
+		x-values are a one-dimensional array and 
+		jacp(x1,x2,...,xM,p1,p2,...,pN) if the x-values are M dimensional.
+		For n data points and N fit parameters, jacp should return an
+		array of shape (N,n).
+		
+-	**variance_is_known**: (`bool`, optional)  
+		If this is `True` then any uncertainties in the data  (either as
+		gummys in the `x` or `y` values or in the ux or uy parameters)
+		are used to calculate the uncertainties in the fit.  Otherwise,
+		the uncertainties are based on the standard deviation of the
+		residuals and the uncertainties in the data are used only for
+		weighting the data points.  The default value is `True`.
+		
+-	**xunits, yunits**: (`str` or `None`, optional)  
+		units for the x and y coordinates. These should not be specified
+		if the `x` and `y` parameters contain gummys. These may only be
+		specified if the `get_punits` method is overridden in a subclass.
+		
+-	**fargs**:  (`list`, optional)  
+		Additional (fixed) arguments passed to the fit function after the 
+		fit parameters.
+		
+-	**fkwds**:  (`list`, optional)  
+		
+	
+-	**other keywords**:
+		Any other keywords will be passed to the solver, 
+		`scipy.optimize.least_squares` for the nls solver,
+		`odr_fit.odrpack` for the odr solver and
+		`scipy.linalg.pinvh` for the ols solver.
+		
+	
+Fit attributes
+~~~~~~~~~~~~~~
 -	**p**:  (`numpy.array` of `gummy`)
-	The fitted values for the fit function parameters as gummys
-	including uncertainties and units.
+		The fitted values for the fit function parameters as gummys
+		including uncertainties and units.
 		
 -	**pf**:  (`numpy.array` of `float`)
-	The fitted values for the fit function parameters as floats
+		The fitted values for the fit function parameters as floats
 		
 -	**res**:  (`numpy.ndarray` of `float`)
-	the weighted fit residuals
+		the weighted fit residuals
 		
--	**va**r:  (`float`)
-	the variance of the weighted fit residuals
+-	**var**:  (`float`)
+		the variance of the weighted fit residuals
 		
 -	**s**:  (`float`)
-	the standard deviation of weighted the residuals
+		the standard deviation of weighted the residuals
 		
 -	**cov**:  `numpy.ndarray` of `float`
-	the covariance matrix of the (non-fixed) parameters
+		the covariance matrix of the (non-fixed) parameters
 		
 -	**known_var**:  `float`
-	If uncertainties are defined for the y-values (and possible the
-	x-values), this is the predicted variance of the weighted fit
-	residuals.  If uncertainites are not defined for the y- or x-values,
-	this is `None`.
+		If uncertainties are defined for the y-values (and possible the
+		x-values), this is the predicted variance of the weighted fit
+		residuals.  If uncertainites are not defined for the y- or x-values,
+		this is `None`.
 		
 -	**yvar**:  `float`
-	the variance of the residual differences between the fitted values
-	and the weighted y-values. For the nls and ols solver this is the 
-	same as var.
+		the variance of the residual differences between the fitted values
+		and the weighted y-values. For the nls and ols solver this is the 
+		same as var.
 	
 -	**xvar**:  `float`
-	the variance of the residual differences between the fitted values
-	and the weighted x-values. For the nls and ols solver this is `None`.
+		the variance of the residual differences between the fitted values
+		and the weighted x-values. For the nls and ols solver this is `None`.
 		
 -	**rcov**:  `numpy.ndarray` of `float`
-	the covariance matrix of the (non-fixed) parameters divided by the
-	variance
+		the covariance matrix of the (non-fixed) parameters divided by the
+		variance
 	
 -	**fit_output**:
-	the return value of `scipy.optimize.least_squares` for the nls
-	solver of the return value of `odr_fit.odrpack` for the odr
-	solver.  This is `None` if the ols solver is used.
+		the return value of `scipy.optimize.least_squares` for the nls
+		solver of the return value of `odr_fit.odrpack` for the odr
+		solver.  This is `None` if the ols solver is used.
 		
 -	**x**:  `numpy.ndarray` of `float` or of `gummy`
-	numpy array of the x-coordinates of the data.
+		
 		
 -	**xf**:  `numpy.ndarray` of `float`
-	numpy array of the x-coordinates of the data as floats
+		numpy array of the x-coordinates of the data as floats
 		
 -	**xdim**:  `int`
-	the number of dimensions of the x-coordinates
+		the number of dimensions of the x-coordinates
 		
 -	**ux**:  `float`, `numpy.ndarray` of `floats` or `None`
-	uncertainties in the x-coordinates
+		uncertainties in the x-coordinates
 		
 -	**y**:  `numpy.ndarray` of `float` or of `gummy`
-	numpy array of the y-coordinates of the data.
+		numpy array of the y-coordinates of the data.
 		
 -	**yf**:  `numpy.ndarray` of `float`
-	numpy array of the y-coordinates of the data as floats
+		numpy array of the y-coordinates of the data as floats
 		
 -	**ydim**:  `int`
-	the number of dimensions of the y-coordinates
+		the number of dimensions of the y-coordinates
 		
 -	**uy**:  `float`, `numpy.ndarray` of `floats` or `None`
-	uncertainties in the y-coordinates
+		uncertainties in the y-coordinates
 		
 -	**count**:  `int`
-	the number of (x) data points
+		the number of (x) data points
 		
 -	**p0**:  `list` of `float`
-	the initial values for the fit function parameters
+		the initial values for the fit function parameters
 		
 -	**solver**:  `str`
-	the solver used
+		the solver used
 		
 -	**punits**:  `list` of `Unit`
-	the units of the fit parameters
+		the units of the fit parameters
 		
 -	**nparam**:  `int`
-	the number of (non-fixed) fit parameters
+		the number of (non-fixed) fit parameters
 		
 -	**dof**: `float`
-	degrees of freedom for the fit
+		degrees of freedom for the fit
 
-	Methods
-	-------
+Fit methods
+~~~~~~~~~~~~~~
 -	**ypred(x1,x2,...)**:
-	Takes `xdim` floats (or arrays of float) and returns a gummy 
-	representing the predicted value(s) at that x-coordinate.
+		Takes `xdim` floats (or arrays of float) and returns a gummy 
+		representing the predicted value(s) at that x-coordinate.
 	
 -	**ypredf(x1,x2,...)**:
-	Takes `xdim` floats (or arrays of float) and returns a float giving 
-	the  predicted value(s) at that x-coordinate.
+		Takes `xdim` floats (or arrays of float) and returns a float giving 
+		the  predicted value(s) at that x-coordinate.
 		
 -  **plot(data\_format='ko', data\_options={}, show\_data=True,
    error\_bars=True, error\_bar\_k=1, fit\_format='k-', fit\_options={},
@@ -2199,55 +2225,55 @@ sub-classes of Fit for some common functions
    See the Fit_ class for the parameters, properties and methods of 
    this class.
 
--  metrolopy.\ **DistFit(x,cdf,p0=None,fix=None)***
+-  metrolopy.\ **DistFit(x,cdf,p0=None,fix=None)**:
     Fits a one-dimensional continuous distribution.
-    Parameters
-    ----------
--   **x**: array of `float`
-    samples from the distribution to be fitted
-        
--   **cdf**: `Distribution`, `scipy.stats.rv_continuous` distribution or 
-     function or method
-        
-	This can be the distribution to be fit as represented by a 
-	`gummy.Distribution` (either the class or an instance of the class) or 
-	a `scipy.stats.rv_continuous` distribution (either the class or an 
-	instance of the class).
+	**DistFit Parameters**
 	
-	It can also be a function or a method that gives the cumlative
-	distribution function of the distribtion to be fit.
-	
- -  **fix**: array of `bool`
-	A mask for the fit parameters.  For any element in `fix` that is
-	`True`, the corresponding fit parameter will be held constant at
-	its initial value.
-        
--   **p0**: array of `float`, optional
-	Inital values for the fit parameters.
-	
-	This is required if cdf is a function or method, but optional for most
-	`Distribution` or `scipy.stats` distributions.
+	-   **x**: array of `float`
+		samples from the distribution to be fitted
+			
+	-   **cdf**: `Distribution`, `scipy.stats.rv_continuous` distribution or 
+		 function or method
+			
+		This can be the distribution to be fit as represented by a 
+		`gummy.Distribution` (either the class or an instance of the class) or 
+		a `scipy.stats.rv_continuous` distribution (either the class or an 
+		instance of the class).
+		
+		It can also be a function or a method that gives the cumlative
+		distribution function of the distribtion to be fit.
+		
+	-  **fix**: array of `bool`
+		A mask for the fit parameters.  For any element in `fix` that is
+		`True`, the corresponding fit parameter will be held constant at
+		its initial value.
+			
+	-   **p0**: array of `float`, optional
+		Inital values for the fit parameters.
+		
+		This is required if cdf is a function or method, but optional for most
+		`Distribution` or `scipy.stats` distributions.
 
-    Attributes
-    ----------
--   **p**:  `numpy.array` of `gummy`
-	The fitted values for the fit function parameters as gummys
-	including uncertainties and units.
-        
--   **pf**:  `numpy.array` of `float`
-    The fitted values for the fit function parameters as floats
-        
-    Properies
-    ---------
- -  **dist**:  Returns a `gummy.Distribution` instance representing the fitted
-    distribution.
-        
-    Methods
-    -------
--   **plot(...)**:
-        plots the histogram of the data and the fitted distribution
-        
- -  **cdf_plot(...)**:
-        plots cumulative distribution function of the fitted distribution
-        along with the data points.
+		Attributes
+		----------
+	-   **p**:  `numpy.array` of `gummy`
+		The fitted values for the fit function parameters as gummys
+		including uncertainties and units.
+			
+	-   **pf**:  `numpy.array` of `float`
+		The fitted values for the fit function parameters as floats
+			
+		Properies
+		---------
+	 -  **dist**:  Returns a `gummy.Distribution` instance representing the fitted
+		distribution.
+			
+		Methods
+		-------
+	-   **plot(...)**:
+			plots the histogram of the data and the fitted distribution
+			
+	 -  **cdf_plot(...)**:
+			plots cumulative distribution function of the fitted distribution
+			along with the data points.
 
